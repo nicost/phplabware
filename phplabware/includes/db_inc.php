@@ -475,6 +475,10 @@ function upload_files ($db,$tableid,$id,$columnid,$columnname,$USER,$system_sett
       // sometimes mime types are not set properly, let's try to fix those
       if (substr($originalname,-4,4)=='.pdf')
          $mime='application/pdf';
+      if (substr($originalname,-4,4)=='.doc')
+         $mime='application/msword';
+      if (substr($originalname,-4,4)=='.htm')
+         $mime='text/html';
       // work around php bug??  
       $mime=strtok ($mime,";");
       $filestype=substr(strrchr($mime,'/'),1);
