@@ -1095,12 +1095,15 @@ function searchhelp ($db,$tableinfo,$column,&$columnvalues,$query,$wcappend,$and
             $rw=$db->Execute("SELECT id FROM words WHERE word LIKE '".strtolower($columnvalues[$column])."%'");
             if ($rw && $rw->fields[0]) {
                $rid=$db->Execute("SELECT DISTINCT recordid AS id FROM {$rc->fields[2]} WHERE wordid='{$rw->fields[0]}'");
-               $list=make_SQL_ids($rid,$list);
-               $query[2].="$and {$tableinfo->realname}.id IN ($list) ";   
-               /* This resulst in very slow SQL execution
-               $query[1].="LEFT JOIN {$rc->fields[2]} ON {$tableinfo->realname}.id={$rc->fields[2]}.recordid ";
-               $query[2].="$and {$rc->fields[2]}.wordid='{$rw->fields[0]}' ";
-               */
+               if ($rid && $rid->fields[0]) {
+                  $list=make_SQL_ids($rid,$list);
+                  $query[2].="$and {$tableinfo->realname}.id IN ($list) ";   
+                  /* This resulst in very slow SQL execution
+                  $query[1].="LEFT JOIN {$rc->fields[2]} ON {$tableinfo->realname}.id={$rc->fields[2]}.recordid ";
+                  $query[2].="$and {$rc->fields[2]}.wordid='{$rw->fields[0]}' ";
+                  */
+               }
+	       else $query[2].="$and id=0 ";
             }
 	    else $query[2].="$and id=0 ";
          }
