@@ -182,7 +182,7 @@ function get_files ($db,$table,$id,$format=1) {
          $filesid=$files[$i]["id"]=$r->fields("id");
          $filesname=$files[$i]["name"]=$r->fields("filename");
          $filestitle=$files[$i]["title"]=$r->fields("title");
-         $files[$i]["mime"]=$r->fields("mime");
+         $mime=$files[$i]["mime"]=$r->fields("mime");
          $filestype=$files[$i]["type"]=$r->fields("type");
 	 if ($format==1) {
             if ($filestitle)
@@ -321,7 +321,7 @@ function may_read_SQL_subselect ($db,$table,$USER,$clause=false) {
 // !returns an comma-separated list of quoted values from a SQL search
 // helper function for may_read_SQL
 function make_SQL_ids ($r,$ids,$field="id") {
-   if (!r || $r->EOF)
+   if (!$r || $r->EOF)
       return false;
    $id=$r->fields[$field];
    $ids .="'$id'";
@@ -362,6 +362,8 @@ function may_read_SQL_JOIN ($db,$table,$USER) {
       $query="SELECT id FROM $table ";
       $r=$db->Execute($query);
    }
+   if ($ids)
+      $ids=$ids.",";
    if ($r)
       return make_SQL_ids($r,$ids);
 }
@@ -437,7 +439,7 @@ function may_write ($db,$table,$id,$USER) {
 // !returns an comma-separated list of quoted values from a SQL search
 // derived from make_SQL_ids but can be called from anywhere 
 function make_SQL_csf ($r,$ids,$field="id",&$column_count) {
-   if (!r || $r->EOF)
+   if (!$r || $r->EOF)
       return false;
    $id=$r->fields[$field];
    $ids .="'$id'";
