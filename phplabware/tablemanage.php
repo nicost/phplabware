@@ -23,7 +23,7 @@ if (!($permissions & $ADMIN))
 while((list($key, $val) = each($HTTP_POST_VARS))) {
 	 if ($key== "linkdisplay"){
 	 $linkch=$HTTP_POST_VARS["link_display"];
-	 $r=$db->Execute("UPDATE  tableoftables SET Display = '$linkch' where tablename = 'linkbar'");
+	 $r=$db->Execute("UPDATE  tableoftables SET display = '$linkch' where tablename = 'linkbar'");
 	 }	 
 	 if (substr($key, 0, 7) == "addlink") {
 	 $newlabel=$HTTP_POST_VARS["newlink_label"];
@@ -237,7 +237,7 @@ echo "<td><input type='text' name='newtable_sortkey' value=''></td>\n";
 echo "<td></td>\n";
 echo "<td align='center'><input type='submit' name='addtable' value='Add'></td></tr>\n";
  
-$query = "SELECT id,tablename,display,sortkey,custom FROM tableoftables where Display='Y' or Display='N' ORDER BY sortkey";
+$query = "SELECT id,tablename,display,sortkey,custom FROM tableoftables where display='Y' or display='N' ORDER BY sortkey";
 $r=$db->Execute($query);
 $rownr=0;
 
@@ -322,7 +322,7 @@ if($linkdis=="1")
 	echo "<td align='center'><input type='submit' name='addlink' value='Add'></td></tr>\n";
  		
 	// show existing links with modification functions
-	$query = "SELECT id,label,linkurl,sortkey,Display,target FROM linkbar ORDER BY sortkey";
+	$query = "SELECT id,label,linkurl,sortkey,display,target FROM linkbar ORDER BY sortkey";
 	$r=$db->Execute($query);
 	$rownr=0;
 	while (!($r->EOF) && $r) 
