@@ -49,8 +49,8 @@ if ($use_sessions) {
             $auth=false; 
 
          // if pam_prg is present, check whether the user is known on the system 
-         $pam_prg=$settings["checkpwd"];
-         if ($settings["authmethod"]==2 && $pam_prg && ! $auth) {
+         $pam_prg=$system_settings["checkpwd"];
+         if ($system_settings["authmethod"]==2 && $pam_prg && ! $auth) {
             // this only makes sense if the user has an account on sidb
             if (get_cell($db,"users","login","login",$PHP_AUTH_USER)) {
                $esc_user = escapeshellarg($PHP_AUTH_USER);
