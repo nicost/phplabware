@@ -57,4 +57,13 @@ function plugin_getvalues($db,&$allfields)
 {
 }
 
+
+////
+// !Extends function display_add
+// This lets you add information to every specific item
+function plugin_display_add ($db,$tableid,$nowfield)
+{
+}
+
+
 ?>
