@@ -444,6 +444,8 @@ function display_add($db,$tableinfo,$Allfields,$id,$namein,$system_settings) {
 // Returns an array with lots of information on every column
 // If qfield is set, database values for that record will be returned as well
 function getvalues($db,$tableinfo,$fields,$qfield=false,$field=false) {
+   global $system_settings;
+
    if ($qfield) {
       $r=$db->Execute("SELECT $fields FROM $tableinfo->realname WHERE $qfield=$field"); 
       $rid=$db->Execute("SELECT id FROM $tableinfo->realname WHERE $qfield=$field");
@@ -504,6 +506,16 @@ function getvalues($db,$tableinfo,$fields,$qfield=false,$field=false) {
                if ($files) 
                   for ($i=0;$i<sizeof($files);$i++)
                      ${$column}["text"].=$files[$i]["link"];
+            }
+            elseif ($column=="ownerid") {
+               $rname=$db->Execute("SELECT firstname,lastname,email FROM users WHERE id=".${$column}["values"]);
+               if ($rname && $rname->fields) {
+                  ${$column}["text"]="<a href=mailto:".$rname->fields[email].">".$rname->fields[firstname]." ".$rname->fields[lastname]."</a>\n";
+               }
+            }
+            elseif ($column=="date") {
+               $dateformat=get_cell($db,"dateformats","dateformat","id",$system_settings["dateformat"]);
+               ${$column}["text"]=date($dateformat,${$column}["values"]);
             }
             else
                ${$column}["text"]=${$column}["values"];
