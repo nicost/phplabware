@@ -517,37 +517,37 @@ function getvalues($db,$tableinfo,$fields,$qfield=false,$field=false) {
    if ($qfield) {
       $r=$db->Execute("SELECT $fields FROM $tableinfo->realname WHERE $qfield=$field"); 
       $rid=$db->Execute("SELECT id FROM $tableinfo->realname WHERE $qfield=$field");
-      $id=$rid->fields["id"];
+      $id=$rid->fields['id'];
    }
-   $columns=split(",",$fields);
+   $columns=split(',',$fields);
    $Allfields=array();
    foreach ($columns as $column) {
       if($column!="id") {
          if ($r)
-            ${$column}["values"]= $r->fields[$column];
+            ${$column}['values']= $r->fields[$column];
          $rb=$db->CacheExecute(2,"SELECT id,label,datatype,display_table,display_record,associated_table,associated_column,associated_local_key,required,link_first,link_last,modifiable FROM $tableinfo->desname WHERE columnname='$column'");
-         ${$column}["name"]=$column;
-         ${$column}["columnid"]=$rb->fields["id"];
-         ${$column}["label"]=$rb->fields["label"];
-         ${$column}["datatype"]=$rb->fields["datatype"];
-         ${$column}["display_table"]=$rb->fields["display_table"];
-         ${$column}["display_record"]=$rb->fields["display_record"];
-         ${$column}["ass_t"]=$rb->fields["associated_table"];
-         ${$column}["ass_column"]=$rb->fields["associated_column"];
-         ${$column}["ass_local_key"]=$rb->fields["associated_local_key"];
-         ${$column}["required"]=$rb->fields["required"];
-         ${$column}["modifiable"]=$rb->fields["modifiable"];
-         if ($rb->fields["datatype"]=="table") {
-            ${$column}["ass_table_desc_name"]=get_cell($db,"tableoftables","table_desc_name","id",$rb->fields["associated_table"]);
-            ${$column}["ass_table_name"]=get_cell($db,"tableoftables","real_tablename","id",$rb->fields["associated_table"]);
-            ${$column}["ass_column_name"]=get_cell($db,${$column}["ass_table_desc_name"],"columnname","id",$rb->fields["associated_column"]);
+         ${$column}['name']=$column;
+         ${$column}['columnid']=$rb->fields['id'];
+         ${$column}['label']=$rb->fields['label'];
+         ${$column}['datatype']=$rb->fields['datatype'];
+         ${$column}['display_table']=$rb->fields['display_table'];
+         ${$column}['display_record']=$rb->fields['display_record'];
+         ${$column}['ass_t']=$rb->fields['associated_table'];
+         ${$column}['ass_column']=$rb->fields['associated_column'];
+         ${$column}['ass_local_key']=$rb->fields['associated_local_key'];
+         ${$column}['required']=$rb->fields['required'];
+         ${$column}['modifiable']=$rb->fields['modifiable'];
+         if ($rb->fields['datatype']=='table') {
+            ${$column}['ass_table_desc_name']=get_cell($db,'tableoftables','table_desc_name','id',$rb->fields['associated_table']);
+            ${$column}['ass_table_name']=get_cell($db,'tableoftables','real_tablename','id',$rb->fields['associated_table']);
+            ${$column}['ass_column_name']=get_cell($db,${$column}['ass_table_desc_name'],'columnname','id',$rb->fields['associated_column']);
 	 }
          if ($id) {
             ${$column}['recordid']=$id;
             if ($rb->fields['datatype']=='table') {
                if ($rb->fields['associated_local_key']) {
-                  ${$column}['ass_local_column_name']=get_cell($db,$tableinfo->desname,"columnname","id",$rb->fields["associated_local_key"]);
-                  ${$column}['values']=get_cell($db,$tableinfo->realname,${$column}["ass_local_column_name"],"id",$id); 
+                  ${$column}['ass_local_column_name']=get_cell($db,$tableinfo->desname,'columnname','id',$rb->fields['associated_local_key']);
+                  ${$column}['values']=get_cell($db,$tableinfo->realname,${$column}['ass_local_column_name'],'id',$id); 
                }
                $text=false;
                if (${$column}['values']) {
@@ -576,11 +576,11 @@ function getvalues($db,$tableinfo,$fields,$qfield=false,$field=false) {
             }
             elseif ($rb->fields['datatype']=='file' || $rb->fields['datatype']=='image') {
                $tbname=get_cell($db,'tableoftables','tablename','id',$tableinfo->id);
-               $files=get_files($db,$tbname,$id,${$column}['columnid'],3);
-               if ($files) 
-                  for ($i=0;$i<sizeof($files);$i++)
-                     ${$column}["text"].=$files[$i]['link'];
-
+               // we can get naming conflicts here. Use a really weird name
+               $fzsk=get_files($db,$tbname,$id,${$column}['columnid'],3);
+               if ($fzsk) 
+                  for ($i=0;$i<sizeof($fzsk);$i++)
+                     ${$column}['text'].=$fzsk[$i]['link'];
             }
             elseif ($rb->fields['datatype']=='user') {
                $rname=$db->Execute("SELECT firstname,lastname,email FROM users WHERE id=".${$column}["values"]);
