@@ -106,7 +106,7 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
    }
    elseif (substr($key, 0, 9) == "modreport") {  
       $modarray = explode("_", $key);
-      mod_report($db,$modarray[1]);
+      $tplmessage=mod_report($db,$modarray[1]);
       break;
    } 
    elseif (substr($key, 0, 9) == "delreport") { 
@@ -115,7 +115,7 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
       break;
    }
    elseif ($key=="addreport") {
-      add_report($db);
+      $tplmessage=add_report($db);
       break;
    }
 }
@@ -296,12 +296,13 @@ if ($editfield)	{
 /////  Reports
 elseif ($editreport)	{
    navbar($USER["permissions"]);
+   echo $tplmessage;
 
    $r=$db->Execute("SELECT id,table_desc_name,label FROM tableoftables WHERE tablename='$editreport'");
    $tableid=$r->fields["id"];
    $tablelabel=$r->fields["label"];
    echo "<h3 align='center'>$string</h3>";
-   echo "<h3 align='center'>Edit reports for table <i>$tablelabel</i></h3><br>";
+   echo "<h3 align='center'>Edit report templates for table <i>$tablelabel</i></h3><br>";
 
    echo "<form method='post' name='reportform' id='repedit' enctype='multipart/form-data' ";
    $dbstring=$PHP_SELF;
@@ -312,7 +313,8 @@ elseif ($editreport)	{
    echo "<tr>\n";
    echo "<th>Report Name</th>\n";
    echo "<th>Sortkey</th>\n";
-   echo "<th>Report</th>\n";
+   echo "<th>Template File Add/Change</th>\n";
+   echo "<th>File present</th>";
    echo "<th>Action</th>\n";
    echo "</tr>\n";
 
@@ -321,11 +323,12 @@ elseif ($editreport)	{
    echo "<tr align='center' >\n";
    echo "<td><input type='text' name='addrep_label' value='' size='10'></td>\n";
    echo "<td><input type='text' name='addrep_sortkey' value='' size='5'></td>\n";
-   echo "<td><input type='text' name='addrep_template' value='' size='35'></td>\n";
+   echo "<td><input type='file' name='addrep_template'</td>\n";
+   echo "<td>&nbsp;</td>\n";
    echo "<td align='center'><input type='submit' name='addreport' value='Add'></td></tr>\n\n";
 
    // Loop through existing templates
-   $rp=$db->Execute("SELECT id,label,template,sortkey FROM reports WHERE tableid='$tableid' ORDER BY sortkey");
+   $rp=$db->Execute("SELECT id,label,sortkey,filesize FROM reports WHERE tableid='$tableid' ORDER BY sortkey");
    $rownr=0;
    while ($rp && !$rp->EOF) {
       $id=$rp->fields["id"];
@@ -335,9 +338,13 @@ elseif ($editreport)	{
       else 
          echo "<tr class='row_even' align='center'>\n";         
 
-      echo "<td><input type=text name=report_label[$rownr] value='".$rp->fields["label"]."' size=10></td>\n";
-      echo "<td><input type=text name=report_sortkey[$rownr] value='".$rp->fields["sortkey"]."'size=5></td>\n";
-      echo "<td><input type=text name=report_template[$rownr] value='".$rp->fields["template"]."' size=35></td>\n";
+      echo "<td><input type='text' name='report_label[$rownr]' value='".$rp->fields["label"]."' size=10></td>\n";
+      echo "<td><input type='text' name='report_sortkey[$rownr]' value='".$rp->fields["sortkey"]."'size=5></td>\n";
+      echo "<td><input type='file' name='report_template[$rownr]'</td>\n";
+      if (is_readable($system_settings["templatedir"]."/$id.tpl"))
+         echo "<td>Yes</td>\n";
+      else
+         echo "<td>No</td>\n";
       $modstring = "<input type='submit' name='modreport"."_$rownr' value='Modify'>\n";
       $delstring = "<input type='submit' name='delreport"."_$rownr' value='Remove' ";
       $delstring .= "Onclick=\"if(confirm('Are you absolutely sure that the report ".$rp->fields["label"] ." should be removed? (No undo possible!)')){return true;}return false;\">";  
