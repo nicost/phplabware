@@ -78,7 +78,7 @@ if (!$template) {
    exit();
 }
 
-// For Kurt
+// displays multiple records in a report (last search statement)
 if ($HTTP_GET_VARS["tableview"]) {
    // figure out the current query:
    $queryname=$tableinfo->short.'_query';
@@ -90,17 +90,19 @@ if ($HTTP_GET_VARS["tableview"]) {
       $fields_table=comma_array_SQL($db,$tableinfo->desname,columnname,"");
       $fields_table="id,".$fields_table;
 
-      // prepare the search statement and remember it
+      // prepare the search statement
       $query=make_search_SQL($db,$tableinfo,$fields_table,$USER,$search,$sortstring,$listb["sql"]);
       //$db->debug=true;
       $r=$db->Execute($query);
       //$db->debug=false;
       echo $header;
+      $counter=1;
       while ($r && !$r->EOF) {
          $Allfields=getvalues($db,$tableinfo,$fields_table,"id",$r->fields["id"]);
-         $report=make_report($template,$Allfields);
+         $report=make_report($db,$template,$Allfields,$tableinfo,$counter);
          echo $report;
          $r->MoveNext();
+         $counter++;
       }
       echo $footer;
    }
@@ -109,7 +111,7 @@ else { // just a single record
    $fields=comma_array_SQL($db,$tableinfo->desname,"columnname");
    $Allfields=getvalues($db,$tableinfo,$fields,"id",$recordid);
 
-   $report=make_report($template,$Allfields);
+   $report=make_report($db,$template,$Allfields);
    echo $report;
 }
 ?>
