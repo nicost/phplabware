@@ -191,6 +191,9 @@ function get_cell ($db, $table, $column, $column2, $value) {
 function navbar($permissions) {
    include ('includes/defines_inc.php');
    global $db; 
+
+   $links_per_row=5;
+   
    if ($permissions & $ACTIVE) 
 	{	
 	// first display the linkbar if activated
@@ -205,7 +208,7 @@ function navbar($permissions) {
 		    echo "<tr align='center'>\n";
 			while (!$linkr->EOF) 
 				{ 
-				if (($count%5)==0){echo "</tr><tr bgcolor='ffeeff' align='center'>";}
+				if (($count%$links_per_row)==0){echo "</tr><tr bgcolor='ffeeff' align='center'>";}
 				$Tlinkname=$linkr->fields[0];
 				$urlname=$linkr->fields[1];
 				if ($linkr->fields[2]=="S"){$targetstr="target='_TOP'";}
@@ -218,15 +221,15 @@ function navbar($permissions) {
   	} 
    }
 				
-	  echo "<table border=0 width=100%>\n";
-    echo "<tr bgcolor='eeeeff' align='center'>\n";
-	$records=$db->Execute("select tablename,Custom from tableoftables where display='Y' and permission='Users' ORDER by sortkey");
-	$count=0;
-	if ($records)
+   echo "<table border=0 width=100%>\n";
+   echo "<tr bgcolor='eeeeff' align='center'>\n";
+   $records=$db->Execute("select tablename,Custom from tableoftables where display='Y' and permission='Users' ORDER by sortkey");
+   $count=0;
+   if ($records)
 		{
 		while (!$records->EOF) 
 			{ 
-			if (($count%5)==0){echo "</tr><tr bgcolor='eeeeff' align='center'>";}
+			if (($count%$links_per_row)==0){echo "</tr><tr bgcolor='eeeeff' align='center'>";}
 			$tabname=$records->fields[0];
 			$scriptname=$records->fields[1];
 			$linkname="";
@@ -244,17 +247,17 @@ function navbar($permissions) {
    if ($permissions & $ADMIN) {
       ?>      
       <td align='center'><a href="users.php?<?=SID?>">users</a></td>
-      <td align='center'><a href="tablemanage.php?<?=SID?>">Table management</a></td>
       <?php
    }
    if ($permissions & $SUPER) {
       ?>
       <td align='center'><a href="groups.php?<?=SID?>">groups</a></td>
+      <td align='center'><a href="tablemanage.php?<?=SID?>">tables</a></td>
       <td align='center'><a href="setup.php?<?=SID?>">system</a></td>
       <?php
    }
    echo "</tr></table>";
-  echo "<table border=0 width=100%>\n";
+   echo "<table border=0 width=100%>\n";
    echo "<tr bgcolor='eeeeff' align='right'>";
 
    if ($permissions) {
