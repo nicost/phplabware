@@ -416,7 +416,7 @@ function display_add($db,$tableinfo,$Allfields,$id,$namein,$system_settings) {
          }
          elseif ($nowfield['datatype']=='pulldown') {
             // get previous value	
-            $r=$db->Execute("SELECT typeshort,id FROM $nowfield[ass_t] ORDER BY sortkey");
+            $r=$db->Execute("SELECT typeshort,id FROM $nowfield[ass_t] ORDER BY sortkey,typeshort");
             $text=$r->GetMenu2("$nowfield[name]",$nowfield[values],true,false);
             echo "<tr><th>$nowfield[label]:";
             if ($nowfield['required']=='Y')
