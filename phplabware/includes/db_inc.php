@@ -1225,8 +1225,7 @@ function search ($db,$tableinfo,$fields,&$fieldvalues,$whereclause=false,$wcappe
    //$query[0]="SELECT $fieldsSQLstring "; //FROM ".$tableinfo->realname." WHERE ";
 */
    // SELECT part
-   $query[0]="SELECT id "; //FROM ".$tableinfo->realname." WHERE ";
-
+   $query[0]="SELECT {$tableinfo->realname}.id ";
    // FROM part
    $query[1]='FROM '.$tableinfo->realname.' ';
    // WHERE part
