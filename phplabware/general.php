@@ -241,7 +241,7 @@ else {
 //   get a list of all fields that are displayed in the table
 $Fieldscomma=comma_array_SQL_where($db,$table_desname,"label","display_table","Y");
 $Allfields=getvalues($db,$real_tablename,$table_desname,$Fieldscomma,display_table,"Y");	
-display_tablehead($db,$tablename,$table_desname,$Allfields,$list);
+display_tablehead($db,$tablename,$real_tablename,$table_desname,$Allfields,$list);
 display_midbar($Fieldscomma);
 display_table_info($db,$tablename,$real_tablename,$table_desname,$Fieldscomma,$p_query,$num_p_r,$p_curr_page);
 printfooter($db,$USER);
