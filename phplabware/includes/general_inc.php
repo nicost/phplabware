@@ -701,6 +701,7 @@ function doindexfile ($db,$filetext,$fileid,$indextable,$recordid,$pagenr)
 // the table associated with the given column
 function indexfile ($db,$tableinfo,$indextable,$recordid,$fileid,$htmlfileid) 
 {
+   return false;
    if (!$indextable)
       return false;
    // if the html file exists, we'll work with that one
