@@ -387,9 +387,9 @@ return $out;
 //////////////////////////////////////////////////////
 ////
 // !SQL search (entrire column) that returns a comma delimited string
-function comma_array_SQL($db,$tablein,$column) {
+function comma_array_SQL($db,$tablein,$column,$where=false) {
 	$tempa=array();
-	$rs = $db->Execute("select $column from $tablein order by sortkey");
+	$rs = $db->Execute("select $column from $tablein $where order by sortkey");
 	if ($rs)
 		{
 		while (!$rs->EOF) {
