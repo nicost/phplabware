@@ -25,7 +25,7 @@ include ('includes/config_inc.php');
 include ("includes/defines_inc.php");
 include ('adodb/adodb.inc.php');
 
-$post_vars="action,authmethod,checkpwd,dateformat,pwd,secure_server_new,submit,";
+$post_vars="action,authmethod,checkpwd,dateformat,filedir,pwd,secure_server_new,submit,";
 globalize_vars($post_vars, $HTTP_POST_VARS);
 
 if ($set_local) {
