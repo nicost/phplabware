@@ -57,4 +57,23 @@ $tablesid=$db->GenID("tableoftables_id_seq");
 $query="INSERT INTO tableoftables VALUES ($tablesid,200,'protocols','pr')";
 if (!$db->Execute($query)) $test=false;
 
+$query="ALTER TABLE files ADD COLUMN type int";
+if (!$db->Execute($query)) $test=false;
+
+$query="CREATE TABLE filetypes
+        (id int PRIMARY KEY,
+	 sortkey int,
+	 type text,
+	 typeshort text)";
+if (!$db->Execute($query)) $test=false;
+$db->Execute("CREATE INDEX filetypes_id_index ON filetypes (id)");
+$db->Execute("CREATE INDEX filetypes_sortkey_index ON filetypes (sortkey)");
+
+$fid=$db->GenID("filetypes_id_seq");
+$query="INSERT INTO filetypes VALUES ($fid,100,'HTML','html')";
+if (!$db->Execute($query)) $test=false;
+$fid=$db->GenID("filetypes_id_seq");
+$query="INSERT INTO filetypes VALUES ($fid,200,'MSWord','doc')";
+if (!$db->Execute($query)) $test=false;
+
 ?>
