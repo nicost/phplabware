@@ -84,7 +84,7 @@ function check_pd_data ($db,&$field_values) {
       // check whether there is an abstract
      if ((substr($line[5],0,4)!="PMID"))
          $field_values["abstract"]=$line[5];
-      // check wether the journal is in pd_typ1, if not, add it
+      // check wether the journal is in pd_type1, if not, add it
       $r=$db->Execute("SELECT id FROM pd_type1 WHERE typeshort='$journal'");
       if ($r && $r->fields("id"))
          $field_values["type1"]=$r->fields("id");
