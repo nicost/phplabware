@@ -6,7 +6,8 @@
   /***************************************************************************
   * Copyright (c) 2001 by Nico Stuurman                                      *
   * ------------------------------------------------------------------------ *
-  * Creates tables antibodies,ab_type1-5, and inserts initial values.        *
+  * Creates tables antibodies,ab_type1-5,antibodiesxfiles and inserts        *
+  * initial values.                                                          *
   *                                                                          *
   *                                                                          *
   *  This program is free software; you can redistribute it and/or modify it *
@@ -16,19 +17,17 @@
   \**************************************************************************/ 
   
   
-$db->debug=true;  
-  
 $query="CREATE TABLE antibodies (
 	id int PRIMARY KEY,
 	access char(9),
 	ownerid int,
+        magic int,
 	name text,
 	type1 int,
 	type2 int,
 	type3 int,
 	type4 int,
 	type5 int,
-	species int,
 	antigen text,
 	epitope text,
 	concentration float,
@@ -38,6 +37,12 @@ $query="CREATE TABLE antibodies (
 	source text,
 	date int)";
 if (!$db->Execute($query)) $test=false;
+$db->Execute("CREATE INDEX antibodies_id_index ON antibodies (id)");
+$db->Execute("CREATE INDEX antibodies_ownerid_index ON antibodies (ownerid)");
+$db->Execute("CREATE INDEX antibodies_date_index ON antibodies (date)");
+$db->Execute("CREATE INDEX antibodies_magic_index ON antibodies (magic)");
+$db->Execute("CREATE INDEX antibodies_name_index ON antibodies (name)");
+$db->Execute("CREATE INDEX antibodies_name_index ON antibodies (name(10))");
 $query="CREATE TABLE ab_type1 
 	(id int PRIMARY KEY,
 	 sortkey int,
@@ -65,7 +70,9 @@ $query="CREATE TABLE ab_type3
  	 type text,
 	 typeshort text)";
 if (!$db->Execute($query)) $test=false;
-$query="INSERT INTO ab_type3 VALUES (1,10,'unknown','?')";
+$db->Execute("CREATE INDEX ab_type3_id_index ON ab_type3 (id)");
+$db->Execute("CREATE INDEX ab_type3_sortkey_index ON ab_type3 (sortkey)");
+$query="INSERT INTO ab_type3 VALUES (1,1010,'unknown','?')";
 if (!$db->Execute($query)) $test=false;
 $query="INSERT INTO ab_type3 VALUES (2,50,'human','human')";
 if (!$db->Execute($query)) $test=false;
@@ -85,6 +92,8 @@ if (!$db->Execute($query)) $test=false;
  	 type text,
 	 typeshort text)";
 if (!$db->Execute($query)) $test=false;
+$db->Execute("CREATE INDEX ab_type4_id_index ON ab_type4 (id)");
+$db->Execute("CREATE INDEX ab_type4_sortkey_index ON ab_type4 (sortkey)");
 $query="INSERT INTO ab_type4 VALUES (1,100,'IgG','IgG')";
 if (!$db->Execute($query)) $test=false;
 $query="INSERT INTO ab_type4 VALUES (2,200,'IgM','IgM')";
@@ -107,6 +116,8 @@ if (!$db->Execute($query)) $test=false;
  	 type text,
 	 typeshort text)";
 if (!$db->Execute($query)) $test=false;
+$db->Execute("CREATE INDEX ab_type5_id_index ON ab_type5 (id)");
+$db->Execute("CREATE INDEX ab_type5_sortkey_index ON ab_type5 (sortkey)");
 $query="INSERT INTO ab_type5 VALUES (1,100,'Alkaline Phosph.','AP')";
 if (!$db->Execute($query)) $test=false;
 $query="INSERT INTO ab_type5 VALUES (2,200,'Horseradish Perox.','HP')";
@@ -125,5 +136,12 @@ $query="INSERT INTO ab_type5 VALUES (8,2000,'Beads','Beads')";
 if (!$db->Execute($query)) $test=false;
 $query="INSERT INTO ab_type5 VALUES (9,0,'None','None')";
 if (!$db->Execute($query)) $test=false;
+
+$query="CREATE TABLE antibodiesxfiles
+        (antibodiesid int,
+         filesid int)"; 
+if (!$db->Execute($query)) $test=false;
+$db->Execute("CREATE INDEX abxfiles_antibodiesid_index ON antibodiesxfiles (antibodiesid)");
+$db->Execute("CREATE INDEX abxfiles_filesid_index ON antibodiesxfiles (filesid)");
 
 ?>
