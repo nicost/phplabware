@@ -531,6 +531,8 @@ if (!@is_readable($stylesheet)) {
 <LINK rel="STYLESHEET" type="text/css" href="<?php echo $stylesheet?>">
 </HEAD>
 <BODY BGCOLOR="#ffffff">
+<table width="100%" rules="none" border="0" cellspacing="0" cellpadding="0">
+<tr><td>
 <table width="100%" rules="none" border="0" cellspacing="0" cellpadding="0" bgcolor="333388">
 <tr class='header' bgcolor="333388">
 <?php
@@ -559,6 +561,8 @@ if (!@is_readable($stylesheet)) {
       </td>
    </tr>
 </table>
+</td></tr>
+<tr><td>
 <a name="top"></a>
 <!--************************END OF PRINTHEADER**************************-->
 
@@ -575,6 +579,8 @@ function printfooter($db=false,$USER=false) {
 <!--********************START OF PRINTFOOTER****************************-->
 &nbsp;<br>
 <hr>
+</td></tr>
+</table>
 </BODY>
 </HTML>
 
