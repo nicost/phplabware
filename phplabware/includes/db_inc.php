@@ -133,7 +133,7 @@ function upload_files ($db,$table,$id,$USER,$system_settings) {
       return false;
    if (!may_write($db,$table,$id,$USER))
       return false;
-   if (!$filedir=$system_settings["filedir"]) {
+   if (isset($HTTP_POST_FILES["file"][0]) && !$filedir=$system_settings["filedir"]) {
       echo "<h3><i>Filedir</i> was not set.  The file was not uploaded. Please contact your system administrator</h3>";
       return false;
    }
