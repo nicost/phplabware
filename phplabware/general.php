@@ -70,14 +70,14 @@ if ($HTTP_GET_VARS["md"])
 
 // check if sortup or sortdown arrow has been pressed
 foreach($HTTP_POST_VARS as $key =>$value) {
-   list($testkey,$testvalue)=explode("_",$key,2);
+   list($testkey,$testvalue)=explode("_",$key);
    // images add _x and _y, remove these here
    if ($testkey=="sortup"){
-      $testvalue=substr($testvalue,0,-2);
+//      $testvalue=substr($testvalue,0,-2);
       $sortup=$testvalue;
    }
    if ($testkey=="sortdown") {
-      $testvalue=substr($testvalue,0,-2);
+//      $testvalue=substr($testvalue,0,-2);
       $sortdown=$testvalue;
    }
 } 
@@ -422,7 +422,7 @@ else {
          //$list2=make_SQL_ids($rpull,false,"$nowfield[name]");
          //if ($list2) { 
          //    $rpull=$db->Execute("SELECT typeshort,id from $nowfield[ass_t] WHERE id IN ($list2) ORDER by typeshort");
-             $rpull=$db->Execute("SELECT typeshort,id from $nowfield[ass_t] ORDER by sortkey");
+             $rpull=$db->Execute("SELECT typeshort,id from $nowfield[ass_t] ORDER by sortkey,typeshort");
             if ($rpull)
 	       $text=$rpull->GetMenu2("$nowfield[name]",${$nowfield[name]},true,false,0,"style='width: 80%' $jscript");   
 	    else
