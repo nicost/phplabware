@@ -248,6 +248,9 @@ function get_location ($header)
     }
     return false; 
 }
+
+
+
 /**
  * Finds the journal link through eutils elink
  *
@@ -324,6 +327,7 @@ Location: ') {
              }
          break;
          
+         case 'www.pnas.org':
          case 'www.genesdev.org':
              $website=read_web_page($host,$getstring,$header,$body,true,5); 
              $linktopdf=get_location($header);
@@ -349,7 +353,7 @@ Location: ') {
              $website=read_web_page($host,$getstring,$header,$body,true,5); 
              $linktopdf=get_location($header);
              $linktopdf=str_replace('content/full','reprint',$linktopdf);
-echo "link: $host$linktopdf.<br>\n";
+//echo "link: $host$linktopdf.<br>\n";
              if (do_pdf_download($host,$linktopdf,'file')) {
                  return true;
              }
