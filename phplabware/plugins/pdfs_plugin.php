@@ -25,10 +25,9 @@ the terms of the GNU General Public License as published by the Free Software Fo
 // Any changes you make in the values of $fieldvalues will result in 
 // changes in the database. 
 // You could, for instance, calculate a value of a field based on other fields
-function plugin_check_data($db,&$field_values,$table_desc) 
+function plugin_check_data($db,&$field_values,$table_desc,$modify=false) 
 {
    global $HTTP_POST_FILES;
-$db->debug=true;
    // we need some info from the database
    $pdftable=get_cell($db,"tableoftables","real_tablename","table_desc_name",$table_desc);
    $journaltable=get_cell($db,$table_desc,"associated_table","columnname","journal");
@@ -45,17 +44,26 @@ $db->debug=true;
 
    // no fun without a pmid
    if (!$field_values["pmid"]) {
-      echo "<h3 align='center'>Please enter the Pubmed ID of the PDF reprint.</h3>";
-      return false;
+      if ($modify)
+         return true;
+      else {
+         echo "<h3 align='center'>Please enter the Pubmed ID of the PDF reprint.</h3>";
+         return false;
+      }
    }
+
    // check whether we had this one already
-   $existing_id=get_cell($db,$pdftable,"id","pmid",$field_values["pmid"]);
-   if ($existing_id) {
-      echo "<h3 align='center'><a href='pdfs.php?showid=$existing_id'>That paper </a>is already in the database.</h3>\n";
-      return false;
+   if (!$modify) {
+      $existing_id=get_cell($db,$pdftable,"id","pmid",$field_values["pmid"]);
+      if ($existing_id) {
+         echo "<h3 align='center'><a href='pdfs.php?showid=$existing_id'>That paper </a>is already in the database.</h3>\n";
+         return false;
+      }
    }
+
    // this will protect quotes in the imported data
    set_magic_quotes_runtime(1);
+
    // data from pubmed and parse
    $pmid=$field_values["pmid"];
    $pubmedinfo=@file("http://www.ncbi.nlm.nih.gov/entrez/utils/pmfetch.fcgi?db=PubMed&id=$pmid&report=abstract&report=abstract&mode=text");
@@ -98,7 +106,7 @@ $db->debug=true;
       $field_values["title"]=$line[2];
       $field_values["author"]=$line[3];
       // check whether there is an abstract
-     if ((substr($line[5],0,4)!="PMID"))
+      if ((substr($line[5],0,4)!="PMID"))
          $field_values["abstract"]=$line[5];
       // check wether the journal is in pd_type1, if not, add it
       $r=$db->Execute("SELECT id FROM $journaltable WHERE typeshort='$journal'");
@@ -118,10 +126,8 @@ $db->debug=true;
       set_magic_quotes_runtime(0);
       return true;
    }
-$db->debug=false;
    // some stuff goes wrong when this remains on
    set_magic_quotes_runtime(0);
-print_r($field_values);
    return true;
 }
 
