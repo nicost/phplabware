@@ -16,8 +16,6 @@
   \**************************************************************************/ 
   
   
-  
-  
    $test=true;
    $result=$db->Execute("CREATE TABLE settings 
 	(id int PRIMARY KEY, 
@@ -29,31 +27,32 @@
    if (!$result) $test=false;
    $query="CREATE TABLE authmethods 
       (id int PRIMARY KEY, 
-      method text)";
+       sortkey int,
+       method text)";
    if (!$db->Execute($query)) $test=false;
-   $query="INSERT INTO authmethods VALUES (1,'SQL')";
+   $query="INSERT INTO authmethods VALUES (1,10,'SQL')";
    if (!$db->Execute($query)) $test=false;
-   $query="INSERT INTO authmethods VALUES (2,'PAM')";
+   $query="INSERT INTO authmethods VALUES (2,40,'PAM')";
    if (!$db->Execute($query)) $test=false;
    $query="CREATE TABLE dateformats 
 	(id int PRIMARY KEY, 
-	dateformat text, 
-	sortkey int)";
+	 sortkey int,
+         dateformat text)"; 
    if (!$db->Execute($query)) $test=false;
-   $query="INSERT INTO dateformats VALUES (1,'m-d-Y',100)";
+   $query="INSERT INTO dateformats VALUES (1,100,'m-d-Y')";
    if (!$db->Execute($query)) $test=false;
-   $query="INSERT INTO dateformats VALUES (2,'M-D-Y',200)";
+   $query="INSERT INTO dateformats VALUES (2,200,'M-D-Y')";
    if (!$db->Execute($query)) $test=false;
-   $query="INSERT INTO dateformats VALUES (3,'d-m-Y',300)";
+   $query="INSERT INTO dateformats VALUES (3,300,'d-m-Y')";
    if (!$db->Execute($query)) $test=false;
-   $query="INSERT INTO dateformats VALUES (4,'D-M-Y',400)";
+   $query="INSERT INTO dateformats VALUES (4,400,'D-M-Y')";
    if (!$db->Execute($query)) $test=false;
    $result=$db->Execute("CREATE TABLE users 
 	(id int PRIMARY KEY, 
 	firstname text, 
 	lastname text, 
 	login text, 
-	groupid text, 
+	groupid int, 
 	pwd text, 
 	email text, 
 	permissions int, 
@@ -61,7 +60,12 @@
 	indir text,
 	outdir text)");
    if (!$result) $test=false;
-   
+   $db->Execute("CREATE INDEX users_id_index ON users (id)"); 
+   $db->Execute("CREATE INDEX users_groupid_index ON users (groupid)"); 
+   $db->Execute("CREATE INDEX users_login_index ON users (login)"); 
+   $db->Execute("CREATE INDEX users_login_index ON users (login(10))"); 
+   $db->Execute("CREATE INDEX users_pwd_index ON users (pwd)"); 
+   $db->Execute("CREATE INDEX users_pwd_index ON users (pwd(10))"); 
    $result=$db->Execute("CREATE TABLE groups 
 	(id int PRIMARY KEY, 
 	name text, 
