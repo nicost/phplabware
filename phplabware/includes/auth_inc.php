@@ -27,6 +27,8 @@ $auth=false;
 $use_sessions=true;
 
 if ($use_sessions) {
+   if (isset($system_settings["tmpdir"]))
+      session_save_path($system_settings["tmpdir"]);
    if (function_exists ("session_cache_limiter"))
       session_cache_limiter("private");
    session_start();
