@@ -338,10 +338,10 @@ function delete_file ($db,$fileid,$USER) {
    $filename=get_cell($db,"files","filename","id",$fileid);
    if (!may_write($db,$tableid,$ftableid,$USER))
       return false;
-   if (unlink($system_settings["filedir"]."/$fileid"."_$filename")) {
-      $db->Execute("DELETE FROM files WHERE id=$fileid");
-      return $filename;
-   }
+   // if unlink fails we should really remove the entry from the database:
+   //if (@unlink($system_settings["filedir"]."/$fileid"."_$filename")) {
+   $db->Execute("DELETE FROM files WHERE id=$fileid");
+   return $filename;
 }
 
 ////
