@@ -18,29 +18,6 @@ require("include.php");
 require("includes/db_inc.php");
 require("includes/general_inc.php");
 
-class tableinfo {
-   var $short;
-   var $realname;
-   var $label;
-   var $desname;
-   var $queryname;
-   var $pagename;
-   var $id;
-
-   function tableinfo ($db) {
-      global $HTTP_GET_VARS;
-
-      $r=$db->Execute("SELECT id,shortname,tablename,real_tablename,table_desc_name,label FROM tableoftables WHERE tablename='$HTTP_GET_VARS[tablename]'");
-      $this->id=$r->fields["id"];
-      $this->short=$r->fields["shortname"];
-      $this->realname=$r->fields["real_tablename"];
-      $this->label=$r->fields["label"];
-      $this->desname=$r->fields["table_desc_name"];
-      $this->fields=comma_array_SQL($db,$this->desname,columnname);
-      $this->name=$HTTP_GET_VARS[tablename];
-   }
-}
-
 $tableinfo=new tableinfo($db);
 
 if (!$tableinfo->id) {
@@ -411,7 +388,7 @@ else {
 	 else 
     	    echo  " <td style='width: 10%'><input type='text' name='$nowfield[name]' value='".${$nowfield[name]}."'size=8></td>\n";
       }
-      elseif ($nowfield[datatype]== "text")
+      elseif ($nowfield[datatype]== "text" || $nowfield[datatype]=="file")
     	    echo  " <td style='width: 25%'><input type='text' name='$nowfield[name]' value='".${$nowfield[name]}."'size=8></td>\n";
       elseif ($nowfield[datatype]== "textlong")
     	    echo  " <td style='width: 10%'><input type='text' name='$nowfield[name]' value='".${$nowfield[name]}."'size=8></td>\n";
