@@ -52,6 +52,29 @@ function get_delimiter ($delimiter,$delimiter_type) {
    return $delimiter;
 } 
  
+////
+// !corrects problems in input data (Removes quotes around text, 
+// checks for ints and floats, quotes text
+function check_input ($fields, $field_types, $nrfields)
+{
+   for ($i=0;$i<$nrfields;$i++) {
+      if ($fields[$i]) {
+         // strip quotes semi-inteligently  Can not use trim when php <4.1
+         if ($fields[$i]{0}==$fields[$i]{strlen($fields[$i])-1} &&
+             ($fields[$i]{0}=="\"" || $fields[$i]{0}=="'") )
+            $fields[$i]=substr($fields[$i],1,-1);
+         if ($field_types[$i]=="int"){
+            $fields[$i]=(int)$fields[$i];
+         }
+         elseif($field_types[$i]=="float")
+            $fields[$i]=(float)$fields[$i];
+         else
+            $fields[$i]=addslashes($fields[$i]);
+      }
+   }
+   return $fields;
+}
+          
 
 // do the final parsing (part 3)
 if ($HTTP_POST_VARS["assign"]=="Import Data") {
@@ -71,6 +94,8 @@ if ($HTTP_POST_VARS["assign"]=="Import Data") {
       $the_field=$HTTP_POST_VARS["fields_$i"];
       if ($the_field) {
          $to_fields[$i]=get_cell($db,$desc,"columnname","id",$the_field);
+         if ($to_fields[$i]=="id")
+            $id_chosen=true;
          $to_types[$i]=get_cell($db,$desc,"type","id",$the_field);
          // type checking and cleanup for database upload
          // since we can have int(11) etc...
@@ -78,8 +103,11 @@ if ($HTTP_POST_VARS["assign"]=="Import Data") {
             $to_types[$i]="int";
             $fields[$i]=(int)$fields[$i];
          }
-         elseif($to_types[$i]=="float")
+         // and float8...
+         elseif(substr($to_types[$i],0,5)=="float") {
+            $to_types[$i]="float";
             $fields[$i]=(float)$fields[$i];
+         }
          else
             $fields[$i]=addslashes($fields[$i]);
       }
@@ -101,7 +129,7 @@ if ($HTTP_POST_VARS["assign"]=="Import Data") {
          $lastmodby=$USER["id"];
          // fgets should not need second parameter, but my php version does...
          while ($line=chop(fgets($fh,1000000))) {
-            $fields=explode($delimiter,$line);
+            $fields=check_input (explode($delimiter,$line),$to_types,$nrfields);
             $worthit=false;
             if (isset($pkey)) {
                // check if we already had such a record
@@ -139,12 +167,15 @@ if ($HTTP_POST_VARS["assign"]=="Import Data") {
                }
                // delete last commas and combine into SQL INSERT query
                if ($worthit) {
-                  $id=$db->GenID($table."_id_seq");
-                  if ($id) {
-                     $query="$query_start id,access,lastmoddate,lastmodby,ownerid) $query_end '$id','$access','$lastmoddate','$lastmodby','$ownerid')";
-                     if ($r=$db->Execute($query))
-                         $inserted++;
+                  if (!$id_chosen) {
+                     $id=$db->GenID($table."_id_seq");
+                     if ($id)
+                        $query="$query_start id,access,lastmoddate,lastmodby,ownerid) $query_end '$id','$access','$lastmoddate','$lastmodby','$ownerid')";
                   }
+                  else
+                     $query="$query_start access,lastmoddate,lastmodby,ownerid) $query_end '$access','$lastmoddate','$lastmodby','$ownerid')";
+                  if ($r=$db->Execute($query))
+                      $inserted++;
                } 
             }
          }
@@ -191,9 +222,14 @@ if ($HTTP_POST_VARS["dataupload"]=="Continue") {
          $fh=fopen("$tmpdir/$filename","r");
          if ($fh) {
             $firstline=chop(fgets($fh,1000000));
-            fclose($fh);
             $fields=explode($delimiter,$firstline);
-            $nrfields=sizeof($fields);
+            //$nrfields=sizeof($fields);
+            $secondline=chop(fgets($fh,1000000));
+            $fields2=explode($delimiter,$secondline);
+            //if (sizeof($fields2) > $nrfields)
+               //$nrfields=sizeof($fields2);
+            $nrfields=substr_count($firstline,$delimiter)+1;
+            fclose($fh);
          }
          // echo "$nrfields fields found.<br>";
          $tablename=get_cell($db,"tableoftables","tablename","id",$tableid);
@@ -208,12 +244,17 @@ if ($HTTP_POST_VARS["dataupload"]=="Continue") {
          echo "<input type='hidden' name='delimiter' value='$delimiter'>\n";
          echo "<input type='hidden' name='ownerid' value='$ownerid'>\n";
          echo "<table align='center'><tr>\n";
-         echo "<th>Input File:</th>\n";
+         echo "<th>First line:</th>\n";
          for($i=0;$i<$nrfields;$i++)
             echo "   <td align='center'>$fields[$i]</td>\n";
-         echo "</tr>\n<tr>\n   <th>Assign to Column:</th>\n";
+         echo "</tr>\n";
+         echo "<th>Second line:</th>\n";
+         for($i=0;$i<$nrfields;$i++)
+            echo "   <td align='center'>$fields2[$i]</td>\n";
+         echo "</tr>\n";
+         echo "<tr>\n   <th>Assign to Column:</th>\n";
          $desc=get_cell($db,"tableoftables","table_desc_name","id",$tableid);
-         $r=$db->Execute("SELECT label,id FROM $desc WHERE (display_record='Y' OR display_table='Y') AND datatype<>'file'");
+         $r=$db->Execute("SELECT label,id FROM $desc WHERE (display_record='Y' OR display_table='Y' OR columnname='id') AND datatype<>'file' ORDER BY sortkey");
          for($i=0;$i<$nrfields;$i++) {
             $menu=$r->GetMenu2("fields_$i");
             echo "   <td align='center'>$menu</td>\n";
