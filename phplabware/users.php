@@ -30,8 +30,10 @@ if (!$type)
 globalize_vars ($post_vars, $HTTP_POST_VARS);
 
 
-////
-// !check the form input data for validity
+/**
+ *  check the form input data for validity
+ *
+ */
 function check_input () {
    global $lastname, $login, $pwd, $user_group, $pwdcheck, $type, $PWD_MINIMUM;
    if ($lastname and $login and $user_group) {
@@ -56,9 +58,11 @@ function check_input () {
 }
 
 
-////
-// !Generates a comma-separated list of tables holding data
-// tablenames are read from tableoftables
+/**
+ *  Generates a comma-separated list of tables holding data
+ *
+ * tablenames are read from tableoftables
+ */
 function tablestring ($db) {
    $r=$db->Execute("SELECT id,real_tablename FROM tableoftables WHERE tablename <> 'settings' AND permission <> 'System' ORDER BY id");
    while (!$r->EOF) {
@@ -71,8 +75,10 @@ function tablestring ($db) {
 }
 
 
-////
-// !Deletes users after some checks
+/**
+ *  Deletes users after some checks
+ *
+ */
 function delete_user ($db, $id) {
    global $USER;
 
@@ -118,9 +124,11 @@ function delete_user ($db, $id) {
 }
 
 
-////
-// !Interacts with the SQL database to create/modify users
-// can be called to create (type=create) or modify (type=modify) other users or oneselves (type=me) 
+/**
+ *  Interacts with the SQL database to create/modify users
+ *
+ * can be called to create (type=create) or modify (type=modify) other users or oneselves (type=me) 
+ */
 function modify ($db, $type) {
    global $HTTP_POST_VARS, $USER, $perms, $post_vars;
 
@@ -239,8 +247,10 @@ function modify ($db, $type) {
    return $result;
 }
 
-////
-// !can be called to create (type=create) or modify (type=modify) other users or oneselves (type=me) 
+/**
+ *  can be called to create (type=create) or modify (type=modify) other users or oneselves (type=me) 
+ *
+ */
 function show_user_form ($type) {
    global $userfields, $HTTP_SERVER_VARS, $perms, $USER, $db, $system_settings;
    global $HTTP_SESSION_VARS;
@@ -337,7 +347,8 @@ function show_user_form ($type) {
       echo "</td>\n</tr>";
    }
    else {
-      echo "<input type=\"hidden\" name=\"user_group\" value=\"" . $USER["groupid"] . "\">";
+      // hidden value.  Needs to be inside table to be w3c compliant
+      echo "<tr><td><input type=\"hidden\" name=\"user_group\" value=\"" . $USER["groupid"] . "\"></td></tr>\n";
    }
 
    if ($USER['permissions'] >= $WRITE && ($system_settings['authmethod'] <> 2
