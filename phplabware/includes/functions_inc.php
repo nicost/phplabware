@@ -215,7 +215,7 @@ function navbar($permissions) {
 				
       echo "<table border=0 width=100% cellspacing='0' cellpadding='0'>\n";
       echo "<tr bgcolor='eeeeff' align='center'>\n";
-      $records=$db->Execute("select tablename,custom,id from tableoftables where display='Y' and permission='Users' ORDER by sortkey");
+      $records=$db->Execute("select tablename,custom,id,label from tableoftables where display='Y' and permission='Users' ORDER by sortkey");
       $count=0;
       if ($records) {
          $query="SELECT tableid FROM groupxtable_display WHERE (groupid='".$USER["group_array"][0]."' ";
@@ -233,12 +233,13 @@ function navbar($permissions) {
                   echo "</tr>\n<tr bgcolor='eeeeff' align='center'>\n";
                $tabname=$records->fields[0];
                $scriptname=$records->fields[1];
+               $label=$records->fields["label"];
                $linkname="";
                if ($scriptname=="")
                   $linkname="general.php?tablename=$tabname&".SID;
                else 
                   $linkname=$scriptname."?".SID;
-               echo "      <td style='width: 20%' align='center'><a href=\"$linkname\">$tabname</a></td>\n";
+               echo "      <td style='width: 20%' align='center'><a href=\"$linkname\">$label</a></td>\n";
                $count++;
 	    }
             $records->MoveNext(); 

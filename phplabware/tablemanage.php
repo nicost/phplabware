@@ -38,17 +38,19 @@ if (!($permissions & $SUPER)) {
 while((list($key, $val) = each($HTTP_POST_VARS))) {
    if (substr($key, 0, 8) == "addtable") {
        $tablename=$HTTP_POST_VARS["newtable_name"];
+       $tablelabel=$HTTP_POST_VARS["newtable_label"];
        $tablesort=$HTTP_POST_VARS["newtable_sortkey"];
-       add_table($db,$tablename,$tablesort);
+       add_table($db,$tablename,$tablelabel,$tablesort);
    }
    if (substr($key, 0, 8) == "modtable") {
        $modarray = explode("_", $key);
        $id=$HTTP_POST_VARS["table_id"][$modarray[1]];
        $tablename=$HTTP_POST_VARS["table_name"][$modarray[1]];
+       $tablelabel=$HTTP_POST_VARS["table_label"][$modarray[1]];
        $tablesort=$HTTP_POST_VARS["table_sortkey"][$modarray[1]];
        $tabledisplay=$HTTP_POST_VARS["table_display"][$modarray[1]];
        $tablegroups=$HTTP_POST_VARS["tablexgroups"][$id];
-       mod_table($db,$id,$tablename,$tablesort,$tabledisplay,$tablegroups);
+       mod_table($db,$id,$tablename,$tablesort,$tabledisplay,$tablelabel,$tablegroups);
    }
    if (substr($key, 0, 8) == "deltable") {  
        $modarray = explode("_", $key);      
@@ -58,25 +60,27 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
    }
    if (substr($key, 0, 9) == "addcolumn") {  
        $tablename=$HTTP_POST_VARS["table_name"];
+       $label=$HTTP_POST_VARS["addcol_label"];
        $colname=$HTTP_POST_VARS["addcol_name"];
        $datatype=$HTTP_POST_VARS["addcol_datatype"];
        $Rdis=$HTTP_POST_VARS["addcol_drecord"];
        $Tdis=$HTTP_POST_VARS["addcol_dtable"];
        $req=$HTTP_POST_VARS["addcol_required"];
        $sort=$HTTP_POST_VARS["addcol_sort"];
-       add_columnECG($db,$tablename,$colname,$datatype,$Rdis,$Tdis,$req,$sort);
+       add_columnECG($db,$tablename,$colname,$label,$datatype,$Rdis,$Tdis,$req,$sort);
    }   	
    if (substr($key, 0, 9) == "modcolumn") {  
       $modarray = explode("_", $key);
       $tablename=$HTTP_POST_VARS["table_name"];
       $id=$HTTP_POST_VARS["column_id"][$modarray[1]]; 
       $colname=$HTTP_POST_VARS["column_name"][$modarray[1]];
+      $collabel=$HTTP_POST_VARS["column_label"][$modarray[1]];
       $datatype=$HTTP_POST_VARS["column_datatype"][$modarray[1]];
       $Rdis=$HTTP_POST_VARS["column_drecord"][$modarray[1]];
       $Tdis=$HTTP_POST_VARS["column_dtable"][$modarray[1]];
       $sort=$HTTP_POST_VARS["column_sort"][$modarray[1]];
       $req=$HTTP_POST_VARS["column_required"][$modarray[1]];
-      mod_columnECG($db,$id,$sort,$tablename,$colname,$datatype,$Rdis,$Tdis,$req);
+      mod_columnECG($db,$id,$sort,$tablename,$colname,$collabel,$datatype,$Rdis,$Tdis,$req);
    }   	
    if (substr($key, 0, 9) == "delcolumn") { 
       $modarray = explode("_", $key);
@@ -102,16 +106,18 @@ if ($editfield)	{
 	$dbstring=$PHP_SELF;echo "action='$dbstring?editfield=$editfield&".SID."'>\n"; 
 	echo "<table align='center'>\n";
 	echo "<tr>\n";
+	echo "<th>(SQL) Column Name</th>";
 	echo "<th>Label</th>";
 	echo "<th>Sortkey</th>";
 	echo "<th>Table display</th>";
 	echo "<th>Record display</th>\n";
 	echo "<th>Required </th>\n";
 	echo "<th>Datatype</th>\n";
-       echo "<th>Action</th>\n";
+        echo "<th>Action</th>\n";
 	echo "</tr>\n";
 	echo "<input type='hidden' name='table_name' value='$editfield'>\n";
 	echo "<tr align='center' ><td><input type='text' name='addcol_name' value=''></td>\n";
+	echo "<td><input type='text' name='addcol_label' value=''></td>\n";
 	echo "<td><input type='text' name='addcol_sort' value=''></td>\n";
 	echo "<td><input type='radio' name='addcol_dtable' checked value='Y'>yes<input type='radio' name='addcol_dtable'  value='N'>no</td>\n";
 	echo "<td><input type='radio' name='addcol_drecord' checked value='Y'>yes<input type='radio' name='addcol_drecord'  value='N'>no</td>\n";
@@ -126,13 +132,14 @@ if ($editfield)	{
 	echo "</select>";
 	echo "<td align='center'><input type='submit' name='addcolumn' value='Add'></td></tr>\n";
 
-	$query = "SELECT id,sortkey,label,display_table,display_record,required,datatype FROM $currdesc order by sortkey,label";
+	$query = "SELECT id,sortkey,columnname,label,display_table,display_record,required,datatype FROM $currdesc order by sortkey,label";
 	$r=$db->Execute($query);
 	$rownr=0;
 	// print all entries
 	while (!($r->EOF) && $r) 
 		{
         $label = $r->fields["label"];
+        $columnname = $r->fields["columnname"];
 	$id = $r->fields["id"];
         $display_table = $r->fields["display_table"];
         $display_record = $r->fields["display_record"];
@@ -152,7 +159,8 @@ if ($editfield)	{
 	      echo "<tr class='row_odd' align='center'>\n";	
   	   else 
 	      echo "<tr class='row_even' align='center'>\n";         
- 	   echo "<input type='hidden' name='column_name[]' value='$label'>\n";echo "<td>$label</td>\n";  
+ 	   echo "<input type='hidden' name='column_name[]' value='$columnname'>\n";echo "<td>$columnname</td>\n";  
+	   echo "<td><input type='text' name='column_label[]' value='$label'></td>\n";
 	   echo "<td><input type='text' name='column_sort[]' value='$sort'></td>\n";
 	   if($display_table=="Y"){
 	  		echo "<td><input type='radio' name='column_dtable[$rownr]' value='Y' CHECKED >yes";
@@ -214,6 +222,7 @@ echo "<table align='center'>\n";
 
 echo "<tr>\n";
 echo "<th>Table Name</th>\n";
+echo "<th>Name in linkbar</th>\n";
 echo "<th>Display</th>\n";
 echo "<th>Groups</th>\n";
 echo "<th>Sort key</th>\n";
@@ -223,13 +232,14 @@ echo "<th>Fields</th>\n";
 
 echo "</tr>\n";
 echo "<tr><td><input type='text' name='newtable_name' value=''></td>\n";
+echo "<td><input type='text' name='newtable_label' value=''></td>\n";
 echo "<td></td>\n";
 echo "<td></td>\n";
 echo "<td><input type='text' name='newtable_sortkey' value=''></td>\n";
 echo "<td></td>\n";
 echo "<td align='center'><input type='submit' name='addtable' value='Add'></td></tr>\n";
  
-$query = "SELECT id,tablename,display,sortkey,custom FROM tableoftables where display='Y' or display='N' ORDER BY sortkey";
+$query = "SELECT id,tablename,label,display,sortkey,custom FROM tableoftables where display='Y' or display='N' ORDER BY sortkey";
 $r=$db->Execute($query);
 // query for group select boxes
 $rg=$db->Execute("SELECT name,id from groups");
@@ -240,6 +250,7 @@ while (!($r->EOF) && $r) {
    // get results of each row
    $id = $r->fields["id"];
    $name = $r->fields["tablename"];
+   $label = $r->fields["label"];
    $Display = $r->fields["display"];
    $sortkey = $r->fields["sortkey"];
    $Custom = $r->fields["custom"];
@@ -253,6 +264,7 @@ while (!($r->EOF) && $r) {
    echo "<input type='hidden' name='table_id[]' value='$id'>\n";
    echo "<input type='hidden' name='table_name[]' value='$name'>\n";
    echo "<td><b>$name</b></td>";
+   echo "<td><input type='text' name='table_label[]' value='$label'></td>\n";
    if($Display=="Y")
       echo "<td><input type='radio' checked value='Y' name='table_display[$rownr]'>yes<input type='radio' value='N' name='table_display[$rownr]'>no</td>\n";
    else

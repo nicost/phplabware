@@ -122,7 +122,7 @@ function del_table($db,$tablename,$id,$USER) {
 /////////////////////////////////////////////////////////////////////////
 ////   
 // !creates a general table 
-function add_table ($db,$tablename,$sortkey) {
+function add_table ($db,$tablename,$tablelabel,$sortkey) {
     global $string;
     $shortname=substr($tablename,0,3);
    
@@ -165,42 +165,47 @@ function add_table ($db,$tablename,$sortkey) {
          $r=$db->Execute("SELECT id FROM tableoftables WHERE shortname='$shortname'");
          if ($r->fields["id"])
             $shortname.="$id";
-  	 $r=$db->Execute("INSERT INTO tableoftables (id,sortkey,tablename,real_tablename,shortname,display,permission) Values($id,'$sortkey','$tablename','$real_tablename','$shortname','Y','Users')");
+  	 $r=$db->Execute("INSERT INTO tableoftables (id,sortkey,tablename,label,real_tablename,shortname,display,permission,table_desc_name) Values($id,'$sortkey','$tablename','$tablelabel','$real_tablename','$shortname','Y','Users','$desc')");
 	 // let all groups see the table by default
 	 $rg=$db->Execute("SELECT id FROM groups");
 	 while ($rg && !$rg->EOF) {
 	    $db->Execute("INSERT INTO groupxtable_display VALUES ('".$rg->fields["id"]."','$id')");
 	    $rg->MoveNext();
 	 }
+         $label=strtr($label,",'","  ");
          $r=$db->Execute("CREATE TABLE $desc (
 		id int PRIMARY KEY,
 		sortkey int,
 		label text, 
+		columnname text,
 		display_table char(1), 
 		display_record char(1), 
 		required char(1), 
 		type text, 
 		datatype text, 
 		associated_table text, 
-		associated_sql text)");   
+		associated_sql text,
+		associated_local_key text,
+		thumb_x_size int,
+		thumb_y_size int)");   
 
-         $fieldstring="id,label,sortkey,display_table,display_record, required, type, datatype, associated_table, associated_sql"; 
+         $fieldstring="id,label,columnname,sortkey,display_table,display_record, required, type, datatype, associated_table, associated_sql"; 
          $descid=$db->GenId("$desc"."_id");  
-  	 $db->Execute("INSERT INTO $desc ($fieldstring) Values($descid'id','100','N','N','N','int(11)','text','','')");
+  	 $db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'id','id','100','N','N','N','int(11)','text','','')");
          $descid=$db->GenId("$desc"."_id");  
-         $db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'access','110','N','N','N','varchar(9)','text','','')");
+         $db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'access','access','110','N','N','N','varchar(9)','text','','')");
          $descid=$db->GenId("$desc"."_id");  
-         $db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'ownerid','120','N','N','N','int(11)','text','','')");
+         $db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'ownerid','ownerid','120','N','N','N','int(11)','text','','')");
          $descid=$db->GenId("$desc"."_id");  
-         $db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'magic','130','N','N','N','int(11)','text','','')");
+         $db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'magic','magic','130','N','N','N','int(11)','text','','')");
          $descid=$db->GenId("$desc"."_id");  
-         $db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'title','140','Y','Y','Y','text','text','','')");
+         $db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'title','title','140','Y','Y','Y','text','text','','')");
          $descid=$db->GenId("$desc"."_id");  
-         $db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'lastmoddate','150','N','N','N','int(11)','text','','')");
+         $db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'lastmoddate','lastmoddate','150','N','N','N','int(11)','text','','')");
          $descid=$db->GenId("$desc"."_id");  
-         $db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'lastmodby','160','N','N','N','int(11)','text','','')");
+         $db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'lastmodby','lastmodby','160','N','N','N','int(11)','text','','')");
          $descid=$db->GenId("$desc"."_id");  
-         $db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'date','170','N','N','N','int(11)','text','','')");
+         $db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'date','date','170','N','N','N','int(11)','text','','')");
       }  
       else {
          $string="Poblems adding this table.  Sorry ;(";
@@ -212,10 +217,11 @@ function add_table ($db,$tablename,$sortkey) {
 /////////////////////////////////////////////////////////////////////////
 ////
 // !modifies  the display properites of a table within navbar
-function mod_table($db,$id,$tablename,$tablesort,$tabledisplay,$tablegroups) {
+function mod_table($db,$id,$tablename,$tablesort,$tabledisplay,$label,$tablegroups) {
    global $string;
 
-   $r=$db->Execute("UPDATE tableoftables SET sortkey='$tablesort',display='$tabledisplay' where id='$id'");   	
+   $label=strtr($label,",'","  ");
+   $r=$db->Execute("UPDATE tableoftables SET sortkey='$tablesort',display='$tabledisplay',label='$label' where id='$id'");   	
    if ($r) {
       // Set permissions for groups to see these tables
       $db->Execute("DELETE FROM groupxtable_display WHERE tableid='$id'");
@@ -234,24 +240,25 @@ function mod_table($db,$id,$tablename,$tablesort,$tabledisplay,$tablegroups) {
 /////////////////////////////////////////////////////////////////////////
 //// 
 // !adds a general column entry
-function add_columnecg($db,$tablename2,$colname2,$datatype,$Rdis,$Tdis,$req,$sort)
+function add_columnecg($db,$tablename2,$colname2,$label,$datatype,$Rdis,$Tdis,$req,$sort)
    {
    global $string;
 
    $SQL_reserved="absolute,action,add,allocate,alter,are,assertion,at,between,bit,bit_length,both,cascade,cascaded,case,cast,catalog,char_length,charachter_length,cluster,coalsce,collate,collation,column,connect,connection,constraint,constraints,convert,corresponding,cross,current_date,current_time,current_timestamp,current_user,date,day,deallocate,deferrrable,deferred,describe,descriptor,diagnostics,disconnect,domain,drop,else,end-exec,except,exception,execute,external,extract,false,first,full,get,global,hour,identity,immediate,initially,inner,input,insensitive,intersect,interval,isolation,join,last,leading,left,level,local,lower,match,minute,month,names,national,natural,nchar,next,no,nullif,octet_length,only,outer,output,overlaps,pad,partial,position,prepare,preserve,prior,read,relative,restrict,revoke,right,rows,scroll,second,session,session_user,size,space,sqlstate,substring,system_user,temporary,then,time,timepstamp,timezone_hour,timezone_minute,trailing,transaction,translate,translation,trim,true,unknown,uppper,usage,using,value,varchar,varying,when,write,year,zone";
 
    // find the id of the table and therewith the tablename
-   $r=$db->Execute("SELECT id FROM tableoftables WHERE tablename='$tablename2'");
+   $r=$db->Execute("SELECT id FROM tableoftables WHERE tablename='$tablename2'"); 
    $id=$r->fields["id"];
    $search=array("' '","','","';'","'\"'");
    $replace=array("_","_","","");
    $colname = preg_replace ($search,$replace, $colname2);
    $real_tablename=get_cell($db,"tableoftables","real_tablename","id",$id);
 
-   $fieldstring="id,label,sortkey, display_table, display_record,required, type, datatype, associated_table, associated_sql"; 
+   $fieldstring="id,columnname,label,sortkey,display_table,display_record,required,type,datatype,associated_table,associated_sql"; 
    $desc=$real_tablename . "_desc";
    $fieldid=$db->GenId($desc."_id");
-   // avoid havng more than one column of type 'file'
+   $label=strtr($label,",'","  ");
+   // avoid having more than one column of type 'file'
    if ($datatype=="file") {
       $r=$db->Execute("SELECT id FROM $desc WHERE datatype='file'");
       if ($r->fields["id"])
@@ -259,6 +266,8 @@ function add_columnecg($db,$tablename2,$colname2,$datatype,$Rdis,$Tdis,$req,$sor
    }
    if ($colname=="")
       $string="Please enter a columnname";
+   elseif ($label=="")
+      $string="Please enter a Label";
    elseif (strpos($SQL_reserved,strtolower($colname))) 
       $string="Column name <i>$colname</i> is a reserved SQL word.  Please pick another column name";
    elseif ($filecolumnfound)
@@ -282,7 +291,7 @@ function add_columnecg($db,$tablename2,$colname2,$datatype,$Rdis,$Tdis,$req,$sor
 	 }		
 	 $maxnum=max($allnums);$newnum=$maxnum+1;
 	 $tablestr.="_$newnum";	
-	 $r=$db->Execute("INSERT INTO $desc ($fieldstring) Values($fieldid,'$colname','$sort','$Tdis','$Rdis','$req','text','$datatype','$tablestr','$colname from $tablestr where ')");
+	 $r=$db->Execute("INSERT INTO $desc ($fieldstring) Values($fieldid,'$colname','$label','$sort','$Tdis','$Rdis','$req','text','$datatype','$tablestr','$colname from $tablestr where ')");
 	 $rs=$db->Execute("CREATE TABLE $tablestr (id int PRIMARY KEY, sortkey int, type text, typeshort text)");
 	 $rsss=$db->Execute("ALTER table $real_tablename add column $colname int");
 	 if (($r)&&($rs)&&($rsss)&&(!($colname==""))) 
@@ -291,7 +300,8 @@ function add_columnecg($db,$tablename2,$colname2,$datatype,$Rdis,$Tdis,$req,$sor
 	    $string="Problems creating this column.";
       }
       else {
-         $r=$db->Execute("INSERT INTO $desc ($fieldstring) Values($fieldid,'$colname','$sort','$Tdis','$Rdis','$req','text','$datatype','','')");
+$db->debug=true;
+         $r=$db->Execute("INSERT INTO $desc ($fieldstring) Values($fieldid,'$colname','$label','$sort','$Tdis','$Rdis','$req','text','$datatype','','')");
          $rsss=$db->Execute("ALTER table $real_tablename add column $colname text");
  	 if (($r)&&$rsss&&(!($colname==""))) 
             $string="Added column <i>$colname</i> into table: <i>$tablename2</i>";
@@ -304,15 +314,17 @@ function add_columnecg($db,$tablename2,$colname2,$datatype,$Rdis,$Tdis,$req,$sor
 /////////////////////////////////////////////////////////////////////////
 //// 
 // !modifies a general column entry
-function mod_columnECG($db,$id,$sort,$tablename,$colname,$datatype,$Rdis,$Tdis,$req) {
+function mod_columnECG($db,$id,$sort,$tablename,$colname,$label,$datatype,$Rdis,$Tdis,$req) {
    global $string;
 
    // find the id of the table and therewith the tablename
    $r=$db->Execute("SELECT id FROM tableoftables WHERE tablename='$tablename'");
    $tableid=$r->fields["id"];
+   // escape bad stuffin label
+   $label=strtr($label,",'","  ");
    $tablename=$tablename."_".$tableid;
    $desc=$tablename."_desc";
-   $r=$db->Execute("UPDATE $desc SET sortkey='$sort',display_table='$Tdis', display_record='$Rdis',required='$req' where id='$id'");   	
+   $r=$db->Execute("UPDATE $desc SET sortkey='$sort',display_table='$Tdis', display_record='$Rdis',required='$req',label='$label' where id='$id'");   	
    if ($r) 
       $string="Succesfully Changed Column $colname in $tablename";
    else 

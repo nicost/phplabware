@@ -157,23 +157,23 @@ function display_record($db,$Allfields,$id,$tablename,$real_tablename) {
       if ($nowfield[display_table]==Y) {
          if ($nowfield[datatype]=="text"){
             echo "<tr>\n";
-            echo "<th>$nowfield[name]</th>\n";
+            echo "<th>$nowfield[label]</th>\n";
             if ($nowfield[values])
                echo "<td colspan=2>$nowfield[values]</td></tr>\n";
             else
                echo "<td colspan=2>&nbsp;</td></tr>\n";
          }
 	 if ($nowfield[datatype]=="link") {
-            echo "<tr>\n<th>$nowfield[name]</th>\n";
+            echo "<tr>\n<th>$nowfield[label]</th>\n";
             echo "<td colspan=2><a href='$nowfield[values]' target='_blank'>$nowfield[values]</a></td></tr>\n";
          }
          if ($nowfield[datatype]=="pulldown") {
             $text=get_cell($db,$nowfield[ass_t],"type","id",$nowfield[values]);
-            echo "<tr>\n<th>$nowfield[name]:</th>\n<td>$text</td></tr>\n";
+            echo "<tr>\n<th>$nowfield[label]:</th>\n<td>$text</td></tr>\n";
          }
          if ($nowfield[datatype]=="textlong") {
             $textlarge=nl2br(htmlentities($nowfield[values]));
-            echo "<tr><th>$nowfield[name]</th><td colspan=6>$textlarge</td>\n";
+            echo "<tr><th>$nowfield[label]</th><td colspan=6>$textlarge</td>\n";
             echo "</tr>\n";
          }
          if ($nowfield[datatype]=="file") {
@@ -221,66 +221,51 @@ function display_add($db,$tableid,$real_tablename,$tabledesc,$Allfields,$id,$nam
    if (!$magic) $magic=time();
    echo "<input type='hidden' name='magic' value='$magic'>\n";
    echo "<table border=0 align='center'>\n";   
-   if ($id) 
- 	  	{
- 	      echo "<tr><td colspan=5 align='center'><h3>Modify $tablename entry <i>$namein</i></h3></td></tr>\n";
- 	      echo "<input type='hidden' name='id' value='$id'>\n";
- 	      }
-    else{echo "<tr><td colspan=5 align='center'><h3>New $tablename entry</h3></td></tr>\n";}
-    echo "<table border=0 align='center'>\n<tr align='center'>\n<td colspan=2></td>\n";
-	foreach ($Allfields as $nowfield) 
-		{
-		//see if display_record is set
-		if (($nowfield[display_record]==Y) || ($nowfield[display_table]==Y))
-			{
-			if ($nowfield[datatype]=="text")
-				{
-				echo "<tr><th>$nowfield[name]:"; 
-				if ($nowfield[required]=="Y"){echo "<sup style='color:red'>&nbsp;*</sup>";}
-				echo "</th>\n";
-     	       echo "<td><input type='text' name='$nowfield[name]' value='$nowfield[values]' size=60> </td>\n</tr>";
-				}
-		if ($nowfield[datatype]=="textlong")
-				{
-				echo "<tr><th>$nowfield[name]:";
-				if ($nowfield[required]=="Y"){echo "<sup style='color:red'>&nbsp;*</sup>";}
-     	       echo "<td><textarea name='$nowfield[name]' rows='5' cols='100%' value='$nowfield[values]'>$nowfield[values]</textarea></td></tr>\n";     	     
-				}
-		if ($nowfield[datatype]=="link")
-				{
-				echo "<tr><th>$nowfield[name] (http link)";
-				if ($nowfield[required]=="Y"){echo "<sup style='color:red'>&nbsp;*</sup>";}
-				echo "<td><input type='text' name='$nowfield[name]' value='$nowfield[values]' size=60> </td>\n</tr>";
-				}
-			if ($nowfield[datatype]=="pulldown")		
-				{
-				// get previous value	
-				if ($nowfield[name]=="authors")
-					{
-					if ($db_type=="mysql") // mysql does not use the ansi SQL || operator
-			   	   {$r=$db->Execute("SELECT CONCAT(type, ' ', typeshort),id  from $nowfield[ass_t] ORDER by typeshort");}
-  				  else
-   					{$r=$db->Execute("SELECT type || ' ' || typeshort,id  from $nowfield[ass_t] ORDER by typeshort");}
-					}
-				else
-					{$r=$db->Execute("SELECT typeshort,id FROM $nowfield[ass_t] ORDER BY sortkey");}
-
- 	  		 $text=$r->GetMenu2("$nowfield[name]",$nowfield[values],true,false);
-     		   echo "<tr><th>$nowfield[name]";
-     		   if ($USER["permissions"] && $LAYOUT)
-     		   	{
-     		   	echo "<a href='$PHP_SELF?tablename=$tablename&edit_type=$nowfield[ass_t]&<?=SID?>'>";
-     		   	echo "<FONT size=1 color='#00ff00'> <small>(edit)</small></font></a>";
-     		   	}
-     		   if ($nowfield[required]=="Y"){echo"<sup style='color:red'>&nbsp;*</sup>";}
-     		   echo "</th>\n<td>$text<br>";
-     		   if ($nowfield[name]=="authors")
-   				{
-	   			echo "Or: First<input type='text' size=8 name='firstname' value='$firstname'>\n";
- 	  			echo "Last<input type='text' size=12 name='lastname' value='$lastname'></td>\n";
-   				}   
-     			echo "</tr>";
-				}
+   if ($id) {
+      echo "<tr><td colspan=5 align='center'><h3>Modify $tablename entry <i>$namein</i></h3></td></tr>\n";
+      echo "<input type='hidden' name='id' value='$id'>\n";
+   }
+   else {
+      echo "<tr><td colspan=5 align='center'><h3>New $tablename entry</h3></td></tr>\n";
+   }
+   echo "<table border=0 align='center'>\n<tr align='center'>\n<td colspan=2></td>\n";
+   foreach ($Allfields as $nowfield) {
+      //see if display_record is set
+      if (($nowfield[display_record]==Y) || ($nowfield[display_table]==Y)) {
+         if ($nowfield[datatype]=="text") {
+            echo "<tr><th>$nowfield[label]:"; 
+            if ($nowfield[required]=="Y") {
+               echo "<sup style='color:red'>&nbsp;*</sup>";
+            }
+            echo "</th>\n";
+     	    echo "<td><input type='text' name='$nowfield[name]' value='$nowfield[values]' size=60> </td>\n</tr>";
+         }
+         if ($nowfield[datatype]=="textlong") {
+            echo "<tr><th>$nowfield[label]:";
+            if ($nowfield[required]=="Y") 
+               echo "<sup style='color:red'>&nbsp;*</sup>";
+     	    echo "<td><textarea name='$nowfield[name]' rows='5' cols='100%' value='$nowfield[values]'>$nowfield[values]</textarea></td></tr>\n";     	     
+         }
+         if ($nowfield[datatype]=="link") {
+            echo "<tr><th>$nowfield[label] (http link)";
+            if ($nowfield[required]=="Y")
+               echo "<sup style='color:red'>&nbsp;*</sup>";
+            echo "<td><input type='text' name='$nowfield[name]' value='$nowfield[values]' size=60> </td>\n</tr>";
+         }
+         if ($nowfield[datatype]=="pulldown") {
+            // get previous value	
+            $r=$db->Execute("SELECT typeshort,id FROM $nowfield[ass_t] ORDER BY sortkey");
+            $text=$r->GetMenu2("$nowfield[name]",$nowfield[values],true,false);
+            echo "<tr><th>$nowfield[label]";
+            if ($USER["permissions"] && $LAYOUT) {
+               echo "<a href='$PHP_SELF?tablename=$tablename&edit_type=$nowfield[ass_t]&<?=SID?>'>";
+               echo "<FONT size=1 color='#00ff00'> <small>(edit)</small></font></a>";
+            }
+            if ($nowfield[required]=="Y")
+               echo"<sup style='color:red'>&nbsp;*</sup>";
+            echo "</th>\n<td>$text<br>";
+            echo "</tr>";
+        }
 			if ($nowfield[datatype]=="textlarge")
 				{
   		      echo "<tr><th>$nowfield[name]";
@@ -334,27 +319,36 @@ echo "<form method='post' id='protocolform' enctype='multipart/form-data' action
 function getvalues($db,$DBNAME,$DB_DESNAME,$fields,$qfield=false,$field=false) {
    if ($qfield)
       $r=$db->Execute("SELECT $fields FROM $DBNAME WHERE $qfield=$field"); 
-	else
-	   $r=$db->Execute("SELECT $fields FROM $DBNAME"); 
-	$column=strtok($fields,",");
-	$Allfields=array();
-	while ($column) 
-   	{
-  	 if(!(!$id && $column=="id"))
- 	  	{  			  	
-  	  		${$column}[values]= $r->fields[$column];
-	 	   	${$column}[datatype]=get_cell($db,$DB_DESNAME,"datatype","label","$column");
-				${$column}[display_table]=get_cell($db,$DB_DESNAME,"display_table","label","$column");
-				${$column}[display_record]=get_cell($db,$DB_DESNAME,"display_record","label","$column");
-				${$column}[ass_t]=get_cell($db,$DB_DESNAME,associated_table,label,$column);
-				${$column}[ass_query]=get_cell($db,$DB_DESNAME,associated_sql,label,$column);
-				${$column}[required]=get_cell($db,$DB_DESNAME,required,label,$column);
-				${$column}[name]=$column;
-				}
-		   array_push ($Allfields, ${$column});
-		   $column=strtok(",");
-		   }		
-	return $Allfields;
+   else
+      $r=$db->Execute("SELECT $fields FROM $DBNAME"); 
+   $column=strtok($fields,",");
+   $Allfields=array();
+   while ($column) {
+      if(!(!$id && $column=="id")) {
+         ${$column}[values]= $r->fields[$column];
+         $rb=$db->Execute("SELECT label,datatype,display_table,display_record,associated_table,associated_sql,required FROM $DB_DESNAME WHERE columnname='$column'");
+         ${$column}["name"]=$column;
+         ${$column}["label"]=$rb->fields["label"];
+         ${$column}["datatype"]=$rb->fields["datatype"];
+         ${$column}["display_table"]=$rb->fields["display_table"];
+         ${$column}["display_record"]=$rb->fields["display_record"];
+         ${$column}["ass_t"]=$rb->fields["associated_table"];
+         ${$column}["ass_query"]=$rb->fields["associated_sql"];
+         ${$column}["required"]=$rb->fields["required"];
+/*
+	 ${$column}[datatype]=get_cell($db,$DB_DESNAME,"datatype","label","$column");
+         ${$column}[display_table]=get_cell($db,$DB_DESNAME,"display_table","label","$column");
+         ${$column}[display_record]=get_cell($db,$DB_DESNAME,"display_record","label","$column");
+         ${$column}[ass_t]=get_cell($db,$DB_DESNAME,associated_table,label,$column);
+         ${$column}[ass_query]=get_cell($db,$DB_DESNAME,associated_sql,label,$column);
+         ${$column}[required]=get_cell($db,$DB_DESNAME,required,label,$column);
+         ${$column}[name]=$column;
+*/
+      }
+      array_push ($Allfields, ${$column});
+      $column=strtok(",");
+   }		
+   return $Allfields;
 }
 
 /////////////////////////////////////////////////
