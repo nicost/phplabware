@@ -36,8 +36,6 @@ $query="CREATE TABLE antibodies (
 	notes text,
 	location text,
 	source text,
-	filename text,
-	mime text,
 	date int)";
 if (!$db->Execute($query)) $test=false;
 $query="CREATE TABLE ab_type1 
