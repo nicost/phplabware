@@ -456,7 +456,7 @@ if ($version) {
    $query="SELECT dateformat,id FROM dateformats ORDER BY sortkey";
    $r=$db->Execute($query);
    echo "\n<td>";
-   echo $r->GetMenu2("dateformat",$system_settings["dateformat"],false);
+   echo $r->GetMenu2('dateformat',$system_settings['dateformat'],false);
    echo "</td></tr>\n";
 
    echo "<tr><td colspan='2' align='center'><i>Login Options</i></th></tr>\n";
