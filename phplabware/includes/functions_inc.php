@@ -126,7 +126,7 @@ function randomImage($imagedir) {
       $filenr=0;
    // construct link to randomly selected file
    $filename=$imagearray[$filenr];
-   return "<img src='$imagedir/$filename'>\n";   
+   return "<img src='$imagedir/$filename' alt='Pretty BioPicture here'>\n";   
 }
 
 ////
@@ -137,7 +137,7 @@ function url_get_string ($url) {
    if ($get_string) {
       $url=$url."?$get_string";
       if ($sid)
-         $url=$url."&$sid";
+         $url=$url."&amp;$sid";
       return $url;
    }
    if ($sid)
@@ -183,7 +183,7 @@ function loginscreen ($message="<h3>Login to PhpLabWare</h3>") {
    echo "<input type='submit' name='submit' value='Login'></td></tr>\n";
    echo "<tr><td colspan=2 align='center'>";
    //echo "Note:  Cookies must be enabled beyond this point</td></tr>\n";
-   echo "</form>\n</table>\n";
+   echo "</table>\n</form>\n";
    printfooter();
 }
 
@@ -300,7 +300,7 @@ function navbar($permissions) {
                $label=$records->fields["label"];
                $linkname="";
                if ($scriptname=="")
-                  $linkname="general.php?tablename=$tabname&".SID;
+                  $linkname="general.php?tablename=$tabname&amp;".SID;
                else 
                   $linkname=$scriptname."?".SID;
                $tablemenu.="   <option value='$linkname'>$label</option>\n";    
