@@ -30,12 +30,17 @@ if (!$tableinfo->id) {
 
 $tableinfo->queryname=$queryname=$tableinfo->short.'_query';
 $tableinfo->pagename=$pagename=$tableinfo->short.'_curr_page';
+if ($HTTP_GET_VARS['viewid'])
+   $viewid=$HTTP_GET_VARS['viewid'];
+else
+   $viewid=$HTTP_POST_VARS['viewid'];
 
-// read all fields in from the description file
-$Fieldscomma=comma_array_SQL($db,$tableinfo->desname,columnname,"WHERE display_table='Y'");
-// then check whether the user has its own preferences
-if (isset($USER['settings']['tablefields']['$tableinfo->name']))
-   $Fieldscomma=$USER['settings']['tablefields']['$tableinfo->name'];
+if ($viewid) 
+   // get list from preferences in table tableviews
+   $Fieldscomma=viewlist($db,$tableinfo,$viewid); 
+else
+   // read all fields in from the description file
+   $Fieldscomma=comma_array_SQL($db,$tableinfo->desname,columnname,"WHERE display_table='Y'");
 
 // load plugin php code if it has been defined 
 $plugin_code=get_cell($db,'tableoftables','plugin_code','id',$tableinfo->id);
@@ -450,9 +455,13 @@ echo "${$queryname}.<br>";
       $tabletext='View Table ';
       $modetext.="edit'>(to edit mode)</a>\n";
    }
-   echo "<td align='center'>$tabletext <B>$tableinfo->label</B> $modetext<br>";
+   // write the first line shown in table view 
    if ($may_write)
-      echo "<p><a href='$PHP_SELF?&add=Add&tablename=$tableinfo->name&".SID."'>Add Record</a></td>\n"; 
+      echo "<td align='center'><a href='$PHP_SELF?&add=Add&tablename=$tableinfo->name&".SID."'>Add Record</a></td>\n"; 
+   else
+       echo "<td>&nbsp;</td>\n";
+   echo "<td align='center'>$tabletext <B>$tableinfo->label</B> $modetext</td>";
+   echo "<td align='center'>".viewmenu($db,$tableinfo,$viewid)."</td>\n";
    echo "</tr>\n</table>\n";
    next_previous_buttons($rp,true,$num_p_r,$numrows,${$pagename},$db,$tableinfo);
 
