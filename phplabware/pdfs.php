@@ -41,7 +41,7 @@ function check_pd_data ($db,&$field_values) {
    $field_values["pmid"]=trim($field_values["pmid"]);
    // no fun without a pmid
    if (!$field_values["pmid"]) {
-      echo "<h3>Please enter the Pubmed ID the PDF reprint.</h3>";
+      echo "<h3 align='center'>Please enter the Pubmed ID of the PDF reprint.</h3>";
       return false;
    }
    // this will protect quotes in the imported data
@@ -147,7 +147,13 @@ function add_pd_form ($db,$fields,$field_values,$id,$USER,$PHP_SELF,$system_sett
    echo "<tr>\n";
    echo "<th>PMID: <sup style='color:red'>&nbsp;*</sup></th>\n";
    echo "<td><input type='text' name='pmid' value='$pmid' size=14><br>";
-   echo "Find the PMID for this article at <a href='http://www.ncbi.nlm.nih.gov/entrez/query.fcgi?db=PubMed'>Pubmed</a></td></tr>\n";
+   echo "Find the PMID for this article at <a href='http://www.ncbi.nlm.nih.gov/entrez/query.fcgi?db=PubMed'>Pubmed</a></td>\n";
+
+   echo "<th>Category</th>\n<td>";
+   $r=$db->Execute("SELECT type,id FROM pd_type2 ORDER BY sortkey");
+   $text=$r->GetMenu2("type2",$type2,true);
+   echo "<td>$text</td>\n";
+   echo "</tr>\n";
 
    echo "<tr>";
    echo "<th>Notes: </th><td colspan=6><textarea name='notes' rows='5' cols='100%'>$notes</textarea></td>\n";
@@ -215,6 +221,11 @@ function show_pd ($db,$fields,$id,$USER,$system_settings) {
    if ($abstract) {
       echo "<tr>\n<th>Abstract</th>\n";
       echo "<td>$abstract</td>\n</tr>\n";
+   }
+   // Category
+   if ($type2) {
+      echo "<tr>\n<th>Category</th>\n";
+      echo "<td>$type2</td>\n</tr>\n";
    }
 
    echo "<tr>";
@@ -493,6 +504,28 @@ else {
 */
 
    echo "<td><input type='text' name='author' value='$author' size=15></td>\n";
+
+   // print link to edit table 'Categories'
+   echo "<td style='width: 10%'>";
+   if ($USER["permissions"] & $LAYOUT) {
+      echo "<a href='$PHP_SELF?edit_type=pd_type2&";
+      echo SID;
+      echo "'>Edit Categories</a><br>\n";
+   }
+   // print category drop-down menu
+   if ($type1) $list=$listb; else $list=$lista;
+   // print category drop-down menu
+   if ($type1) $list=$listb; else $list=$lista;
+   $r=$db->Execute("SELECT type2 FROM pdfs WHERE id IN ($list)");
+   $list2=make_SQL_ids($r,false,"type1");
+   if ($list2) {
+      $r=$db->Execute("SELECT typeshort,id FROM pd_type2 WHERE id IN ($list2)");
+      $text=$r->GetMenu2("type1",$type1,true,false,0,"style='width: 80%' $jscript");
+      echo "$text</td>\n";
+   }
+   else
+      echo "&nbsp;</td>\n";
+
    echo "<td><input type='text' name='abstract' value='$abstract' size=15></td>\n";
    
    // print link to edit table 'Journals'
@@ -514,6 +547,7 @@ else {
    else
       echo "&nbsp;</td>\n";
 
+
    echo "<td><input type='text' name='volume' value='$volume' size=7></td>\n";
    echo "<td><input type='text' name='fpage' value='$fpage' size=7></td>\n";
    echo "<td>&nbsp;</td>\n";
@@ -526,9 +560,10 @@ else {
    echo "</td></tr>\n";
 
    echo "<tr>\n";
-   echo "<th>Title</th>";
-   echo "<th>Author(s)</th>";
-   echo "<th>Abstract</th>";
+   echo "<th>Title</th>\n";
+   echo "<th>Author(s)</th>\n";
+   echo "<th>Category</th>\n";
+   echo "<th>Abstract</th>\n";
    echo "<th>Journal</th>\n";
    echo "<th>Volume</th>\n";
    echo "<th>First Page</th>\n";
@@ -545,6 +580,7 @@ else {
       $id = $r->fields["id"];
       $title = "&nbsp;".$r->fields["title"];
       $author= "&nbsp;".$r->fields["author"];
+      $category="&nbsp;".get_cell($db,"pd_type2","type","id",$r->fields["type2"]);
       $abstract= "&nbsp;".substr($r->fields["abstract"],0,15)."...";
       $journal="&nbsp;".get_cell($db,"pd_type1","type","id",$r->fields["type1"]);
       $volume = "&nbsp;".$r->fields["volume"];
@@ -558,6 +594,7 @@ else {
 
       echo "<td>$title</td>\n";
       echo "<td>$author</td>\n";
+      echo "<td>$category</td>\n";
       echo "<td>$abstract</td>\n";
       echo "<td>$journal</td>\n";
       echo "<td>$volume</td>\n";
