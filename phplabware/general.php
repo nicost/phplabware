@@ -166,8 +166,10 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
                   $change_values[$testarray[0]]=$val;  
             }
          }
-         if(check_g_data ($db,$change_values,$tableinfo,true))
-            modify($db,$tableinfo->realname,$Fieldscomma,$change_values,$chgarray[1],$USER,$tableinfo->id); 
+         if(check_g_data ($db,$change_values,$tableinfo,true)) {
+            $modfields=comma_array_SQL_where($db,$tableinfo->desname,"columnname","modifiable","Y");
+            modify($db,$tableinfo->realname,$modifields,$change_values,$chgarray[1],$USER,$tableinfo->id); 
+         }
          break;
       }
    } 
@@ -305,10 +307,11 @@ else {
    }
    // then look whether it should be modified
    elseif ($submit=='Modify Record') {
-//      $modfields=comma_array_SQL_where($db,$tableinfo->desname,"columnname","modifiable","Y");
+      $modfields=comma_array_SQL_where($db,$tableinfo->desname,"columnname","modifiable","Y");
       // The pdf plugin wants to modify fields that have been set to modifiable=='N'
       if (! (check_g_data($db,$HTTP_POST_VARS,$tableinfo,true) && 
-             modify($db,$tableinfo->realname,$tableinfo->fields,$HTTP_POST_VARS,$HTTP_POST_VARS['id'],$USER,$tableinfo->id)) ) {
+             // modify($db,$tableinfo->realname,$tableinfo->fields,$HTTP_POST_VARS,$HTTP_POST_VARS['id'],$USER,$tableinfo->id)) ) {
+             modify($db,$tableinfo->realname,$modfields,$HTTP_POST_VARS,$HTTP_POST_VARS['id'],$USER,$tableinfo->id)) ) {
          add_g_form ($db,$tableinfo,$HTTP_POST_VARS,$HTTP_POST_VARS['id'],$USER,$PHP_SELF,$system_settings);
          printfooter ();
          exit;
