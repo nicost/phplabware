@@ -357,6 +357,7 @@ else {
 <?php
 
    if ($search=="Show All") {
+      $num_p_r=$HTTP_POST_VARS["num_p_r"];
       unset ($HTTP_POST_VARS);
       $curr_page=1;
       session_unregister("query");
@@ -421,9 +422,10 @@ else {
    else
       $query = "SELECT $fields FROM antibodies WHERE id IN ($whereclause) ORDER BY date DESC";
    session_register("query");
-
+   
    // paging stuff
-   $num_p_r=$USER["settings"]["num_p_r"];
+   if (!$num_p_r)
+      $num_p_r=$USER["settings"]["num_p_r"];
    if (isset($HTTP_POST_VARS["num_p_r"]))
       $num_p_r=$HTTP_POST_VARS["num_p_r"];
    if (!isset($num_p_r))
