@@ -522,4 +522,74 @@ function search ($table,$fields,$fieldvalues,$whereclause=false,$wcappend=true) 
 }
 
 
+////
+// !Displays the nex and previous buttons
+// $r is the result of a $db->Execute query used to display the table with records
+// When $paging is true, the records per page field will also be displayed
+// $num_p_r holds the (global) records per page variable
+function next_previous_buttons($r,$paging=false,$num_p_r=false) {
+   echo "<table border=0 width=100%>\n<tr width=100%>\n<td align='left'>";
+   if ($r && !$r->AtFirstPage())
+      echo "<input type=\"submit\" name=\"previous\" value=\"Previous\"></td>\n";
+   else
+      if ($paging)
+         echo "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>\n";
+      else
+         echo "&nbsp;</td>\n";
+   if ($paging) {
+      echo "<td align='center'>\n";
+      echo "<input type='text' name='num_p_r'value='$num_p_r' size=3>&nbsp;";
+      echo "Records per page</td>\n";
+   }
+   echo "<td align='right'>";
+   if ($r && !$r->AtLastPage())
+      echo "<input type=\"submit\" name=\"next\" value=\"Next\"></td>\n";
+   else
+      if ($paging)
+         echo "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
+      else
+         echo "&nbsp;";
+   echo "</td>\n</tr>\n";
+   echo "</table>\n";
+}
+
+////
+// !Returns the variable $num_p_r holding the # of records per page
+// check user settings and POST_VARS
+// Write the value back to the user defaults
+// When no value is found, default to 10
+function paging ($num_p_r,&$USER) {
+   global $HTTP_POST_VARS;
+   if (!$num_p_r)
+      $num_p_r=$USER["settings"]["num_p_r"];
+   if (isset($HTTP_POST_VARS["num_p_r"]))
+      $num_p_r=$HTTP_POST_VARS["num_p_r"];
+   if (!isset($num_p_r))
+     $num_p_r=10;
+   $USER["settings"]["num_p_r"]=$num_p_r;
+   return $num_p_r;
+}
+
+////
+// !Returns current page
+// current page is table specific, therefore
+// The variable name is formed using the short name for the table
+function current_page($curr_page, $sname) {
+   global $HTTP_POST_VARS, $HTTP_SESSION_VARS;
+   $varname=$sname."_curr_page";
+   ${$varname}=$curr_page;
+
+   if (!isset($$varname))
+      ${$varname}=$HTTP_SESSION_VARS[$varname];
+   if (isset($HTTP_POST_VARS["next"]))
+      ${$varname}+=1;
+   if (isset($HTTP_POST_VARS["previous"]))
+      $$varname-=1;
+   if ($$varname<1)
+      $$varname=1;
+   $HTTP_SESSION_VARS[$varname]=${$varname}; 
+   session_register($varname);
+   return ${$varname};
+}
+
 ?>
