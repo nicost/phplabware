@@ -51,7 +51,7 @@ function check_ab_data ($field_values) {
 ////
 // !Prints a form with antibody stuff
 // $id=0 for a new entry, otherwise it is the id
-function add_ab_form ($db,$fields,$field_values,$id,$USER,$PHP_SELF) {
+function add_ab_form ($db,$fields,$field_values,$id,$USER,$PHP_SELF,$system_settings) {
    if (!may_write($db,"antibodies",$id,$USER))
       return false;
 
@@ -128,10 +128,21 @@ function add_ab_form ($db,$fields,$field_values,$id,$USER,$PHP_SELF) {
    echo "<th>Notes: </th><td colspan=6><textarea name='notes' rows='5' cols='100%'>$notes</textarea></td>\n";
    echo "</tr>\n";
    
+   $files=get_files($db,"antibodies",$id);
    echo "<tr>";
-   echo "<th>File: </th><td colspan=1><input type='file' name='file[]' value='$filename'></td>\n";
-   echo "<td></td><th>File Title:</th><td><input type='text' name='filetitle[]' value='$filetile'></td>\n";
+   echo "<th>Files: </th>\n";
+   echo "<td colspan=4><table border=0>";
+   for ($i=0;$i<sizeof($files);$i++) {
+      echo "<tr><td>".$files[$i]["link"]."</td>\n";
+      echo "<td><input type='submit' name='def_".$files[$i]["id"]."' value='Delete' Onclick=\"if(confirm('Are you sure the file ".$files[$i]["name"]." should be removed?')){return true;}return false;\"></td></tr>\n";
+   }
+   echo "<tr><td colspan=2><input type='file' name='file[]' value='$filename'></td>\n";
+   echo "<td></td><th>File Title:</th><td><input type='text' name='filetitle[]' value='$filetile' size=30></td><td>&nbsp;</td>\n";
    echo "</tr>\n";
+   echo "</table></td>\n\n";
+   echo "<td colspan=4>";
+   show_access($db,"antibodies",$id,$USER,$system_settings);
+   echo "</td></tr>\n";
    
    echo "<tr>";
    if ($id)
@@ -263,10 +274,23 @@ navbar($USER["permissions"]);
 while((list($key, $val) = each($HTTP_POST_VARS))) {
    if (substr($key, 0, 3) == "mod") {
       $modarray = explode("_", $key);
-      $ADODB_FETCH_MODE=ADODB_FETCH_ASSOC;
+      //$ADODB_FETCH_MODE=ADODB_FETCH_ASSOC;
       $r=$db->Execute("SELECT $fields FROM antibodies WHERE id=$modarray[1]"); 
-      $ADODB_FETCH_MODE=ADODB_FETCH_NUM;
-      add_ab_form ($db,$fields,$r->fields,$modarray[1],$USER,$PHP_SELF);
+      //$ADODB_FETCH_MODE=ADODB_FETCH_NUM;
+      add_ab_form ($db,$fields,$r->fields,$modarray[1],$USER,$PHP_SELF,$system_settings);
+      printfooter();
+      exit();
+   }
+   // delete file and show antibody form
+   if (substr($key, 0, 3) == "def") {
+      $modarray = explode("_", $key);
+      $filename=delete_file($db,$modarray[1],$USER,$system_settings);
+      $id=$HTTP_POST_VARS["id"];
+      if ($filename)
+         echo "<h3 align='center'>Deleted file <i>$filename</i>.</h3>\n";
+      else
+         echo "<h3 align='center'>Failed to delete file <i>$filename</i>.</h3>\n";
+      add_ab_form ($db,$fields,$HTTP_POST_VARS,$id,$USER,$PHP_SELF,$system_settings);
       printfooter();
       exit();
    }
@@ -282,7 +306,7 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
 
 // when the 'Add' button has been chosen: 
 if ($add)
-   add_ab_form ($db,$fields,$field_values,0,$USER,$PHP_SELF);
+   add_ab_form ($db,$fields,$field_values,0,$USER,$PHP_SELF,$system_settings);
 
 else {
    // print header of table
@@ -292,7 +316,7 @@ else {
    if ($submit == "Add Antibody") {
       if (! (check_ab_data($HTTP_POST_VARS) && $id=add ($db, "antibodies",$fields,$HTTP_POST_VARS,$USER) ) ){
          echo "</caption>\n</table>\n";
-         add_ab_form ($db,$fields,$HTTP_POST_VARS,0,$USER,$PHP_SELF);
+         add_ab_form ($db,$fields,$HTTP_POST_VARS,0,$USER,$PHP_SELF,$syste,_settings);
          printfooter ();
          exit;
       }
@@ -306,7 +330,7 @@ else {
    elseif ($submit =="Modify Antibody") {
       if (! (check_ab_data($HTTP_POST_VARS) && modify ($db,"antibodies",$fields,$HTTP_POST_VARS,$HTTP_POST_VARS["id"],$USER)) ) {
          echo "</caption>\n</table>\n";
-         add_ab_form ($db,$fields,$HTTP_POST_VARS,$HTTP_POST_VARS["id"],$USER,$PHP_SELF);
+         add_ab_form ($db,$fields,$HTTP_POST_VARS,$HTTP_POST_VARS["id"],$USER,$PHP_SELF,$system_settings);
          printfooter ();
          exit;
       }
