@@ -89,11 +89,18 @@ echo "<form name='views' method='post' action='$PHP_SELF'>\n";
 
 echo "<tr>\n";
 echo "<td align='center'>Edit views for table: ";
+
 // make dropdown with accessible tablenames, select the current tablename
 if ($USER['permissions'] & $SUPER)
    $r=$db->Execute ("SELECT label,tablename FROM tableoftables ORDER by sortkey ");
-else
-   $r=$db->Execute("SELECT label,tablename FROM tableoftables WHERE id IN (SELECT tableid FROM groupxtable_display WHERE groupid IN ({$USER['group_list']})) ORDER BY sortkey");
+else {
+   // JOIN for mysql
+   if ($db_type=='mysql')
+      $r=$db->Execute("SELECT tableoftables.label,tableoftables.tablename FROM tableoftables LEFT JOIN groupxtable_display ON tableoftables.id=groupxtable_display.tableid WHERE groupxtable_display.groupid IN ({$USER['group_list']}) ORDER BY tableoftables.sortkey");
+   else
+      // subselect for the rest
+      $r=$db->Execute("SELECT label,tablename FROM tableoftables WHERE id IN (SELECT tableid FROM groupxtable_display WHERE groupid IN ({$USER['group_list']})) ORDER BY sortkey");
+}
 echo $r->GetMenu2('tablename',$tableinfo->name,true,false,0,'OnChange="document.views.submit()"');
 echo "</td>\n";
 
