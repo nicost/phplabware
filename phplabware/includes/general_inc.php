@@ -133,7 +133,7 @@ function display_table_info($db,$tableid,$DB_DESNAME,$Fieldscomma,$pr_query,$num
    }
    // Add Record button
    if (may_write($db,$tableid,false,$USER)) {
-      echo "<tr><td colspan=10 align='center'>";
+      echo "<tr><td colspan=100 align='center'>";
       echo "<input type=\"submit\" name=\"add\" value=\"Add Record\">";
       echo "</td></tr>";
    }
