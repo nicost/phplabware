@@ -1141,24 +1141,31 @@ function next_previous_buttons($r,$paging=false,$num_p_r=false,$numrows=false,$p
       echo "Records per page</td>\n";
    }
    echo "<td align='right'>";
-// start to add direct links to pages
-/*
+
+   // add direct links to pages
    if ($pagenr) {
-      echo "Goto: ";
-      if ($pagenr < 5 )
-         $start=1;
-      else $start=$pagenr-5;
-// we als need to know the last possible page here
-// and we need a fast forward/fast backward button
-      for ($i=$start; $i<$start+10; $i++) {
-         if ($pagenr==$i)
-            echo "<b>$i </b>";
-         else
-// try using links with javascript converting it into post variables
-            echo "<input type=\"submit\" name=\"pagenr\" value=\"$i\">";
+      $startp=$pagenr-5;
+      if ($startp<1)
+         $startp=1;
+      $endp=$startp+9;
+      if ($numrows) {
+         if ($numrows < ($endp*$num_p_r)) {
+            $endp= ceil($numrows/$num_p_r);
+         }
+      }
+
+      if ($endp > 1) {
+         echo "Goto page: ";
+         echo "<input type='hidden' name='{$tableinfo->pagename}' value='0'>\n";     
+         for ($i=$startp; $i<=$endp; $i++) {
+            if ($pagenr==$i)
+               echo "<b>$i </b>";
+            else
+            // try using links with javascript converting it into post variables
+               echo "<a href='javascript:document.g_form.{$tableinfo->pagename}.value=\"$i\"; document.g_form.searchj.value=\"Search\"; document.g_form.submit()'>$i </a>";
+         }
       }
    }
-*/
      
    if (function_exists($r->AtLastPage))
       $r->AtLastPage=$r->AtLastPage();
@@ -1201,11 +1208,16 @@ function current_page($curr_page, $sname) {
 
    if (!isset($$varname))
       ${$varname}=$HTTP_SESSION_VARS[$varname];
-   if (isset($HTTP_POST_VARS['next'])) {
+   // the page number can be set directly or by clicking the next/previous buttons (see function next_previous_buttons)
+   if ($HTTP_POST_VARS[$varname]) {
+      ${$varname}=$HTTP_POST_VARS[$varname];
+   }
+   elseif (isset($HTTP_POST_VARS['next'])) {
       ${$varname}+=1;
    }
-   if (isset($HTTP_POST_VARS['previous']))
+   elseif (isset($HTTP_POST_VARS['previous'])) {
       $$varname-=1;
+   }
    if ($$varname<1)
       $$varname=1;
    $HTTP_SESSION_VARS[$varname]=${$varname}; 
