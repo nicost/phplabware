@@ -669,7 +669,7 @@ function make_SQL_csf ($r,$ids,$field="id",&$column_count) {
 ////
 // !Helper function for search
 // Interprets fields the right way
-function searchhelp ($db,$table,$column,$columnvalues,$query,$wcappend,$and) {
+function searchhelp ($db,$table,$table_desc,$column,$columnvalues,$query,$wcappend,$and) {
    if ($column=="ownerid") {
       $query[1]=true;
       $r=$db->Execute("SELECT id FROM $table WHERE ownerid=$columnvalues[$column]");
@@ -679,11 +679,17 @@ function searchhelp ($db,$table,$column,$columnvalues,$query,$wcappend,$and) {
    }
    else {
       $query[1]=true;
-      // cheap way to map whether we are dealing with an int column
-      // this will fail when users tries to find numbers in a text field
-      $test=(int)$columnvalues[$column];
-      if ($test && ($test==$columnvalues[$column])) 
+      // since all tables now have desc. tables,we can check for int/floats
+      // should probably do this more upstream for performance gain
+      $rc=$db->Execute("SELECT type FROM $table_desc WHERE columnname='$column'");
+      if (substr($rc->fields[0],0,3)=="int") {
+         $test=(int)$columnvalues[$column];
          $query[0].="$and $column='$columnvalues[$column]' ";
+      }
+      elseif (substr($rc->fields[0],0,5)=="float") {
+         $test=(float)$columnvalues[$column];
+         $query[0].="$and $column='$columnvalues[$column]' ";
+      }
       else {
          $columnvalues[$column]=trim($columnvalues[$column]);
          $columnvalue=$columnvalues[$column];
@@ -705,6 +711,8 @@ function searchhelp ($db,$table,$column,$columnvalues,$query,$wcappend,$and) {
 // can also be used for sorting
 function search ($table,$fields,$fieldvalues,$whereclause=false,$wcappend=true) {
    global $db;
+   $rb=$db->Execute("SELECT table_desc_name FROM tableoftables WHERE real_tablename='$table'");
+   $table_desc=$r->fields[0];
    $columnvalues=$fieldvalues;
    $query[0]="SELECT $fields FROM $table WHERE ";
    $query[1]=$query[2]=false;
@@ -713,12 +721,12 @@ function search ($table,$fields,$fieldvalues,$whereclause=false,$wcappend=true) 
       $column=strtok (",");
    if ($column && $columnvalues[$column]) {
       $query[1]=true;
-      $query=searchhelp ($db,$table,$column,$columnvalues,$query,$wcappend,false);
+      $query=searchhelp ($db,$table,$table_desc,$column,$columnvalues,$query,$wcappend,false);
    }
    $column=strtok (",");
    while ($column) { 
       if ($column && $columnvalues[$column]) {
-         $query=searchhelp ($db,$table,$column,$columnvalues,$query,$wcappend,"AND");
+         $query=searchhelp ($db,$table,$table_desc,$column,$columnvalues,$query,$wcappend,"AND");
       }
       $column=strtok (",");
    }
