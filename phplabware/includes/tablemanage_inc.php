@@ -378,7 +378,7 @@ function mod_columnECG($db,$sort,$offset) {
    $Tdis=$HTTP_POST_VARS["column_dtable"][$offset];
    $sort=$HTTP_POST_VARS["column_sort"][$offset];
    $req=$HTTP_POST_VARS["column_required"][$offset];
-   $modif=$HTTP_POST_VARS["column_modifiable"][$offset];
+   $modifiable=$HTTP_POST_VARS["column_modifiable"][$offset];
 
    // find the id of the table and therewith the tablename
    $tablename=$HTTP_POST_VARS["table_name"];
