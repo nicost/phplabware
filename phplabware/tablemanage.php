@@ -66,7 +66,6 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
    }
    elseif ($key == "addcolumn") {  
       $result=add_columnECG($db,$table_name,$addcol_name,$addcol_label,$addcol_datatype,$addcol_drecord,$addcol_dtable,$addcol_required,$addcol_sort);
-$result=true;
       if ($addcol_datatype=="table" && $result) {
          navbar($USER["permissions"]);
          show_table_column_page($db,$table_name,$addcol_name,$addcol_label,$addcol_datatype,$addcol_drecord,$addcol_dtable,$addcol_required,$addcol_sort);
@@ -144,7 +143,7 @@ if ($editfield)	{
    echo "<td>&nbsp;</td>\n";
    echo "<td align='center'><input type='submit' name='addcolumn' value='Add'></td></tr>\n\n";
    
-   $query = "SELECT id,sortkey,columnname,label,display_table,display_record,required,datatype FROM $currdesc order by sortkey,label";
+   $query = "SELECT id,sortkey,columnname,label,display_table,display_record,required,datatype,associated_table,associated_sql,associated_local_key FROM $currdesc order by sortkey,label";
    $r=$db->Execute($query);
    $rownr=0;
    // print all entries
@@ -157,6 +156,13 @@ if ($editfield)	{
       $display_required= $r->fields["required"];
       $datatype = $r->fields["datatype"];
       $sort = $r->fields["sortkey"];
+      unset ($ass_table);
+      unset($ass_column);
+      if ($r->fields["associated_table"]) {
+         $ass_table=get_cell($db,"tableoftables","tablename","id",$r->fields["associated_table"]);
+         $ass_desc_table=get_cell($db,"tableoftables","table_desc_name","id",$r->fields["associated_table"]);
+         $ass_column=get_cell($db,$ass_desc_table,"label","id",$r->fields["associated_sql"]);
+      }
       $show=1;
       foreach($noshow as $donotshow) {
 	   if ($columnname==$donotshow)
@@ -198,9 +204,16 @@ if ($editfield)	{
 	  		 		
       	echo "<input type='hidden' name='column_datatype[]' value='$label'>\n";
         echo "<td>$datatype</td>\n";
-        echo "<td>&nbsp;</td>\n";
-	  	$modstring = "<input type='submit' name='modcolumn"."_$rownr' value='Modify'>";
-   	   $delstring = "<input type='submit' name='delcolumn"."_$rownr' value='Remove' ";
+        if ($ass_table || $ass_column) {
+           echo "<td>";
+           if (! $r->fields["associated_local_key"])
+              echo "<b>primary key</b><br>";
+           echo "$ass_table<br>$ass_column</td>\n";
+        }
+        else
+           echo "<td>&nbsp;</td>\n";
+	$modstring = "<input type='submit' name='modcolumn"."_$rownr' value='Modify'>";
+         $delstring = "<input type='submit' name='delcolumn"."_$rownr' value='Remove' ";
    	   $delstring .= "Onclick=\"if(confirm('Are you absolutely sure that the column $label should be removed? (No undo possible!)')){return true;}return false;\">";  
    	   echo "<td align='center'>$modstring";
    	   $candel=1;
