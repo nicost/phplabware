@@ -22,7 +22,7 @@ require("includes/tablemanage_inc.php");
 include ('includes/defines_inc.php');
 
 $editfield=$HTTP_GET_VARS["editfield"];
-$post_vars="newtable_name,newtable_label,newtable_sortkey,addtable,table_id,table_name,table_display,addcol_name,addcol_label,addcol_sort,addcol_dtable,addcol_drecord,addcol_required,addcol_modifiable,addcol_datatype";
+$post_vars="newtable_name,newtable_label,newtable_sortkey,newtable_plugincode,addtable,table_id,table_name,table_display,addcol_name,addcol_label,addcol_sort,addcol_dtable,addcol_drecord,addcol_required,addcol_modifiable,addcol_datatype";
 globalize_vars($post_vars, $HTTP_POST_VARS);
 
 $permissions=$USER["permissions"];
@@ -39,18 +39,13 @@ if (!($permissions & $SUPER)) {
  
 while((list($key, $val) = each($HTTP_POST_VARS))) {
    if ($key == "addtable") {
-      add_table($db,$newtable_name,$newtable_label,$newtable_sortkey);
+      add_table($db,$newtable_name,$newtable_label,$newtable_sortkey,$newtable_plugincode);
       break;
    }
    elseif (substr($key, 0, 8) == "modtable") {
       $modarray = explode("_", $key);
       $id=$HTTP_POST_VARS["table_id"][$modarray[1]];
-      $tablename=$HTTP_POST_VARS["table_name"][$modarray[1]];
-      $tablelabel=$HTTP_POST_VARS["table_label"][$modarray[1]];
-      $tablesort=$HTTP_POST_VARS["table_sortkey"][$modarray[1]];
-      $tabledisplay=$HTTP_POST_VARS["table_display"][$modarray[1]];
-      $tablegroups=$HTTP_POST_VARS["tablexgroups"][$id];
-      mod_table($db,$id,$tablename,$tablesort,$tabledisplay,$tablelabel,$tablegroups);
+      mod_table($db,$id,$modarray[1]);
       break;
    }
    elseif (substr($key, 0, 8) == "deltable") {  
@@ -128,15 +123,12 @@ if ($editfield)	{
    $r=$db->Execute("SELECT id,table_desc_name FROM tableoftables WHERE tablename='$editfield'");
    $id=$r->fields["id"];
    $currdesc=$r->fields["table_desc_name"];
-   //$currdesc=$editfield."_".$id."_desc";
    echo "<h3 align='center'>$string</h3>";
    echo "<h3 align='center'>Edit columns of table <i>$editfield</i></h3><br>";
-  // echo "<table align='center'>\n";
 
    echo "<form method='post' id='coledit' enctype='multipart/form-data' ";
    $dbstring=$PHP_SELF;echo "action='$dbstring?editfield=$editfield&".SID."'>\n"; 
    echo "<table align='center' border='0' cellpadding='2' cellspacing='0'>\n";
-   //echo "<table align='center'>\n";
    echo "<tr>\n";
    echo "<th>(SQL) Column Name</th>";
    echo "<th>Label</th>";
@@ -292,6 +284,7 @@ echo "<th>Name in linkbar</th>\n";
 echo "<th>Display</th>\n";
 echo "<th>Groups</th>\n";
 echo "<th>Sort key</th>\n";
+echo "<th>Plugin code</th>\n";
 echo "<th>Custom</th>\n";
 echo "<th>Action</th>\n";
 echo "<th>Fields</th>\n";
@@ -301,12 +294,14 @@ echo "<tr><td><input type='text' name='newtable_name' value='' ></td>\n";
 echo "<td><input type='text' name='newtable_label' value=''></td>\n";
 echo "<td></td>\n";
 echo "<td></td>\n";
-echo "<td><input type='text' name='newtable_sortkey' value=''></td>\n";
+echo "<td><input type='text' name='newtable_sortkey' value='' size=6></td>\n";
+echo "<td><input type='text' name='newtable_plugincode' value=''></td>\n";
 echo "<td></td>\n";
 echo "<td align='center'><input type='submit' name='addtable' value='Add'></td></tr>\n";
  
-$query = "SELECT id,tablename,label,display,sortkey,custom FROM tableoftables where display='Y' or display='N' ORDER BY sortkey";
+$query = "SELECT id,tablename,label,display,sortkey,custom,plugin_code FROM tableoftables where display='Y' or display='N' ORDER BY sortkey";
 $r=$db->Execute($query);
+
 // query for group select boxes
 $rg=$db->Execute("SELECT name,id from groups");
 $rownr=0;
@@ -319,6 +314,7 @@ while (!($r->EOF) && $r) {
    $label = $r->fields["label"];
    $Display = $r->fields["display"];
    $sortkey = $r->fields["sortkey"];
+   $plugincode=$r->fields["plugin_code"];
    $Custom = $r->fields["custom"];
    
    // print start of row of selected group
@@ -343,7 +339,11 @@ while (!($r->EOF) && $r) {
    echo "<td>".$rg->GetMenu2("tablexgroups[$id][]",$groups_table,true,true,3)."</td>\n";
    $rg->MoveFirst();
    unset($groups_table);
-   echo "<td><input type='text' name='table_sortkey[]' value='$sortkey'></td>\n";
+   echo "<td><input type='text' name='table_sortkey[]' value='$sortkey' size=6></td>\n";
+   if ($Custom=="")
+      echo "<td><input type='text' name='table_plugincode[]' value='$plugincode'></td>\n";
+   else
+      echo "<td>&nbsp;</td>\n";
    if ($Custom=="")
       echo "<td>Yes</td>\n";
    else
