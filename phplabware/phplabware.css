@@ -36,6 +36,13 @@ Table, P, DIV, H5, A, OL, TD, UL
 	font-size : 10pt;
 }
 
+TR.header
+{
+	background-color : #333388;
+	color: #ffffff;
+	width: 100%
+}
+
 TR.row_odd
 {
 	background-color : #F1FFFF;
