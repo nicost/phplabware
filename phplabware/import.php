@@ -34,7 +34,7 @@ if (!($permissions & $SUPER)) {
    $ownerid=$USER['id'];
 }
 /**
- * Make sure that this user is allowed to work with the desired table
+ * Make sure  this user is allowed to work with the desired table
  */
 if (isset($tableid)) {
    $query = "SELECT label,id FROM tableoftables LEFT JOIN groupxtable_display on tableoftables.id=groupxtable_display.tableid where display='Y' AND permission='Users' AND groupid={$USER['group_array'][0]} and tableoftables.id=$tableid ";
@@ -74,8 +74,10 @@ function move ($fromfile, $tofile) {
     return filesize($tofile);
 }
 
-// interpret a date string according to the system settings
-// this can fail when importing data from another continent
+/**
+ * interpret a date string according to the system settings
+ * this can fail when importing data from another continent
+ */
 function mymktime($datestring) {
    global $system_settings;
 
@@ -234,7 +236,7 @@ function check_input ($tableinfo, &$fields, $to_fields, $field_types, $field_dat
 /**
  *  in quoted lines, empty fields are (sometimes) not quoted
  *
- * we try to deal nicely with those here
+ *  we try to deal nicely with those here
  */
 function check_line(&$line,$quote,$delimiter) {
    if ($quote) {
@@ -257,8 +259,11 @@ function check_line(&$line,$quote,$delimiter) {
    }
 }
 
-
-// do the final parsing (part 3)
+/**
+ * Start of the main code
+ *
+ * do the final parsing (part 3)
+ */
 if ($HTTP_POST_VARS['assign']=='Import Data') {
    // set longer time-out
    ini_set('max_execution_time','0');
@@ -278,6 +283,7 @@ if ($HTTP_POST_VARS['assign']=='Import Data') {
       $table_link="general.php?tablename=$table_label"."&".SID;
 
    // fill the tmp table with file related data
+   // Files are only imported through the phplabwaredump directory 
    if ($localfile) {
        $dumpdir='phplabwaredump';
        $filename=$dumpdir.'/dumpcontent.txt';
@@ -310,7 +316,7 @@ if ($HTTP_POST_VARS['assign']=='Import Data') {
       }
    }
 
-   // find out to which columns each parsed file text will be assigned to
+   // find out to which phplabware column each imported column belongs
    // Array $to_fields contains the target column ids,
    // Array $to_types contains the target column types
    for ($i=0;$i<$nrfields;$i++) {
