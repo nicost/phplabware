@@ -577,7 +577,7 @@ else {
 
 
    echo "</caption>\n";
-   // print form needed for 'delete' buttons
+   // print form
 ?>
 <form name='form' method='post' action='<?php echo $PHP_SELF?>?<?=SID?>'>  
 <?php
