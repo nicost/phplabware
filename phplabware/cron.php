@@ -35,7 +35,7 @@ function doindexfile ($db,$filetext,$fileid,$indextable,$recordid,$pagenr)
             $wordid=$db->GenID("word_seq");
             $db->Execute("INSERT INTO words VALUES ($wordid,'$word')");
          }
-         $db->Execute("INSERT INTO $indextable VALUES ($wordid,$fileid,$recordid,$pagenr)");
+         $db->Execute("INSERT INTO $indextable VALUES ($wordid,$fileid,$pagenr,$recordid)");
       }
    }
    return true;
@@ -84,7 +84,8 @@ while ($rfiles && !($rfiles->EOF)) {
             //we have gs kick up an error after it opens
             //the file and sees how many pages there are
 
-            $numpages = `gs "$filepath"`;
+            $filepath=file_path($db,$rfiles->fields[id]);
+            $numpages = `gs -dNODISPLAY "$filepath" -c quit`;
             $pos1 = strpos($numpages,"through");
             $numpages = substr($numpages,$pos1);
             $pos2 = strpos($numpages,".");
@@ -92,9 +93,7 @@ while ($rfiles && !($rfiles->EOF)) {
 
             for ($page=1;$page<=$numpages;$page++) {
                //gs the page and return as a string
-//echo "doing gs.<br>";
                $tempstring=`gs -q -dNODISPLAY -dNOBIND -dWRITESYSTEMDICT -dSIMPLE -dFirstPage=$page -dLastPage=$page -c save -f ps2ascii.ps "$filepath" -c quit`; 
-//echo "$tempstring.<br>";
               //strip out all the trash from the string
               //$tempstring = string_clean($tempstring,$preventIndex,$keepIndex);
                $filetext=strtolower($tempstring);
