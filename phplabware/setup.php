@@ -25,7 +25,7 @@ include ('includes/config_inc.php');
 include ("includes/defines_inc.php");
 include ('adodb/adodb.inc.php');
 
-$post_vars="access,action,authmethod,baseURL,checkpwd,dateformat,filedir,pwd,secure_server_new,submit,tmpdir";
+$post_vars="access,action,authmethod,baseURL,checkpwd,dateformat,filedir,pwd,secure_server_new,submit,tmpdir,word2html";
 globalize_vars($post_vars, $HTTP_POST_VARS);
 
 if ($set_local) {
@@ -128,13 +128,17 @@ if ($version) {
 	 else
 	    echo "<h4 align='center'>Directory $filedir is not writeable</h4>";
       if ($tmpdir) 
-         if (is_writable($tmpdir))
+         if (is_writeable($tmpdir))
             $settings["tmpdir"]=$tmpdir;
 	 else {
 	    echo "<h4 align='center'>Directory $tmpdir is not writeable</h4>";
             if (!isset ($settings["tmpdir"]))
                $settings["tmpdir"]=session_save_path();
          }
+      if (is_readable($word2html))
+         $settings["word2html"]=$word2html;
+      else
+         unset($settings["word2html"]);
       if ($baseURL)
          $settings["baseURL"]=$baseURL;
       if ($secure_server_new=="Yes")
@@ -190,6 +194,17 @@ if ($version) {
    }
       
    echo "<td><input type='text' name='baseURL' value='".$settings["baseURL"]."'></td></tr>\n";
+
+   echo "<tr><td colspan='2' align='center'><i>Helper Applications</i></th></tr>\n";
+   echo "<tr><td>wvHtml:</td>\n";
+   if (!$settings["word2html"]) { 
+      $temp=`which wvHtml`;
+      $tok=strtok($temp," ");
+      if (!strtok(" "))
+         $settings["word2html"]=$tok;
+   }
+   echo "<td><input type='text' name='word2html' value='".$settings["word2html"]."'></td></tr>\n";
+
 
    echo "<tr><td colspan='2' align='center'><i>Localization</i></th></tr>\n";
    echo "<tr><td>Date Format:</td>\n";
