@@ -86,7 +86,6 @@ function tableheader ($sortdirarray,$columnname, $columnlabel) {
 // Fields named 'date' are automatically filled with a Unix timestamp
 function add ($db,$table,$fields,$fieldvalues,$USER,$tableid) {
    if (!may_write($db,$tableid,false,$USER)) {
-echo "$tableid.";
       echo "<h3>You are not allowed to do this.<br>";
       return false;
    }
@@ -567,12 +566,11 @@ function make_temp_table ($db,$temptable,$r) {
       $r->MoveFirst();
       while (!$r->EOF) {
          $string .= $r->fields["id"]."\n";
-         //$db->Execute("INSERT INTO $temptable VALUES (".$r->fields["id"].")");
          $r->MoveNext();
       }
    }
    // INSERT is to slow.  COPY instead from a file.  postgres only!
-   $tmpfile=tempnam("/tmp","tmptable");
+   $tmpfile=tempnam($system_settings["tmppsql"],"tmptable");
    $fp=fopen($tmpfile,"w");
    fwrite($fp,$string);
    fflush($fp);
