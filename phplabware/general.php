@@ -431,17 +431,17 @@ else {
 
    foreach($Allfields as $nowfield)  {
       if ($HTTP_POST_VARS[$nowfield[name]]) {
-         $list=$listb["sql"]; 
-	 $count=$listb["numrows"];
+         $list=$listb['sql']; 
+	 $count=$listb['numrows'];
       }
       else {
          $list=$lista;   
-         $count=$listb["numrows"];
+         $count=$listb['numrows'];
       }
-      if ($nowfield["datatype"]== "link")
+      if ($nowfield['datatype']== 'link')
          echo "<td style='width: 10%'>&nbsp;</td>\n";
       // datatype of column date is text (historical oversight...)
-      elseif ($nowfield["name"]=="date") 
+      elseif ($nowfield['name']=='date') 
          echo "<td style='width: 10%'>&nbsp;</td>\n";
       // datatype of column ownerid is text (historical oversight...)
       elseif ($nowfield["name"]=="ownerid") {
@@ -482,33 +482,37 @@ else {
 	    $text="&nbsp;";
     	 echo "$text</td>\n";
       }
-      elseif ($nowfield["datatype"]== "table") {
+      elseif ($nowfield['datatype']== 'table') {
          echo "<td style='width: 10%'>";
-         if ($nowfield["ass_local_key"])
+         if ($nowfield['ass_local_key'])
             $text="&nbsp;"; 
          else {
+/*
             $rtable=$db->Execute("SELECT $nowfield[name] FROM $tableinfo->realname WHERE $list");
             $list2=make_SQL_csf($rtable,false,"$nowfield[name]",$dummy);
             // if aprevious search had been done while count>$max_menu_length
             // we need to backtranslate the id # to a reasonable text:
             if ($list2) {
+$db->debug=true;
                $rcount=$db->Execute("SELECT COUNT(id) FROM {$nowfield['ass_table_name']} WHERE id IN ($list2)");
                if ($rcount && ($rcount->fields[0] < $max_menu_length)) {
                   
                 $text=GetValuesMenu($db,$nowfield['name'],${$nowfield['name']},$nowfield['ass_table_name'],$nowfield['ass_column_name'],"WHERE id IN ($list2)","style='width: 80%' $jscript");
                 }
                 else {
+*/
                    if (${$nowfield['name']}) {
                       $tblvalue=getvalues($db,$tableinfo,$nowfield['name'],$nowfield['name'],${$nowfield['name']});
                       ${$nowfield['name']}=$tblvalue[0]['text'];
                    }
                    $text="<input type='hidden' name='max_{$nowfield['name']}' value='true'>\n";
                    $text.="<input type='text' name='{$nowfield['name']}' value='{$$nowfield['name']}'>\n";
-                }
+/*                }
             }
             else
                $text="&nbsp;";
-         }
+*/         }
+
          echo "$text</td>\n";
       }
       elseif ($nowfield["datatype"]=="image")
