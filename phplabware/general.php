@@ -19,10 +19,13 @@ require("includes/db_inc.php");
 require("includes/general_inc.php");
 
 // register variables
-$get_vars="tablename,showid,edit_type,add";
+$get_vars="tablename,md,showid,edit_type,add";
 globalize_vars($get_vars, $HTTP_GET_VARS);
-$post_vars = "add,submit,search,searchj,serialsortdirarray";
+$post_vars = "add,md,submit,search,searchj,serialsortdirarray";
 globalize_vars($post_vars, $HTTP_POST_VARS);
+// Mode can be changed through a get var and is perpetuated through post vars
+if ($HTTP_GET_VARS["md"])
+   $md=$HTTP_GET_VARS["md"];
 
 // extract fields to be sorted
 foreach($HTTP_POST_VARS as $key =>$value) {
@@ -41,9 +44,7 @@ $httptitle .=$tablename;
 /*****************************BODY*******************************/
 printheader($httptitle);
 navbar($USER["permissions"]);
-
 //$db->debug=true;
-
 
 // find id associated with table
 if (!$edit_type) {
@@ -82,6 +83,22 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
       printfooter();
       exit();
    }
+   if (substr($key, 0, 3) == "chg") {
+      $chgarray = explode("_", $key);
+      if ($val=="Change") {
+         $Fieldscomma=comma_array_SQL_where($db,$table_desname,"columnname","display_table","Y");
+         $Fieldsarray=explode(",",$Fieldscomma);
+         reset($HTTP_POST_VARS);
+         while((list($key, $val) = each($HTTP_POST_VARS))) {	
+            $testarray=explode("_",$key);
+            if ( ($testarray[1]==$chgarray[1]) && (in_array ($testarray[0],$Fieldsarray))) 
+               $change_values[$testarray[0]]=$val;  
+         }
+         if(check_g_data ($db,$change_values,$table_desname))
+            modify($db,$real_tablename,$Fieldscomma,$change_values,$chgarray[1],$USER,$tableid); 
+         break;
+      }
+   } 
    // delete file and show protocol form
    if (substr($key, 0, 3) == "def") {
       $modarray = explode("_", $key);
@@ -264,12 +281,27 @@ else {
    // print form;
    $dbstring=$PHP_SELF."?"."tablename=$tablename&";
    echo "<form name=g_form method='post' id='generalform' enctype='multipart/form-data' action='$PHP_SELF?$sid'>\n";
+   echo "<input type='hidden' name='md' value='$md'>\n";
 
    // Need to put in a singular name
    echo "<table border=0 width='50%' align='center'>\n<tr>\n";
-   echo "<td align='center'><B>$tablename</B><br>";
-   if (may_write($db,$tableid,false,$USER)) 
-      echo "<p><a href='$PHP_SELF?&add=Add&tablename=$tablename&<?=SID?>'>Add Record</a></td>\n"; 
+   $modetext="<a href='$PHP_SELF?tablename=$tablename&md=";
+ 
+   $may_write=may_write($db,$tableid,false,$USER);
+   if ($md=="edit") {
+      $tabletext="Edit Table ";
+      if ($may_write)
+         $modetext.="view&".SID."'>(to view mode)</a>\n";
+      else
+         $modetext="";
+   }
+   else {
+      $tabletext="View Table ";
+      $modetext.="edit'>(to edit mode)</a>\n";
+   }
+   echo "<td align='center'>$tabletext <B>$tablename</B> $modetext<br>";
+   if ($may_write)
+      echo "<p><a href='$PHP_SELF?&add=Add&tablename=$tablename&".SID."'>Add Record</a></td>\n"; 
    echo "</tr>\n</table>\n";
    next_previous_buttons($rp,true,$num_p_r,$numrows,${$pagename});
 
@@ -349,7 +381,10 @@ else {
    echo "<th>Action</th>\n";
    echo "</tr>\n\n";
 
-   display_table_info($db,$tableid,$table_desname,$Fieldscomma,${$queryname},$num_p_r,${$pagename},$rp);
+   if ($md=="edit")
+      display_table_change($db,$tableid,$table_desname,$Fieldscomma,${$queryname},$num_p_r,${$pagename},$rp);
+   else
+      display_table_info($db,$tableid,$table_desname,$Fieldscomma,${$queryname},$num_p_r,${$pagename},$rp);
    printfooter($db,$USER);
 }
 ?>
