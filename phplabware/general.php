@@ -29,11 +29,16 @@ if ($HTTP_GET_VARS["md"])
 
 // extract fields to be sorted
 foreach($HTTP_POST_VARS as $key =>$value) {
-   list($testkey,$testvalue)=explode("_",$key);
-   if ($testkey=="sortup")
+   list($testkey,$testvalue)=explode("_",$key,2);
+   // images add _x and _y, remove these here
+   if ($testkey=="sortup"){
+      $testvalue=substr($testvalue,0,-2);
       $sortup=$testvalue;
-   if ($testkey=="sortdown")
+   }
+   if ($testkey=="sortdown") {
+      $testvalue=substr($testvalue,0,-2);
       $sortdown=$testvalue;
+   }
 } 
 reset ($HTTP_POST_VARS);
 if ($searchj || $sortup || $sortdown)
@@ -44,7 +49,6 @@ $httptitle .=$tablename;
 /*****************************BODY*******************************/
 printheader($httptitle);
 navbar($USER["permissions"]);
-//$db->debug=true;
 
 // find id associated with table
 //if (!$edit_type) {
