@@ -21,12 +21,13 @@ require('includes/general_inc.php');
 require('includes/tablemanage_inc.php');
 include ('includes/defines_inc.php');
 
-$post_vars='delimiter,delimiter_type,quote,quote_type,tableid,nrfields,pkey,pkeypolicy,skipfirstline,tmpfile,ownerid';
+$post_vars='delimiter,delimiter_type,quote,quote_type,tableid,nrfields,pkey,pkeypolicy,skipfirstline,tmpfile,ownerid,localfile';
 globalize_vars($post_vars, $HTTP_POST_VARS);
 
 $permissions=$USER['permissions'];
 $httptitle.=' Import data';
 printheader($httptitle,false,$jsfile);
+$tmpdir=$system_settings['tmpdir'];
 
 if (!($permissions & $SUPER)) {
 	navbar($USER['permissions']);
@@ -135,6 +136,40 @@ if ($HTTP_POST_VARS['assign']=='Import Data') {
    else
       $table_link="general.php?tablename=$table_label"."&".SID;
 
+   // file the tmp table with file related data
+   if ($localfile) {
+       $dumpdir='phplabwaredump';
+       $filename=$dumpdir.'/dumpcontent.txt';
+       // read in table file and put into temp table
+       $tablefile=$dumpdir.'/files.txt';
+       $ft=fopen("$tmpdir/$tablefile",'r');
+       $columnnames=explode("\t",$firstline);
+       if ($ft) {
+          $firstline=chop(fgets($ft,1000000));
+          $columns=explode("\t",$firstline);
+          // create the table for temp file data
+          $db->Execute("CREATE TEMPORARY TABLE tmpfiles (
+			id int UNIQUE NOT NULL,
+			name TEXT,
+			mime TEXT,
+			size TEXT,
+			type TEXT)");
+          // and file with data from file
+          $rs=$db->Execute("SELECT * FROM tmpfiles");
+          while (!feof($ft)) {
+             $line=chop(fgets($ft,1000000));
+             $columnvalues=explode("\t",$line);
+             foreach ($columns as $columnname) {
+                list($t,$value)=each($columnvalues);
+                $row[$columnname]=$value;
+             }
+             if ($line)
+                $db->Execute($db->GetInsertSQL(&$rs,$row));
+             print_r($column);
+         }
+      }
+   }
+
    // find out to which columns each parsed file text will be assigned to
    // Array $to_fields contains the target column ids,
    // Array $to_types contains the target column types
@@ -170,7 +205,6 @@ if ($HTTP_POST_VARS['assign']=='Import Data') {
    else {
       $delimiter=get_delimiter($delimiter,$delimiter_type);
       $quote=get_quote($quote,$quote_type);
-      $tmpdir=$system_settings['tmpdir'];
       $fh=fopen("$tmpdir/$tmpfile",'r');
       if ($fh) {
          $access=$system_settings['access'];
@@ -304,29 +338,29 @@ if ($HTTP_POST_VARS['dataupload']=='Continue') {
    $filename=$HTTP_POST_FILES['datafile']['name'];
    $delimiter=get_delimiter($delimiter,$delimiter_type);
    $quote=get_quote($quote,$quote_type);
-   if ($delimiter && $tableid && $ownerid && ($filename || $tmpfile) ) {
+   if ($delimiter && $tableid && $ownerid && ($filename || $tmpfile || $localfile) ) {
       if (!$system_settings['filedir']) {
          echo "<h3><i>Filedir</i> was not set.  Please correct this first in <i>setup</i></h3>\n";
          printfooter();
          exit();
       }
       $tmpdir=$system_settings['tmpdir'];
-      if ($tmpfile || move_uploaded_file($HTTP_POST_FILES['datafile']['tmp_name'],"$tmpdir/$filename")) {
+      if ($tmpfile || $localfile || move_uploaded_file($HTTP_POST_FILES['datafile']['tmp_name'],"$tmpdir/$filename")) {
          if ($tmpfile)
             $filename=$tmpfile;
+         // lcoalfiles can also have associated files packaged with them
+         if ($localfile) {
+             $dumpdir='phplabwaredump';
+             $filename=$dumpdir.'/dumpcontent.txt';
+         }
          $fh=fopen("$tmpdir/$filename",'r');
          if ($fh) {
             $firstline=chop(fgets($fh,1000000));
-            // if quoted delete first and last char
-            // if ($quote) {
-            //   $firstline=substr($firstline,1,-1);
-           // }
             check_line($firstline,$quote,$delimiter);
             $fields=explode($quote.$delimiter.$quote,$firstline);
             $secondline=chop(fgets($fh,1000000));
             if ($quote) {
                check_line($secondline,$quote,$delimiter);
-               //$secondline=substr($secondline,1,-1);
             }
             $fields2=explode($quote.$delimiter.$quote,$secondline);
             $nrfields=sizeof($fields);
@@ -338,6 +372,8 @@ if ($HTTP_POST_VARS['dataupload']=='Continue') {
          $dbstring=$PHP_SELF;
          echo "action='$dbstring?".SID."'>\n"; 
          echo "<input type='hidden' name='tmpfile' value='$filename'>\n";
+ 	 if ($localfile)
+            echo "<input type='hidden' name='localfile' value='true'>\n";
          echo "<input type='hidden' name='tableid' value='$tableid'>\n";
          echo "<input type='hidden' name='nrfields' value='$nrfields'>\n";
          echo "<input type='hidden' name='delimiter_type' value='$delimiter_type'>\n";
@@ -355,7 +391,7 @@ if ($HTTP_POST_VARS['dataupload']=='Continue') {
          echo "</tr>\n";
          echo "<tr>\n   <th>Assign to Column:</th>\n";
          $desc=get_cell($db,'tableoftables','table_desc_name','id',$tableid);
-         $r=$db->Execute("SELECT label,id FROM $desc WHERE (display_record='Y' OR display_table='Y' OR columnname='id') AND datatype<>'file' AND datatype<>'sequence' ORDER BY sortkey");
+         $r=$db->Execute("SELECT label,id FROM $desc WHERE (display_record='Y' OR display_table='Y' OR columnname='id') AND datatype<>'sequence' ORDER BY sortkey");
          for($i=0;$i<$nrfields;$i++) {
             $menu=$r->GetMenu2("fields_$i");
             echo "   <td align='center'>$menu</td>\n";
