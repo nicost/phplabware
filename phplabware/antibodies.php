@@ -252,6 +252,46 @@ function may_write ($db,$table,$id,$USER) {
    }
 }
 
+////
+// !Returns an SQL search statement
+// The whereclause should NOT start with WHERE
+// The whereclause should contain the output of may_read_SQL and
+// can also be used for sorting
+function search ($table,$fields,$fieldvalues,$whereclause=false) {
+   $columnvalues=$fieldvalues;
+   $query="SELECT $fields FROM $table WHERE ";
+   $column=strtok($fields,",");
+   while ($column && !$columnvalues[$column])
+      $column=strtok (",");
+   if ($column && $columnvalues[$column]) {
+      $test=true;
+      if (is_string($columnvalues[$column])) {
+         $columnvalues[$column]=str_replace("*","%",$columnvalues[$column]);
+         $query.="$column LIKE '$columnvalues[$column]' ";
+      }
+      else
+         $query.="$column='$columnvalues[$column]' ";
+   }
+   $column=strtok (",");
+   while ($column) { 
+      if ($column && $columnvalues[$column]) {
+         if (is_string($columnvalues[$column])) {
+            $columnvalues[$column]=str_replace("*","%",$columnvalues[$column]);
+            $query.="AND $column LIKE '$columnvalues[$column]' ";
+         }
+         else
+            $query.="$column='$columnvalues[$column]' ";
+      }
+      $column=strtok (",");
+   }
+   if ($whereclause)
+      if ($test)
+         $query .= "AND $whereclause";
+      else
+         $query .= $whereclause;
+   return $query;
+}
+
 
 ////
 // !Checks input data.
@@ -581,7 +621,10 @@ else {
 
    // retrieve all antibodies and their info from database
    $whereclause=may_read_SQL ($db,"antibodies",$USER);
-   $query = "SELECT $fields FROM antibodies WHERE id IN ($whereclause) ORDER BY date DESC";
+   if ($search=="Search")
+      $query=search("antibodies",$fields,$HTTP_POST_VARS," id IN ($whereclause) ORDER BY name");
+   else
+      $query = "SELECT $fields FROM antibodies WHERE id IN ($whereclause) ORDER BY date DESC";
    //$db->debug=true;
    $r=$db->Execute($query);
    $rownr=1;
