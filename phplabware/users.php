@@ -136,6 +136,8 @@ function modify ($db, $type) {
    if($perms)
       for ($i=0; $i<sizeof($perms); $i++)
          $permissions=$permissions | $perms[$i];
+   if (!$permissions)
+      $permissions=0;
 
    // include here, to avoid being overwritten by post_vars 
    include ('includes/defines_inc.php');
@@ -336,7 +338,7 @@ function show_user_form ($type) {
 
    // Checkboxes to give user permissions 
    // set default choice 
-   if ( !($permissions) )
+   if ($type=='create' &&  !($permissions) )
       $permissions = $ACTIVE | $READ | $WRITE;
    if ( ($type=='modify' || $type=='create') && 
         ($USER['permissions'] & $ADMIN) ) {
@@ -356,31 +358,31 @@ function show_user_form ($type) {
       echo "<td><input type='checkbox' name='perms[]' value='$LAYOUT' $checked></td></tr>\n";
 
       if ($permissions & $WRITE )
-        $checked = "checked";
+        $checked = 'checked';
       else
          $checked = '';
       echo "<tr><td>Write:</td>\n<td><input type='checkbox' name='perms[]' value='$WRITE' $checked></td></tr>\n";
 
       if ($permissions & $READ)
-         $checked = " checked";
+         $checked = ' checked';
       else
-         $checked = "";
+         $checked = '';
       echo "<tr><td>Read:</td>\n";
       echo "<td><input type='checkbox' name='perms[]' value='$READ' $checked></td></tr>\n";
 
       if ($permissions & $ACTIVE)
-         $checked = " checked";
+         $checked = ' checked';
       else
-         $checked = "";
+         $checked = '';
       echo "<tr><td>Login Allowed:</td>\n";
       echo "<td><input type='checkbox' name='perms[]' value='$ACTIVE' $checked></td></tr>\n";
    }
     
-   if ($type == "modify")
+   if ($type == 'modify')
       echo "<tr><td colspan=2 align='center'><input type='submit' name='modify' value='Modify User'></td></tr>\n";
-   elseif ($type == "create")
+   elseif ($type == 'create')
       echo "<tr><td colspan=2 align='center'><input type='submit' name='create' value='Create User'></td></tr>\n";
-   elseif ($type == "me")
+   elseif ($type == 'me')
       echo "<tr><td colspan=2 align='center'><input type='submit' name='me' value='Change Settings'></td></tr>\n";
    echo"</table>\n";
    echo "</form>\n";
@@ -402,33 +404,33 @@ if ($type=='me') {
    $fieldname = strtok ($userfields,',');
    while ($fieldname) {
       ${$fieldname}= $r->fields["$fieldname"];
-      $fieldname=strtok(","); 
+      $fieldname=strtok(','); 
    }
    show_user_form('me');
    printfooter($db,$USER);
    exit();
 }
-if ($me=="Change Settings") {
-   $title.="Change Settings";
-   $result=modify ($db, "me");
+if ($me=='Change Settings') {
+   $title.='Change Settings';
+   $result=modify ($db, 'me');
    printheader($title);
-   navbar ($USER["permissions"]);
+   navbar ($USER['permissions']);
    echo $result;
-   show_user_form("me");
+   show_user_form('me');
    printfooter($db,$USER);
    exit();
 }
 
 // Only a groupadmin and sysadmin are allowed to view the remainder
-allowonly($ADMIN,$USER["permissions"]);
+allowonly($ADMIN,$USER['permissions']);
 
 // set title and print headers
-$title.="User administration";
+$title.='User administration';
 // extend title if user is an admin
 if (!($USER['permissions'] & $SUPER))
-   $title .= " in group ".get_cell($db,"groups","name","id",$USER["groupid"]);
+   $title .= ' in group '.get_cell($db,'groups','name','id',$USER['groupid']);
 printheader($title);
-navbar($USER["permissions"]);
+navbar($USER['permissions']);
 
 // Check whether modify or delete button has been chosen
 $del=false;
