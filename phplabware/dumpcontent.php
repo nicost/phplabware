@@ -159,8 +159,11 @@ while ($r->fields['id'] && !$r->EOF) {
             fwrite ($fp,$pre_seperator.$row['values'].$post_seperator);
          }
          else {
-            if ($row['datatype']=='textlong')
+            if ($row['datatype']=='textlong') {
+               // strip every kind of new line tag first
+               $row['values']=strtr($row['values'],"\t\n\r\m",'    ');
                fwrite ($fp,$pre_seperator.$row['values'].$post_seperator);
+            }
             else
                fwrite ($fp,$pre_seperator.$row['text'].$post_seperator);
          }
