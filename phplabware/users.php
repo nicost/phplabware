@@ -399,8 +399,8 @@ if ($type=="me") {
 }
 if ($me=="Change Settings") {
    $title.="Change Settings";
-   printheader($title);
    $result=modify ($db, "me");
+   printheader($title);
    navbar ($USER["permissions"]);
    echo $result;
    show_user_form("me");
