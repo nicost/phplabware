@@ -612,15 +612,20 @@ function check_g_data ($db,&$field_values, $DB_DESNAME,$modify=false) {
    while ($rs && !$rs->EOF) {
       $fieldA=$rs->fields[0];
       if (isset($field_values["$fieldA"]) && (strlen($field_values[$fieldA]) >0)) {
-         if ($rs->fields[1]=="int")
+         if ($rs->fields[1]=='int')
             $field_values["$fieldA"]=(int)$field_values["$fieldA"];
-         elseif ($rs->fields[1]=="float")
+         elseif ($rs->fields[1]=='float')
             $field_values["$fieldA"]=(float)$field_values["$fieldA"];
-         elseif ($rs->fields[1]=="date") {
+         elseif ($rs->fields[1]=='date') {
             $field_values["$fieldA"]=strtotime($field_values["$fieldA"]);
             if ($field_values["$fieldA"] < 0)
                $field_values["$fieldA"]="";
          }
+         elseif ($rs->fields[1]=='sequence') {
+            $field_values["$fieldA"]=(int)$field_values["$fieldA"];
+	    if ($field_values["$fieldA"]<1)
+	       $field_values["$fieldA"]=0;
+         }   
       }
       $rs->MoveNext();
    }
