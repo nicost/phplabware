@@ -31,17 +31,18 @@ $httptitle .=$tablename;
 printheader($httptitle);
 navbar($USER["permissions"]);
 
+
 // find id associated with table
 if (!$edit_type) {
-   $r=$db->Execute("SELECT id,shortname FROM tableoftables WHERE tablename='$tablename'");
+   $r=$db->Execute("SELECT id,shortname,tablename,real_tablename FROM tableoftables WHERE tablename='$tablename'");
    $tableid=$r->fields["id"];
-   $tableshort=$r->fields["shortname"];
    if (!$tableid) {
       echo "<h3 align='center'> Table: <i>$tablename</i> does not exist.</h3>";
       printfooter();
       exit();
    }
-   $real_tablename=$tablename."_".$tableid;
+   $tableshort=$r->fields["shortname"];
+   $real_tablename=$r->fields["real_tablename"];
    $table_desname=$real_tablename."_desc";
    $queryname=$tableshort."_query";
    $pagename=$tableshort."_curr_page";
@@ -50,6 +51,11 @@ if (!$edit_type) {
 }
 
 // check if something should be modified, deleted or shown
+if (!may_see_table($db,$USER,$tableid)) {
+   echo "<h3 align='center'>These data are not for you.  Sorry;(</h3>\n";
+   printfooter();
+   exit();
+}
 while((list($key, $val) = each($HTTP_POST_VARS))) {	
    // display form with information regarding the record to be changed
    if (substr($key, 0, 3) == "mod") {
