@@ -71,11 +71,19 @@
 	name text, 
 	description text)");
    if (!$result) $test=false;
+   $db->Execute("CREATE INDEX groups_id_index ON groups (id)"); 
 
    $result=$db->Execute("CREATE TABLE usersxgroups
 	(usersid int,
 	groupsid int)");
    if (!$result) $test=false;
+
+   $result=$db->Execute("CREATE TABLE files
+	(id int PRIMARY KEY,
+	 filename text,
+	 mime text)");
+   if (!$result) $test=false;
+   $db->Execute("CREATE INDEX files_id_index ON files (id)"); 
 
    // insert sysadmin and admin group
    $pass= md5($pwd);
@@ -108,7 +116,7 @@
       echo "Some function might not work.</h3>\n";
    }
    else {
-      $version=$version_code;
+      $version=0.001;
    }
    
 ?>
