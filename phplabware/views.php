@@ -81,11 +81,11 @@ if ($HTTP_POST_VARS['modify']=='Modify' && $viewid && $tableinfo) {
 
 
 // First section list tables that can be edited, existing views, edit and delete buttons
-// table for first line only
-echo "<table width='100%' border='0'>\n";
-
 // open form
 echo "<form name='views' method='post' action='$PHP_SELF'>\n";
+
+// table for first line only
+echo "<table width='100%' border='0'>\n";
 
 echo "<tr>\n";
 echo "<td align='center'>Edit views for table: ";
@@ -119,10 +119,10 @@ echo $r->GetMenu2('viewid',$viewid,true,false,0,'OnChange="document.views.submit
 echo "<input type='submit' name='modify' value='Edit'>\n";
 echo "<input type='submit' name='delete' value='Remove' Onclick=\"if(confirm('Are you sure this view should be deleted?')){return true;}return false;\">\n";
 // test button links to general.php
-echo "<a href='general.php?tablename={$tableinfo->name}&viewid=$viewid'>Test</a>\n";
+echo "<a href='general.php?tablename={$tableinfo->name}&amp;viewid=$viewid'>Test</a>\n";
 echo "</td>\n";
 
-echo "<td align'center'>Create new view: <input type='text' name='newview' size='10'>\n";
+echo "<td align='center'>Create new view: <input type='text' name='newview' size='10'>\n";
 echo "<input type='submit' name='Create' value='Create'></td>\n";
 echo "</tr>\n</table>\n";
 
@@ -171,11 +171,9 @@ if ($viewid) {
   }
    echo "<tr><td colspan=3 align='center'><input type='submit' name='modify' value='Modify'></td>\n";
    echo "<td colspan=3 align='center'><input type='reset' name='reset' value='Reset'></td></tr>\n";
-   echo "</form>\n</table>\n</table>\n";
-   
-   
+   echo "</table>\n</table>\n";
 }
 
-
+echo "</form>\n";
 
 ?>
