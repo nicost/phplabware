@@ -30,7 +30,7 @@ if ($adodb_version<1.71) {
    exit();
 }
 
-$post_vars="access,action,authmethod,baseURL,homeURL,checkpwd,dateformat,filedir,pwd,protocols_file,pdfs_file,secure_server_new,submit,tmpdir,word2html";
+$post_vars="access,action,authmethod,baseURL,homeURL,checkpwd,dateformat,filedir,pwd,protocols_file,pdfs_file,pdfget,secure_server_new,submit,tmpdir,word2html";
 globalize_vars($post_vars, $HTTP_POST_VARS);
 
 if ($set_local) {
@@ -197,6 +197,8 @@ if ($version) {
       if ($authmethod)
          $system_settings["authmethod"]=$authmethod;
       $system_settings["checkpwd"]=$checkpwd;
+      $system_settings["pdfget"]=$pdfget;
+      
       $settings_ser=serialize($system_settings);
       $query="UPDATE settings SET settings='$settings_ser' WHERE id=1";
       $result=$db->Execute($query);
@@ -298,6 +300,11 @@ if ($version) {
    echo "<td>\n";
    $checkpwd=$system_settings["checkpwd"];
    echo "<input type='text' name='checkpwd' value='$checkpwd'></td></tr>\n";
+
+   echo "<tr><td colspan='2' align='center'><i>Pdfs</i></th></tr>\n";
+   echo "<tr><td>GET variable to add to Pubmed request (for instance: 'holding=ucsflib')</td>";
+   $pdfget=$system_settings["pdfget"];
+   echo "<td><input type='text'name='pdfget' value='$pdfget'></td></tr>\n";
 
    echo "<tr><td colspan=2 align='center'><input align=center type=submit 
          name=action value=submit></td></tr>\n";  
