@@ -174,6 +174,8 @@ if ($r) {
          $counter++;
          //change ownership of file to new table:
          $rfile=$db->Execute("UPDATE files SET tablesfk='$newtableid',ftableid='$newid',ftablecolumnid='$filecolumnid' WHERE tablesfk='$tablesfk' AND ftableid='$row[id]'");
+         //adjust trusted users:
+         $db->Execute("UPDATE trust SET tableid='$newtableid',recordid='$newid' WHERE tableid=$tablesfk AND recordid='$row[id]'");
       }
       $rcb->MoveNext();
    }
