@@ -71,11 +71,15 @@ function GetValuesMenu ($db,$selectname,$selected,$tablename,$columnname,$wherec
    $text="<select name='$selectname' $jscript>\n";
    $text.="<option value=''></option>\n";
    foreach ($values as $value) {
-      if ($value[0]['recordid']==$selected)
+      $v["{$value[0]['recordid']}"]=$value[0]['text'];
+   }
+   asort($v);
+   while (list ($key,$val)=each($v)) {
+      if ($key==$selected)
          $selecttext='selected';
       else
          $selecttext=false;
-      $text.="<option $selecttext value='{$value[0]['recordid']}'>{$value[0]['text']}</option>\n";
+      $text.="<option $selecttext value='$key'>$val</option>\n";
    }
    $text.="</select>\n";
    return $text;
