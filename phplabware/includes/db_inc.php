@@ -471,7 +471,8 @@ function searchhelp ($db,$table,$column,$columnvalues,$query,$wcappend,$and) {
    }
    else {
       $query[1]=true;
-      if (is_string($columnvalues[$column])) {
+      $test=(int)$columnvalues[$column];
+      if ($test <> ($columnvalues[$column])) {
          $columnvalues[$column]=trim($columnvalues[$column]);
          $columnvalue=$columnvalues[$column];
          $columnvalue=str_replace("*","%",$columnvalue);
