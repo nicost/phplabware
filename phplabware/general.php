@@ -172,6 +172,15 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
       printfooter();
       exit();
    }
+   // for table links, search in the linked table instead of the current one
+   if (substr($key, 0, 3) == "max") {
+      $cname=substr($key,4);
+      // echo "$cname.<br>";
+      $value=$HTTP_POST_VARS["$cname"];
+      // we need to replace this value with an id if appropriate
+      if ($value)
+         $HTTP_POST_VARS["$cname"]=find_nested_match($db,$tableinfo,$cname,$value);
+   }
 }
 
 if ($edit_type && ($USER["permissions"] & $LAYOUT)) {
@@ -473,16 +482,22 @@ else {
          else {
             $rtable=$db->Execute("SELECT $nowfield[name] FROM $tableinfo->realname WHERE $list");
             $list2=make_SQL_csf($rtable,false,"$nowfield[name]",$dummy);
+            // if aprevious search had been done while count>$max_menu_length
+            // we need to backtranslate the id # to a reasonable text:
+            if ($HTTP_POST_VARS['max_'.$nowfield['name']]) {
+               $tblvalue=getvalues($db,$tableinfo,$nowfield['name'],$nowfield['name'],${$nowfield['name']});
+               ${$nowfield['name']}=$tblvalue[0]['text'];
+            }
             if ($list2) {
                $rcount=$db->Execute("SELECT COUNT(id) FROM {$nowfield['ass_table_name']} WHERE id IN ($list2)");
                if ($rcount && ($rcount->fields[0] < $max_menu_length)) {
                   
-               // $rtable=$db->Execute("SELECT $nowfield[ass_column_name],id FROM $nowfield[ass_table_name] WHERE id IN ($list2)");
-               // $text=$rtable->GetMenu2($nowfield["name"],${$nowfield[name]},true,false,0,"style='width: 80%' $jscript");
                 $text=GetValuesMenu($db,$nowfield['name'],${$nowfield['name']},$nowfield['ass_table_name'],$nowfield['ass_column_name'],"WHERE id IN ($list2)","style='width: 80%' $jscript");
                 }
-                else
-                   $text="<input type='text' name='{$nowfield['name']}' value='{$$nowfield['name']}'>\n";
+                else {
+                   $text="<input type='hidden' name='max_{$nowfield['name']}' value='true'>\n";
+                   $text.="<input type='text' name='{$nowfield['name']}' value='{$$nowfield['name']}'>\n";
+                }
             }
             else
                $text="&nbsp;";

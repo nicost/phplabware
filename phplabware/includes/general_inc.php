@@ -68,7 +68,7 @@ function date_entry($id,$real_tablename) {
 //// 
 // !Displays information in table in edit mode
 function display_table_change($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr_curr_page,$page_array,$r=false) {
-   global $nr_records,$USER,$LAYOUT,$HTTP_SESSION_VARS;
+   global $nr_records,$max_menu_length,$USER,$LAYOUT,$HTTP_SESSION_VARS;
 
    $first_record=($pr_curr_page - 1) * $num_p_r;
    $current_record=$first_record;
@@ -130,8 +130,11 @@ function display_table_change($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr
                $text=false;
                // get previous value	
                if ($nowfield['ass_column_name'] && $nowfield['ass_table_name']) { 
-                  $rt=$db->Execute("SELECT $nowfield[ass_column_name],id FROM $nowfield[ass_table_name]");
-                  $text=$rt->GetMenu2("$nowfield[name]_$id",$nowfield[values],true,false,0,$js);
+                  $rcount=$db->Execute("SELECT COUNT(id) FROM {$nowfield['ass_table_name']}");
+                  if ($rcount && ($rcount->fields[0] < $max_menu_length)) 
+                     $text=GetValuesMenu($db,"{$nowfield['name']}_$id",$nowfield['values'],$nowfield['ass_table_name'],$nowfield['ass_column_name'],false);
+                  else
+                     $text="<i>CODE IN PROGRESS</i>";
                }
                echo "<td>$text $thestar</td>\n";
             }
@@ -436,9 +439,6 @@ function display_add($db,$tableinfo,$Allfields,$id,$namein,$system_settings) {
                }
                else {
                   $text=GetValuesMenu($db,$nowfield['name'],$nowfield['values'],$nowfield['ass_table_name'],$nowfield['ass_column_name'],false);
-                  //$r=$db->Execute("SELECT $nowfield[ass_column_name],id FROM $nowfield[ass_table_name] ORDER BY {$nowfield['ass_column_name']}");
-               
-                  //$text=$r->GetMenu2("$nowfield[name]",$nowfield[values],true,false);
                }
                echo "<tr><th>$nowfield[label]:";
                if ($nowfield[required]=="Y")
@@ -780,4 +780,23 @@ function indexfile ($db,$tableinfo,$indextable,$recordid,$fileid,$htmlfileid)
    }
 }
 
+////
+// !Searches (nested) for a match with $value 
+// returns the associated value by searching recursively
+// that can be used in a SQL search
+function find_nested_match($db,$tableinfo,$field,$value,$first=true) {
+   $info=getvalues($db,$tableinfo,$field);
+   if ($info[0]['datatype']=='table') {
+      $ass_tableinfo=new tableinfo($db,$info[0]['ass_table_name']);
+      $value=find_nested_match($db,$ass_tableinfo,$info[0]['ass_column_name'],$value,false);
+   }
+   elseif ($info[0]['datatype']=='pulldown') {
+      $value=get_cell($db,$info[0]['ass_t'],'id','typeshort',$value);
+      return get_cell($db,$tableinfo->realname,'id',$field,$value);
+   }
+   elseif (!$first) {
+      return get_cell($db,$tableinfo->realname,'id',$field,$value);
+   }
+   return $value;
+}
 ?>
