@@ -147,7 +147,7 @@ else {
       }
       else {  
 	 $fileid=upload_files($db,$tablename,$id,$USER,$system_settings);
-      // insert stuff to deal with word/html files
+         // insert stuff to deal with word/html files
          process_file($db,$fileid,$system_settings); 
          // to not interfere with search form 
          unset ($HTTP_POST_VARS);
@@ -165,7 +165,7 @@ else {
       else { 
          if ($HTTP_POST_FILES["file"]["name"][0]) {
             // delete all existing file
-            delete ($db,$real_tablename,$HTTP_POST_VARS["id"],$USER,true);
+            delete ($db,$tablename,$HTTP_POST_VARS["id"],$USER,true);
             $fileid=upload_files($db,$tablename,$HTTP_POST_VARS["id"],$USER,$system_settings);
             process_file($db,$fileid,$system_settings);
          }
