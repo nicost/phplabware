@@ -293,6 +293,9 @@ if ($add && $md!='edit') {
    if ($md=='edit' && $add) {
       $fieldvalues=set_default($db,$tableinfo,$tableinfo->fields,$USER,$system_settings);
       $id=add($db,$tableinfo->realname,$tableinfo->fields,$fieldvalues,$USER,$tableinfo->id);
+      // Reset Search statement so that we can be sure the newly added records is on top:
+      $search='Show All';
+      
    } 
     // first handle addition of a new record
    if ($submit == 'Add Record') {
