@@ -18,6 +18,27 @@ the terms of the GNU General Public License as published by the Free Software Fo
 */
 
 
+////
+// ! outputs to a file a reference plus link to the newly added pdf
+function report_pdf_addition ($db,$id,$tablename,$real_tablename,$journaltable) 
+{
+   global $PHP_SELF,$system_settings;
+
+   $r=$db->Execute("SELECT ownerid,title,journal,pubyear,volume,fpage,lpage,author FROM $real_tablename WHERE id=$id");
+   $fid=fopen($system_settings["pdfs_file"],w);
+   if ($fid) {
+      $link= $system_settings["baseURL"].getenv("SCRIPT_NAME")."?tablename=$tablename&showid=$id";
+      $journal=get_cell($db,$journaltable,"type","id",$r->fields["journal"]);
+      $submitter=get_person_link($db,$r->fields["ownerid"]);
+      $text="<a href='$link'><b>".$r->fields["title"];
+      $text.="</b></a> $journal (".$r->fields["pubyear"]."), <b>".$r->fields["volume"];
+      $text.="</b>:".$r->fields["fpage"]."-".$r->fields["lpage"];
+      $text.= ". ".$r->fields["author"]." Submitted by $submitter.";
+      fwrite($fid,$text);
+      fclose($fid);
+   }
+}
+
 
 ////
 // !Change/calculate/check values just before they are added/modified
@@ -30,6 +51,7 @@ function plugin_check_data($db,&$field_values,$table_desc,$modify=false)
    global $HTTP_POST_FILES;
    // we need some info from the database
    $pdftable=get_cell($db,"tableoftables","real_tablename","table_desc_name",$table_desc);
+   $pdftablelabel=get_cell($db,"tableoftables","tablename","table_desc_name",$table_desc);
    $journaltable=get_cell($db,$table_desc,"associated_table","columnname","journal");
 
    // some browsers do not send a mime type??  
@@ -128,6 +150,8 @@ function plugin_check_data($db,&$field_values,$table_desc,$modify=false)
    }
    // some stuff goes wrong when this remains on
    set_magic_quotes_runtime(0);
+   if (!$modify)
+      report_pdf_addition ($db,$id,$pdftablelabel,$pdftable,$journaltable); 
    return true;
 }
 
@@ -160,10 +184,10 @@ function plugin_show($db,$fields,$id,$USER,$system_settings,$tableid,$real_table
    echo "<table border=0 align='center'>\n";
    echo "<tr>\n";
    echo "<th>Article: </th>\n";
-   echo "<td>$title<br>\n";
+   echo "<td>$title<br>\n$author<br>\n";
    $text=get_cell($db,$journaltable,"type","id",$journal);
-   echo "$text ($pubyear), <b>$volume</b>:$fpage-$lpage<br>\n";
-   echo "$author</td></tr>\n";
+   echo "$text ($pubyear), <b>$volume</b>:$fpage-$lpage\n";
+   echo "</td></tr>\n";
    
    if ($abstract) {
       echo "<tr>\n<th>Abstract</th>\n";
@@ -245,7 +269,6 @@ function plugin_show($db,$fields,$id,$USER,$system_settings,$tableid,$real_table
    echo "</table></form>\n";
 }
 
-}
 
 /*
 
@@ -270,4 +293,15 @@ function plugin_getvalues($db,&$allfields)
 {
 }
 */
+
+////
+// !Extends display_add
+function plugin_display_add($db,$tableid,$nowfield)
+{
+   if ($nowfield[name]=="pmid") {
+      echo "<br>Find the Pubmed ID for this article at <a href='http://www.ncbi.nlm.nih.gov/entrez/query.fcgi?db=PubMed'>PubMed</a>";
+   }
+}
+
+
 ?>
