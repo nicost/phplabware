@@ -314,8 +314,9 @@ function add_columnecg($db,$tablename2,$colname2,$label,$datatype,$Rdis,$Tdis,$r
             $sqltype="float";
          else
              $sqltype="text";
-         $r=$db->Execute("INSERT INTO $desc ($fieldstring) Values($fieldid,'$colname','$label','$sort','$Tdis','$Rdis','$req','$modifiable','$sqltype','$datatype','','')");
          $rsss=$db->Execute("ALTER table $real_tablename add column $colname $sqltype");
+         if ($rsss)
+            r=$db->Execute("INSERT INTO $desc ($fieldstring) Values($fieldid,'$colname','$label','$sort','$Tdis','$Rdis','$req','$modifiable','$sqltype','$datatype','','')");
  	 if (($r)&&$rsss&&(!($colname==""))) {
             $string="Added column <i>$colname</i> into table: <i>$tablename2</i>";
             return $fieldid;
