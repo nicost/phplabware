@@ -32,7 +32,10 @@ $tableinfo->queryname=$queryname=$tableinfo->short.'_query';
 $tableinfo->pagename=$pagename=$tableinfo->short.'_curr_page';
 
 // read all fields in from the description file
-$fields_table=comma_array_SQL($db,$tableinfo->desname,columnname,"WHERE display_table='Y'");
+$Fieldscomma=comma_array_SQL($db,$tableinfo->desname,columnname,"WHERE display_table='Y'");
+// then check whether the user has its own preferences
+if (isset($USER['settings']['tablefields']['$tableinfo->name']))
+   $Fieldscomma=$USER['settings']['tablefields']['$tableinfo->name'];
 
 // load plugin php code if it has been defined 
 $plugin_code=get_cell($db,'tableoftables','plugin_code','id',$tableinfo->id);
@@ -148,7 +151,7 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
    if (substr($key, 0, 3) == 'chg') {
       $chgarray = explode('_', $key);
       if ($val=='Change') {
-         $Fieldscomma=comma_array_SQL_where($db,$tableinfo->desname,'columnname','display_table','Y');
+         //$Fieldscomma=comma_array_SQL_where($db,$tableinfo->desname,'columnname','display_table','Y');
          $Fieldsarray=explode(',',$Fieldscomma);
          reset($HTTP_POST_VARS);
          while((list($key, $val) = each($HTTP_POST_VARS))) {	
@@ -381,7 +384,7 @@ else {
    $listb=may_read_SQL($db,$tableinfo,$USER,'tempb');
 
    // prepare the search statement and remember it
-   $fields_table='id,'.$fields_table;
+   $fields_table='id,'.$Fieldscomma;
 
    ${$queryname}=make_search_SQL($db,$tableinfo,$fields_table,$USER,$search,$sortstring,$listb['sql']);
    $r=$db->Execute(${$queryname});
@@ -467,11 +470,6 @@ echo "${$queryname}.<br>";
    }
 
    //  get a list of all fields that are displayed in the table
-   //  first check whether the user has its own preferences
-   if (isset($USER['settings']['tablefields']['$tableinfo->name']))
-      $Fieldscomma=$USER['settings']['tablefields']['$tableinfo->name'];
-   else
-      $Fieldscomma=comma_array_SQL_where($db,$tableinfo->desname,'columnname','display_table','Y');
    $Allfields=getvalues($db,$tableinfo,$Fieldscomma,false,false);	
    
    // javascript to automatically execute search when pulling down 
