@@ -44,7 +44,7 @@ function move ($fromfile, $tofile) {
    //  guess this won't work on Windows
    `mv '$fromfile' '$tofile'`;
     // but this should
-    if (!filesize($tofile)) 
+    if (!@filesize($tofile)) 
       copy($fromfile,$tofile);
     return filesize($tofile);
 }
@@ -249,7 +249,7 @@ if ($HTTP_POST_VARS['assign']=='Import Data') {
        $ft=fopen("$tmpdir/$tablefile",'r');
        $columnnames=explode("\t",$firstline);
        if ($ft) {
-          $firstline=chop(fgets($ft,1000000));
+          $firstline=chop(fgets($ft,1024));
           $columns=explode("\t",$firstline);
           // create the table for temp file data
           $db->Execute("CREATE TEMPORARY TABLE tmpfiles (
@@ -261,7 +261,7 @@ if ($HTTP_POST_VARS['assign']=='Import Data') {
           // and file with data from file
           $rs=$db->Execute("SELECT * FROM tmpfiles");
           while (!feof($ft)) {
-             $line=chop(fgets($ft,1000000));
+             $line=chop(fgets($ft,1024));
              $columnvalues=explode("\t",$line);
              foreach ($columns as $columnname) {
                 list($t,$value)=each($columnvalues);
@@ -463,7 +463,7 @@ if ($HTTP_POST_VARS['assign']=='Import Data') {
             echo "<h3 align='center'>$duplicateid $duplicate_text rejected because their ids have already been used.</h3>\n";
 
          fclose($fh);
-         unlink ("$tmpdir/$tmpfile");
+         @unlink ("$tmpdir/$tmpfile");
          printfooter();
       }
       exit();
