@@ -594,7 +594,7 @@ function current_page($curr_page, $sname) {
 
 ////
 // !Assembles the search SQL statement and remembers it in HTTP_SESSION_VARS
-function make_search_SQL($db,$table,$tableshort,$fields,$USER,$search) {
+function make_search_SQL($db,$table,$tableshort,$fields,$USER,$search,$searchsort="title") {
    global $HTTP_POST_VARS, $HTTP_SESSION_VARS;
 
    $fieldvarsname=$tableshort."_fieldvars";
@@ -603,7 +603,7 @@ function make_search_SQL($db,$table,$tableshort,$fields,$USER,$search) {
    $queryname=$tableshort."_query";
    $whereclause=may_read_SQL ($db,$table,$USER);
    if ($search=="Search")
-      ${$queryname}=search($table,$fields,$HTTP_POST_VARS," id IN ($whereclause) ORDER BY title");
+      ${$queryname}=search($table,$fields,$HTTP_POST_VARS," id IN ($whereclause) ORDER BY $searchsort");
    elseif (session_is_registered ($queryname) && isset($HTTP_SESSION_VARS[$queryname])) {
       ${$queryname}=$HTTP_SESSION_VARS[$queryname];
       ${$fieldvarsname}=$HTTP_SESSION_VARS[$fieldvarsname];
