@@ -1,0 +1,87 @@
+BODY  
+{
+	background-color : White;
+	font-family : Arial, Helvetica;
+	generic-family : sans-serif;
+	font-size : 10pt;
+        margin : 10 pt;
+}
+
+
+A 
+{
+	color: #336699;
+	text-decoration : none;
+	font-weight : bold;
+}
+
+A:Hover
+{
+	color : Navy;
+	text-decoration : none;
+	font-weight : bold;
+}
+
+A:Visited 
+{
+	text-decoration : none;
+	color: #336699;
+	font-weight : bold;
+}
+
+Table, P, DIV, H5, A, OL, TD, UL 
+ {
+	font-family : Arial, Helvetica;
+	generic-family : sans-serif;
+	font-size : 10pt;
+}
+
+TH  
+{
+	font-family : Arial, Helvetica;
+	generic-family : sans-serif;
+	font-size : 10pt;
+	color: #FFFFFF;
+	background-color : #336699;
+	font-weight : bold;
+}
+
+H1
+{ 
+	font-size : 16pt; 
+	font-weight : bold; 
+	line-height : 18pt; 
+}
+
+H2 
+{ 
+	font-size : 14pt; 
+	font-weight : bold; 
+	line-height : 16pt; 
+}
+
+H3 
+{ 
+	font-size : 12pt; 
+	font-weight : bold; 
+	line-height : 14pt; 
+}
+
+SPAN.right
+{
+        margin-right: 5%;
+        float : right;      
+}
+
+Col.center
+{
+         padding : 1em 2em;
+}
+
+TEXTAREA.read_only
+{
+	background-color : White;
+	font-family : Arial, Helvetica;
+	generic-family : sans-serif;
+	font-size : 10pt;
+}
