@@ -133,6 +133,122 @@ function plugin_check_data($db,&$field_values,$table_desc,$modify=false)
 
 
 ////
+// !Overrides the standard 'show record'function
+function plugin_show($db,$fields,$id,$USER,$system_settings,$tableid,$real_tablename,$table_desname)
+{
+/*
+function show_pd ($db,$tableid,$fields,$id,$USER,$system_settings) {
+   global $PHP_SELF;
+
+   if (!may_read($db,$tableid,$id,$USER))
+      return false;
+
+   // get values 
+   $r=$db->Execute("SELECT $fields FROM pdfs WHERE id=$id");
+   if ($r->EOF) {
+      echo "<h3>Could not find this record in the database</h3>";
+      return false;
+   }
+   $column=strtok($fields,",");
+   while ($column) {
+      ${$column}=$r->fields[$column];
+      $column=strtok(",");
+   }
+
+   echo "<table border=0 align='center'>\n";
+   echo "<tr>\n";
+   echo "<th>Article: </th>\n";
+   echo "<td>$title<br>\n";
+   $text=get_cell($db,"pd_type1","type","id",$type1);
+   echo "$text ($year), <b>$volume</b>:$fpage-$lpage<br>\n";
+   echo "$author</td></tr>\n";
+   
+   if ($abstract) {
+      echo "<tr>\n<th>Abstract</th>\n";
+      echo "<td>$abstract</td>\n</tr>\n";
+   }
+   // Category
+   if ($type2) {
+      $type2=get_cell($db,"pd_type2","type","id",$type2);
+      echo "<tr>\n<th>Category</th>\n";
+      echo "<td>$type2</td>\n</tr>\n";
+   }
+
+   echo "<tr>";
+   $query="SELECT firstname,lastname,email FROM users WHERE id=$ownerid";
+   $r=$db->Execute($query);
+   if ($r->fields["email"]) {
+      echo "<th>Submitted by: </th><td><a href='mailto:".$r->fields["email"]."'>";
+      echo $r->fields["firstname"]." ".$r->fields["lastname"]."</a> ";
+   }
+   else {
+      echo "<th>Submitted by: </th><td>".$r->fields["firstname"]." ";
+      echo $r->fields["lastname"] ." ";
+   }
+   $dateformat=get_cell($db,"dateformats","dateformat","id",$system_settings["dateformat"]);
+   $date=date($dateformat,$date);
+   echo "($date)</td>\n";
+   echo "</tr>\n";
+
+   if ($lastmodby && $lastmoddate) {
+      echo "<tr>";
+      $query="SELECT firstname,lastname,email FROM users WHERE id=$lastmodby";
+      $r=$db->Execute($query);
+      if ($r->fields["email"]) {
+         echo "<th>Last modified by: </th><td><a href='mailto:".$r->fields["email"]."'>";
+         echo $r->fields["firstname"]." ".$r->fields["lastname"]."</a>";
+      }
+      else {
+         echo "<th>Last modified by: </th><td>".$r->fields["firstname"]." ";
+         echo $r->fields["lastname"];
+      }
+      $dateformat=get_cell($db,"dateformats","dateformat","id",$system_settings["dateformat"]);
+      $lastmoddate=date($dateformat,$lastmoddate);
+      echo " ($lastmoddate)</td>\n";
+      echo "</tr>\n";
+   }
+
+   echo "<tr>";
+   $notes=nl2br(htmlentities($notes));
+   echo "<th>Notes: </th><td>$notes</td>\n";
+   echo "</tr>\n";
+
+   $files=get_files($db,"pdfs",$id,1);
+   if ($files) {
+      echo "<tr><th>Files:</th>\n<td>";
+      for ($i=0;$i<sizeof($files);$i++) {
+         echo $files[$i]["link"]." (".$files[$i]["type"]." file, ".$files[$i]["size"].")<br>\n";
+      }
+      echo "</tr>\n";
+   }
+   
+   echo "<tr><th>Links:</th><td colspan=7><a href='$PHP_SELF?showid=$id&";
+   echo SID;
+   echo "'>".$system_settings["baseURL"].getenv("SCRIPT_NAME")."?showid=$id</a> (This page)<br>\n";
+
+   echo "<a href='http://www.ncbi.nlm.nih.gov/entrez/query.fcgi?";
+   if ($system_settings["pdfget"])
+      $addget="&".$system_settings["pdfget"];
+   echo "cmd=Retrieve&db=PubMed&list_uids=$pmid&dopt=Abstract$addget'>This article at Pubmed</a><br>\n";
+   echo "<a href='http://www.ncbi.nlm.nih.gov/entrez/query.fcgi?";
+   echo "cmd=Link&db=PubMed&dbFrom=PubMed&from_uid=$pmid$addget'>Related articles at Pubmed</a></td></tr>\n";
+
+?>   
+<form method='post' id='pdfview' action='<?php echo $PHP_SELF?>?<?=SID?>'> 
+<?php
+   echo "<tr>";
+   echo "<td colspan=7 align='center'><input type='submit' name='submit' value='Back'></td>\n";
+   echo "</tr>\n";
+
+   echo "</table></form>\n";
+}
+*/
+
+}
+
+/*
+
+////
 // !Extends the search query
 // $query is the complete query that you can change and must return
 // $fieldvalues is an array with the column names as key.
@@ -152,5 +268,5 @@ function plugin_search($query,$fieldvalues,$existing_clause)
 function plugin_getvalues($db,&$allfields) 
 {
 }
-
+*/
 ?>
