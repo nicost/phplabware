@@ -153,6 +153,8 @@ function loginscreen ($message="<h3>Login to PhpLabWare</h3>") {
    $PHP_SELF=$HTTP_SERVER_VARS["PHP_SELF"];
    if ($system_settings["secure_server"]) {
       $server= getenv ("HTTP_HOST");
+      if (!$server)
+         $server=$HTTP_SERVER_VARS["HTTP_HOST"];
       $addres="https://$server$PHP_SELF";
    }
    else
