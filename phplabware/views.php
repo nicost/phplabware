@@ -89,10 +89,10 @@ echo "<tr>\n";
 echo "<td align='center'>Edit views for table: ";
 // make dropdown with accessible tablenames, select the current tablename
 if ($USER['permissions'] & $SUPER)
-   $r=$db->Execute ("SELECT tablename FROM tableoftables");
+   $r=$db->Execute ("SELECT label,tablename FROM tableoftables ORDER by sortkey ");
 else
-   $r=$db->Execute("SELECT tablename FROM tableoftables WHERE id IN (SELECT tableid FROM groupxtable_display WHERE groupid IN ({$USER['group_list']}))");
-echo $r->GetMenu('tablename',$tableinfo->name,true,false,0,'OnChange="document.views.submit()"');
+   $r=$db->Execute("SELECT label,tablename FROM tableoftables WHERE id IN (SELECT tableid FROM groupxtable_display WHERE groupid IN ({$USER['group_list']})) ORDER BY sortkey");
+echo $r->GetMenu2('tablename',$tableinfo->name,true,false,0,'OnChange="document.views.submit()"');
 echo "</td>\n";
 
 echo "<td align='center'>Views: ";
