@@ -487,6 +487,8 @@ if ($mode<>"menu") {
 <table border="0" width="100%" rules="none" border="0" cellspacing="0" cellpadding="0" bgcolor="333388">
 <tr class='header' bgcolor="333388">
 <?php
+   // get the time
+   $today = date("F j, Y, g:i a");
    // first display the linkbar if activated
    // only show linkbar when we have been authenticated
    if ($active) {
@@ -497,6 +499,11 @@ if ($mode<>"menu") {
    }
 
    ?>
+      <td align=left>
+         <font color="#ffffff"><i><b>
+         <?php echo "$today"; ?>
+         </i></b></font>
+      </td>
       <td align=right>
          <a href="http://phplabware.sourceforge.net">
          <font color="#ffffff"><i>PhpLabWare  
