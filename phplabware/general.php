@@ -121,7 +121,7 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
             if ( ($testarray[1]==$chgarray[1]) && (in_array ($testarray[0],$Fieldsarray))) 
                $change_values[$testarray[0]]=$val;  
          }
-         if(check_g_data ($db,$change_values,$tableinfo->desname,true))
+         if(check_g_data ($db,$change_values,$tableinfo,true))
             modify($db,$tableinfo->realname,$Fieldscomma,$change_values,$chgarray[1],$USER,$tableinfo->id); 
          break;
       }
@@ -213,7 +213,7 @@ if ($add) {
 else { 
     // first handle addition of a new record
    if ($submit == "Add Record") {
-      if (!(check_g_data($db, $HTTP_POST_VARS, $tableinfo->desname) && 
+      if (!(check_g_data($db, $HTTP_POST_VARS, $tableinfo) && 
             $id=add($db,$tableinfo->realname,$tableinfo->fields,$HTTP_POST_VARS,$USER,$tableinfo->id) ) ) {
          add_g_form($db,$tableinfo,$HTTP_POST_VARS,0,$USER,$PHP_SELF,$system_settings);
          printfooter ();
@@ -252,7 +252,7 @@ else {
    // then look whether it should be modified
    elseif ($submit=="Modify Record") {
       $modfields=comma_array_SQL_where($db,$tableinfo->desname,"columnname","modifiable","Y");
-      if (! (check_g_data($db,$HTTP_POST_VARS,$tableinfo->desname,true) && 
+      if (! (check_g_data($db,$HTTP_POST_VARS,$tableinfo,true) && 
              modify($db,$tableinfo->realname,$modfields,$HTTP_POST_VARS,$HTTP_POST_VARS["id"],$USER,$tableinfo->id)) ) {
          add_g_form ($db,$tableinfo,$HTTP_POST_VARS,$HTTP_POST_VARS["id"],$USER,$PHP_SELF,$system_settings);
          printfooter ();
