@@ -742,19 +742,19 @@ function may_read_SQL_JOIN ($db,$table,$USER) {
 // Generates a left join for mysql, subselect for postgres
 function may_read_SQL ($db,$tableinfo,$USER,$temptable="tempa") {
    global $db_type;
-   if ($db_type=="mysql") {
+   if ($db_type=='mysql') {
       $list=may_read_SQL_JOIN ($db,$tableinfo->realname,$USER);
       if (!$list)
-         $list="-1";
-      $result["sql"]= " id IN ($list) ";
-      $result["numrows"]=substr_count($list,",");
+         $list='-1';
+      $result['sql']= " id IN ($list) ";
+      $result['numrows']=substr_count($list,',');
    }
    else {
       //return may_read_SQL_subselect ($db,$table,$tableid,$USER);
       $r=$db->Execute(may_read_SQL_subselect ($db,$tableinfo->realname,$tableinfo->id,$USER,false));
-      $result["numrows"]=$r->NumRows();
+      $result['numrows']=$r->NumRows();
       make_temp_table($db,$temptable,$r); 
-      $result["sql"] = " ($tableinfo->realname.id = $temptable.uniqueid) ";
+      $result['sql'] = " ($tableinfo->realname.id = $temptable.uniqueid) ";
    }
    return $result;
 }
