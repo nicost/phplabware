@@ -127,17 +127,18 @@ function delete ($db, $table, $id, $USER) {
 // !Upload files and enters then into table files
 // files should be called file[] in HTTP_POST_FILES
 // filetitle in HTTP_POST_VARS will be inserted in the title field of table files
+// returns id of last uploaded file upon succes, false otherwise
 function upload_files ($db,$table,$id,$USER,$system_settings) {
    global $HTTP_POST_FILES,$HTTP_POST_VARS;
    if (!$db && $table && $id)
       return false;
    if (!may_write($db,$table,$id,$USER))
       return false;
-   if (isset($HTTP_POST_FILES["file"][0]) && !$filedir=$system_settings["filedir"]) {
+   if (isset($HTTP_POST_FILES["file"]["name"][0]) && !$filedir=$system_settings["filedir"]) {
       echo "<h3><i>Filedir</i> was not set.  The file was not uploaded. Please contact your system administrator</h3>";
       return false;
    }
-   for ($i=0;$i<sizeof($HTTP_POST_FILES);$i++) {
+   for ($i=0;$i<sizeof($HTTP_POST_FILES["file"]["name"]);$i++) {
       if (!$fileid=$db->GenID("files_id_seq"))
          return false;
       $originalname=$HTTP_POST_FILES["file"]["name"][$i];
@@ -146,6 +147,7 @@ function upload_files ($db,$table,$id,$USER,$system_settings) {
       $mime=strtok ($mime,";");
       $size=$HTTP_POST_FILES["file"]["size"][$i];
       $title=$HTTP_POST_VARS["filetitle"][$i];
+      $type=$HTTP_POST_VARS["filetype"][$i];
       // this works asof php 4.02
       if (move_uploaded_file($HTTP_POST_FILES["file"]["tmp_name"][$i],"$filedir/$fileid"."_"."$originalname")) {
          $tablesid=get_cell($db,"tableoftables","id","tablename",$table);
@@ -153,7 +155,7 @@ function upload_files ($db,$table,$id,$USER,$system_settings) {
 	 $db->Execute($query);
       }
    }
-   return true;
+   return $fileid;
 }
 
 
@@ -188,6 +190,17 @@ function get_files ($db,$table,$id,$format=1) {
    return $files;
    }
 }
+
+
+////
+// !Returns path to the file
+function file_path ($db,$fileid) {
+   global $system_settings;
+   $filename=get_cell($db,"files","filename","id",$fileid);
+   return $system_settings["filedir"]."/$fileid"."_$filename";
+}
+
+
 
 ////
 // !Deletes file identified with id.
