@@ -36,9 +36,9 @@ $db->Execute("Create table linkbar (
 	id int PRIMARY KEY, 
 	label text, 
 	linkurl text, 
-	sortkey int(11),
-	display char(1),
-	target char(1))");
+	sortkey int,
+	display varchar(1),
+	target varchar(1))");
 // Avoid clashes between user generated and 'system' tables
 // ids up to 9999 are reserved for system tables
 $id=$db->GenID("tableoftables_gen_id_seq",10000);
