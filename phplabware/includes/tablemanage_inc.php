@@ -243,23 +243,23 @@ function mod_table($db,$id,$tablename,$tablesort,$tabledisplay,$label,$tablegrou
 /////////////////////////////////////////////////////////////////////////
 //// 
 // !adds a general column entry
-function add_columnecg($db,$tablename2,$colname2,$label,$datatype,$Rdis,$Tdis,$req,$sort)
-   {
+function add_columnecg($db,$tablename2,$colname2,$label,$datatype,$Rdis,$Tdis,$req,$modifiable,$sort) {
    global $string;
 
    $SQL_reserved=",absolute,action,add,allocate,alter,are,assertion,at,between,bit,bit_length,both,cascade,cascaded,case,cast,catalog,char_length,charachter_length,cluster,coalsce,collate,collation,column,connect,connection,constraint,constraints,convert,corresponding,cross,current_date,current_time,current_timestamp,current_user,date,day,deallocate,deferrrable,deferred,describe,descriptor,diagnostics,disconnect,domain,drop,else,end-exec,except,exception,execute,external,extract,false,first,full,get,global,hour,identity,immediate,initially,inner,input,insensitive,intersect,interval,isolation,join,last,leading,left,level,local,lower,match,minute,month,names,national,natural,nchar,next,no,nullif,octet_length,only,outer,output,overlaps,pad,partial,position,prepare,preserve,prior,read,relative,restrict,revoke,right,rows,scroll,second,session,session_user,size,space,sqlstate,substring,system_user,temporary,then,time,timepstamp,timezone_hour,timezone_minute,trailing,transaction,translate,translation,trim,true,unknown,uppper,usage,using,value,varchar,varying,when,write,year,zone,";
 
    // find the id of the table and therewith the tablename
-   $r=$db->Execute("SELECT id FROM tableoftables WHERE tablename='$tablename2'"); 
+   $r=$db->Execute("SELECT id,real_tablename,table_desc_name FROM tableoftables WHERE tablename='$tablename2'"); 
    $id=$r->fields["id"];
+   $real_tablename=$r->fields["real_tablename"];
+   $desc=$r->fields["table_desc_name"];
+//   $real_tablename=get_cell($db,"tableoftables","real_tablename","id",$id);
+//   $desc=get_cell($db,"tableoftables","table_desc_name","id",$id);
    $search=array("' '","','","';'","'\"'");
    $replace=array("_","_","","");
    $colname = preg_replace ($search,$replace, $colname2);
-   $real_tablename=get_cell($db,"tableoftables","real_tablename","id",$id);
-   $desc=get_cell($db,"tableoftables","table_desc_name","id",$id);
 
-   $fieldstring="id,columnname,label,sortkey,display_table,display_record,required,type,datatype,associated_table,associated_column"; 
-//   $desc=$real_tablename . "_desc";
+   $fieldstring="id,columnname,label,sortkey,display_table,display_record,required,modifiable,type,datatype,associated_table,associated_column"; 
    $fieldid=$db->GenId($desc."_id");
    $label=strtr($label,",'","  ");
    // avoid having more than one column of type 'file'
@@ -291,7 +291,7 @@ function add_columnecg($db,$tablename2,$colname2,$label,$datatype,$Rdis,$Tdis,$r
          $assid=$db->GenID($tablestr,20);
 	 $tablestr.="_$assid";	
 
-	 $r=$db->Execute("INSERT INTO $desc ($fieldstring) Values($fieldid,'$colname','$label','$sort','$Tdis','$Rdis','$req','text','$datatype','$tablestr','$colname from $tablestr where ')");
+	 $r=$db->Execute("INSERT INTO $desc ($fieldstring) Values($fieldid,'$colname','$label','$sort','$Tdis','$Rdis','$req','$modifiable','text','$datatype','$tablestr','')");
 	 $rs=$db->Execute("CREATE TABLE $tablestr (id int PRIMARY KEY, sortkey int, type text, typeshort text)");
 	 $rsss=$db->Execute("ALTER table $real_tablename add column $colname int");
 	 if (($r)&&($rs)&&($rsss)&&(!($colname==""))) 
@@ -301,7 +301,7 @@ function add_columnecg($db,$tablename2,$colname2,$label,$datatype,$Rdis,$Tdis,$r
       }
 
       else {
-         $r=$db->Execute("INSERT INTO $desc ($fieldstring) Values($fieldid,'$colname','$label','$sort','$Tdis','$Rdis','$req','text','$datatype','','')");
+         $r=$db->Execute("INSERT INTO $desc ($fieldstring) Values($fieldid,'$colname','$label','$sort','$Tdis','$Rdis','$req','$modifiable','text','$datatype','','')");
          $rsss=$db->Execute("ALTER table $real_tablename add column $colname text");
  	 if (($r)&&$rsss&&(!($colname==""))) {
             $string="Added column <i>$colname</i> into table: <i>$tablename2</i>";
@@ -318,7 +318,7 @@ function add_columnecg($db,$tablename2,$colname2,$label,$datatype,$Rdis,$Tdis,$r
 /////////////////////////////////////////////////////////////////////////
 //// 
 // !modifies a general column entry
-function mod_columnECG($db,$id,$sort,$tablename,$colname,$label,$datatype,$Rdis,$Tdis,$req) {
+function mod_columnECG($db,$id,$sort,$tablename,$colname,$label,$datatype,$Rdis,$Tdis,$req,$modifiable) {
    global $string;
 
    // find the id of the table and therewith the tablename
@@ -328,7 +328,7 @@ function mod_columnECG($db,$id,$sort,$tablename,$colname,$label,$datatype,$Rdis,
    $label=strtr($label,",'","  ");
    $tablename=$tablename."_".$tableid;
    $desc=$tablename."_desc";
-   $r=$db->Execute("UPDATE $desc SET sortkey='$sort',display_table='$Tdis', display_record='$Rdis',required='$req',label='$label' where id='$id'");   	
+   $r=$db->Execute("UPDATE $desc SET sortkey='$sort',display_table='$Tdis', display_record='$Rdis',required='$req',label='$label',modifiable='$modifiable' where id='$id'");   	
    if ($r) { 
       $string="Succesfully Changed Column $colname in $tablename";
       return true;
@@ -408,7 +408,7 @@ function show_active_link_page ($db,$table_name,$addcol_name,$addcol_label,$link
 function add_active_link ($db,$table,$column,$link_a,$link_b) {
    $r=$db->Execute("SELECT table_desc_name FROM tableoftables WHERE tablename='$table'");
    $table_desc=$r->fields["table_desc_name"];
-   if ($r && $link_a) {
+   if ($r) {
       $r=$db->Execute("UPDATE $table_desc SET link_first='$link_a',link_last='$link_b' WHERE columnname='$column'");
    }
 }
