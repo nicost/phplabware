@@ -131,7 +131,7 @@ function display_record($db,$Allfields,$id,$tablename,$real_tablename) {
                echo "<tr><th>Files:</th>\n<td colspan=5>";
                for ($i=0;$i<sizeof($files);$i++)  {
                   echo $files[$i]["link"]."&nbsp;&nbsp;(".$files[$i]["type"];
-                  echo " file)<br>\n";
+                  echo " file, ".$files[$i]["size"].")<br>\n";
                }
                echo "<td></tr>\n";
             }				
