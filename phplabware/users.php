@@ -136,13 +136,19 @@ function modify ($db, $type) {
       echo "You are not allowed to do this. <br>";
       return false;
    }
+   
+   $theid=$USER["id"];
+   $theip=getenv("REMOTE_ADDR");
+   $thedate=time();
 
+   
    //if (!($status)) $status = $USER; 
    if ($type=="modify"  && $id) {
       $query = "UPDATE users SET login='$login', firstname='$firstname', 
                      lastname='$lastname',  
                      groupid='$user_group', email='$email',  
-                     permissions='$permissions'";
+                     permissions='$permissions', modbyid='$theid',
+		     modbyip='$theip', moddate='$thedate'";
       if ($pwd) {
           $pwd=md5($pwd);
           $query.=", pwd='$pwd'";
@@ -156,8 +162,8 @@ function modify ($db, $type) {
    elseif ($type =="create") {
          $id=$db->GenID("users_id_seq");
          $pwd=md5($pwd);
-         $query = "INSERT INTO users (id, login, pwd, groupid, firstname, lastname, permissions, email) ";
-         $query .= "VALUES('$id','$login','$pwd','$user_group','$firstname','$lastname', '$permissions', '$email')"; 
+         $query = "INSERT INTO users (id, login, pwd, groupid, firstname, lastname, permissions, email, createdbyid, createdbyip, createddate) ";
+         $query .= "VALUES('$id','$login','$pwd','$user_group','$firstname','$lastname', '$permissions', '$email', '$theid', '$theip', '$thedate')"; 
 
          if ($db->Execute($query))
             echo "User <i>$firstname $lastname</i> added.<br>\n";
