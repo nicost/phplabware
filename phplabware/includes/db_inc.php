@@ -453,20 +453,19 @@ function upload_files ($db,$tableid,$id,$columnid,$columnname,$USER,$system_sett
 ////
 // !returns an array with id,name,title,size, and hyperlink to all
 // files associated with the given record
-function get_files ($db,$table,$id,$columnid,$format=1,$thumbtype="small") {
-   $tableid=get_cell($db,"tableoftables","id","tablename",$table);
+function get_files ($db,$table,$id,$columnid,$format=1,$thumbtype='small') {
+   $tableid=get_cell($db,'tableoftables','id','tablename',$table);
    $r=$db->Execute("SELECT id,filename,title,mime,type,size FROM files WHERE tablesfk=$tableid AND ftableid=$id AND ftablecolumnid='$columnid'");
    if ($r && !$r->EOF) {
       $i=0;
       $sid=SID;
       while (!$r->EOF) {
-//      print_r($r->fields);
-         $filesid=$files[$i]["id"]=$r->fields("id");
-         $filesname=$files[$i]["name"]=$r->fields("filename");
-         $filestitle=$files[$i]["title"]=$r->fields("title");
-         $mime=$files[$i]["mime"]=$r->fields("mime");
-         $filestype=$files[$i]["type"]=$r->fields("type");
-         $filesize=$files[$i]["size"]=nice_bytes($r->fields("size"));
+         $filesid=$files[$i]['id']=$r->fields('id');
+         $filesname=$files[$i]['name']=$r->fields('filename');
+         $filestitle=$files[$i]['title']=$r->fields('title');
+         $mime=$files[$i]['mime']=$r->fields('mime');
+         $filestype=$files[$i]['type']=$r->fields('type');
+         $filesize=$files[$i]['size']=nice_bytes($r->fields('size'));
          // if this is an image, we'll send the thumbnail
          $rb=$db->Execute("SELECT id FROM images WHERE id='$filesid'");
          if ($rb->fields(0)) {
@@ -486,7 +485,7 @@ function get_files ($db,$table,$id,$columnid,$format=1,$thumbtype="small") {
          $icon="icons/$filestype.jpg";
          if (@is_readable($icon))
             $text="<img src='$icon'>";
-         $files[$i]["link"]="<a href='showfile.php?id=$filesid&$sid'>$text</a>\n";
+         $files[$i]['link']="<a href='showfile.php?id=$filesid&$sid'>$text</a>\n";
          $r->MoveNext();
          $i++;
       }
