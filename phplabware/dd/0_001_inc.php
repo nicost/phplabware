@@ -17,12 +17,16 @@
   
   
    $test=true;
-   $result=$db->Execute("CREATE TABLE settings 
-	(id int PRIMARY KEY, 
-	version  float(8), 
-	settings text, 
-	created datetime)");
-   if (!$result) $test=false;
+
+   // Create table settings using Adodb datadictionary
+   $dict=NewDataDictionary($db);
+   $fields='id I PRIMARY, version F NotNull, settings X, created T';  
+   $options = array('mysl'=>' TYPE-ISAM');
+   $sqlArray=$dict->CreateTableSQL('settings',$fields,$options);
+   if ($dict->ExecuteSQLArray($sqlArray) != 2) {
+      $test=false;
+   }
+
    $result=$db->Execute("INSERT INTO settings VALUES (1,0.001,'',".$db->DBDate(time()).")");
    if (!$result) $test=false;
    $query="CREATE TABLE authmethods 
