@@ -737,11 +737,14 @@ function getvalues($db,$tableinfo,$fields,$qfield=false,$field=false) {
                   ${$column}['values']=get_cell($db,$tableinfo->realname,${$column}['ass_local_column_name'],'id',$id); 
                }
                $text=false;
+               $values=false;
                if (${$column}['values']) {
                   $asstableinfo=new tableinfo($db,${$column}['ass_table_name']);
                   $tmpvalue=getvalues($db,$asstableinfo,${$column}['ass_column_name'],'id',${$column}['values']);
-                  if (is_array($tmpvalue[0]))
+                  if (is_array($tmpvalue[0])) {
                      $text=$tmpvalue[0]['text'];
+                     $values=$tmpvalue[0]['values'];
+                  }
                   else
                      $text=$tmpvalue[0];
                   ${$column}['link']="<a target=_ href=\"general.php?tablename={$asstableinfo->name}&showid=".${$column}['values']."\">$text</a>\n";
@@ -749,6 +752,8 @@ function getvalues($db,$tableinfo,$fields,$qfield=false,$field=false) {
                if (!$text)
                   $text="&nbsp;";
                ${$column}['text']=$text;
+               if ($values)
+                  ${$column}['values']=$values;
             }
             elseif ($rb->fields['datatype']=='link') {
                if (${$column}['values'])
