@@ -26,6 +26,57 @@ if (!function_exists("array_key_exists")) {
    }
 }
 
+////
+// !Update sortdirarray and returns formatted sortdirstring
+function sortstring(&$sortdirarray,$sortup,$sortdown) {
+   if ($sortup && $sortup<>" ") {
+      if (is_array($sortdirarray) && array_key_exists($sortup,$sortdirarray)) {
+         if ($sortdirarray[$sortup]=="asc")
+            unset($sortdirarray[$sortup]);
+         else
+            $sortdirarray[$sortup]="asc";
+      }
+      elseif (!is_array($sortdirarray) || !array_key_exists($sortup,$sortdirarray))
+         $sortdirarray[$sortup]="asc";
+   } 
+   if ($sortdown && $sortdown <>" ") {
+      if (is_array($sortdirarray) && array_key_exists($sortdown,$sortdirarray)) {
+         if ($sortdirarray[$sortdown]=="desc")
+            unset($sortdirarray[$sortdown]);
+         else
+            $sortdirarray[$sortdown]="desc";
+      }
+      elseif (!is_array($sortdirarray) || !array_key_exists($sortdown,$sortdirarray))
+         $sortdirarray[$sortdown]="desc";
+   }
+
+   if ($sortdirarray) {
+      foreach($sortdirarray as $key => $value) {
+         if ($sortstring)
+            $sortstring .= ", ";
+         $sortstring .= "$key $value";
+      }
+   }
+   return $sortstring;
+}
+
+////
+// !Displays header of 'general' table
+function tableheader ($sortdirarray,$columnname, $columnlabel) {
+   echo "<th><table><td align='left'>";
+   if ($sortdirarray[$columnname]=="asc")
+      $sortupicon="icons/sortup_active.png";
+   else
+      $sortupicon="icons/sortup.png";
+   echo "<input type='image' name='sortup_$columnname' value='$columnlabel' src='$sortupicon' alt='Sort Up'>";
+   echo "</td><th>$columnlabel</th><td align='right'>";
+   if ($sortdirarray[$columnname]=="desc")
+      $sortdownicon="icons/sortdown_active.png";
+   else
+      $sortdownicon="icons/sortdown.png";
+   echo "<input type='image' name='sortdown_$columnname' value='$columnlabel' src='$sortdownicon' alt='Sort Down'>";
+   echo "</td></tr></table></th>\n";
+}
 
 ////
 // !Inserts $fields with $fieldvalues into $table
