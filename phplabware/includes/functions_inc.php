@@ -1,5 +1,18 @@
 <?php
 
+// functions.php - Functions for all scripts
+// functions.php - author: Nico Stuurman <nicost@sourceforge.net>
+  /***************************************************************************
+  * Copyright (c) 2001 by Nico Stuurman                                      *
+  * ------------------------------------------------------------------------ *
+  *  Part of phplabware, a web-driven groupware suite for research labs      *
+  *                                                                          *
+  *  This program is free software; you can redistribute it and/or modify it *
+  *  under the terms of the GNU General Public License as published by the   *
+  *  Free Software Foundation; either version 2 of the License, or (at your  *
+  *  option) any later version.                                              *
+  \**************************************************************************/  
+
 
 ////
 // !checks wether variables are present in ${type} and makes them available
