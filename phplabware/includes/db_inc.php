@@ -769,6 +769,11 @@ function searchhelp ($db,$tableinfo,$column,&$columnvalues,$query,$wcappend,$and
              }
          }
       }
+      // there are some (old) cases where pulldowns are of type text...
+      elseif ($rc->fields[1]=="pulldown") {
+         $columnvalues[$column]=(int)$columnvalues[$column];
+         $query[0].="$and $column='$columnvalues[$column]' ";
+      }
       elseif (substr($rc->fields[0],0,3)=="int") {
          $columnvalues[$column]=(int)$columnvalues[$column];
          $query[0].="$and $column='$columnvalues[$column]' ";
