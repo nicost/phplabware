@@ -119,8 +119,25 @@ function comma_array_SQL($db,$tablein,$column,$where=false)
 }
 
 ////
+// !Helper function for sortstring
+// returns a string with format tablename.columnname, reflecting the data source for the specified column
+function origin_column ($db,$tableinfo,$key){
+   $r=$db->Execute("SELECT associated_table,associated_column FROM $tableinfo->desname WHERE columnname='$key'");
+   if (!$r->fields[0])
+      return $tableinfo->realname.'.'.$key;
+   else {
+      $rtable=$db->Execute("SELECT real_tablename,table_desc_name,id FROM tableoftables WHERE id={$r->fields[0]}");
+      $rtkey=$db->Execute("SELECT columnname,datatype,type FROM {$rtable->fields[1]} WHERE id='{$r->fields[1]}'");
+       //  $tablecolumnvalues[$rtdesc->fields[0]]=$columnvalues[$column];
+      $asstableinfo=new tableinfo($db,false,$rtable->fields[2]);
+      return origin_column($db,$asstableinfo,$rtkey->fields[0]);
+   }
+}
+
+
+////
 // !Update sortdirarray and returns formatted sortdirstring
-function sortstring(&$sortdirarray,$sortup,$sortdown) {
+function sortstring($db,$tableinfo,&$sortdirarray,$sortup,$sortdown) {
    if ($sortup && $sortup<>" ") {
       if (is_array($sortdirarray) && array_key_exists($sortup,$sortdirarray)) {
          if ($sortdirarray[$sortup]=='asc')
@@ -146,7 +163,9 @@ function sortstring(&$sortdirarray,$sortup,$sortdown) {
       foreach($sortdirarray as $key => $value) {
          if ($sortstring)
             $sortstring .= ", ";
-         $sortstring .= "$key $value";
+         // if the column '$key' is of type table, we'llhave to dig deeper to find the table.column description of the underlying data
+         $table_column=origin_column ($db,$tableinfo,$key);
+         $sortstring .= "$table_column $value";
       }
    }
    return $sortstring;
@@ -160,21 +179,21 @@ function tableheader ($sortdirarray,$nowfield) {
    $columnlabel=$nowfield['label'];
    echo "<th><table align='center' width='100%'><td align='left'>";
    // the sort buttons don't work for associated tables, so do not show them for associated tables
-   if ($nowfield['datatype']!='table') {
+//   if ($nowfield['datatype']!='table') {
       if ($sortdirarray[$columnname]=='asc')
         $sortupicon='icons/sortup_active.png';
       else
          $sortupicon='icons/sortup.png';
      echo "<input type='image' name='sortup_$columnname' value='$columnlabel' src='$sortupicon' alt='Sort Up'>";
-   }
+//   }
    echo "</td><th align='center'>$columnlabel</th><td align='right'>";
-   if ($nowfield['datatype']!='table') {
+//   if ($nowfield['datatype']!='table') {
       if ($sortdirarray[$columnname]=='desc')
          $sortdownicon='icons/sortdown_active.png';
       else
          $sortdownicon='icons/sortdown.png';
       echo "<input type='image' name='sortdown_$columnname' value='$columnlabel' src='$sortdownicon' alt='Sort Down'>";
-   }
+//   }
    echo "</td></tr></table></th>\n";
 }
 
@@ -932,7 +951,7 @@ function typevalue ($value,$type) {
 // !interprets numerical search terms into an SQL statement
 // implements ranges (i.e. 1-6), and lists (1,2,3) and combinations thereof
 // < and > can also be used
-function numerictoSQL ($searchterm,$column,$type,$and) {
+function numerictoSQL (&$tableinfo,$searchterm,$column,$type,$and) {
    $commalist=explode(',',$searchterm);
    for ($i=0;$i<sizeof($commalist);$i++) {
       $rangelist=explode('-',$commalist[$i]);
@@ -943,7 +962,7 @@ function numerictoSQL ($searchterm,$column,$type,$and) {
          if ($i>0) {
             $sql.='OR ';
          }
-         $sql.="($column>=$value1 AND $column<=$value2) ";
+         $sql.="({$tableinfo->realname}.$column>=$value1 AND {$tableinfo->realname}.$column<=$value2) ";
       }
       elseif (sizeof($rangelist)==1) {
          if ($commalist[$i]{0}=='<' || $commalist[$i]{0}=='>') {
@@ -956,7 +975,7 @@ function numerictoSQL ($searchterm,$column,$type,$and) {
          }
          if (!$token)
             $token='=';
-         $sql.="($column$token$value) ";
+         $sql.="({$tableinfo->realname}.$column$token$value) ";
       }
    }
    return "$and ($sql) ";
@@ -1204,32 +1223,33 @@ function searchhelp ($db,$tableinfo,$column,&$columnvalues,$query,$wcappend,$and
          $rtdesc=$db->Execute("SELECT columnname,datatype,type FROM {$rtableoftables->fields[1]} WHERE id='{$rc->fields['associated_column']}'");
          $tablecolumnvalues[$rtdesc->fields[0]]=$columnvalues[$column];
          $asstableinfo=new tableinfo($db,false,$rtableoftables->fields[2]);
-         $table_where=searchhelp($db,$asstableinfo,$rtdesc->fields[0],&$tablecolumnvalues,false,$wcappend,false);
-         $rtable=$db->Execute("SELECT id FROM {$rtableoftables->fields[0]} WHERE {$table_where[0]}");
-         if ($rtable && $rtable->fields[0]) {
-             while (!$rtable->EOF) {
-                $rhtemp[]=$rtable->fields[0];
-                $rtable->MoveNext();
-             }
-             $ids=join (',',$rhtemp);
-             if ($rc->fields['associated_local_key']) {
-                $rasslk=$db->Execute("SELECT columnname FROM {$tableinfo->desname} WHERE id={$rc->fields['associated_local_key']}");
-                $query[2].="$and {$rasslk->fields[0]} IN ($ids) ";
-             }
-             else
-                $query[2].="$and $column IN ($ids) ";
+         // find the key and the column it relates to
+         if ($rc->fields['associated_local_key']) {
+            $rasslk=$db->Execute("SELECT columnname,associated_column FROM {$tableinfo->desname} WHERE id={$rc->fields['associated_local_key']}");
+            $associated_local_key=$rasslk->fields[0];
+            $rtdesc2=$db->Execute("SELECT columnname,datatype,type FROM {$asstableinfo->desname} WHERE id={$rasslk->fields[1]}");
+            $foreign_key=$rtdesc2->fields[0];
+            
          }
-         // no search results so give an impossible clause
-         else
-            $query[2].="$and $column='-1' ";
+         else {
+            $associated_local_key=$column;
+            $foreign_key=$rtdesc->fields[0];
+         }
+         // check whether we already have this table as a join:
+         // postgres does not like the same join twice, this also dictates that we can not use multiple foreign keys in a table
+         if (!strstr($query[1],$asstableinfo->realname))
+            $query[1].= "LEFT JOIN {$asstableinfo->realname} ON {$tableinfo->realname}.$associated_local_key={$asstableinfo->realname}.$foreign_key ";
+         $table_where=searchhelp($db,$asstableinfo,$rtdesc->fields[0],&$tablecolumnvalues,false,$wcappend,false);
+         $query[1].=$table_where[1];
+         $query[2].=$and.' '.$table_where[2];
       }
       // there are some (old) cases where pulldowns are of type text...
       elseif ($rc->fields[1]=='pulldown') {
          $columnvalues[$column]=(int)$columnvalues[$column];
          if ($columnvalues["$column"]==-1)
-            $query[2].="$and ($column='' OR $column IS NULL) ";
+            $query[2].="$and ({$tableinfo->realname}.$column='' OR {$tableinfo->realname}.$column IS NULL) ";
          else
-            $query[2].="$and $column='$columnvalues[$column]' ";
+            $query[2].="$and {$tableinfo->realname}.$column='$columnvalues[$column]' ";
       }
       elseif ($rc->fields[1]=='mpulldown') {
          // emulate a logical AND between values selected in a mpulldown
@@ -1267,30 +1287,30 @@ function searchhelp ($db,$tableinfo,$column,&$columnvalues,$query,$wcappend,$and
          if (is_array($id_list)) {
             foreach ($id_list as $list) {
                if (!$listfound) {
-                  $query[2].="$and id IN ($list) ";
+                  $query[2].="$and {$tableinfo->realname}.id IN ($list) ";
                   $listfound=true;
                }
                else
-                  $query[2].="AND id IN ($list) ";
+                  $query[2].="AND {$tableinfo->realname}.id IN ($list) ";
             }
             // we should not be able to get here:
             if (!$listfound)
-               $query[2].="$and id IN (-1) ";
+               $query[2].="$and {$tableinfo->realname}.id IN (-1) ";
          }
          elseif ($id_list) // for 'single' selects
-            $query[2].="$and id IN ($id_list) ";
+            $query[2].="$and {$tableinfo->realname}.id IN ($id_list) ";
          else // nothing found, make sure we do not crash the search statement
-            $query[2].="$and id IN (-1) ";
+            $query[2].="$and {$tableinfo->realname}.id IN (-1) ";
             
       }
       elseif ($rc->fields[1]=='date') {
          $query[2].= datetoSQL($columnvalues[$column],$column,$and);
       }
       elseif (substr($rc->fields[0],0,3)=='int') {
-         $query[2].=numerictoSQL ($columnvalues[$column],$column,'int',$and); 
+         $query[2].=numerictoSQL ($tableinfo,$columnvalues[$column],$column,'int',$and); 
       }
       elseif (substr($rc->fields[0],0,5)=='float') {
-         $query[2].=numerictoSQL ($columnvalues[$column],$column,'float',$and); 
+         $query[2].=numerictoSQL ($tableinfo,$columnvalues[$column],$column,'float',$and); 
       }
       else {
          $columnvalues[$column]=trim($columnvalues[$column]);
@@ -1300,7 +1320,7 @@ function searchhelp ($db,$tableinfo,$column,&$columnvalues,$query,$wcappend,$and
             $columnvalue="%$columnvalue%";
          //else
          //   $columnvalue="% $columnvalue %";
-         $query[2].="$and UPPER($column) LIKE UPPER('$columnvalue') ";
+         $query[2].="$and UPPER({$tableinfo->realname}.$column) LIKE UPPER('$columnvalue') ";
       }
    }
    return $query;
@@ -1314,8 +1334,13 @@ function searchhelp ($db,$tableinfo,$column,&$columnvalues,$query,$wcappend,$and
 function search ($db,$tableinfo,$fields,&$fieldvalues,$whereclause=false,$wcappend=true) {
 //echo "where: $whereclause.<br>";
    $columnvalues=$fieldvalues;
+   // change fields into a SQL string that works with multiple tables
+   $fieldsarray=explode(',',$fields);
+   foreach ($fieldsarray as $field) 
+      $fieldsSQLstring.=$tableinfo->realname.".$field AS $field, ";
+   $fieldsSQLstring=substr($fieldsSQLstring,0,-2);
    // SELECT part
-   $query[0]="SELECT DISTINCT $fields "; //FROM ".$tableinfo->realname." WHERE ";
+   $query[0]="SELECT $fieldsSQLstring "; //FROM ".$tableinfo->realname." WHERE ";
    // FROM part
    $query[1]='FROM '.$tableinfo->realname.' ';
    // WHERE part
@@ -1343,7 +1368,9 @@ function search ($db,$tableinfo,$fields,&$fieldvalues,$whereclause=false,$wcappe
          $query[2] .= $whereclause;
    if (function_exists('plugin_search'))
       $query[0]=plugin_search($query[0],$columnvalues,$query[1]);
-   return $query[0].$query[1].$query[2];
+   $result=$query[0].$query[1].$query[2];
+   echo "$result.<br>";
+   return $result;
 }
 
 
@@ -1493,12 +1520,12 @@ function current_page($curr_page, $sname, $num_p_r, $numrows) {
 
 ////
 // !Assembles the search SQL statement and remembers it in HTTP_SESSION_VARS
-function make_search_SQL($db,$tableinfo,$fields,$USER,$search,$searchsort='title',$whereclause=false) {
+function make_search_SQL($db,$tableinfo,$fields,$USER,$search,$searchsort,$whereclause=false) {
    global $HTTP_POST_VARS, $HTTP_SESSION_VARS;
 
    // apparently searchsort can be passed as an empty string.  that is bad
    if (!$searchsort)
-      $searchsort='title';
+      $searchsort=$tableinfo->realname.'.title';
    $fieldvarsname=$tableinfo->short.'_fieldvars';
    global ${$fieldvarsname};
    $queryname=$tableinfo->short.'_query';

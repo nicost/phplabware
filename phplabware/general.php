@@ -396,7 +396,7 @@ else {
  
    // sort stuff
    $sortdirarray=unserialize(stripslashes($serialsortdirarray));
-   $sortstring=sortstring($sortdirarray,$sortup,$sortdown);
+   $sortstring=sortstring($db,$tableinfo,$sortdirarray,$sortup,$sortdown);
 
    // set the number of records per page
    $num_p_r=paging($num_p_r,$USER);
