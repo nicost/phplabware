@@ -23,89 +23,34 @@ function user_entry($id,$DBNAME) {
 }
 
 ///////////////////////////////////////////////////////////
-function date_entry($id,$DBNAME)// Get the date the entry was made
-	{	
-	global $db,$system_settings;
-    $date=simple_SQL($db,$DBNAME,"date","id","$id");
-    $dateformat=get_cell($db,"dateformats","dateformat","id",$system_settings["dateformat"]);
-    $date=date($dateformat,$date);
-    echo "<th>Date entered: </th><td colspan=3>$date</td></tr>\n";
-	if ($lastmodby && $lastmoddate) 
-		{
-		echo "<tr>";
-		$r=$db->Execute("SELECT firstname,lastname,email FROM users WHERE id=$lastmodby");
-		if ($r->fields["email"]) 
-			{
-   	     echo "<tr><th>Last modified by: </th><td><a href='mailto:".$r->fields["email"]."'>";
-   	     echo $r->fields["firstname"]." ".$r->fields["lastname"]."</a></td>\n";
-   	     }
-   	 else 
-    		{
-    	    echo "<tr><th>Last modified by: </th><td>".$r->fields["firstname"]." ";
-    	    echo $r->fields["lastname"] ."</td>\n";
-    	    }
-   	 echo "<td>&nbsp;</td>";
-   	 $dateformat=get_cell($db,"dateformats","dateformat","id",$system_settings["dateformat"]);
-   	 $lastmoddate=date($dateformat,$lastmoddate);
-   	 echo "<th>Date modified: </th><td colspan=3>$lastmoddate</td></tr>\n";
-   	}   
-	}
-//////////////////////////////////////////////////////////////////////////////	
-////
-// !Displays all information within a table in the headers for easy searching
-function display_tablehead($db,$DBNAME,$real_tablename,$DB_DESNAME,$Allfields,$list) { 
-   global $PHP_SELF,$nr_records,$max_menu_length,$USER,$LAYOUT,$db_type;
+//// 
+// !Prints name and date
+// Needs to be called within a table
+function date_entry($id,$DBNAME) {
+   global $db,$system_settings;
 
-   // javascript to automatically execute search when pulling down 
-   $jscript="onChange='document.g_form.searchj.value=\"Search\"; document.g_form.submit()'";
-   // row with search form
-   echo "<tr align='center'>\n";
-   echo "<input type='hidden' name='searchj' value=''>\n";
-
-   foreach($Allfields as $nowfield)  {
-      if ($nowfield[datatype]== "link")
-         echo "<td style='width: 10%'>&nbsp;</td>\n";
-      if ($nowfield[datatype]== "text") {
-         // show titles we may see, when too many, revert to text box
-         if ($list && ($nr_records < $max_menu_length) )  {
-  	     $r=$db->Execute("SELECT $nowfield[name] FROM $real_tablename WHERE id IN ($list)");
-             $text=$r->GetMenu("$nowfield[name]","",true,false,0,"style='width: 80%' $jscript");
-             echo "<td style='width: 10%'>$text</td>\n";
-         }
-	 else
-    	    echo  " <td style='width: 10%'><input type='text' name='$nowfield[name]' size=8></td>\n";
+   $date=get_cell($db,$DBNAME,"date","id","$id");
+   $dateformat=get_cell($db,"dateformats","dateformat","id",$system_settings["dateformat"]);
+   $date=date($dateformat,$date);
+   echo "<th>Date entered: </th><td colspan=3>$date</td></tr>\n";
+   if ($lastmodby && $lastmoddate)  {
+      echo "<tr>";
+      $r=$db->Execute("SELECT firstname,lastname,email FROM users WHERE id=$lastmodby");
+      if ($r->fields["email"])  {
+         echo "<tr><th>Last modified by: </th><td><a href='mailto:".$r->fields["email"]."'>";
+         echo $r->fields["firstname"]." ".$r->fields["lastname"]."</a></td>\n";
       }
-      if ($nowfield[datatype]== "textlong")
-         echo "<td style='width: 10%'>&nbsp;</td>\n";
-      if ($nowfield[datatype]== "pulldown") {
-         echo "<td style='width: 10%'>";
-         if ($USER["permissions"] & $LAYOUT)  {
-            echo "<a href='$PHP_SELF?tablename=$DBNAME&edit_type=$nowfield[ass_t]&<?=SID?>";
-            echo "'>Edit $nowfield[name]</a><br>\n";
-         }	 		 			
-         $r=$db->Execute("SELECT $nowfield[name] FROM $real_tablename WHERE id IN ($list)");
-         $list2=make_SQL_ids($r,false,"$nowfield[name]");
-         if ($list2) { 
-            if ($nowfield[name]=="authors") {
-               if ($db_type=="mysql") // mysql does not use the ansi SQL || operator
-                  $r=$db->Execute("SELECT CONCAT(type, ' ', typeshort),id from $nowfield[ass_t] WHERE id IN ($list2) ORDER by typeshort");
-               else
-                  $r=$db->Execute("SELECT type || ' ' || typeshort,id from $nowfield[ass_t] WHERE id IN ($list) ORDER by typeshort");
-            }
-            else 
-               $r=$db->Execute("SELECT typeshort,id from $nowfield[ass_t] WHERE id IN ($list2) ORDER by typeshort");
-    		
-            $text=$r->GetMenu2("$nowfield[name]","",true,false,0,"style='width: 80%' $jscript");   
-    	    echo "$text</td>\n";
-         }  
+      else { 
+      echo "<tr><th>Last modified by: </th><td>".$r->fields["firstname"]." ";
+         echo $r->fields["lastname"] ."</td>\n";
       }
-      if ($nowfield[datatype] == "file")
-         echo "<td style='width: 10%'>&nbsp;</td>";
-   }	 
-   echo "<td><input type=\"submit\" name=\"search\" value=\"Search\">&nbsp;";
-   echo "<input type=\"submit\" name=\"search\" value=\"Show All\"></td>";
-   echo "</tr>\n";
+      echo "<td>&nbsp;</td>";
+      $lastmoddate=date($dateformat,$lastmoddate);
+      echo "<th>Date modified: </th><td colspan=3>$lastmoddate</td></tr>\n";
+   }   
 }
+
+
 
 ///////////////////////////////////////////////////////////
 //// 
@@ -190,7 +135,9 @@ function display_table_info($db,$tablename,$real_tablename,$DB_DESNAME,$Fieldsco
 ///////////////////////////////////////////////////////////
 ////
 // !Display a record in a nice format
-function display_record($db,$Allfields,$id,$DBNAME,$real_tablename) {
+function display_record($db,$Allfields,$id,$tablename,$real_tablename) {
+   global $PHP_SELF;
+
    echo "<table border=0 align='center'>\n";
    echo "<tr align='center'>\n";
    echo "<td colspan=2></td>\n";
@@ -215,11 +162,11 @@ function display_record($db,$Allfields,$id,$DBNAME,$real_tablename) {
          }
          if ($nowfield[datatype]=="textlong") {
             $textlarge=nl2br(htmlentities($nowfield[values]));
-            echo "<th>$nowfield[name]</th><td colspan=6>$textlarge</td>\n";
+            echo "<tr><th>$nowfield[name]</th><td colspan=6>$textlarge</td>\n";
             echo "</tr>\n";
          }
          if ($nowfield[datatype]=="file") {
-            $files=get_files($db,$DBNAME,$id);
+            $files=get_files($db,$tablename,$id);
             if ($files) { 
                echo "<tr><th>Files:</th>\n<td colspan=5>";
                for ($i=0;$i<sizeof($files);$i++)  {
@@ -233,7 +180,10 @@ function display_record($db,$Allfields,$id,$DBNAME,$real_tablename) {
    }
    user_entry($id,$real_tablename);
    date_entry($id,$real_tablename);
-   make_link($id,$DBNAME);
+   make_link($id,$tablename);
+   echo "<form method='post' action='$PHP_SELF?tablename=$tablename&".SID."'>\n";
+   echo "<tr>\n<td colspan=7 align='center'>";
+   echo "<input type='submit' name='submit' value='Back'></td>\n</tr>\n";
    echo "</table>";
 }
 
@@ -249,7 +199,7 @@ function make_link($id,$DBNAME) {
 ///////////////////////////////////////////////////////////
 ////
 // !display addition and modification form
-function display_add($db,$tablename,$real_tablename,$tabledesc,$Allfields,$id,$namein)  
+function display_add($db,$tablename,$real_tablename,$tabledesc,$Allfields,$id,$namein,$system_settings)  
 	{
 	global $PHP_SELF, $db_type, $USER;	
 
@@ -382,12 +332,12 @@ function getvalues($db,$DBNAME,$DB_DESNAME,$fields,$qfield=false,$field=false) {
   	 if(!(!$id && $column=="id"))
  	  	{  			  	
   	  		${$column}[values]= $r->fields[$column];
-	 	   	${$column}[datatype]=simple_SQL($db,$DB_DESNAME,"datatype","label","$column");
-				${$column}[display_table]=simple_SQL($db,$DB_DESNAME,"display_table","label","$column");
-				${$column}[display_record]=simple_SQL($db,$DB_DESNAME,"display_record","label","$column");
-				${$column}[ass_t]=simple_SQL($db,$DB_DESNAME,associated_table,label,$column);
-				${$column}[ass_query]=simple_SQL($db,$DB_DESNAME,associated_sql,label,$column);
-				${$column}[required]=simple_SQL($db,$DB_DESNAME,required,label,$column);
+	 	   	${$column}[datatype]=get_cell($db,$DB_DESNAME,"datatype","label","$column");
+				${$column}[display_table]=get_cell($db,$DB_DESNAME,"display_table","label","$column");
+				${$column}[display_record]=get_cell($db,$DB_DESNAME,"display_record","label","$column");
+				${$column}[ass_t]=get_cell($db,$DB_DESNAME,associated_table,label,$column);
+				${$column}[ass_query]=get_cell($db,$DB_DESNAME,associated_sql,label,$column);
+				${$column}[required]=get_cell($db,$DB_DESNAME,required,label,$column);
 				${$column}[name]=$column;
 				}
 		   array_push ($Allfields, ${$column});
@@ -408,6 +358,7 @@ function display_midbar($labelcomma)
     echo "<th>Action</th>\n";
     echo "</tr>\n";
 	}
+
 //////////////////////////////////////////////////////
 ////
 // !SQL where search that returns a comma delimited string
@@ -446,15 +397,6 @@ $out=join(",",$tempa);
 return $out;
 }
 
-//////////////////////////////////////////////////////
-////
-// !SQL search that returns a single cell
-function simple_SQL($db,$tablein,$column,$searchfield,$searchval)
-	{
-	$rs = $db->Execute("select $column from $tablein where $searchfield ='$searchval'");
-	$fieldA=$rs->fields[0];
-	return $fieldA;
-}
 
 //////////////////////////////////////////////////////////////////////
 ////  general functions
@@ -499,17 +441,17 @@ function check_g_data ($db,&$field_values, $DB_DESNAME) {
 // $fields is a comma-delimited string with column names
 // $field_values is hash with column names as keys
 // $id=0 for a new entry, otherwise it is the id
-function add_g_form ($db,$fields,$field_values,$id,$USER,$PHP_SELF,$system_settings,$real_tablename, $tablename,$DB_DESNAME) 
-	{
-	if (!may_write($db,$$real_tablename,$id,$USER)) return false; 
-	if ($id) {
+function add_g_form ($db,$fields,$field_values,$id,$USER,$PHP_SELF,$system_settings,$real_tablename, $tablename,$DB_DESNAME) {
+   if (!may_write($db,$$real_tablename,$id,$USER)) 
+           return false; 
+   if ($id) {
 		$Allfields=getvalues($db,$real_tablename,$DB_DESNAME,$fields,id,$id);
 		$namein=get_cell($db,$DBNAME,"title","id",$id);		
-		display_add($db,$tablename,$real_tablename,$DB_DESNAME,$Allfields,$id,$namein);
+		display_add($db,$tablename,$real_tablename,$DB_DESNAME,$Allfields,$id,$namein,$system_settings);
 	}    
 	else {
 		$Allfields=getvalues($db,$DBNAME,$DB_DESNAME,$fields);
-		display_add($db,$tablename,$real_tablename,$DB_DESNAME,$Allfields,$id,"");
+		display_add($db,$tablename,$real_tablename,$DB_DESNAME,$Allfields,$id,"",$system_settings);
 	}
 }
 
@@ -561,7 +503,7 @@ function process_file($db,$fileid,$system_settings) {
 
 /////////////////////////////////////////////////////////////////////
 ////  
-// !table management functions
+// !Prints form with access to table management functions
 function create_new_table($db){
    global $HTTP_POST_VARS,$PHP_SELF;
    echo "<form method='post' id='tablemanage' enctype='multipart/form-data' ";
@@ -627,7 +569,7 @@ function create_new_table($db){
 
 /////////////////////////////////////////////////////////////////////////
 ////  
-// !deletes a general table
+// !deletes a user-generated table, including associated tables
 function del_table($db,$tablename,$id) {
    global $HTTP_POST_VARS, $string;
 
@@ -684,7 +626,8 @@ function add_table ($db,$tablename,$sortkey) {
       $isbad=true;
    }
    if (!$isbad && $tablename) {
-      $id=$db->GenID("tableoftables"."_id_seq");
+      // ids > 10000 are available to users
+      $id=$db->GenID("tableoftables"."gen_id_seq",10000);
       $real_tablename=$tablename."_".$id;
       $desc=$real_tablename . "_desc";
       $r=$db->Execute("CREATE TABLE $real_tablename (
@@ -698,6 +641,10 @@ function add_table ($db,$tablename,$sortkey) {
 		date int)");
       if ($r) {
          $string= "Succesfully Added Table $tablename";
+         // check if shortname has been taken, if so, add id
+         $r=$db->Execute("SELECT id FROM tableoftables WHERE shortname='$shortname'");
+         if ($r->fields["id"])
+            $shortname.="$id";
   	 $r=$db->Execute("INSERT INTO tableoftables (id,sortkey,tablename,shortname,Display,Permission) Values($id,'$sortkey','$tablename','$shortname','Y','Users')");
          $r=$db->Execute("CREATE TABLE $desc (
 		id int PRIMARY KEY,
@@ -754,6 +701,9 @@ function mod_table($db,$id,$tablename,$tablesort,$tabledisplay)
 function add_columnecg($db,$tablename2,$colname2,$datatype,$Rdis,$Tdis,$req,$sort)
    {
    global $string;
+
+   $SQL_reserved="absolute,action,add,allocate,alter,are,assertion,at,between,bit,bit_length,both,cascade,cascaded,case,cast,catalog,char_length,charachter_length,cluster,coalsce,collate,collation,column,connect,connection,constraint,constraints,convert,corresponding,cross,current_date,current_time,current_timestamp,current_user,date,day,deallocate,deferrrable,deferred,describe,descriptor,diagnostics,disconnect,domain,drop,else,end-exec,except,exception,execute,external,extract,false,first,full,get,global,hour,identity,immediate,initially,inner,input,insensitive,intersect,interval,isolation,join,last,leading,left,level,local,lower,match,minute,month,names,national,natural,nchar,next,no,nullif,octet_length,only,outer,output,overlaps,pad,partial,position,prepare,preserve,prior,read,relative,restrict,revoke,right,rows,scroll,second,session,session_user,size,space,sqlstate,substring,system_user,temporary,then,time,timepstamp,timezone_hour,timezone_minute,trailing,transaction,translate,translation,trim,true,unknown,uppper,usage,using,value,varchar,varying,when,write,year,zone";
+
    // find the id of the table and therewith the tablename
    $r=$db->Execute("SELECT id FROM tableoftables WHERE tablename='$tablename2'");
    $id=$r->fields["id"];
@@ -767,6 +717,8 @@ function add_columnecg($db,$tablename2,$colname2,$datatype,$Rdis,$Tdis,$req,$sor
    $fieldid=$db->GenId($desc."_id");
    if ($colname=="")
       $string="Please enter a columnname";
+   elseif (strpos($SQL_reserved,strtolower($colname))) 
+      $string="Column name <i>$colname</i> is a reserved SQL word.  Please pick another column name";
    else {
       if ($datatype=="pulldown") {
          // create an associated table, not overwriting old ones, using a max number
