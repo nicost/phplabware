@@ -53,6 +53,8 @@ function check_ab_data (&$field_values) {
 
 ////
 // !Prints a form with antibody stuff
+// $fields is a comma delimited string with column names
+// $field_values is a hash with column names as keys
 // $id=0 for a new entry, otherwise it is the id
 function add_ab_form ($db,$fields,$field_values,$id,$USER,$PHP_SELF,$system_settings) {
    if (!may_write($db,"antibodies",$id,$USER))
