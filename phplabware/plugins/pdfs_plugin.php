@@ -78,6 +78,11 @@ function plugin_check_data($db,&$field_values,$table_desc,$modify=false)
       }
    }
 
+   // rename file to pmid.pdf
+   if ($HTTP_POST_FILES["file"]["name"][0]) {
+      $HTTP_POST_FILES["file"]["name"][0]=$field_values["pmid"].".pdf";
+   }
+   
    // check whether we had this one already
    if (!$modify) {
       $existing_id=get_cell($db,$pdftable,"id","pmid",$field_values["pmid"]);
