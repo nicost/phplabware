@@ -556,26 +556,26 @@ function add_report($db) {
 }
 
 
-/////////////////////////////////////////////////////////////////////////
-//// 
-// !deletes a general column entry
+/**
+ * Deletes a general column entry
+ */
 function rm_columnecg($db,$tablename,$id,$colname,$datatype) {
    global $string,$USER;
 
    // find the id of the table and therewith the tablename
    $r=$db->Execute("SELECT id FROM tableoftables WHERE tablename='$tablename'");
-   $tableid=$r->fields["id"];
-   $real_tablename=get_cell($db,"tableoftables","real_tablename","id",$tableid);
-   $tablelabel=get_cell($db,"tableoftables","label","id",$tableid);
-   $desc=get_cell($db,"tableoftables","table_desc_name","id",$tableid);
+   $tableid=$r->fields['id'];
+   $real_tablename=get_cell($db,'tableoftables','real_tablename','id',$tableid);
+   $tablelabel=get_cell($db,'tableoftables','label','id',$tableid);
+   $desc=get_cell($db,'tableoftables','table_desc_name','id',$tableid);
    // if there are files associated, these have to be deleted as well
    $r=$db->Execute ("SELECT datatype FROM $desc WHERE id='$id'");
-   if ($r->fields["datatype"]=="file") {
+   if ($r->fields['datatype']=='file') {
       $r=$db->Execute("SELECT id FROM files WHERE tablesfk='$tableid'");
       while (!$r->EOF)
          delete_file($db,$r->fields["id"],$USER);
    } 
-   if ($r->fields["datatype"]=="pulldown" || $r->fields["datatype"=="file"]) {
+   if ($r->fields['datatype']=='pulldown' || $r->fields['datatype'=='file']) {
       $rv=$db->Execute("select associated_table from $desc where id ='$id'");
       // $tempTAB=array();
       if ($rv) {
@@ -586,6 +586,8 @@ function rm_columnecg($db,$tablename,$id,$colname,$datatype) {
          }
       }
    }
+   // Remove all references to this column from the views table
+   $db->Execute ("DELETE FROM tableviews WHERE columnid=$id AND tableid=$tableid");
    $r=$db->Execute("ALTER TABLE $real_tablename DROP COLUMN $colname");
    $rrr=$db->Execute("DELETE FROM $desc WHERE id='$id'");
    // Postgres does know how to drop a column, so only check the second query
