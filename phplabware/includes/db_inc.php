@@ -323,10 +323,10 @@ function show_access ($db,$tableid,$id,$USER,$global_settings) {
    if (substr($access,6,1)=="r") $sel="checked"; else $sel=false;
    echo "<td><input type='checkbox' $sel name='evr' value='&nbsp;'></td>\n";
    // multiple select box for trusted users.  Opera does not like 1 as size
-   if ($client->browser=="Opera")
+   if ($client->browser=="Opera" || $client->browser=="Internet Explorer")
       $size=2;
    else
-       $size=1;
+       $size=2;
    echo "<td>\n<select multiple size='$size' name='trust_read[]'>\n";
    echo "<option>nobody else</option>\n";
    foreach ($user_array as $user) {
