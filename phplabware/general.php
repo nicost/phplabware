@@ -256,13 +256,13 @@ else {
    ${$pagename}=current_page(${$pagename},$tableshort);
  
    // get a list with all records we may see
-   $listb=may_read_SQL($db,$real_tablename,$tableid,$USER);
+   $listb=may_read_SQL($db,$real_tablename,$tableid,$USER,"tempb");
 
    // prepare the search statement and remember it
    $fields_table="id,".$fields_table;
   //$fields_table="id ";
 
-   ${$queryname}=make_search_SQL($db,$real_tablename,$tableshort,$tableid,$fields_table,$USER,$search,$sortstring,$listb);
+   ${$queryname}=make_search_SQL($db,$real_tablename,$tableshort,$tableid,$fields_table,$USER,$search,$sortstring,$listb["sql"]);
    $r=$db->Execute(${$queryname});
 
    // set variables needed for paging
@@ -336,13 +336,13 @@ else {
 
    $lista_array=explode(",",$lista);
    $counta=sizeof($lista_array);
-   $listb_array=explode(",",$listb);
-   $countb=sizeof($listb_array);
+   //$listb_array=explode(",",$listb);
+   //$countb=sizeof($listb_array);
 
    foreach($Allfields as $nowfield)  {
       if ($HTTP_POST_VARS[$nowfield[name]]) {
-         $list=$listb; 
-	 $count=$countb;
+         $list=$listb["SQL"]; 
+	 $count=$listb["numrows"];
       }
       else {
          $list=$lista;   
