@@ -340,7 +340,7 @@ function display_add($db,$tableid,$real_tablename,$tabledesc,$Allfields,$id,$nam
                $size=60;
             else
                $size=10;
-     	    echo "<td><input type='text' name='$nowfield[name]' value='$nowfield[values]' size=60>";
+     	    echo "<td><input type='text' name='$nowfield[name]' value='$nowfield[values]' $size>";
          }
          elseif ($nowfield[datatype]=="textlong") {
             echo "<tr><th>$nowfield[label]:";
@@ -349,7 +349,7 @@ function display_add($db,$tableid,$real_tablename,$tabledesc,$Allfields,$id,$nam
      	    echo "<td><textarea name='$nowfield[name]' rows='5' cols='100%' value='$nowfield[values]'>$nowfield[values]</textarea>";
          }
          elseif ($nowfield[datatype]=="link") {
-            echo "<tr><th>$nowfield[label] (http link)";
+            echo "<tr><th>$nowfield[label] (http link):";
             if ($nowfield[required]=="Y")
                echo "<sup style='color:red'>&nbsp;*</sup>";
             echo "<td><input type='text' name='$nowfield[name]' value='$nowfield[values]' size=60>";
@@ -358,7 +358,7 @@ function display_add($db,$tableid,$real_tablename,$tabledesc,$Allfields,$id,$nam
             // get previous value	
             $r=$db->Execute("SELECT typeshort,id FROM $nowfield[ass_t] ORDER BY sortkey");
             $text=$r->GetMenu2("$nowfield[name]",$nowfield[values],true,false);
-            echo "<tr><th>$nowfield[label]";
+            echo "<tr><th>$nowfield[label]:";
             if ($USER["permissions"] && $LAYOUT) {
                echo "<a href='$PHP_SELF?tablename=$tablename&edit_type=$nowfield[ass_t]&<?=SID?>'>";
                echo "<FONT size=1 color='#00ff00'> <small>(edit)</small></font></a>";
@@ -373,14 +373,14 @@ function display_add($db,$tableid,$real_tablename,$tabledesc,$Allfields,$id,$nam
                // get previous value	
                $r=$db->Execute("SELECT $nowfield[ass_column_name],id FROM $nowfield[ass_table_name]");
                $text=$r->GetMenu2("$nowfield[name]",$nowfield[values],true,false);
-               echo "<tr><th>$nowfield[label]";
+               echo "<tr><th>$nowfield[label]:";
                if ($nowfield[required]=="Y")
                   echo"<sup style='color:red'>&nbsp;*</sup>";
                echo "</th>\n<td>$text<br>";
             }
          }
 	 if ($nowfield[datatype]=="textlarge") {
-	    echo "<tr><th>$nowfield[name]";
+	    echo "<tr><th>$nowfield[name]:";
             if ($nowfield[required]=="Y")
 	       echo"<sup style='color:red'>&nbsp;*</sup>";
 	    echo "</th><td colspan=6><textarea name='$nowfield[name]' rows='5' cols='100%'>$nowfield[values]</textarea>";
@@ -388,7 +388,7 @@ function display_add($db,$tableid,$real_tablename,$tabledesc,$Allfields,$id,$nam
 	 if ($nowfield[datatype]=="file") {
 	    $files=get_files($db,$real_tablename,$id,$nowfield["id"]);
 	    echo "<tr>";
-	    echo "<th>File:";
+	    echo "<th>$nowfield[label]:</th>\n";
 	    echo "</th>\n";
 	    echo "<td colspan=4> <table border=0>";
 	    for ($i=0;$i<sizeof($files);$i++)  {
@@ -623,8 +623,8 @@ function show_g($db,$fields,$id,$USER,$system_settings,$tableid,$real_tablename,
 ////
 // !Tries to convert a MsWord file into html 
 // It calls wvHtml.  
-// Version >= 0.70 have to be called differently
 // When succesfull, the file is added to the database
+// Returns id of uploaded file
 function process_file($db,$fileid,$system_settings) {
    global $HTTP_POST_FILES,$HTTP_POST_VARS;
    $mimetype=get_cell($db,"files","mime","id",$fileid);
@@ -662,6 +662,7 @@ function process_file($db,$fileid,$system_settings) {
            if ($db->execute($query)) {
                 $newloc=file_path($db,$id);
                `mv $temp '$newloc'`;
+                return $id;
             }
             else
                unlink($temp); 
@@ -670,8 +671,29 @@ function process_file($db,$fileid,$system_settings) {
       else
          @unlink($temp);
    }
+   return false;
 }
 
-
+////
+// !Indexes the content of the given file
+// The file is converted to a text file (pdfs with ghost script,
+// word files were already converted to html,html characters are stripped),
+// all words are lowercased, it is checked whether an entry in the table words
+// already exists, if not, it is added.  A relation to the word is made in 
+// the table associated with the given column
+function indexfile ($db,$tableinfo,$indextable,$recordid,$fileid,$htmlfileid) {
+   // if the html file exists, we'll work with that one
+   if ($htmlfileid) {
+      $fp=fopen(file_path($db,$htmlfileid),"r");
+      if ($fp) {
+         while (!feof($fp)) {
+            $filetext.=fgetss($fp,64000);
+         }
+         fclose($fp);
+      }
+      $filetext=strtolower($filetext);
+      //echo "$filetext.<br>";
+   }
+}
 
 ?>
