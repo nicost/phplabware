@@ -21,7 +21,7 @@ allowonly($READ, $USER["permissions"]);
 
 // main global vars
 $title .= "Antibodies";
-$fields="id,access,ownerid,name,type1,type2,type3,type4,type5,antigen,epitope,concentration,buffer,notes,location,source,date";
+$fields="id,access,ownerid,magic,name,type1,type2,type3,type4,type5,antigen,epitope,concentration,buffer,notes,location,source,date";
 
 // register variables
 $get_vars = "id,";
@@ -31,8 +31,6 @@ globalize_vars ($post_vars, $HTTP_POST_VARS);
 
 
 /****************************FUNCTIONS***************************/
-
-
 
 ////
 // !Checks input data.
@@ -68,6 +66,10 @@ function add_ab_form ($db,$fields,$field_values,$id,$USER,$PHP_SELF) {
 ?>
 <form method='post' id='antibodyform action='<?php echo $PHP_SELF?>?<?=SID?>'> 
 <?php
+   // generate a unique ID (magic) to avoid double uploads 
+   if (!$magic)
+      $magic=time();
+   echo "<input type='hidden' name='magic' value='$magic'>\n";
    echo "<table border=0 align='center'>\n";
    if ($id) {
       echo "<tr><td colspan=7 align='center'><h3>Modify Antibody <i>$name</i></h3></td></tr>\n";
