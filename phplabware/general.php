@@ -235,6 +235,7 @@ else {
             $rc=$db->Execute("SELECT id,columnname,associated_table,thumb_x_size FROM ".$tableinfo->desname." WHERE datatype='image'");
             while (!$rc->EOF) {
        	       $imageid=upload_files($db,$tableinfo->id,$id,$rc->fields["id"],$rc->fields["columnname"],$USER,$system_settings);
+	       process_image($db,$imageid,$rc->fields["thumb_x_size"]);
                // make thumbnails and do image specific stuff 
                process_image($db,$imageid,$rc->fields["thumb_x_size"]);
                $rc->MoveNext(); 
@@ -271,6 +272,7 @@ else {
                }
                elseif ($rc->fields["datatype"]=="image"){
                   // make thumbnails and do image specific stuff
+	          // process_image($db,$imageid,$rc->fields["thumb_x_size"]);
                   process_image($db,$fileid,$rc->fields["thumb_x_size"]);
                }
             }
