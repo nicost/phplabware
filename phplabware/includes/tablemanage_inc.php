@@ -217,13 +217,13 @@ function add_table ($db,$tablename,$tablelabel,$sortkey,$plugincode) {
          $descid=$db->GenId("$desc"."_id");  
   	 $db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'id','id','100','N','N','N','int(11)','text',NULL,NULL)");
          $descid=$db->GenId("$desc"."_id");  
-         $db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'gr','group read','111','N','N','N','smallint','int',NULL,NULL)");
+         $db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'group read','gr','111','N','N','N','smallint','int',NULL,NULL)");
          $descid=$db->GenId("$desc"."_id");  
-         $db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'gw','group write','112','N','N','N','smallint','int',NULL,NULL)");
+         $db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'group write','gw','112','N','N','N','smallint','int',NULL,NULL)");
          $descid=$db->GenId("$desc"."_id");  
-         $db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'er','everyone read','113','N','N','N','smallint','int',NULL,NULL)");
+         $db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'everyone read','er','113','N','N','N','smallint','int',NULL,NULL)");
          $descid=$db->GenId("$desc"."_id");  
-         $db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'ew','everyone write','114','N','N','N','smallint','int',NULL,NULL)");
+         $db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'everyone write','ew','114','N','N','N','smallint','int',NULL,NULL)");
          $descid=$db->GenId("$desc"."_id");  
          $db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'owner','ownerid','120','N','N','N','int(11)','user',NULL,NULL)");
          $descid=$db->GenId("$desc"."_id");  
