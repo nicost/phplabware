@@ -357,7 +357,12 @@ function display_add($db,$tableinfo,$Allfields,$id,$namein,$system_settings) {
       echo "<tr><td colspan=5 align='center'><h3>New ".$tableinfo->label." entry</h3></td></tr>\n";
    }
    echo "<table border=0 align='center'>\n<tr align='center'>\n<td colspan=2></td>\n";
+   
    foreach ($Allfields as $nowfield) {
+      // give plugin a chance to modify data
+      if (function_exists('plugin_display_add_pre'))
+         plugin_display_add_pre($db,$tableinfo->id,$nowfield);
+	 
       // see if display_record is set
       if ( (($nowfield['display_record']=="Y") || ($nowfield['display_table']=='Y')) ) {
          // To persist between multiple invocation, grab POST vars 
@@ -649,18 +654,20 @@ function check_g_data ($db,&$field_values,$tableinfo,$modify=false) {
             $field_values["$fieldA"]=(int)$field_values["$fieldA"];
 	    if ($field_values["$fieldA"]<1)
 	       unset($field_values["$fieldA"]);
-            // check if this number was given out before:
-            if (get_cell($db,$tableinfo->realname,$rs->fields[0],$rs->fields[0],$field_values["$fieldA"])) {
-               $rmax=$db->Execute("SELECT max({$rs->fields[0]}) FROM {$tableinfo->realname}");
-               if ($rmax->fields[0])
-                  $nextmax=$rmax->fields[0]+1;
-               echo "<h3 color='red' align='center'>The number <i>{$field_values[$fieldA]}</i> has already been used in field <i>{$rs->fields[2]}</i>. ";
-               if ($nextmax) {
-                  echo "Try <i>$nextmax</i> instead.";
-                  $field_values[$fieldA]=$nextmax;
-               }
-               echo "</h3>\n";
-	       return false;
+            // for new additions, check if this number was given out before:
+	    if (!$modify) {
+               if (get_cell($db,$tableinfo->realname,$rs->fields[0],$rs->fields[0],$field_values["$fieldA"])) {
+                  $rmax=$db->Execute("SELECT max({$rs->fields[0]}) FROM {$tableinfo->realname}");
+                  if ($rmax->fields[0])
+                     $nextmax=$rmax->fields[0]+1;
+                  echo "<h3 color='red' align='center'>The number <i>{$field_values[$fieldA]}</i> has already been used in field <i>{$rs->fields[2]}</i>. ";
+                  if ($nextmax) {
+                     echo "Try <i>$nextmax</i> instead.";
+                     $field_values[$fieldA]=$nextmax;
+                  }
+                  echo "</h3>\n";
+	          return false;
+	       }
             }
          }   
 
