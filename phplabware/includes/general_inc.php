@@ -309,9 +309,11 @@ function display_add($db,$tableid,$real_tablename,$tabledesc,$Allfields,$id,$nam
       //see if display_record is set
       if ( (($nowfield["display_record"]=="Y") || ($nowfield["display_table"]=="Y")) ) {
          if ($nowfield["modifiable"]=="N") {
-            echo "<tr><th>$nowfield[label]:</th>"; 
             echo "<input type='hidden' name='$nowfield[name]' value='$nowfield[values]'>\n";
-            echo "<td>$nowfield[text]</td></tr>\n";
+            if ($nowfield[text] && $nowfield[text]!="" && $nowfield[text]!=" ") {
+               echo "<tr><th>$nowfield[label]:</th>"; 
+               echo "<td>$nowfield[text]</td></tr>\n";
+            }
          }
          elseif ($nowfield[datatype]=="text" || $nowfield[datatype]=="int" || $nowfield[datatype]=="float") {
             echo "<tr><th>$nowfield[label]:"; 
@@ -563,8 +565,13 @@ function check_g_data ($db,&$field_values, $DB_DESNAME) {
    }
 
    // Hooray, the first call to a plugin function!!
-   if (function_exists("plugin_check_data"))
-      plugin_check_data($db,$field_values,$DB_DESNAME);
+   if (function_exists("plugin_check_data")) {
+      //if (!plugin_check_data($db,$field_values,$DB_DESNAME))
+      //   return false;
+      $test=plugin_check_data($db,$field_values,$DB_DESNAME);
+      if (!$test)
+         return false;
+   }
 
    return true;
 }
