@@ -25,7 +25,7 @@ include ('includes/config_inc.php');
 include ("includes/defines_inc.php");
 include ('adodb/adodb.inc.php');
 
-$post_vars="action,authmethod,checkpwd,dateformat,filedir,pwd,secure_server_new,submit,";
+$post_vars="access,action,authmethod,checkpwd,dateformat,filedir,pwd,secure_server_new,submit,";
 globalize_vars($post_vars, $HTTP_POST_VARS);
 
 if ($set_local) {
@@ -114,6 +114,9 @@ if ($version) {
    }
 
    if ($action) {
+      if ($access)
+         if (strlen($access)==9 && strlen(count_chars($access,3))<4)
+            $settings["access"]=$access;
       if ($dateformat)
          $settings["dateformat"]=$dateformat;
       if ($filedir) 
@@ -144,6 +147,10 @@ if ($version) {
    echo "<table border=1 align='center' width='70%'>\n";
    echo "<tr><th>Description</th><th>Setting</th></tr>\n";
 
+   echo "<tr><td colspan='2' align='center'><i>Defaults</i></th></tr>\n";
+   echo "<tr><td>Default access rights.  A 9 character string using the UNIX access method:</td>\n";
+   if (!$settings["access"]) $settings["access"]="rw-r-----";
+   echo "<td><input type='text' name='access' value='".$settings["access"]."'></td></tr>\n";
    echo "<tr><td colspan='2' align='center'><i>Directories</i></th></tr>\n";
    echo "<tr><td>Location of directory <i>files</i>. The webdaemon should ";
    echo "have read and write priveleges there, but it should not be directly ";
