@@ -160,23 +160,22 @@ function plugin_check_data($db,&$field_values,$table_desc,$modify=false)
 
 ////
 // !Overrides the standard 'show record'function
-function plugin_show($db,$fields,$id,$USER,$system_settings,$tableid,$real_tablename,$table_desc,$backbutton=true)
+function plugin_show($db,$tableinfo,$id,$USER,$system_settings,$backbutton=true)
 {
    global $PHP_SELF;
-   $tablename=get_cell($db,"tableoftables","tablename","id",$tableid);
-   $journaltable=get_cell($db,$table_desc,"associated_table","columnname","journal");
-   $categorytable=get_cell($db,$table_desc,"associated_table","columnname","category");
+   $journaltable=get_cell($db,$tableinfo->desname,"associated_table","columnname","journal");
+   $categorytable=get_cell($db,$tableinfo->desname,"associated_table","columnname","category");
 
-   if (!may_read($db,$tableid,$id,$USER))
+   if (!may_read($db,$tableinfo->id,$id,$USER))
       return false;
 
    // get values 
-   $r=$db->Execute("SELECT $fields FROM $real_tablename WHERE id=$id");
+   $r=$db->Execute("SELECT $tableinfo->fields FROM $tableinfo->realname WHERE id=$id");
    if ($r->EOF) {
       echo "<h3>Could not find this record in the database</h3>";
       return false;
    }
-   $column=strtok($fields,",");
+   $column=strtok($tableinfo->fields,",");
    while ($column) {
       ${$column}=$r->fields[$column];
       $column=strtok(",");
@@ -241,8 +240,8 @@ function plugin_show($db,$fields,$id,$USER,$system_settings,$tableid,$real_table
    echo "<th>Notes: </th><td>$notes</td>\n";
    echo "</tr>\n";
 
-   $columnid=get_cell($db,$table_desc,"id","columnname","file");
-   $files=get_files($db,$tablename,$id,$columnid,1);
+   $columnid=get_cell($db,$tableinfo->desname,"id","columnname","file");
+   $files=get_files($db,$tableinfo->name,$id,$columnid,1);
    if ($files) {
       echo "<tr><th>Files:</th>\n<td>";
       for ($i=0;$i<sizeof($files);$i++) {
@@ -251,9 +250,9 @@ function plugin_show($db,$fields,$id,$USER,$system_settings,$tableid,$real_table
       echo "</tr>\n";
    }
    
-   echo "<tr><th>Links:</th><td colspan=7><a href='$PHP_SELF?tablename=$tablename&showid=$id&";
+   echo "<tr><th>Links:</th><td colspan=7><a href='$PHP_SELF?tablename=".$tableinfo->name."&showid=$id&";
    echo SID;
-   echo "'>".$system_settings["baseURL"].getenv("SCRIPT_NAME")."?tablename=$tablename&showid=$id</a> (This page)<br>\n";
+   echo "'>".$system_settings["baseURL"].getenv("SCRIPT_NAME")."?tablename=".$tableinfo->name."&showid=$id</a> (This page)<br>\n";
 
    echo "<a href='http://www.ncbi.nlm.nih.gov/entrez/query.fcgi?";
    if ($system_settings["pdfget"])
@@ -263,7 +262,7 @@ function plugin_show($db,$fields,$id,$USER,$system_settings,$tableid,$real_table
    echo "cmd=Link&db=PubMed&dbFrom=PubMed&from_uid=$pmid$addget'>Related articles at Pubmed</a></td></tr>\n";
 
 ?>   
-<form method='post' id='pdfview' action='<?php echo "$PHP_SELF?tablename=$tablename"?>&<?=SID?>'> 
+<form method='post' id='pdfview' action='<?php echo "$PHP_SELF?tablename=".$tableinfo->name?>&<?=SID?>'> 
 <?php
    if ($backbutton) {
       echo "<tr>";
