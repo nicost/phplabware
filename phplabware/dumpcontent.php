@@ -103,10 +103,11 @@ while ($r->fields["id"] && !$r->EOF) {
          if ($row['datatype']=='file') {
             $files=get_files($db,$tableinfo->name,$row['recordid'],$row['columnid'],0);
             for ($i=0;$i<sizeof($files);$i++) {
-              $filecounter++;
-              fwrite ($fp,$pre_seperator.$files[$i]['name'].$post_seperator);
-              $path=file_path($db,$files[$i]['id']);
-              $cpstr="cp $path {$filedir}{$files[$i]['name']}";
+               $filecounter++;
+               // instead of the following line write a temp table with all the file info,and provide an comma separated list of ids to that table here
+               fwrite ($fp,$pre_seperator.$files[$i]['name'].$post_seperator);
+               $path=file_path($db,$files[$i]['id']);
+               $cpstr="cp $path {$filedir}{$files[$i]['name']}";
               `$cpstr`;
             }
          }
