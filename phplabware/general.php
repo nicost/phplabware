@@ -39,7 +39,7 @@ if (!$tableid) {
 $tableinfo->short=$tableshort=$r->fields["shortname"];
 $tableinfo->real_name=$real_tablename=$r->fields["real_tablename"];
 $tableinfo->label=$tablelabel=$r->fields["label"];
-$tableino->desname=$table_desname=$r->fields["table_desc_name"];
+$tableinfo->desname=$table_desname=$r->fields["table_desc_name"];
 $tableinfo->queryname=$queryname=$tableshort."_query";
 $tableinfo->pagename=$pagename=$tableshort."_curr_page";
 
@@ -467,7 +467,8 @@ else {
    echo "</tr>\n\n";
 
    if ($md=="edit")
-      display_table_change($db,$tableid,$table_desname,$Fieldscomma,${$queryname},$num_p_r,${$pagename},$rp,$r);
+      display_table_change($db,$tableinfo,$Fieldscomma,${$queryname},$num_p_r,${$pagename},$rp,$r);
+      //display_table_change($db,$tableid,$table_desname,$Fieldscomma,${$queryname},$num_p_r,${$pagename},$rp,$r);
    else
       display_table_info($db,$tableid,$table_desname,$Fieldscomma,${$queryname},$num_p_r,${$pagename},$rp,$r);
    printfooter($db,$USER);
