@@ -129,7 +129,7 @@ CREATE TABLE settings
    if (!$result) $test=false;
    // insert sysadmin and admin group
    $pass= md5($pwd);
-   $id = $db->GenID("users_id_seq");
+   $id=$db->GenID("users_id_seq");
    $idg=$db->GenID("groups_id_seq");
    if (!($id && $idg)) $test=false;
    $result=$db->Execute("INSERT INTO groups VALUES
@@ -183,6 +183,8 @@ if ($version) {
 	    type1 int,
 	    type2 int,
 	    type3 int,
+	    type4 int,
+	    type5 int,
 	    species int,
 	    antigen text,
 	    epitope text,
@@ -240,6 +242,10 @@ if ($version) {
 	 $query="INSERT INTO ab_type4 VALUES (5,500,'IgG2b')";
 	 if (!$db->Execute($query)) $test=false;
 	 $query="INSERT INTO ab_type4 VALUES (6,600,'IgE')";
+	 if (!$db->Execute($query)) $test=false;
+	 $query="INSERT INTO ab_type4 VALUES (7,20,'mix')";
+	 if (!$db->Execute($query)) $test=false;
+	 $query="INSERT INTO ab_type4 VALUES (8,10,'unknown')";
 	 if (!$db->Execute($query)) $test=false;
          $query="CREATE TABLE ab_type5 
             (id int PRIMARY KEY,
