@@ -321,7 +321,9 @@ function delete ($db, $tableid, $id, $USER, $filesonly=false) {
 function process_image($db,$fileid,$bigsize) 
 {
    global $USER, $system_settings;
-
+   
+   if (!$fileid)
+      return false;
    $imagefile=file_path ($db,$fileid);
    $bigthumb=$system_settings["thumbnaildir"]."/big/$fileid.jpg";
    $smallthumb=$system_settings["thumbnaildir"]."/small/$fileid.jpg";
@@ -390,7 +392,6 @@ function process_image($db,$fileid,$bigsize)
       $query="INSERT INTO images (id,x_size,y_size,xbt_size,ybt_size,xst_size,yst_size,type) VALUES ('$fileid', '$width', '$height', '$bigsize', '$bigsize', '$smallsize', '$smallsize', '$filename_extension')";
    else 
       $query="UPDATE images SET x_size='$width',y_size='$height',xbt_size='$bigsize',ybt_size='$bigsize',xst_size='$smallsize',yst_size='$smallsize',type='$filename_extension' WHERE id=$fileid";
-
    $db->Execute($query);
    
 }
