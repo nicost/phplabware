@@ -457,8 +457,8 @@ else {
       elseif ($nowfield["datatype"]== "pulldown") {
          echo "<td style='width: 10%'>";
          if ($USER["permissions"] & $LAYOUT)  {
-            $jscript=" onclick='MyWindow=window.open (\"general.php?tablename=".$tableinfo->name."&edit_type=$nowfield[ass_t]&jsnewwindow=true&formname=$formname&selectname=$nowfield[name]".SID."\",\"type\",\"scrollbar=yes,resizable=yes,width=600,height=400\")'";
-            echo "<input type='button' name='edit_button' value='Edit $nowfield[label]' $jscript><br>\n";
+            $jscript2=" onclick='MyWindow=window.open (\"general.php?tablename=".$tableinfo->name."&edit_type=$nowfield[ass_t]&jsnewwindow=true&formname=$formname&selectname=$nowfield[name]".SID."\",\"type\",\"scrollbar=yes,resizable=yes,width=600,height=400\")'";
+            echo "<input type='button' name='edit_button' value='Edit $nowfield[label]' $jscript2><br>\n";
             //echo "<a href='$PHP_SELF?tablename=$tableinfo->name&edit_type=$nowfield[ass_t]&".SID;
             //echo "'>Edit $nowfield[label]</a><br>\n";
          }	 		 			
