@@ -399,6 +399,54 @@ function mod_columnECG($db,$sort,$offset) {
 }
 
 /////////////////////////////////////////////////////////////////////////
+////
+// !Modifies an entry for a report
+function mod_report($db,$offset) {
+   global $HTTP_POST_VARS,$HTTP_GET_VARS;
+
+   $id=$HTTP_POST_VARS["report_id"][$offset];
+   $label=$HTTP_POST_VARS["report_label"][$offset];
+   $sortkey=$HTTP_POST_VARS["report_sortkey"][$offset];
+   $sortkey=(int)$sortkey;
+   if (!$sortkey)
+      $sortkey="NULL";
+   $template=$HTTP_POST_VARS["report_template"][$offset];
+
+   $r=$db->Execute("UPDATE reports SET label='$label', sortkey=$sortkey, template='$template' WHERE id='$id'");    
+}
+
+/////////////////////////////////////////////////////////////////////////
+////
+// !Deletes an entry for a report
+function rm_report($db,$offset) {
+   global $HTTP_POST_VARS,$HTTP_GET_VARS;
+
+   $id=$HTTP_POST_VARS["report_id"][$offset];
+   $r=$db->Execute("DELETE FROM reports WHERE id=$id");
+}
+
+/////////////////////////////////////////////////////////////////////////
+////
+// ! Adds a new entry for a report
+function add_report($db) {
+   global $HTTP_POST_VARS,$HTTP_GET_VARS;
+
+   $id=$db->GenID("reports"."_gen_id_seq");
+   $tablename=$HTTP_GET_VARS["editreport"];
+   $r=$db->Execute("SELECT id FROM tableoftables WHERE tablename='$tablename'");
+   $tableid=$r->fields["id"];
+   $label=$HTTP_POST_VARS["addrep_label"];
+   $sortkey=$HTTP_POST_VARS["addrep_sortkey"];
+   $sortkey=(int)$sortkey;
+   if (!$sortkey)
+      $sortkey="NULL";
+   $template=$HTTP_POST_VARS["addrep_template"];
+   $db->Execute("INSERT INTO reports (id,label,tableid,sortkey,template) VALUES ($id,'$label',$tableid,$sortkey,'$template')");
+
+}
+
+
+/////////////////////////////////////////////////////////////////////////
 //// 
 // !deletes a general column entry
 function rm_columnecg($db,$tablename,$id,$colname,$datatype) {
