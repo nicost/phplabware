@@ -15,11 +15,6 @@
   \**************************************************************************/
 
 
-//$post_vars="logon,user,pwd,ssl,submit";
-//globalize_vars($post_vars,"HTTP_POST_VARS");
-//echo "$user,$pwd,$ssl,$logon,$ssl,$post_vars.<br>";
-
-
 $client = new cl_client;
 
 // protect from outside variables
@@ -67,6 +62,11 @@ if ($use_sessions) {
  
          // if authenticated, this session is OK:
          if ($auth) {
+            if ($HTTP_SESSION_VARS["javascript_enabled"] || $HTTP_POST_VARS["javascript_enabled"])
+               $HTTP_SESSION_VARS["javascript_enabled"]=true;
+            else
+               $HTTP_SESSION_VARS["javascript_enabled"]=false;
+            session_register("javascript_enabled");
             if (!$authmethod)
                $authmethod="sql";
             $HTTP_SESSION_VARS["authmethod"]=$authmethod;
@@ -103,6 +103,8 @@ if ($use_sessions) {
    // if the $PHP_AUTH_USER is not set, we need to identify and authenticate 
    if (!$PHP_AUTH_USER)
       $PHP_AUTH_USER = $HTTP_SESSION_VARS["PHP_AUTH_USER"];
+   // need to call this to maintain javascript state
+   $javascript_enabled=$HTTP_SESSION_VARS["javascript_enabled"];
    if (!$PHP_AUTH_USER) {
       // display logon screen
       loginscreen();
