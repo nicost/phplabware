@@ -363,7 +363,7 @@ function display_add($db,$tableinfo,$Allfields,$id,$namein,$system_settings) {
                echo "<td>$nowfield[text]";
             }
          }
-         elseif ($nowfield['datatype']=='text' || $nowfield['datatype']=='int' || $nowfield['datatype']=='float' || $nowfield['datatype']=='date') {
+         elseif ($nowfield['modifiable']=='Y' && ($nowfield['datatype']=='text' || $nowfield['datatype']=='int' || $nowfield['datatype']=='float' || $nowfield['datatype']=='date')) {
             echo "<tr><th>$nowfield[label]:"; 
             if ($nowfield['required']=='Y') {
                echo "<sup style='color:red'>&nbsp;*</sup>";
@@ -555,14 +555,6 @@ function getvalues($db,$tableinfo,$fields,$qfield=false,$field=false) {
                if ($files) 
                   for ($i=0;$i<sizeof($files);$i++)
                      ${$column}["text"].=$files[$i]["link"];
-/*
-print_r(${$column});
-echo "<br>";
-print_r($files);
-echo "<br>";
-print_r($rb->fields);
-echo "<br>";
-*/
 
             }
             elseif ($rb->fields['datatype']=='user') {
