@@ -403,7 +403,8 @@ else {
                $ownerids[]=$rowners->fields[0];
                $rowners->MoveNext();
             }
-            $ownerlist=implode(",",$ownerids);
+	    if ($ownerids)
+               $ownerlist=implode(",",$ownerids);
          }
          if ($ownerlist) {   
             $rowners2=$db->Execute("SELECT lastname,id FROM users WHERE id IN ($ownerlist)");
