@@ -121,7 +121,7 @@ else { // just a single record
    $fields=comma_array_SQL($db,$tableinfo->desname,"columnname");
    $Allfields=getvalues($db,$tableinfo,$fields,"id",$recordid);
 
-   $report=make_report($db,$template,$Allfields);
+   $report=make_report($db,$template,$Allfields,$tableinfo);
    echo $report;
 }
 ?>
