@@ -126,7 +126,7 @@ function delete ($db, $table, $id, $USER) {
 ////
 // !Upload files and enters then into table files
 // files should be called file[] in HTTP_POST_FILES
-// filetitle in HTTP_POST_VARS will be inserited in the title field of table files
+// filetitle in HTTP_POST_VARS will be inserted in the title field of table files
 function upload_files ($db,$table,$id,$USER,$system_settings) {
    global $HTTP_POST_FILES,$HTTP_POST_VARS;
    if (!$db && $table && $id)
@@ -162,7 +162,7 @@ function upload_files ($db,$table,$id,$USER,$system_settings) {
 // files associated with the given record
 function get_files ($db,$table,$id,$format=1) {
    $tableid=get_cell($db,"tableoftables","id","tablename",$table);
-   $r=$db->Execute("SELECT id,filename,title FROM files WHERE tablesfk=$tableid AND ftableid=$id");
+   $r=$db->Execute("SELECT id,filename,title,type FROM files WHERE tablesfk=$tableid AND ftableid=$id");
    if ($r && !$r->EOF) {
       $i=0;
       $sid=SID;
@@ -170,6 +170,7 @@ function get_files ($db,$table,$id,$format=1) {
          $filesid=$files[$i]["id"]=$r->fields("id");
          $filesname=$files[$i]["name"]=$r->fields("filename");
          $filestitle=$files[$i]["title"]=$r->fields("title");
+         $filestype=$files[$i]["type"]=get_cell($db,"filetypes","typeshort","id",$r->fields("type"));
 	 if ($format==1) {
             if ($filestitle)
                $text=$filestitle;
