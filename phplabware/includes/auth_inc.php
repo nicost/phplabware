@@ -111,6 +111,7 @@ if ($use_sessions) {
       }
       // save frequently used variables
       $USER=$db_result->fields;
+      $USER["settings"]=unserialize($USER["settings"]);
       
       // check whether account allows logins
       $active = $USER["permissions"] & $ACTIVE;
