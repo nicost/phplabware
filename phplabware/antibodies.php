@@ -335,7 +335,7 @@ else {
          // to not interfere with search form 
          unset ($HTTP_POST_VARS);
 	 // or we won't see the new record
-	 unset ($HTTP_SESSION_VARS["query"]);
+	 unset ($HTTP_SESSION_VARS["ab_query"]);
       }
    }
    // then look whether it should be modified
@@ -374,7 +374,7 @@ else {
       $num_p_r=$HTTP_POST_VARS["num_p_r"];
       unset ($HTTP_POST_VARS);
       $curr_page=1;
-      session_unregister("query");
+      session_unregister("ab_query");
    }
    $column=strtok($fields,",");
    while ($column) {
@@ -430,13 +430,13 @@ else {
    // retrieve all antibodies and their info from database
    $whereclause=may_read_SQL ($db,"antibodies",$USER);
    if ($search=="Search")
-      $query=search("antibodies",$fields,$HTTP_POST_VARS," id IN ($whereclause) ORDER BY name");
-   elseif (session_is_registered ("query") && $HTTP_SESSION_VARS["query"])
-      $query=$HTTP_SESSION_VARS["query"];
+      $ab_query=search("antibodies",$fields,$HTTP_POST_VARS," id IN ($whereclause) ORDER BY name");
+   elseif (session_is_registered ("ab_query") && isset($HTTP_SESSION_VARS["ab_query"]))
+      $ab_query=$HTTP_SESSION_VARS["ab_query"];
    else
-      $query = "SELECT $fields FROM antibodies WHERE id IN ($whereclause) ORDER BY date DESC";
-   $HTTP_SESSION_VARS["query"]=$query;   
-   session_register("query");
+      $ab_query = "SELECT $fields FROM antibodies WHERE id IN ($whereclause) ORDER BY date DESC";
+   $HTTP_SESSION_VARS["ab_query"]=$ab_query;   
+   session_register("ab_query");
    
    // paging stuff
    if (!$num_p_r)
@@ -457,7 +457,7 @@ else {
    $HTTP_SESSION_VARS["curr_page"]=$curr_page; 
    session_register("curr_page");
 
-   $r=$db->PageExecute($query,$num_p_r,$curr_page);
+   $r=$db->PageExecute($ab_query,$num_p_r,$curr_page);
    $rownr=1;
    // print all entries
    while ($r && !($r->EOF)) {
