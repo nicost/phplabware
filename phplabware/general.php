@@ -262,12 +262,12 @@ else {
    $fields_table="id,".$fields_table;
   //$fields_table="id ";
    ${$queryname}=make_search_SQL($db,$real_tablename,$tableshort,$tableid,$fields_table,$USER,$search,$sortstring,$listb);
-   $r=$db->CacheExecute(2,${$queryname});
+   $r=$db->Execute(${$queryname});
 
    if ($r) {
       $numrows=$r->RecordCount();
       // loop through all entries for next/previous buttons
-      $rp=$db->CachePageExecute(2,${$queryname},$num_p_r,${$pagename});
+      $rp=$db->PageExecute(${$queryname},$num_p_r,${$pagename});
       while (!($rp->EOF) && $rp) {
          $rp->MoveNext();
       }
@@ -326,16 +326,25 @@ else {
    echo "<tr align='center'>\n";
    echo "<input type='hidden' name='searchj' value=''>\n";
 
+   $lista_array=explode(",",$lista);
+   $counta=sizeof($lista_array);
+   $listb_array=explode(",",$listb);
+   $countb=sizeof($listb_array);
+
    foreach($Allfields as $nowfield)  {
-      if ($HTTP_POST_VARS[$nowfield[name]]) 
+      if ($HTTP_POST_VARS[$nowfield[name]]) {
          $list=$listb; 
-      else 
+	 $count=$countb;
+      }
+      else {
          $list=$lista;   
+         $count=$counta;
+      }
       if ($nowfield[datatype]== "link")
          echo "<td style='width: 10%'>&nbsp;</td>\n";
       elseif ($nowfield[datatype]== "text") {
          // show titles we may see, when too many, revert to text box
-         if ($list && ($numrows < $max_menu_length) )  {
+         if ($list && ($count < $max_menu_length) )  {
   	     $r=$db->CacheExecute(2,"SELECT $nowfield[name] FROM $real_tablename WHERE id IN ($list)");
              $text=$r->GetMenu("$nowfield[name]",$HTTP_POST_VARS[$nowfield[name]],true,false,0,"style='width: 80%' $jscript");
              echo "<td style='width: 10%'>$text</td>\n";
@@ -356,7 +365,10 @@ else {
          if ($list2) { 
             $r=$db->Execute("SELECT typeshort,id from $nowfield[ass_t] WHERE id IN ($list2) ORDER by typeshort");
     		
-            $text=$r->GetMenu2("$nowfield[name]",$HTTP_POST_VARS[$nowfield[name]],true,false,0,"style='width: 80%' $jscript");   
+            if ($r)
+	       $text=$r->GetMenu2("$nowfield[name]",$HTTP_POST_VARS[$nowfield[name]],true,false,0,"style='width: 80%' $jscript");   
+	    else
+	       $text="&nbsp;";
     	    echo "$text</td>\n";
          }  
       }
