@@ -119,6 +119,14 @@ if ($use_sessions) {
       // save frequently used variables
       $USER=$db_result->fields;
       $USER["settings"]=unserialize($USER["settings"]);
+      $USER["group_list"]=$USER["groupid"];
+      $USER["group_array"][]=$USER["groupid"];
+      $rg=$db->Execute("SELECT groupsid FROM usersxgroups WHERE usersid='".$USER["id"]."'");
+      while ($rg && !$rg->EOF) {
+         $USER["group_list"].=",".$rg->fields["groupsid"];
+	 $USER["group_array"][]=$rg->fields["groupsid"];
+	 $rg->MoveNext();
+      }
       
       // check whether account allows logins
       $active = $USER["permissions"] & $ACTIVE;
