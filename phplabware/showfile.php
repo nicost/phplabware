@@ -36,7 +36,7 @@ $tableid=$r->fields('tablesfk');
 $tableitemid=$r->fields('ftableid');
 $mime=$r->fields('mime');
 // we keep a list with fileids that can be seen in the USER settings
-if (! (in_array($id,$USER['settings']['fileids'])))  {
+if (! (@in_array($id,$USER['settings']['fileids'])))  {
    $tablename=get_cell($db,'tableoftables','tablename','id',$tableid);
    $HTTP_GET_VARS['tablename']=$tablename;
    $tableinfo=new tableinfo($db);
