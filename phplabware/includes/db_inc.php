@@ -35,13 +35,13 @@ class tableinfo {
          $r=$db->Execute("SELECT id,shortname,tablename,real_tablename,table_desc_name,label FROM tableoftables WHERE real_tablename='$realname'");
       else
          $r=$db->Execute("SELECT id,shortname,tablename,real_tablename,table_desc_name,label FROM tableoftables WHERE tablename='$HTTP_GET_VARS[tablename]'");
-      $this->id=$r->fields["id"];
-      $this->short=$r->fields["shortname"];
-      $this->realname=$r->fields["real_tablename"];
-      $this->label=$r->fields["label"];
-      $this->desname=$r->fields["table_desc_name"];
+      $this->id=$r->fields['id'];
+      $this->short=$r->fields['shortname'];
+      $this->realname=$r->fields['real_tablename'];
+      $this->name=$r->fields['tablename'];
+      $this->label=$r->fields['label'];
+      $this->desname=$r->fields['table_desc_name'];
       $this->fields=comma_array_SQL($db,$this->desname,columnname);
-      $this->name=$HTTP_GET_VARS[tablename];
    }
 }
 
