@@ -22,11 +22,13 @@ require("includes/tablemanage_inc.php");
 include ('includes/defines_inc.php');
 
 $editfield=$HTTP_GET_VARS["editfield"];
-$post_vars="newtable_name,newtable_sortkey,addtable,table_id,table_name,table_display,addcol_name,addcol_sort,addcol_dtable,addcol_drecord,addcol_required,addcol_datatype";
+$post_vars="newtable_name,newtable_label,newtable_sortkey,addtable,table_id,table_name,table_display,addcol_name,addcol_label,addcol_sort,addcol_dtable,addcol_drecord,addcol_required,addcol_datatype";
 globalize_vars($post_vars, $HTTP_POST_VARS);
 
 $permissions=$USER["permissions"];
-printheader($httptitle);
+if ($addcol_datatype=="table") 
+   $jsfile="includes/js/tablemanage.js";
+printheader($httptitle,false,$jsfile);
 
 if (!($permissions & $SUPER)) {
 	navbar($USER["permissions"]);
@@ -36,40 +38,44 @@ if (!($permissions & $SUPER)) {
 }
  
 while((list($key, $val) = each($HTTP_POST_VARS))) {
-   if (substr($key, 0, 8) == "addtable") {
-       $tablename=$HTTP_POST_VARS["newtable_name"];
-       $tablelabel=$HTTP_POST_VARS["newtable_label"];
-       $tablesort=$HTTP_POST_VARS["newtable_sortkey"];
-       add_table($db,$tablename,$tablelabel,$tablesort);
+   if ($key == "addtable") {
+      add_table($db,$newtable_name,$newtable_label,$newtable_sortkey);
+      break;
    }
-   if (substr($key, 0, 8) == "modtable") {
-       $modarray = explode("_", $key);
-       $id=$HTTP_POST_VARS["table_id"][$modarray[1]];
-       $tablename=$HTTP_POST_VARS["table_name"][$modarray[1]];
-       $tablelabel=$HTTP_POST_VARS["table_label"][$modarray[1]];
-       $tablesort=$HTTP_POST_VARS["table_sortkey"][$modarray[1]];
-       $tabledisplay=$HTTP_POST_VARS["table_display"][$modarray[1]];
-       $tablegroups=$HTTP_POST_VARS["tablexgroups"][$id];
-       mod_table($db,$id,$tablename,$tablesort,$tabledisplay,$tablelabel,$tablegroups);
+   elseif (substr($key, 0, 8) == "modtable") {
+      $modarray = explode("_", $key);
+      $id=$HTTP_POST_VARS["table_id"][$modarray[1]];
+      $tablename=$HTTP_POST_VARS["table_name"][$modarray[1]];
+      $tablelabel=$HTTP_POST_VARS["table_label"][$modarray[1]];
+      $tablesort=$HTTP_POST_VARS["table_sortkey"][$modarray[1]];
+      $tabledisplay=$HTTP_POST_VARS["table_display"][$modarray[1]];
+      $tablegroups=$HTTP_POST_VARS["tablexgroups"][$id];
+      mod_table($db,$id,$tablename,$tablesort,$tabledisplay,$tablelabel,$tablegroups);
+      break;
    }
-   if (substr($key, 0, 8) == "deltable") {  
-       $modarray = explode("_", $key);      
-       $id=$HTTP_POST_VARS["table_id"][$modarray[1]]; 
-       $tablename=$HTTP_POST_VARS["table_name"][$modarray[1]];      
-  	del_table($db,$tablename,$id,$USER);   
+   elseif (substr($key, 0, 8) == "deltable") {  
+      $modarray = explode("_", $key);      
+      $id=$HTTP_POST_VARS["table_id"][$modarray[1]]; 
+      $tablename=$HTTP_POST_VARS["table_name"][$modarray[1]];      
+      del_table($db,$tablename,$id,$USER);   
+      break;
    }
-   if (substr($key, 0, 9) == "addcolumn") {  
-       $tablename=$HTTP_POST_VARS["table_name"];
-       $label=$HTTP_POST_VARS["addcol_label"];
-       $colname=$HTTP_POST_VARS["addcol_name"];
-       $datatype=$HTTP_POST_VARS["addcol_datatype"];
-       $Rdis=$HTTP_POST_VARS["addcol_drecord"];
-       $Tdis=$HTTP_POST_VARS["addcol_dtable"];
-       $req=$HTTP_POST_VARS["addcol_required"];
-       $sort=$HTTP_POST_VARS["addcol_sort"];
-       add_columnECG($db,$tablename,$colname,$label,$datatype,$Rdis,$Tdis,$req,$sort);
+   elseif ($key=="table_column_select") {
+      add_associated_table($db,$table_name,$addcol_name,$HTTP_POST_VARS["table_select"],$HTTP_POST_VARS["table_column_select"]);
+      break;
+   }
+   elseif ($key == "addcolumn") {  
+      $result=add_columnECG($db,$table_name,$addcol_name,$addcol_label,$addcol_datatype,$addcol_drecord,$addcol_dtable,$addcol_required,$addcol_sort);
+$result=true;
+      if ($addcol_datatype=="table" && $result) {
+         navbar($USER["permissions"]);
+         show_table_column_page($db,$table_name,$addcol_name,$addcol_label,$addcol_datatype,$addcol_drecord,$addcol_dtable,$addcol_required,$addcol_sort);
+         printfooter();
+         exit();
+      }
+      break;
    }   	
-   if (substr($key, 0, 9) == "modcolumn") {  
+   elseif (substr($key, 0, 9) == "modcolumn") {  
       $modarray = explode("_", $key);
       $tablename=$HTTP_POST_VARS["table_name"];
       $id=$HTTP_POST_VARS["column_id"][$modarray[1]]; 
@@ -81,16 +87,19 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
       $sort=$HTTP_POST_VARS["column_sort"][$modarray[1]];
       $req=$HTTP_POST_VARS["column_required"][$modarray[1]];
       mod_columnECG($db,$id,$sort,$tablename,$colname,$collabel,$datatype,$Rdis,$Tdis,$req);
+      break;
    }   	
-   if (substr($key, 0, 9) == "delcolumn") { 
+   elseif (substr($key, 0, 9) == "delcolumn") { 
       $modarray = explode("_", $key);
       $tablename=$HTTP_POST_VARS["table_name"];
       $id=$HTTP_POST_VARS["column_id"][$modarray[1]]; 
       $colname=$HTTP_POST_VARS["column_name"][$modarray[1]];
       $datatype=$HTTP_POST_VARS["column_datatype"][$modarray[1]];
       rm_columnecg($db,$tablename,$id,$colname,$datatype);
+      break;
    }
 }
+
 if ($editfield)	{
    $noshow=array("id","access","ownerid","magic","lastmoddate","lastmodby","date");
    $nodel=array("title","date","lastmodby","lastmoddate");
@@ -100,11 +109,12 @@ if ($editfield)	{
    $currdesc=$editfield."_".$id."_desc";
    echo "<h3 align='center'>$string</h3>";
    echo "<h3 align='center'>Edit columns of $editfield</h3><br>";
-   echo "<table align='center'>\n";
+  // echo "<table align='center'>\n";
 
    echo "<form method='post' id='coledit' enctype='multipart/form-data' ";
    $dbstring=$PHP_SELF;echo "action='$dbstring?editfield=$editfield&".SID."'>\n"; 
-   echo "<table align='center'>\n";
+   echo "<table align='center' border='0' cellpadding='2' cellspacing='0'>\n";
+   //echo "<table align='center'>\n";
    echo "<tr>\n";
    echo "<th>(SQL) Column Name</th>";
    echo "<th>Label</th>";
@@ -113,6 +123,7 @@ if ($editfield)	{
    echo "<th>Record display</th>\n";
    echo "<th>Required </th>\n";
    echo "<th>Datatype</th>\n";
+   echo "<th>Ass. Table/Column</th>\n";
    echo "<th>Action</th>\n";
    echo "</tr>\n";
    echo "<input type='hidden' name='table_name' value='$editfield'>\n";
@@ -122,13 +133,15 @@ if ($editfield)	{
    echo "<td><input type='radio' name='addcol_dtable' checked value='Y'>yes<input type='radio' name='addcol_dtable'  value='N'>no</td>\n";
    echo "<td><input type='radio' name='addcol_drecord' checked value='Y'>yes<input type='radio' name='addcol_drecord'  value='N'>no</td>\n";
    echo "<td><input type='radio' name='addcol_required'  value='Y'>yes<input type='radio' name='addcol_required' checked value='N'>no</td>\n";
-   echo "<td><select name='addcol_datatype'>";
-   echo "<option value='text'>text";
-   echo "<option value='textlong'>textlong";
-   echo "<option value='pulldown'>pulldown";
-   echo "<option value='link'>weblink";
-   echo "<option value='file'>file";
-   echo "</select>";
+   echo "<td><select name='addcol_datatype'>\n";
+   echo "<option value='text'>text</option>\n";
+   echo "<option value='textlong'>textlong</option>\n";
+   echo "<option value='table'>table</option>\n";
+   echo "<option value='pulldown'>pulldown</option>\n";
+   echo "<option value='link'>weblink</option>\n";
+   echo "<option value='file'>file</option>\n";
+   echo "</select></td>\n";
+   echo "<td>&nbsp;</td>\n";
    echo "<td align='center'><input type='submit' name='addcolumn' value='Add'></td></tr>\n\n";
    
    $query = "SELECT id,sortkey,columnname,label,display_table,display_record,required,datatype FROM $currdesc order by sortkey,label";
@@ -178,11 +191,14 @@ if ($editfield)	{
 	  	if($display_required=="Y")
 	  		{echo "<td><input type='radio' name='column_required[$rownr]' value='Y' CHECKED>yes";
 	  		echo" <input type='radio' name='column_required[$rownr]' value='N'> no </td>\n";}
-	  	else{
+	  	else {
 	  		echo "<td><input type='radio' name='column_required[$rownr]' value='Y'>yes";
-	  		echo" <input type='radio' name='column_required[$rownr]' checked value='N'> no </td>\n";}	  			 
+	  		echo" <input type='radio' name='column_required[$rownr]' checked value='N'> no </td>\n";
+                }
 	  		 		
-      	echo "<input type='hidden' name='column_datatype[]' value='$label'>\n";echo "<td>$datatype</td>\n";
+      	echo "<input type='hidden' name='column_datatype[]' value='$label'>\n";
+        echo "<td>$datatype</td>\n";
+        echo "<td>&nbsp;</td>\n";
 	  	$modstring = "<input type='submit' name='modcolumn"."_$rownr' value='Modify'>";
    	   $delstring = "<input type='submit' name='delcolumn"."_$rownr' value='Remove' ";
    	   $delstring .= "Onclick=\"if(confirm('Are you absolutely sure that the column $label should be removed? (No undo possible!)')){return true;}return false;\">";  
@@ -219,7 +235,7 @@ echo "<h3 align='center'>$string</h3>";
 echo "<h3 align='center'>Edit Tables</h3>\n";
 echo "<form method='post' id='tablemanage' enctype='multipart/form-data' ";
 $dbstring=$PHP_SELF;echo "action='$dbstring?".SID."'>\n"; 
-echo "<table align='center'>\n";
+echo "<table align='center' border='0' cellpadding='2' cellspacing='0'>\n";
 
 echo "<tr>\n";
 echo "<th>Table Name</th>\n";
@@ -232,7 +248,7 @@ echo "<th>Action</th>\n";
 echo "<th>Fields</th>\n";
 
 echo "</tr>\n";
-echo "<tr><td><input type='text' name='newtable_name' value=''></td>\n";
+echo "<tr><td><input type='text' name='newtable_name' value='' ></td>\n";
 echo "<td><input type='text' name='newtable_label' value=''></td>\n";
 echo "<td></td>\n";
 echo "<td></td>\n";

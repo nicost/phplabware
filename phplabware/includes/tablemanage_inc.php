@@ -282,24 +282,11 @@ function add_columnecg($db,$tablename2,$colname2,$label,$datatype,$Rdis,$Tdis,$r
          // create an associated table, not overwriting old ones, using a max number
          $tablestr=$real_tablename;
 	 $tablestr.="ass";
-/*         $ALLTABLES=$db->MetaTables();  
-	 $tables=array();
-	 $tables=preg_grep("/$tablestr/",$ALLTABLES); 
-	 $tables2=array_values($tables);
-	 $numhave=array_count_values($tables2);
-	 $allnums=array();	
-	 array_push($allnums,"0");
-	 foreach($tables2 as $currvalues)
-			{
-	    $DDD=explode("_",$currvalues);
-	    $nownumber=$DDD[1];
-	    array_push($allnums,$nownumber);
-	 }		
-	 $maxnum=max($allnums);$newnum=$maxnum+1;
-*/
+
          // simple and robust way to get UID.  Start at 20 to avoid clashes	
          $assid=$db->GenID($tablestr,20);
 	 $tablestr.="_$assid";	
+
 	 $r=$db->Execute("INSERT INTO $desc ($fieldstring) Values($fieldid,'$colname','$label','$sort','$Tdis','$Rdis','$req','text','$datatype','$tablestr','$colname from $tablestr where ')");
 	 $rs=$db->Execute("CREATE TABLE $tablestr (id int PRIMARY KEY, sortkey int, type text, typeshort text)");
 	 $rsss=$db->Execute("ALTER table $real_tablename add column $colname int");
@@ -308,14 +295,20 @@ function add_columnecg($db,$tablename2,$colname2,$label,$datatype,$Rdis,$Tdis,$r
 	 else 
 	    $string="Problems creating this column.";
       }
+
       else {
          $r=$db->Execute("INSERT INTO $desc ($fieldstring) Values($fieldid,'$colname','$label','$sort','$Tdis','$Rdis','$req','text','$datatype','','')");
          $rsss=$db->Execute("ALTER table $real_tablename add column $colname text");
- 	 if (($r)&&$rsss&&(!($colname==""))) 
+ 	 if (($r)&&$rsss&&(!($colname==""))) {
             $string="Added column <i>$colname</i> into table: <i>$tablename2</i>";
-         else 
+            return $fieldid;
+         }
+         else { 
             $string="Please enter all values";
+            return false;
+         }
       }
+
    }
 }
 
@@ -370,6 +363,70 @@ function rm_columnecg($db,$tablename,$id,$colname,$datatype) {
    $rrr=$db->Execute("DELETE FROM $desc WHERE id='$id'");
    if (($r)&&($rrr)) 
       $string="Deleted Column <i>$colname</i> from Table <i>$tablename</i>.";
+}
+
+////
+// !helper function for show_table_column_page
+function make_column_js_array($db,$r) {
+   $result="new Array(\n";
+   $rb=$db->Execute("SELECT label,id FROM ".$r->fields["table_desc_name"]." WHERE label NOT IN ('id','access','date','ownerid','magic','lastmoddate','lastmodby')");
+   $result.="new Array(\"".$rb->fields["label"]."\", ".$rb->fields["id"].")"; 
+   $rb->MoveNext();
+   while (!$rb->EOF) {
+      $result.=",\nnew Array(\"".$rb->fields["label"]."\", ".$rb->fields["id"].")"; 
+      $rb->MoveNext();
+   }
+   $result.=")";
+   return $result;
+}
+
+////
+// ! show page with choice of tables, dynamically generate list with columns
+function show_table_column_page ($db,$table_name,$addcol_name,$addcol_label) {
+   echo "<form method='post' id='table_type'>\n";
+   echo "<input type='hidden' name='table_name' value='$table_name'></input>\n";
+   echo "<input type='hidden' name='addcol_name' value='$addcol_name'></input>\n";
+   echo "<input type='hidden' name='addcol_label' value='$addcol_label'></input>\n";
+   // box 1 with tablenames
+   $r=$db->Execute("SELECT tablename,id,table_desc_name FROM tableoftables WHERE permission='Users' AND tablename <> 'settings' AND tablename <> '$table_name'  AND table_desc_name IS NOT NULL ORDER BY sortkey");
+   // box 2, dynamically filled with column names
+   $the_array="modelinfo = new Array (\n";
+   $the_array.=make_column_js_array($db,$r);
+   $r->MoveNext();
+   while (!$r->EOF) {
+      $the_array.=",\n ".make_column_js_array($db,$r);
+      $r->MoveNext();
+   }
+   $the_array.="\n)\n";
+   echo add_js ($the_array);
+   $jscript="onChange=\"fillSelectFromArray(this.form.table_column_select,((this.selectedIndex == -1) ? null : modelinfo[this.selectedIndex-1]));\"";
+
+   echo "<table align='center' cellpadding='2' cellspacing='0'>\n";
+   echo "<caption>Choose Table and column to be associated with column <i>$addcol_label</i> in table <i>$table_name</i>.</caption>\n";
+   echo "<tr><th>Table</th>\n<th>Column</th><th>&nbsp;</th></tr>\n";
+   $r->MoveFirst();
+   echo "<tr><td>".$r->GetMenu2("table_select","",true,false,0,$jscript)."</td>\n";
+   echo "<td><select name='table_column_select'></select></td>\n";
+   echo "<td><input type='submit' name='submit' value='Submit'></input></td>\n";
+   echo "</tr>\n</table>\n</form>\n";
+}
+
+////
+// !Associates given column with a column in another table
+//  if there is already an association with the other table, that association
+//  will be used as a key
+function add_associated_table($db,$table,$column,$table_ass,$column_ass) {
+   $r=$db->Execute("SELECT table_desc_name FROM tableoftables WHERE tablename='$table'");
+   $table_desc=$r->fields["table_desc_name"];
+   $r=$db->Execute("SELECT id FROM $table_desc WHERE associated_table='$table_ass' AND associated_local_key IS NULL");
+   if ($r && !$r->EOF) {
+print_r ($r);
+      $prim_column=$r->fields["id"];
+      $r=$db->Execute("UPDATE $table_desc SET associated_table='$table_ass', associated_sql='$column_ass', associated_local_key='$prim_column' WHERE columnname='$column'");
+   }
+   else { 
+      $r=$db->Execute("UPDATE $table_desc SET associated_table='$table_ass', associated_sql='$column_ass' WHERE columnname='$column'");
+   }
 }
 
 ?>
