@@ -72,6 +72,7 @@ if (! ($version || $pwd) ) {
    echo "<h3>After submitting the following form the phplabware database will ";
    echo "be created and you will be asked to login.<br>";
    echo "Login as <i>sysadmin</i> using the password you enter here.<br>\n";
+   echo "The database tables will be created.  This may take a while.<br>\n";
    echo "After logging in, examine the system settings, and press the submit button.</h3>\n";
    echo "<table border=0>\n";
    echo "<tr>\n";
