@@ -215,20 +215,24 @@ function add ($db,$table,$fields,$fieldvalues,$USER,$tableid) {
          return -1;
       }
    include('includes/defines_inc.php');
-   if (!($USER["permissions"] & $WRITE) )
+   if (!($USER['permissions'] & $WRITE) )
       return false;
    // generate the new ID
-   $id=$db->GenID($table."_id_seq");
+   $id=$db->GenID($table.'_id_seq');
    if ($id) {
-      $columns="id";
+      $columns='id';
       $values="$id";
-      $column=strtok($fields,",");
+      $column=strtok($fields,',');
       while ($column) {
          if (!($column=='id')) {
             $columns.=",$column";
             // set userid
-            if ($column=='ownerid')
-               $fieldvalues['ownerid']=$USER['id'];
+            if ($column=='ownerid') {
+               // a plugin can overwrite the ownerid, this can be handy when you want to assign all entries in a table to a particular user
+               if (function_exists('plugin_setowner'))
+                  $fieldvalues['ownerid']=plugin_setowner($db);;
+               else
+                  $fieldvalues['ownerid']=$USER['id'];
             // set default access rights, 
             elseif (in_array($column, array('gr','gw','er','ew')))
                $fieldvalues[$column]=get_access($fieldvalues,$column);
