@@ -204,8 +204,10 @@ function add ($db,$table,$fields,$fieldvalues,$USER,$tableid) {
             if ($column=="ownerid")
                $fieldvalues["ownerid"]=$USER["id"];
             // set default access rights, 
-            elseif ($column=="access") 
-               $fieldvalues["access"]=get_access($fieldvalues);
+            //elseif ($column=="access") 
+             //  $fieldvalues["access"]=get_access($fieldvalues);
+            elseif (in_array($column, array('gr','gw','er','ew')))
+               $fieldvalues[$column]=get_access($fieldvalues,$column);
             // set timestamp
             if ($column=="date") {
                $date=(time());
@@ -263,8 +265,10 @@ function modify ($db,$table,$fields,$fieldvalues,$id,$USER,$tableid) {
    while ($column) {
       if (! ($column=="id" || $column=="date" || $column=="ownerid") ) {
          $test=true;
-         if ($column=="access")
-            $fieldvalues["access"]=get_access($fieldvalues);
+         //if ($column=="access")
+         //   $fieldvalues["access"]=get_access($fieldvalues);
+         if (in_array($column, array('gr','gw','er','ew')))
+            $fieldvalues[$column]=get_access($fieldvalues,$column);
          if ($column=="lastmodby")
             $fieldvalues["lastmodby"]=$USER["id"];
          if ($column=="lastmoddate")
@@ -567,8 +571,16 @@ function show_access ($db,$tableid,$id,$USER,$global_settings) {
    global $client;
    $table=get_cell($db,"tableoftables","real_tablename","id",$tableid);
    if ($id) {
-      $access=get_cell($db,$table,"access","id",$id);
-      $ownerid=get_cell($db,$table,"ownerid","id",$id);
+      $ra=$db->Execute("SELECT gr,gw,er,ew,ownerid FROM $table WHERE id='$id'");
+      if ($ra) {
+         $gr=$ra->fields[0];
+         $gw=$ra->fields[1];
+         $er=$ra->fields[2];
+         $ew=$ra->fields[3];
+         $ownerid=$ra->fields[4];
+      }
+      // $access=get_cell($db,$table,"access","id",$id);
+      // $ownerid=get_cell($db,$table,"ownerid","id",$id);
       $groupid=get_cell($db,"users","groupid","id",$ownerid);
       $group=get_cell($db,"groups","name","id",$groupid);
       $rur=$db->Execute("SELECT trusteduserid FROM trust WHERE tableid='$tableid' AND recordid='$id' AND rw='r'");
@@ -584,15 +596,24 @@ function show_access ($db,$tableid,$id,$USER,$global_settings) {
    }
    else {
       $access=$global_settings["access"];
+      // translate the $access string into our new format
+      if ($access{3}=='r')
+         $gr=1;
+      if ($access{4}=='w')
+         $gw=1;
+      if ($access{6}=='r')
+         $er=1;
+      if ($access{7}=='w')
+         $ew=1;
       $group=get_cell($db,"groups","name","id",$USER["groupid"]);
    }
    $user_array=user_array($db);
    echo "<table border=0>\n";
    echo "<tr><th>Access:</th><th>$group</th><th>Everyone</th><th>and also</th></tr>\n";
    echo "<tr><th>Read</th>\n";
-   if (substr($access,3,1)=="r") $sel="checked"; else $sel=false;
+   if ($gr) $sel="checked"; else $sel=false;
    echo "<td><input type='checkbox' $sel name='grr' value='&nbsp;'></td>\n";
-   if (substr($access,6,1)=="r") $sel="checked"; else $sel=false;
+   if ($er) $sel="checked"; else $sel=false;
    echo "<td><input type='checkbox' $sel name='evr' value='&nbsp;'></td>\n";
    // multiple select box for trusted users.  Opera does not like 1 as size
    if ($client->browser=="Opera" || $client->browser=="Internet Explorer")
@@ -611,9 +632,9 @@ function show_access ($db,$tableid,$id,$USER,$global_settings) {
    echo "</select></td>\n";
    echo "</tr>\n";
    echo "<tr><th>Write</th>\n";
-   if (substr($access,4,1)=="w") $sel="checked"; else $sel=false;
+   if ($gw) $sel="checked"; else $sel=false;
    echo "<td><input type='checkbox' $sel name='grw' value='&nbsp;'></td>\n";
-   if (substr($access,7,1)=="w") $sel="checked"; else $sel=false;
+   if ($ew) $sel="checked"; else $sel=false;
    echo "<td><input type='checkbox' $sel name='evw' value='&nbsp;'></td>\n";
    echo "<td>\n<select multiple size='$size' name='trust_write[]'>\n";
    echo "<option>nobody else</option>\n";
@@ -633,21 +654,33 @@ function show_access ($db,$tableid,$id,$USER,$global_settings) {
 ////
 // !Returns a formatted access strings given an associative array
 // with 'grr','evr','grw','evw' as keys
-function get_access ($fieldvalues) {
+function get_access ($fieldvalues,$column) {
    global $system_settings;
+   $gr=0; $gw=0; $er=0; $ew=0;
 
-   if (!$fieldvalues)
-      return $system_settings["access"];
-   $access="rw-------";
+   if (!$fieldvalues) {
+      $system_settings["access"];
+      // translate the $access string into our new format
+      if ($access{3}=='r')
+         $gr=1;
+      if ($access{4}=='w')
+         $gw=1;
+      if ($access{6}=='r')
+         $er=1;
+      if ($access{7}=='w')
+         $ew=1;
+      return ${$column};
+   }
    if ($fieldvalues["grr"]) 
-      $access=substr_replace($access,"r",3,1);
+      $gr=1;
    if ($fieldvalues["evr"]) 
-      $access=substr_replace($access,"r",6,1);
+      $er=1;
    if ($fieldvalues["grw"]) 
-      $access=substr_replace($access,"w",4,1);
+      $gw=1;
    if ($fieldvalues["evw"]) 
-      $access=substr_replace($access,"w",7,1);
-   return $access;
+      $ew=1;
+
+   return ${$column};
 }
 
 
@@ -655,25 +688,25 @@ function get_access ($fieldvalues) {
 // !Returns an SQL SELECT statement with ids of records the user may see
 // Since it uses subqueries it does not work with MySQL
 function may_read_SQL_subselect ($db,$table,$tableid,$USER,$clause=false) {
-   include ('includes/defines_inc.php');
+   include_once ('includes/defines_inc.php');
    $query="SELECT id FROM $table ";
 
-   if ($USER["permissions"] & $SUPER) {
+   if ($USER['permissions'] & $SUPER) {
       if ($clause)
          $query .= "WHERE $clause";
    }
    else {
-      $grouplist=$USER["group_list"];
-      $userid=$USER["id"];
-      $query .= " WHERE ";
+      $grouplist=$USER['group_list'];
+      $userid=$USER['id'];
+      $query .= ' WHERE ';
       if ($clause) 
          $query .= " $clause AND ";
       // owner
       $query .= "( (ownerid=$userid) ";
-      // group
-      $query .= "OR (CAST( (SELECT groupid FROM users WHERE users.id=$table.ownerid) AS int) IN ($grouplist) AND SUBSTRING (access FROM 4 FOR 1)='r') ";
+      // group (quote gr='1', otherwise index willnot be used)
+      $query .= "OR (CAST( (SELECT groupid FROM users WHERE users.id=$table.ownerid) AS int) IN ($grouplist) AND gr='1') ";
       // world
-      $query .= "OR (SUBSTRING (access FROM 7 FOR 1)='r')";
+      $query .= "OR (er='1')";
       // and also
       $query .= "OR id IN (SELECT recordid FROM trust WHERE tableid='$tableid' AND trusteduserid='$userid' AND rw='r')";
       $query .=")";
@@ -710,20 +743,20 @@ function may_read_SQL_JOIN ($db,$table,$USER) {
    include ('includes/defines_inc.php');
    if (!($USER["permissions"] & $SUPER)) {
       $query="SELECT id FROM $table ";
-      $usergroup=$USER["groupid"];
-      $group_list=$USER["group_list"];
-      $userid=$USER["id"];
+      $usergroup=$USER['groupid'];
+      $group_list=$USER['group_list'];
+      $userid=$USER['id'];
       $query .= " WHERE ";
       // owner and everyone
       $query .= "( (ownerid=$userid) ";
-      $query .= "OR (SUBSTRING(access FROM 7 FOR 1)='r')";
+      $query .= "OR (er='1')";
       $query .=")";
       $r=$db->CacheExecute(2,$query);
       if ($r) {
          $ids=make_SQL_ids($r,$ids);
       }
       // group
-      $query="SELECT $table.id FROM $table LEFT JOIN users ON $table.ownerid=users.id WHERE users.groupid IN ($group_list) AND (SUBSTRING($table.access FROM 4 FOR 1)='r')";
+      $query="SELECT $table.id FROM $table LEFT JOIN users ON $table.ownerid=users.id WHERE users.groupid IN ($group_list) AND ($table.gr='1')";
       $r=$db->CacheExecute(2,$query);
    }
    else {     // superuser
@@ -803,32 +836,30 @@ function may_read ($db,$tableinfo,$id,$USER) {
 function may_write ($db,$tableid,$id,$USER) {
    include ('includes/defines_inc.php');
    
-   $table=get_cell($db,"tableoftables","real_tablename","id",$tableid);
-   if ($USER["permissions"] & $SUPER)
+   $table=get_cell($db,'tableoftables','real_tablename','id',$tableid);
+   if ($USER['permissions'] & $SUPER)
       return true;
-   if ( ($USER["permissions"] & $WRITE) && (!$id))
+   if ( ($USER['permissions'] & $WRITE) && (!$id))
       return true;
-   $ownerid=get_cell($db,$table,"ownerid","id",$id);
-   $ownergroup=get_cell($db,"users","groupid","id",$ownerid);
-   if ($USER["permissions"] & $ADMIN) {
-      if ($USER["groupid"]==$ownergroup)
+   $ownerid=get_cell($db,$table,'ownerid','id',$id);
+   $ownergroup=get_cell($db,'users','groupid','id',$ownerid);
+   if ($USER['permissions'] & $ADMIN) {
+      if ($USER['groupid']==$ownergroup)
          return true;
    }
-   if ( ($USER["permissions"] & $WRITE) && $id) {
-      $userid=$USER["id"];
+   if ( ($USER['permissions'] & $WRITE) && $id) {
+      $userid=$USER['id'];
       // 'user' write access
       if ($r=$db->Execute("SELECT * FROM $table WHERE id=$id AND
-            ownerid=$userid AND SUBSTRING(access FROM 2 FOR 1)='w'")) 
+            ownerid=$userid")) 
          if (!$r->EOF)
             return true;
       // 'group' write access
-      if ($r=$db->Execute("SELECT * FROM $table WHERE id=$id AND
-            SUBSTRING(access FROM 5 FOR 1)='w'")) 
-         if (!$r->EOF && in_array($ownergroup, $USER["group_array"]))
+      if ($r=$db->Execute("SELECT * FROM $table WHERE id=$id AND gw='1'"))
+         if (!$r->EOF && in_array($ownergroup, $USER['group_array']))
             return true;
       // 'world' write access
-      if ($r=$db->Execute("SELECT * FROM $table WHERE id=$id AND
-            SUBSTRING(access FROM 8 FOR 1)='w'") ) 
+      if ($r=$db->Execute("SELECT * FROM $table WHERE id=$id AND ew='1'") )
          if (!$r->EOF) 
             return true;
       // 'and also' write access
