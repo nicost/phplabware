@@ -917,8 +917,9 @@ function current_page($curr_page, $sname) {
 
    if (!isset($$varname))
       ${$varname}=$HTTP_SESSION_VARS[$varname];
-   if (isset($HTTP_POST_VARS["next"]))
+   if (isset($HTTP_POST_VARS["next"])) {
       ${$varname}+=1;
+   }
    if (isset($HTTP_POST_VARS["previous"]))
       $$varname-=1;
    if ($$varname<1)
