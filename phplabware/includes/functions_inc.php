@@ -219,7 +219,7 @@ function navbar($permissions) {
    }
    else
       echo "<td align='right'><a href='login.php'>login</a></td>";
-   echo "</tr>\n</table>\n&nbsp;<br>";
+   echo "</tr>\n</table>\n";
    echo "<!--************************END OF NAVBAR**********************-->\n";
 }
 
