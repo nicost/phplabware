@@ -12,7 +12,7 @@
   *  option) any later version.                                              *
   \**************************************************************************/                                                                             
 
-$version_code=0.1005;
+$version_code=0.1006;
 $localdir=exec("pwd");
 include ('includes/functions_inc.php');
 if (!file_exists("includes/config_inc.php")) {
@@ -171,6 +171,13 @@ if ($version) {
         $db->Execute("CREATE INDEX reports_id ON reports(id)");
         $db->Execute("CREATE INDEX reports_tableid ON reports(tableid)");
         $db->Execute("CREATE INDEX reports_sortkey ON reports(sortkey)");
+      }
+      if ($version<0.1006) {
+         // Adjust table dateformat, such that generated dates are interpretated right by the function strtotime
+         $db->Execute("UPDATE dateformats SET dateformat='n/d/Y' WHERE id=1");
+         $db->Execute("UPDATE dateformats SET dateformat='M d Y' WHERE id=2");
+         $db->Execute("UPDATE dateformats SET dateformat='d M Y' WHERE id=3");
+         $db->Execute("UPDATE dateformats SET dateformat='d M Y' WHERE id=4");
       }
 
       $query="UPDATE settings SET version='$version_code' WHERE id=1";
