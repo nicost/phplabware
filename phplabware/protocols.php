@@ -612,8 +612,8 @@ else {
          echo "<tr class='row_even' align='center'>\n";
 
       echo "<td>$title</td>\n";
-      $author=get_cell($db,"pr_type2","type","id",$r->fields["type2"]);
-      $author.= "&nbsp;".get_cell($db,"pr_type2","typeshort","id",$r->fields["type2"]);
+      $author=get_cell($db,"pr_type2","type","id",$r_master->fields["type2"]);
+      $author.= "&nbsp;".get_cell($db,"pr_type2","typeshort","id",$r_master->fields["type2"]);
       echo "<td>$author</td>\n";
       if ($notes)
          echo "<td>yes</td>\n";
