@@ -21,7 +21,6 @@ require('./includes/general_inc.php');
 // turn on adodb logging:
 //$db->LogSQL();
 
-
 $tableinfo=new tableinfo($db);
 
 if (!$tableinfo->id) {

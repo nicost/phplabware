@@ -377,6 +377,9 @@ function process_image($db,$fileid,$bigsize)
    if (!$fileid)
       return false;
    $imagefile=file_path ($db,$fileid);
+   if (!file_exists($imagefile)) {
+      return false;
+   }
    $bigthumb=$system_settings['thumbnaildir']."/big/$fileid.jpg";
    $smallthumb=$system_settings['thumbnaildir']."/small/$fileid.jpg";
    $smallsize=$system_settings['smallthumbsize'];
@@ -509,8 +512,19 @@ if (file_exists($HTTP_POST_FILES[$columnname]['tmp_name'][$i])) {
         $tmpdir=$system_settings['tmpdir'];
         if (dirname($HTTP_POST_FILES[$columnname]['tmp_name'][$i]) == $system_settings['tmpdir']) {
            if (!@rename($HTTP_POST_FILES[$columnname]['tmp_name'][$i],"$filedir/$fileid".'_'.$originalname)) {
-              $fileid=false;
-            } else {
+              /**
+                * Try copying and deleting the old file instead
+                */
+              if (!copy ($HTTP_POST_FILES[$columnname]['tmp_name'][$i],"$filedir/$fileid".'_'.$originalname)) {
+                 $fileid=false;
+              }
+              /**
+               * No matter if the copy failed, we can delete this file
+               */
+              @unlink ($HTTP_POST_FILES[$columnname]['tmp_name'][$i]);
+                 
+            } 
+            if ($fileid) {
                $query="INSERT INTO files (id,filename,mime,size,title,tablesfk,ftableid,ftablecolumnid,type) VALUES ($fileid,'$originalname','$mime','$size',$title,'$tableid',$id,'$columnid','$filestype')";
 	       $db->Execute($query);
             }
