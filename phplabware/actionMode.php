@@ -27,7 +27,7 @@ if (in_array($_POST['field'],$forbidden_fields)) {
    return false;
 }
 if ($_POST['datatype']=='date') {
-   $_POST['newvalue']=strtotime($_POST_newvalue);
+   $_POST['newvalue']=strtotime($_POST['newvalue']);
 }
 
 //$db->debug=true;
