@@ -263,8 +263,6 @@ function display_table_change($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr
                   if ($rcount && ($rcount->fields[0] < $max_menu_length)) 
                      $text=GetValuesMenu($db,"{$nowfield['name']}_$id",$nowfield['values'],$nowfield['ass_table_name'],$nowfield['ass_column_name'],false,$js);
                   else {
-//print_r ($nowfield);
-//echo ".<br>\n";
                      $text="<input type='hidden' name='max_{$nowfield['name']}_$id' value='true'>\n";
                      $text.="<input type='text' name='{$nowfield['name']}_$id' value='{$nowfield['text']}'>\n<br>";
                   }
@@ -722,7 +720,7 @@ function display_add($db,$tableinfo,$Allfields,$id,$namein,$system_settings) {
                $r=$db->Execute("SELECT COUNT(id) FROM {$nowfield['ass_table_name']}");
                if ($r->fields[0] > $max_menu_length) {
                   $text="<input type='hidden' name='max_{$nowfield['name']}' value='true'>\n";
-                  $text.="<input type='text' name='{$nowfield['name']}' value='{$nowfield['text']}'>";
+                  $text.="<input type='text' name='{$nowfield['name']}' value='{$nowfield['nested']['values']}'>";
                }
                else {
                   $text=GetValuesMenu($db,$nowfield['name'],$nowfield['values'],$nowfield['ass_table_name'],$nowfield['ass_column_name'],false);
@@ -878,8 +876,6 @@ function getvalues($db,$tableinfo,$fields,$qfield=false,$field=false)
                   $asstableinfo=new tableinfo($db,${$column}['ass_table_name']);
                   // we always link to the id column of the associated table
                   $tmpvalue=getvalues($db,$asstableinfo,${$column}['ass_column_name'],'id',${$column}['values']);
-//print_r($tmpvalue);
-//print_r(${$column}['values']);
                   if (is_array($tmpvalue[0])) {
                      if (isset($tmpvalue[0]['nested']))
                         ${$column}['nested']=$tmpvalue[0]['nested'];
@@ -1017,36 +1013,36 @@ function check_g_data ($db,&$field_values,$tableinfo,$modify=false) {
       $fieldA=$rs->fields[0];
       if (isset($field_values["$fieldA"]) && (strlen($field_values[$fieldA]) >0)) {
          if ($rs->fields[1]=='int') {
-            if ($field_values["$fieldA"]==' ')
-               $field_values["$fieldA"]='';
+            if ($field_values[$fieldA]==' ')
+               $field_values[$fieldA]='';
             else
-               $field_values["$fieldA"]=(int)$field_values["$fieldA"];
+               $field_values[$fieldA]=(int)$field_values[$fieldA];
          }
          elseif ($rs->fields[1]=='float') {
-            if ($field_values["$fieldA"]==' ')
-               $field_values["$fieldA"]='';
+            if ($field_values[$fieldA]==' ')
+               $field_values[$fieldA]='';
             else
-               $field_values["$fieldA"]=(float)$field_values["$fieldA"];
+               $field_values[$fieldA]=(float)$field_values[$fieldA];
          }
          elseif ($rs->fields[1]=='table') {
-             $field_values["$fieldA"]=(int)$field_values["$fieldA"];
+             $field_values[$fieldA]=(int)$field_values[$fieldA];
          }
          elseif ($rs->fields[1]=='date') {
             if ($system_settings['dateformat']<3) {
                // we have a US date, change dashes to slashes
-               $field_values["$fieldA"]=strtr($field_values["$fieldA"],'-','/');
+               $field_values[$fieldA]=strtr($field_values[$fieldA],'-','/');
             }
-            $field_values["$fieldA"]=strtotime($field_values["$fieldA"]);
-            if ($field_values["$fieldA"] < 0)
-               $field_values["$fieldA"]="";
+            $field_values[$fieldA]=strtotime($field_values[$fieldA]);
+            if ($field_values[$fieldA] < 0)
+               $field_values[$fieldA]="";
          }
          elseif ($rs->fields[1]=='sequence') {
-            $field_values["$fieldA"]=(int)$field_values["$fieldA"];
-	    if ($field_values["$fieldA"]<1)
-	       unset($field_values["$fieldA"]);
+            $field_values[$fieldA]=(int)$field_values[$fieldA];
+	    if ($field_values[$fieldA]<1)
+	       unset($field_values[$fieldA]);
             // for new additions, check if this number was given out before:
 	    if (!$modify) {
-               if (get_cell($db,$tableinfo->realname,$rs->fields[0],$rs->fields[0],$field_values["$fieldA"])) {
+               if (get_cell($db,$tableinfo->realname,$rs->fields[0],$rs->fields[0],$field_values[$fieldA])) {
                   $rmax=$db->Execute("SELECT max({$rs->fields[0]}) FROM {$tableinfo->realname}");
                   if ($rmax->fields[0])
                      $nextmax=$rmax->fields[0]+1;
@@ -1066,7 +1062,7 @@ function check_g_data ($db,&$field_values,$tableinfo,$modify=false) {
    }
 
    // Hooray, the first call to a plugin function!!
-   if (function_exists("plugin_check_data")) {
+   if (function_exists('plugin_check_data')) {
       if (!plugin_check_data($db,$field_values,$tableinfo->desname,$modify))
          return false;
    }
@@ -1188,7 +1184,7 @@ function indexfile ($db,$tableinfo,$indextable,$recordid,$fileid,$htmlfileid)
 
 ////
 // !Searches (nested) for a match with $value 
-// returns the associated value by searching recursively
+// returns the id of the record in the associated value by searching recursively
 // that can be used in a SQL search
 function find_nested_match($db,$tableinfo,$field,$value,$first=true) {
    $info=getvalues($db,$tableinfo,$field);
@@ -1196,8 +1192,20 @@ function find_nested_match($db,$tableinfo,$field,$value,$first=true) {
    if ($info[0]['datatype']=='table') {
       $ass_tableinfo=new tableinfo($db,$info[0]['ass_table_name']);
       $value=find_nested_match($db,$ass_tableinfo,$info[0]['ass_column_name'],$value,false);
-   }
-   elseif ($info[0]['datatype']=='pulldown') {
+   } elseif ($info[0]['datatype']=='int') {
+      $value= trim($value);
+      // I am getting desperate, but the browser inserts junk in the first postions, test if it is a number, if not, delete it. 
+      if (!is_numeric($value{0})) {
+         $value=substr($value,1);
+      }
+      return get_cell($db,$tableinfo->realname,'id',$field,(int) $value);
+   } elseif ($info[0]['datatype']=='float') {
+      $value= trim($value);
+      if (!is_numeric($value{0})) {
+         $value=substr($value,1);
+      }
+      return get_cell($db,$tableinfo->realname,'id',$field,(float) $value);
+   } elseif ($info[0]['datatype']=='pulldown') {
       $value=get_cell($db,$info[0]['ass_t'],'id','typeshort',$value);
       return get_cell($db,$tableinfo->realname,'id',$field,$value);
    }
