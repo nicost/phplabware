@@ -264,6 +264,7 @@ function plugin_show($db,$tableinfo,$id,$USER,$system_settings,$backbutton=true)
    echo "cmd=Retrieve&db=PubMed&list_uids=$pmid&dopt=Abstract$addget'>This article at Pubmed</a><br>\n";
    echo "<a href='http://www.ncbi.nlm.nih.gov/entrez/query.fcgi?";
    echo "cmd=Link&db=PubMed&dbFrom=PubMed&from_uid=$pmid$addget'>Related articles at Pubmed</a></td></tr>\n";
+   show_reports($db,$tableinfo,$id);
 
 ?>   
 <form method='post' id='pdfview' action='<?php echo "$PHP_SELF?tablename=".$tableinfo->name?>&<?=SID?>'> 
