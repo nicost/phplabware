@@ -260,7 +260,7 @@ else {
 
    // prepare the search statement and remember it
    $fields_table="id,".$fields_table;
-  //$fields_table="id ";
+   
 
    ${$queryname}=make_search_SQL($db,$real_tablename,$tableshort,$tableid,$fields_table,$USER,$search,$sortstring,$listb["sql"]);
    $r=$db->Execute(${$queryname});
@@ -385,7 +385,7 @@ else {
             $text="&nbsp;"; 
          else {
             $rtable=$db->Execute("SELECT $nowfield[name] FROM $real_tablename WHERE $list");
-            $list2=make_SQL_ids($rtable,false,"$nowfield[name]");
+            $list2=make_SQL_csf($rtable,false,"$nowfield[name]",$dummy);
             if ($list2) {
                $rtable=$db->Execute("SELECT $nowfield[ass_column_name],id FROM $nowfield[ass_table_name] WHERE id IN ($list2)");
                $text=$rtable->GetMenu2($nowfield["name"],$HTTP_POST_VARS[$nowfield[name]],true,false,0,"style='width: 80%' $jscript");
