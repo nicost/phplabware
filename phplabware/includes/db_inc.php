@@ -1170,7 +1170,7 @@ function searchhelp ($db,$tableinfo,$column,&$columnvalues,$query,$wcappend,$and
    if ($columnvalues[$column]) {
       $query[5]=true;
       if ($column=='ownerid') {
-         $query[2].= "$and ownerid={$columnvalues[$column]} ";
+         $query[2].= "$and {$tableinfo->realname}.ownerid={$columnvalues[$column]} ";
       }
       else {
          $query[5]=true;
