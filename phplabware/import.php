@@ -327,13 +327,13 @@ if ($HTTP_POST_VARS['assign']=='Import Data') {
          $access=$system_settings['access'];
          // translate the $access string into our new format
          if ($access{3}=='r')
-            $gr=1;
+            $gr=1; else $gr=0;
          if ($access{4}=='w')
-            $gw=1;
+            $gw=1; else $gw=0;
          if ($access{6}=='r')
-            $er=1;
+            $er=1; else $er=0;
          if ($access{7}=='w')
-            $ew=1;
+            $ew=1; else $ew=0;
          $lastmoddate=time();
          $lastmodby=$USER['id'];
          if ($skipfirstline=='yes')
