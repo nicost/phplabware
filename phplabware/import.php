@@ -66,6 +66,7 @@ function get_quote ($quote,$quote_type) {
       $quote=false;
    return $quote;
 } 
+
 ////
 // !corrects problems in input data (Removes quotes around text, 
 // checks for ints and floats, quotes text
@@ -141,8 +142,6 @@ if ($HTTP_POST_VARS["assign"]=="Import Data") {
    }
    // do the database upload
    else {
-//$quoted=true;
-//$quote="\"";
       $delimiter=get_delimiter($delimiter,$delimiter_type);
       $quote=get_quote($quote,$quote_type);
       $tmpdir=$system_settings["tmpdir"];
@@ -160,10 +159,9 @@ if ($HTTP_POST_VARS["assign"]=="Import Data") {
             }
             $fields=check_input (explode($quote.$delimiter.$quote,$line),$to_types,$nrfields);
             $worthit=false;
-
             // if there is a column being used as primary key, we do an SQL
             // UPDATE, otherwise an insert
-            if (isset($pkey)) {
+            if (isset($pkey) && $pkey!="") {
                // check if we already had such a record
                $r=$db->Execute("SELECT id FROM $table WHERE $to_fields[$pkey]='$fields[$pkey]'");
                $recordid=$r->fields[0];
@@ -196,7 +194,8 @@ if ($HTTP_POST_VARS["assign"]=="Import Data") {
             }
 
             // if there is no primary key set, we simply INSERT a new record
-            if ( !(isset($pkey) || isset($recordid)) ) {
+            //if ( !(isset($pkey) || isset($recordid)) ) {
+	    else {
                $query_start="INSERT INTO $table (";
                $query_end=" VALUES (";
                $newid=false;
