@@ -115,6 +115,8 @@ function check_line(&$line,$quote,$delimiter) {
 
 // do the final parsing (part 3)
 if ($HTTP_POST_VARS["assign"]=="Import Data") {
+   // set longer time-out
+   ini_set("max_execution_time","0");
    // get description table name
    $r=$db->Execute("SELECT table_desc_name,real_tablename,tablename,custom FROM tableoftables WHERE id='$tableid'");
    $desc=$r->fields[0];
