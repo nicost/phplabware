@@ -345,7 +345,11 @@ function display_add($db,$tableinfo,$Allfields,$id,$namein,$system_settings) {
 	    else
 	       $newseq=$nowfield["text"];
             echo "<input type='hidden' name='$nowfield[name]' value='$newseq'>\n";
-            echo "<tr><th>$nowfield[label]:</th>"; 
+            echo "<tr><th>$nowfield[label]:"; 
+            if ($nowfield[required]=="Y") {
+               echo "<sup style='color:red'>&nbsp;*</sup>";
+	    }
+	    echo "</th>\n";
             if ($nowfield["modifiable"]=="N") {
                echo "<td>$newseq";
 	    }
