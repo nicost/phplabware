@@ -25,7 +25,7 @@ function report_pdf_addition ($db,$id,$tablename,$real_tablename,$journaltable)
    global $PHP_SELF,$system_settings;
 
    $r=$db->Execute("SELECT ownerid,title,journal,pubyear,volume,fpage,lpage,author FROM $real_tablename WHERE id=$id");
-   $fid=fopen($system_settings["pdfs_file"],w);
+   $fid=@fopen($system_settings["pdfs_file"],w);
    if ($fid) {
       $link= $system_settings["baseURL"].getenv("SCRIPT_NAME")."?tablename=$tablename&showid=$id";
       $journal=get_cell($db,$journaltable,"type","id",$r->fields["journal"]);
@@ -300,7 +300,7 @@ function plugin_getvalues($db,&$allfields)
 function plugin_display_add($db,$tableid,$nowfield)
 {
    if ($nowfield[name]=="pmid") {
-      echo "<br>Find the Pubmed ID for this article at <a href='http://www.ncbi.nlm.nih.gov/entrez/query.fcgi?db=PubMed'>PubMed</a>";
+      echo "<br>Find the Pubmed ID for this article at <a target='_BLANK' href='http://www.ncbi.nlm.nih.gov/entrez/query.fcgi?db=PubMed'>PubMed</a>";
    }
 }
 
