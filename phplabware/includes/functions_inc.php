@@ -216,14 +216,15 @@ function get_cell ($db, $table, $column, $column2, $value) {
    $query="SELECT $column FROM $table WHERE $column2='$value'";
    $result=$db->Execute($query);
    if ($result) {
-      $out=$result->fields[$column];
+      $out=$result->fields[0];
    }
    else {
       return false;
    }
    $result->MoveNext();
-   if ($result->EOF)
+   if ($result->EOF) {
       return $out;
+   }
    else {
       return false;
    }
