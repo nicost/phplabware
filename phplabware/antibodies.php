@@ -20,7 +20,7 @@ allowonly($READ, $USER["permissions"]);
 
 // main global vars
 $title .= "Antibodies";
-$fields="name,id,type1,type2,type3,species,antigen,epitope,concentration,buffer,notes,location,source,date";
+$fields="name,id,type1,type2,type3,type4,type5,species,antigen,epitope,concentration,buffer,notes,location,source,date";
 
 // register variables
 $get_vars = "id,";
@@ -34,8 +34,13 @@ globalize_vars ($post_vars, $HTTP_POST_VARS);
 ////
 // !Inserts $fields with $fieldvalues into $table
 // Returns the id of inserted record on succes, false otherwise.
+// $fields is a comma separated list with all column names
 // Fieldvalues must be an associative array containing all the $fields to be added.
-function add ($db, $table,$fields,$fieldvalues) {
+// Fields named 'date' are automatically filled with a Unix timestamp
+function add ($db,$table,$fields,$fieldvalues,$USER) {
+   include('includes/defines_inc.php');
+   if (!($USER["permissions"] & $WRITE) )
+      return false;
    // generate the new ID
    $id=$db->GenID($table."_id_seq");
    if ($id) {
@@ -45,13 +50,12 @@ function add ($db, $table,$fields,$fieldvalues) {
       while ($column) {
          if (!($column=="id")) {
             $columns.=",$column";
-            if ($column=="date"){
-               $date=$db->DBDate(time());
+            if ($column=="date") {
+               $date=(time());
                $values.=",$date";
             }
             else
 	       $values.=",'$fieldvalues[$column]'";
-           // $values.=",'$value'";
          }
 	 $column=strtok(",");
       }
@@ -68,6 +72,22 @@ function add ($db, $table,$fields,$fieldvalues) {
 // If a field is not present in $fieldvalues, it will not be changed.  
 // The entry 'id' in $fields will be ignored.
 function modify ($db, $table,$fields,$fieldvalues,$id) {
+   // check whether this is allowed
+
+   $query="UPDATE $table SET ";
+   $column=strtok($fields,",");
+   while ($column) {
+      $test=true;
+      if (! ($column=="id" || $column=="date") ) 
+         $query.="$column='$fieldvalues[$column]',";
+      $column=strtok(",");
+   }
+   $query[strrpos($query,",")]=" ";
+   if ($test) {
+      $query.=" WHERE id='$id'";
+      if ($db->Execute($query))
+         return true;
+   }
 }
 
 
@@ -75,20 +95,52 @@ function modify ($db, $table,$fields,$fieldvalues,$id) {
 // !Deletes the etry with id=$id
 // Returns true on succes, false on failure
 // This is very generic, it is likely that you will need to do more cleanup
-function delete ($db, $table, $id) {
+function delete ($db, $table, $id, $USER) {
+   // check whether this user is allowed to do this
+
+
+   // and now delete for real
+   if ($db->Execute("DELETE FROM $table WHERE id=$id"))
+      return true;
+   else
+      return false;
 }
+
+
+////
+// !Checks input data.
+// returns false if something can not be fixed
+function check_ab_data ($field_values) {
+   if (!$field_values["name"]) {
+      echo "<h3>Please enter an antibody name.</h3>";
+      return false;
+   }
+   if ($field_values["concentration"])
+      if (! @settype ($field_values["concentration"],"double")) {
+         echo "<h3>Use numbers only for the concentration field.</h3>";
+         return false;
+      }
+   return true;
+}
+
 
 ////
 // !Prints a form with antibody stuff
 // $id=0 for a new entry, otherwise it is the id
 function add_ab_form ($db, $fields,$field_values,$id) {
    // get values in a smart way
-   
+   $column=strtok($fields,",");
+   while ($column) {
+      ${$column}=$field_values[$column];
+      $column=strtok(",");
+   }
 
    echo "<form method='post' id='antibodyform action='$PHP_SELF'>\n"; 
    echo "<table border=0 align='center'>\n";
-   if ($id)
-      echo "<tr><td colspan=7 align='center'><h3>Modify Antibody $name</h3></td></tr>\n";
+   if ($id) {
+      echo "<tr><td colspan=7 align='center'><h3>Modify Antibody <i>$name</i></h3></td></tr>\n";
+      echo "<input type='hidden' name='id' value='$id'>\n";
+   }
    else
       echo "<tr><td colspan=7 align='center'><h3>New Antibody</h3></td></tr>\n";
    echo "<tr align='center'>\n";
@@ -97,7 +149,8 @@ function add_ab_form ($db, $fields,$field_values,$id) {
    echo "<th>Host</th>\n<th>Class</th>\n";
    echo "</tr>\n";
    echo "<tr>\n";
-   echo "<th>Name: </th><td><input type='text' name='name' value='$name'></td>\n";
+   echo "<th>Name: <sup style='color:red'>&nbsp;*</sup></th>\n";
+   echo "<td><input type='text' name='name' value='$name'></td>\n";
    $r=$db->Execute("SELECT type,id FROM ab_type1");
    $text=$r->GetMenu2("type1",$type1,false);
    echo "<td>$text</td>\n";
@@ -142,9 +195,12 @@ function add_ab_form ($db, $fields,$field_values,$id) {
    echo "<th>Notes: </th><td colspan=6><textarea name='notes' rows='5' cols='100%'>$notes</textarea></td>\n";
    echo "</tr>\n";
    
-   
    echo "<tr>";
-   echo "<td colspan=7 align='center'><input type='submit' name='submit' value='Add Antibody'></td>\n";
+   if ($id)
+      $value="Modify Antibody";
+   else
+      $value="Add Antibody";
+   echo "<td colspan=7 align='center'><input type='submit' name='submit' value='$value'></td>\n";
    echo "</tr>\n";
    
 
@@ -161,15 +217,24 @@ function show_ab ($id) {
 printheader($title);
 navbar($USER["permissions"]);
 
+// check is something should be modified
+while((list($key, $val) = each($HTTP_POST_VARS))) {
+   if (substr($key, 0, 3) == "mod") {
+      $modarray = explode("_", $key);
+      $ADODB_FETCH_MODE=ADODB_FETCH_ASSOC;
+      $r=$db->Execute("SELECT $fields FROM antibodies WHERE id=$modarray[1]"); 
+      $ADODB_FETCH_MODE=ADODB_FETCH_NUM;
+      add_ab_form ($db,$fields,$r->fields,$modarray[1]);
+      printfooter();
+      exit();
+   }
+}
+
 // when the 'Add' button has been chosen: 
 if ($add)
    add_ab_form ($db,$fields,$field_values,0);
 
-// when modify has been pressed:
-elseif ($mod == "true")
-   add_ab_form ($db,$fields,$fieldvalues,$id);
-
-elseif ($id)
+elseif ($show)
    show_ab ($id);
    
 else {
@@ -178,35 +243,29 @@ else {
    echo "<caption>\n";
    // first handle addition of a new antibody
    if ($submit == "Add Antibody") {
-      if (! add ($db, "antibodies",$fields,$HTTP_POST_VARS) ) {
+      if (! add ($db, "antibodies",$fields,$HTTP_POST_VARS,$USER) ) {
          echo "</caption>\n</table>\n";
          add_ab_form ($db,$fields,$HTTP_POST_VARS,0);
          printfooter ();
          exit;
       }
    }
-   // then look whether groupname should be modified
+   // then look whether it should be modified
    elseif ($submit =="Modify Antibody") {
-      if (! $test = modify ($db,"antibodies",$fields,$fieldvalues,$id)) {
+      if (! (check_ab_data($HTTP_POST_VARS) && modify ($db,"antibodies",$fields,$HTTP_POST_VARS,$id)) ) {
          echo "</caption>\n</table>\n";
-         add_ab_form ($fields,$fieldvalues,$id);
+         add_ab_form ($db,$fields,$HTTP_POST_VARS,$HTTP_POST_VARS["id"]);
          printfooter ();
          exit;
       }
    } 
-  //determine wether or not the remove-command is given and act on it
+  // or deleted
    elseif ($HTTP_POST_VARS) {
+      reset ($HTTP_POST_VARS);
       while((list($key, $val) = each($HTTP_POST_VARS))) {
          if (substr($key, 0, 3) == "del") {
             $delarray = explode("_", $key);
-            delete ($db, "antibodies", $delarray[1]);
-         }
-         if (substr($key, 0, 3) == "mod") {
-            $modarray = explode("_", $key);
-            echo "</caption>\n</table>\n";
-            add_ab_form ($db,$fields,false,$id);
-            printfooter();
-            exit();
+            delete ($db, "antibodies", $delarray[1], $USER);
          }
       }
    } 
@@ -217,10 +276,13 @@ else {
 
    echo "<tr>\n";
    echo "<th>Name</th>";
+   echo "<th>Antigen</th>\n";
+   echo "<th>mg/ml</th>\n";
    echo "<th>Primary/Secundary</th>\n";
+   echo "<th>Label</th\n";
    echo "<th>Mono-/Polyclonal</th>\n";
    echo "<th>Host</th>\n";
-   echo "<th>Antigen</th>\n";
+   echo "<th>Class</th>\n";
    echo "<th>Location</th>\n";
    echo "<th colspan=\"2\">Action</th>\n";
    echo "</tr>\n";
@@ -238,20 +300,26 @@ else {
       $name = $r->fields["name"];
       $at1=get_cell($db,"ab_type1","type","id",$r->fields["type1"]);
       $at2=get_cell($db,"ab_type2","type","id",$r->fields["type2"]);
-      $at3=get_cell($db,"ab_type3","type","id",$r->fields["type2"]);
+      $at3=get_cell($db,"ab_type3","type","id",$r->fields["type3"]);
+      $at4=get_cell($db,"ab_type4","type","id",$r->fields["type4"]);
+      $at5=get_cell($db,"ab_type5","type","id",$r->fields["type5"]);
       $antigen = $r->fields["antigen"];
+      $concentration = $r->fields["concentration"];
       $location = $r->fields["location"];
       
       // print start of row of selected group
       echo "<tr align='center'>\n";
 // DEAL WITH SID HERE
 ?>
-<td><a href="antibodies.php?id=<?php echo $id;?>&<?=SID?>"><?php echo $name;?></td>
+<td><a href="antibodies.php?view=true&id=<?php echo $id;?>&<?=SID?>"><?php echo $name;?></td>
 <?php
+      echo "<td>$antigen&nbsp;</td>\n";
+      echo "<td>$concentration&nbsp;</td>\n";
       echo "<td>$at1</td>\n";
+      echo "<td>$at5</td>\n";
       echo "<td>$at2</td>\n";
       echo "<td>$at3</td>\n";
-      echo "<td>$antigen&nbsp;</td>\n";
+      echo "<td>$at4</td>\n";
       echo "<td>$location&nbsp;</td>\n";
       
       
@@ -268,7 +336,7 @@ else {
    }
 
    // print footer of table
-   echo "<tr><td colspan=8 align='center'>";
+   echo "<tr><td colspan=11 align='center'>";
    echo "<input type=\"submit\" name=\"add\" value=\"Add Antibody\">";
    echo "</td></tr>";
 
