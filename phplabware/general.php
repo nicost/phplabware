@@ -328,12 +328,12 @@ else {
    // get current page
    ${$pagename}=current_page(${$pagename},$tableinfo->short);
    // get a list with all records we may see, create temp table tempb
-   $listb=may_read_SQL($db,$tableinfo,$USER,"tempb");
+   $listb=may_read_SQL($db,$tableinfo,$USER,'tempb');
 
    // prepare the search statement and remember it
    $fields_table="id,".$fields_table;
 
-   ${$queryname}=make_search_SQL($db,$tableinfo,$fields_table,$USER,$search,$sortstring,$listb["sql"]);
+   ${$queryname}=make_search_SQL($db,$tableinfo,$fields_table,$USER,$search,$sortstring,$listb['sql']);
    $r=$db->Execute(${$queryname});
 
    // when search fails we'll revert to Show All after showing an error message
