@@ -68,6 +68,7 @@ if ($r) {
       $newid=$db->GenID("newtable_desc_name"."_id");
       $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'100','PDBID','pdbid','Y','Y','N','text','text','','','','','','http://www.rcsb.org/cgi/explre.cgi?pdbId=','','Y')");
       $newid=$db->GenID("newtable_desc_name"."_id");
+      $filecolumnid=$newid;
       $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'220','File','file','Y','Y','N','text','file','','','','','','','','Y')");
       $newid=$db->GenID("newtable_desc_name"."_id");
       $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'200','Webmol','webmol','Y','Y','N','text','text','','','','','','webmol.php?pdbid=','','N')");

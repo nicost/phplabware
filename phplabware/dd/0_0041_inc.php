@@ -1,7 +1,7 @@
 <?php
 
 
-
+// updates table antibodies and removes settings from tableoftables
 
 $newtableid=$db->GenID("tableoftables_gen_id_seq");
 $newtablename=ab;
@@ -123,6 +123,7 @@ if ($r) {
       $newid=$db->GenID("newtable_desc_name"."_id");
       $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'300','Location','location','Y','Y','N','text','text','','','','','','','','Y')");
       $newid=$db->GenID("newtable_desc_name"."_id");
+      $filecolumnid=$newid;
       $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'300','Files','files','Y','Y','N','text','file','','','','','','','','Y')");
       $newid=$db->GenID("newtable_desc_name"."_id");
       $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'340','Buffer','buffer','N','Y','N','text','text','','','','','','','','Y')");

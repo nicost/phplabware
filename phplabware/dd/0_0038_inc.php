@@ -86,6 +86,7 @@ if ($r) {
       $newid=$db->GenID("newtable_desc_name"."_id");
       $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'400','Notes','notes','Y','Y','N','text','textlong','','','','','','','','Y')");
       $newid=$db->GenID("newtable_desc_name"."_id");
+      $filecolumnid=$newid;
       $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'600','File','file','Y','Y','N','text','file','','','','','','','','Y')");
       $filecolumnid=$newid;
       // and finally create the table
