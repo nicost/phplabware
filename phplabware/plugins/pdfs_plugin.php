@@ -35,15 +35,15 @@ function plugin_add ($db,$tableid,$id)
    $journaltable=get_cell($db,$table_desc,"associated_table","columnname","journal");
 
    $r=$db->Execute("SELECT ownerid,title,journal,pubyear,volume,fpage,lpage,author FROM $real_tablename WHERE id=$id");
-   $fid=@fopen($system_settings["pdfs_file"],w);
+   $fid=@fopen($system_settings['pdfs_file'],'w');
    if ($fid) {
-      $link= $system_settings["baseURL"].getenv("SCRIPT_NAME")."?tablename=$tablename&showid=$id";
-      $journal=get_cell($db,$journaltable,"type","id",$r->fields["journal"]);
-      $submitter=get_person_link($db,$r->fields["ownerid"]);
-      $text="<a href='$link'><b>".$r->fields["title"];
-      $text.="</b></a> $journal (".$r->fields["pubyear"]."), <b>".$r->fields["volume"];
-      $text.="</b>:".$r->fields["fpage"]."-".$r->fields["lpage"];
-      $text.= ". ".$r->fields["author"]." Submitted by $submitter.";
+      $link= $system_settings['baseURL'].getenv("SCRIPT_NAME")."?tablename=$tablename&showid=$id";
+      $journal=get_cell($db,$journaltable,'type','id',$r->fields['journal']);
+      $submitter=get_person_link($db,$r->fields['ownerid']);
+      $text="<a href='$link'><b>".$r->fields['title'];
+      $text.="</b></a> $journal (".$r->fields['pubyear']."), <b>".$r->fields['volume'];
+      $text.="</b>:".$r->fields['fpage'].'-'.$r->fields['lpage'];
+      $text.= '. '.$r->fields['author']." Submitted by $submitter.";
       fwrite($fid,$text);
       fclose($fid);
    }
@@ -61,6 +61,7 @@ function plugin_check_data($db,&$field_values,$table_desc,$modify=false)
 
    global $HTTP_POST_FILES;
    // we need some info from the database
+   $tableid=get_cell($db,'tableoftables','id',"table_desc_name",$table_desc);
    $pdftable=get_cell($db,"tableoftables","real_tablename","table_desc_name",$table_desc);
    $pdftablelabel=get_cell($db,"tableoftables","tablename","table_desc_name",$table_desc);
    $journaltable=get_cell($db,$table_desc,"associated_table","columnname","journal");
@@ -73,13 +74,13 @@ function plugin_check_data($db,&$field_values,$table_desc,$modify=false)
       }
    }
    // avoid problems with spaces and the like
-   $field_values["pmid"]=trim($field_values["pmid"]);
-   $pmid=$field_values["pmid"];
+   $field_values['pmid']=trim($field_values['pmid']);
+   $pmid=$field_values['pmid'];
 
    
    // check whether we had this one already
    if (!$modify) {
-      $existing_id=get_cell($db,$pdftable,"id","pmid",$field_values["pmid"]);
+      $existing_id=get_cell($db,$pdftable,'id','pmid',$field_values['pmid']);
       if ($existing_id) {
          echo "<h3 align='center'><a href='general.php?tablename=$pdftablelabel&showid=$existing_id'>That paper </a>is already in the database.</h3>\n";
          return false;
@@ -91,8 +92,8 @@ function plugin_check_data($db,&$field_values,$table_desc,$modify=false)
 
    if ($pmid) {
       // rename file to pmid.pdf
-      if ($HTTP_POST_FILES["file"]["name"][0]) {
-         $HTTP_POST_FILES["file"]["name"][0]=$field_values["pmid"].".pdf";
+      if ($HTTP_POST_FILES['file']['name'][0]) {
+         $HTTP_POST_FILES['file']['name'][0]=$field_values['pmid'].'.pdf';
       }
       // get data from pubmed and parse
       $pubmedinfo=@file("http://www.ncbi.nlm.nih.gov/entrez/utils/pmfetch.fcgi?db=PubMed&id=$pmid&report=abstract&report=abstract&mode=text");
@@ -110,40 +111,40 @@ function plugin_check_data($db,&$field_values,$table_desc,$modify=false)
          $journal=trim(substr($line[1],$jstart+1,$jend-$jstart));
          $dend=strpos($line[1],";");
          $date=trim(substr($line[1],$jend+2,$dend-$jend-1));
-         $year=$field_values["pubyear"]=strtok($date," ");
+         $year=$field_values['pubyear']=strtok($date," ");
          $vend=strpos($line[1],":",$dend);
          // if we can not find this, it might not have vol. first/last page
          if ($vend) {
             $volumeinfo=trim(substr($line[1],$dend+1,$vend-$dend-1));
-            $volume=$field_values["volume"]=trim(strtok($volumeinfo,"(")); 
+            $volume=$field_values['volume']=trim(strtok($volumeinfo,"(")); 
             $pages=trim(substr($line[1],$vend+1));
-            $fpage=strtok($pages,"-");
-            $lpage1=strtok("-");
+            $fpage=strtok($pages,'-');
+            $lpage1=strtok('-');
             $lpage=substr_replace($fpage,$lpage1,strlen($fpage)-strlen($lpage1));
          }
          // echo "$jstart,$jend,$journal,$date,$year,$volume,$fpage,$lpage1,$lpage.<br>";
-         $field_values["fpage"]=(int)$fpage;
-         $field_values["lpage"]=(int)$lpage;
+         $field_values['fpage']=(int)$fpage;
+         $field_values['lpage']=(int)$lpage;
          // there can be a line 2 with 'Comment in:' put in notes and delete
          // same for line with Erratum in:
          // ugly shuffle to get everything right again
          if ((substr($line[2],0,11)=="Comment in:") || (substr($line[2],0,11)=="Erratum in:") ) {
-            $field_values["notes"]=$line[2].$field_values["notes"];
+            $field_values['notes']=$line[2].$field_values['notes'];
             $line[2]=$line[3];
 	    $line[3]=$line[4];
-             $line[5]=$line[6];
+            $line[5]=$line[6];
          }
-         $field_values["title"]=$line[2];
-         $field_values["author"]=$line[3];
+         $field_values['title']=$line[2];
+         $field_values['author']=$line[3];
          // check whether there is an abstract
-         if ((substr($line[5],0,4)!="PMID"))
-            $field_values["abstract"]=$line[5];
+         if ((substr($line[5],0,4)!='PMID'))
+            $field_values['abstract']=$line[5];
          // check wether the journal is in journaltable, if not, add it
          $r=$db->Execute("SELECT id FROM $journaltable WHERE typeshort='$journal'");
-         if ($r && $r->fields("id"))
-            $field_values["journal"]=$r->fields("id");
+         if ($r && $r->fields('id'))
+            $field_values['journal']=$r->fields('id');
          else {
-            $tid=$db->GenID("$journaltable"."_id_seq");
+            $tid=$db->GenID("$journaltable".'_id_seq');
             if ($tid) {
 	       $r=$db->Execute("INSERT INTO $journaltable (id,type,typeshort,sortkey) VALUES ($tid,'$journal','$journal',0)");
 	       if ($r)
@@ -166,19 +167,23 @@ function plugin_check_data($db,&$field_values,$table_desc,$modify=false)
    }
 
    // check if there is a file (in database for modify, in _POST_FILES for add)
-   if ($modify && !isset($HTTP_POST_FILES['file']['tmp_name'][0])) {
-      // check in database TO BE DONE!!
-      $file_uploaded=false;
-   } elseif (isset($HTTP_POST_FILES['file']['tmp_name'][0])) {
+   if ($modify && !$HTTP_POST_FILES['file']['tmp_name'][0]) {
+      // check in database whether there already is a file uploaded
+      $r=$db->Execute("SELECT id FROM files 
+                    WHERE tablesfk=$tableid AND ftableid={$field_values['id']}");
+      if (isset($r->fields[0])) { 
+         $file_uploaded=true;
+      }
+   } elseif ($HTTP_POST_FILES['file']['tmp_name'][0]) {
          $file_uploaded=true;
    }
-$file_uploaded=false;
+
    // some stuff goes wrong when this remains on
    set_magic_quotes_runtime(0);
 
    if (!$file_uploaded) {
       // no file uploaded, try to fetch it directly 
-echo "Calling fetch_pdf with: $pmid and $journal.<br>";
+//echo "Calling fetch_pdf with: $pmid and $journal.<br>";
       fetch_pdf($pmid,$journal);
    }
 
@@ -193,7 +198,6 @@ echo "Calling fetch_pdf with: $pmid and $journal.<br>";
  */
 function fetch_pdf($pmid,$journal)
 { 
-echo "In Fetch_pdf.<br>";
    include_once('./plugins/elink/eutils_elink_class.php');
    include_once ('./plugins/elink/simple_parser_xml.inc.php');
 
@@ -213,23 +217,22 @@ echo "In Fetch_pdf.<br>";
       }
        
       //$link=$search->parser->content['eLinkResult']['LinkSet']['IdUrlList']['IdUrlSet']['ObjUrl']['Url'];
-      echo "<br>link: ";
-      print_r($links);
-      echo ".<br>";
+// echo "<br>link: ";
+// print_r($links);
+// echo ".<br>";
       foreach($links as $link) {
          // grep the base of the url and handle all know cases accordingly.
          // This is where we'll have to write grabbers for each journal
          preg_match("/^(http:\/\/)?([^\/]+)/i", $link, $matches);
          $host = $matches[2];
          $getstring=substr($link,strlen($matches[0]));
-         echo "host: $host, getstring: $getstring.<br>";
+//echo "host: $host, getstring: $getstring.<br>";
          switch ($host) {
          case 'www.jcb.org':
             // jcb gives a page with a redirect on it.  The redirect has the link to the pdf on it, however, once the redirect address is known, we can simply construct  the link to the pdf and grab it.
             $fp=fsockopen($host,80,$errno,$errstr,5);
             if ($fp) {
-               $out="GET $getstring HTTP/1.0\r\n";
-               $out.="Host: $host\r\n";
+               $out="GET $getstring HTTP/1.0\r\n"; $out.="Host: $host\r\n";
                $out.="Connection: Close\r\n\r\n";
                fwrite($fp,$out);
                while (!feof($fp)) {
@@ -242,7 +245,7 @@ echo "In Fetch_pdf.<br>";
                $url=substr($redirect,$start,$end-$start);
                // et voila, the url to the pdf:
                $url=str_replace('full','pdf',$url);
-               echo "Url is: $host$url.<br>";
+//echo "Url is: $host$url.<br>";
                if (isset($url)) {
                   if (do_pdf_download($host,$url,'file')) {
                      return true;
@@ -258,12 +261,10 @@ echo "In Fetch_pdf.<br>";
                $searchid->setMaxResults(5);
                $searchid->setManualSearchParam('db','pmc');
                if ($searchid->doSearch()) {
-//print_r($searchid->parser->content);
                   foreach($searchid->parser->content as $hit) {
-//print_r($hit);
                      if (isset($hit['eLinkResult']['LinkSet']['LinkSetDb']['Link']['Id'])) {
                         $artid=$hit['eLinkResult']['LinkSet']['LinkSetDb']['Link']['Id'];
-                        echo "<br>Artid=$artid.<br>";
+// echo "<br>Artid=$artid.<br>";
                         if (is_numeric($artid)) { 
                            $url="/picrender.fcgi?artid=$artid&action=stream&blobtype=pdf";
                            if (do_pdf_download($host,$url,'file')) {
@@ -282,6 +283,7 @@ echo "In Fetch_pdf.<br>";
 
 }
 
+
 /**
  * Given a host and url(the part after the host), downloads a pdf and stores info in HTTP_POST_FILES
  * 
@@ -290,10 +292,8 @@ echo "In Fetch_pdf.<br>";
 function do_pdf_download ($host,$url,$fieldname) 
 {
    global $HTTP_POST_FILES, $system_settings;
-   // download the pdf, probably using a netsocket so that we can use the header
 
-  // save the file in temp location
-echo "<br>$host$url, $fieldname.<br>";
+   // download the pdf, using a netsocket so that we can use the header
    $fp=fsockopen($host,80,$errno,$errstr,5);
    if ($fp) {
       /**
@@ -303,9 +303,6 @@ echo "<br>$host$url, $fieldname.<br>";
       $out.="Host: $host\r\n";
       $out.="Connection: Close\r\n\r\n";
       /**
-       * Construct tmp filename
-       */
-      /**
        * Initiate http request and read response
        */
       fwrite($fp,$out);
@@ -313,13 +310,15 @@ echo "<br>$host$url, $fieldname.<br>";
          $header.=$data;
       }
       /**
-       * Possibly check headers that the mime type is pdf
+       * Todo: Check headers that the mime type is pdf
+       */
+echo $header.".<br>";
+      /**
+       * Construct tmp filename, it would be best to put the file in the upload_temp_dir, but we can not always reliably determine what that is
        */
       $tmpfile=$system_settings['tmpdir'].'/'.uniqid('file');
-echo "tmpfile: $tmpfile.<br>";
       $fout=fopen ($tmpfile,'w');
       
-echo "Header: $header.<br>";
       while ($fout && !feof($fp)) {
          fwrite($fout,fgets($fp,2048));
       }
@@ -328,11 +327,10 @@ echo "Header: $header.<br>";
    }
   // set:
    $HTTP_POST_FILES[$fieldname]['tmp_name'][0]=$tmpfile;
-   $HTTP_POST_FILES[$fieldname]['name'][0]='pdf';
+   $HTTP_POST_FILES[$fieldname]['name'][0]='pdf.pdf';
    $HTTP_POST_FILES[$fieldname]['type'][0]='application/pdf';
    $HTTP_POST_FILES[$fieldname]['size'][0]=filesize($tmpfile);
-   unset ($HTTP_POST_FILES[$fieldname]['error']);
-print_r($HTTP_POST_FILES);
+   $HTTP_POST_FILES[$fieldname]['error'][0]=0;
 
 }
 
