@@ -1250,7 +1250,7 @@ function searchhelp ($db,$tableinfo,$column,&$columnvalues,$query,$wcappend,$and
             $rw=$db->Execute("SELECT id FROM words WHERE word LIKE '".strtolower($columnvalues[$column])."%'");
             if ($rw && $rw->fields[0]) {
                $query[1].="LEFT JOIN {$rc->fields[2]} ON {$tableinfo->realname}.id={$rc->fields[2]}.recordid ";
-               $query[2].="{$rc->fields[2]}.wordid='{$rw->fields[0]}' ";
+               $query[2].="$and {$rc->fields[2]}.wordid='{$rw->fields[0]}' ";
             }
 	    else $query[2].="$and id=0 ";
          }
