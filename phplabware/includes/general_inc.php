@@ -622,7 +622,7 @@ function display_add($db,$tableinfo,$Allfields,$id,$namein,$system_settings) {
          plugin_display_add_pre($db,$tableinfo->id,$nowfield);
 	 
       // see if display_record is set
-      if ( (($nowfield['display_record']=="Y") || ($nowfield['display_table']=='Y')) ) {
+      if ( (($nowfield['display_record']=='Y') || ($nowfield['display_table']=='Y')) ) {
          // To persist between multiple invocation, grab POST vars 
          if ($nowfield['modifiable']=='Y' && isset($HTTP_POST_VARS[$nowfield['name']]) && $HTTP_POST_VARS[$nowfield['name']] && isset($HTTP_POST_VARS['submit'])) {
             $nowfield['values']=$HTTP_POST_VARS[$nowfield['name']];
@@ -630,7 +630,7 @@ function display_add($db,$tableinfo,$Allfields,$id,$namein,$system_settings) {
          }
          if ($nowfield['modifiable']=='N' && $nowfield['datatype']!='sequence') {
             echo "<input type='hidden' name='$nowfield[name]' value='$nowfield[values]'>\n";
-            if ($nowfield['text'] && $nowfield['text']!="" && $nowfield['text']!=" ") {
+            if ($nowfield['text'] && $nowfield['text']!='' && $nowfield['text']!=' ') {
                echo "<tr><th>{$nowfield['label']}:</th>"; 
                echo "<td>{$nowfield['text']}";
             }
@@ -641,12 +641,15 @@ function display_add($db,$tableinfo,$Allfields,$id,$namein,$system_settings) {
                echo "<sup style='color:red'>&nbsp;*</sup>";
             }
             echo "</th>\n";
-            if ($nowfield['datatype']=='text')
-               $size=60;
-            else
+            if ($nowfield['datatype']=='text') {
+               //$size=60;
+               // mike likes this to be a textlong field, let's try
+     	       echo "<td><textarea name='{$nowfield['name']}' rows='2' cols='100%' value='{$nowfield['values']}'>{$nowfield['values']}</textarea>";
+            }
+            else {
                $size=10;
-     	    //echo "<td><input type='text' name='$nowfield[name]' value='$nowfield[text]' $size>";
-     	    echo "<td><input type='text' name='{$nowfield['name']}' value='{$nowfield['values']}' $size>";
+     	       echo "<td><input type='text' name='{$nowfield['name']}' value='{$nowfield['values']}' $size>";
+            }
          }
 	 elseif ($nowfield['datatype']=='sequence') {
 	    if (!$nowfield['text']) {
@@ -1080,10 +1083,10 @@ function show_g($db,$tableinfo,$id,$USER,$system_settings,$backbutton=true,$prev
 // Returns id of uploaded file
 function process_file($db,$fileid,$system_settings) {
    global $HTTP_POST_FILES,$HTTP_POST_VARS;
-   $mimetype=get_cell($db,"files","mime","id",$fileid);
-   if (!strstr($mimetype,"html")) {
-      $word2html=$system_settings["word2html"];
-      $wv_version=$system_settings["wvHtml_version"];
+   $mimetype=get_cell($db,'files','mime','id',$fileid);
+   if (!strstr($mimetype,'html')) {
+      $word2html=$system_settings['word2html'];
+      $wv_version=$system_settings['wvHtml_version'];
       $filepath=file_path($db,$fileid);
       if (!$filepath)
          return false;
@@ -1101,6 +1104,8 @@ function process_file($db,$fileid,$system_settings) {
 	 $temp=$system_settings["tmpdir"]."/".$converted_file;
       } 
       if (@is_readable($temp) && filesize($temp)) {
+         // we now know this was an MSword file, so lets make sure the mime type is OK
+         $db->query("UPDATE files SET mime='application/msword',type='msword' WHERE id=$fileid");
          unset ($HTTP_POST_FILES);
          $r=$db->query ("SELECT filename,mime,title,tablesfk,ftableid,ftablecolumnid FROM files WHERE id=$fileid");
          if ($r && !$r->EOF) {
