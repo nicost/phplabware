@@ -124,17 +124,17 @@ function comma_array_SQL($db,$tablein,$column,$where=false)
 function sortstring(&$sortdirarray,$sortup,$sortdown) {
    if ($sortup && $sortup<>" ") {
       if (is_array($sortdirarray) && array_key_exists($sortup,$sortdirarray)) {
-         if ($sortdirarray[$sortup]=="asc")
+         if ($sortdirarray[$sortup]=='asc')
             unset($sortdirarray[$sortup]);
          else
-            $sortdirarray[$sortup]="asc";
+            $sortdirarray[$sortup]='asc';
       }
       elseif (!is_array($sortdirarray) || !array_key_exists($sortup,$sortdirarray))
-         $sortdirarray[$sortup]="asc";
+         $sortdirarray[$sortup]='asc';
    } 
    if ($sortdown && $sortdown <>" ") {
       if (is_array($sortdirarray) && array_key_exists($sortdown,$sortdirarray)) {
-         if ($sortdirarray[$sortdown]=="desc")
+         if ($sortdirarray[$sortdown]=='desc')
             unset($sortdirarray[$sortdown]);
          else
             $sortdirarray[$sortdown]="desc";
@@ -155,19 +155,27 @@ function sortstring(&$sortdirarray,$sortup,$sortdown) {
 
 ////
 // !Displays header of 'general' table
-function tableheader ($sortdirarray,$columnname, $columnlabel) {
+function tableheader ($sortdirarray,$nowfield) {
+//print_r($nowfield);
+   $columnname=$nowfield['name'];
+   $columnlabel=$nowfield['label'];
    echo "<th><table align='center' width='100%'><td align='left'>";
-   if ($sortdirarray[$columnname]=="asc")
-      $sortupicon="icons/sortup_active.png";
-   else
-      $sortupicon="icons/sortup.png";
-   echo "<input type='image' name='sortup_$columnname' value='$columnlabel' src='$sortupicon' alt='Sort Up'>";
+   // the sort buttons don't work for associated tables, so do not show them for associated tables
+   if ($nowfield['datatype']!='table') {
+      if ($sortdirarray[$columnname]=='asc')
+        $sortupicon='icons/sortup_active.png';
+      else
+         $sortupicon='icons/sortup.png';
+     echo "<input type='image' name='sortup_$columnname' value='$columnlabel' src='$sortupicon' alt='Sort Up'>";
+   }
    echo "</td><th align='center'>$columnlabel</th><td align='right'>";
-   if ($sortdirarray[$columnname]=="desc")
-      $sortdownicon="icons/sortdown_active.png";
-   else
-      $sortdownicon="icons/sortdown.png";
-   echo "<input type='image' name='sortdown_$columnname' value='$columnlabel' src='$sortdownicon' alt='Sort Down'>";
+   if ($nowfield['datatype']!='table') {
+      if ($sortdirarray[$columnname]=='desc')
+         $sortdownicon='icons/sortdown_active.png';
+      else
+         $sortdownicon='icons/sortdown.png';
+      echo "<input type='image' name='sortdown_$columnname' value='$columnlabel' src='$sortdownicon' alt='Sort Down'>";
+   }
    echo "</td></tr></table></th>\n";
 }
 
