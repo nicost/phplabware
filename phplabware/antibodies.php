@@ -25,7 +25,7 @@ $fields="name,id,type1,type2,type3,species,antigen,epitope,concentration,buffer,
 // register variables
 $get_vars = "id,";
 globalize_vars ($get_vars,$HTTP_GET_VARS);
-$post_vars = $fields . "add,submit,search,";
+$post_vars = "add,submit,search,";
 globalize_vars ($post_vars, $HTTP_POST_VARS);
 
 
@@ -45,13 +45,17 @@ function add ($db, $table,$fields,$fieldvalues) {
       while ($column) {
          if (!($column=="id")) {
             $columns.=",$column";
-	    $value=$fieldvalues[$column];
-            $values.=",'$value'";
+            if ($column=="date"){
+               $date=$db->DBDate(time());
+               $values.=",$date";
+            }
+            else
+	       $values.=",'$fieldvalues[$column]'";
+           // $values.=",'$value'";
          }
 	 $column=strtok(",");
       }
       $query="INSERT INTO $table ($columns) VALUES ($values)";
-      //$db->debug=true;
       if ($db->Execute($query))
          return $id;
    }
@@ -79,14 +83,14 @@ function delete ($db, $table, $id) {
 // $id=0 for a new entry, otherwise it is the id
 function add_ab_form ($db, $fields,$field_values,$id) {
    // get values in a smart way
-
+   
 
    echo "<form method='post' id='antibodyform action='$PHP_SELF'>\n"; 
    echo "<table border=0 align='center'>\n";
    if ($id)
-      echo "<tr><td colspan=5 align='center'><h3>Modify Antibody $name</h3></td></tr>\n";
+      echo "<tr><td colspan=7 align='center'><h3>Modify Antibody $name</h3></td></tr>\n";
    else
-      echo "<tr><td colspan=5 align='center'><h3>New Antibody</h3></td></tr>\n";
+      echo "<tr><td colspan=7 align='center'><h3>New Antibody</h3></td></tr>\n";
    echo "<tr align='center'>\n";
    echo "<td colspan=2></td>\n";
    echo "<th>Primary/Secund.</th>\n<th>Label</th>\n<th>Mono-/Polyclonal</th>\n";
@@ -135,7 +139,7 @@ function add_ab_form ($db, $fields,$field_values,$id) {
    echo "</tr>\n";
    
    echo "<tr>";
-   echo "<th>Notes: </th><td colspan=6><textarea name='notes' rows='5' cols='140'>$notes</textarea></td>\n";
+   echo "<th>Notes: </th><td colspan=6><textarea name='notes' rows='5' cols='100%'>$notes</textarea></td>\n";
    echo "</tr>\n";
    
    
@@ -174,9 +178,9 @@ else {
    echo "<caption>\n";
    // first handle addition of a new antibody
    if ($submit == "Add Antibody") {
-      if (! $test = add ($db, "antibodies",$fields,$HTTP_POST_VARS) ) {
+      if (! add ($db, "antibodies",$fields,$HTTP_POST_VARS) ) {
          echo "</caption>\n</table>\n";
-         add_ab_form ($db,$fields,$field_values,0);
+         add_ab_form ($db,$fields,$HTTP_POST_VARS,0);
          printfooter ();
          exit;
       }
@@ -200,7 +204,7 @@ else {
          if (substr($key, 0, 3) == "mod") {
             $modarray = explode("_", $key);
             echo "</caption>\n</table>\n";
-            add_ab_form ($fields,$fieldvalues,$id);
+            add_ab_form ($db,$fields,false,$id);
             printfooter();
             exit();
          }
