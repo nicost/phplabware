@@ -241,7 +241,8 @@ function plugin_show($db,$fields,$id,$USER,$system_settings,$tableid,$real_table
    echo "<th>Notes: </th><td>$notes</td>\n";
    echo "</tr>\n";
 
-   $files=get_files($db,"pdfs",$id,1);
+   $columnid=get_cell($db,$table_desc,"id","columnname","file");
+   $files=get_files($db,$tablename,$id,$columnid,1);
    if ($files) {
       echo "<tr><th>Files:</th>\n<td>";
       for ($i=0;$i<sizeof($files);$i++) {
