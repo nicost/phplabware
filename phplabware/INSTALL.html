@@ -1,0 +1,43 @@
+<!DOCTYPE HTML PUBLIC "-//W3C/DTD HTML 4.01 TRANSITIONAL//EN"
+	"http://www.w3.org/TR/html4/loose.dtd">
+<HTML>
+<HEAD>
+<TITLE>Installation instructions</TITLE>
+<LINK rel="STYLESHEET" type="text/css" href="phplabware.css">
+</HEAD>
+
+<BODY BGCOLOR="#ffffff">
+<a name="top"></a>
+<table border=0 width=100%>
+   <tr bgcolor="333388" align=right>
+      <td align=right>
+         <font size=+2 color="#ffffff"><i>PhpLabWare  
+             </i></font>
+      </td>
+   </tr>
+</table>
+
+<table border=0 width=100%>
+<tr bgcolor='eeeeff' align='right'>
+<td align='right'><a href='setup.php'>setup.php</a></td></tr>
+</table>
+
+<h3 align='center'>Installation Instructions</h3>
+
+<ul>
+	<li>Place the phplabware folder in a web-accessible folder on a well-configures server able to serve php scripts and with a SQL server.</li>
+	<li>Edit the includes/config_inc.exp and save it as 'includes/config_inc.php'. </li>
+	<li>Create the database with the name you entered during the previous step (in postgres for instance: createdb phplabware, in mysql; mysql mysql, CREATE DATABASE phplabware;).  Consult the documentation to your database server for details.</li>
+	<li>Point your browser to the script <a href='setup.php'>'setup.php'</a>.  For security reasons this can only be done from the localhost.</li>
+	<li>Enter a password for the 'sysadmin' and submit the form.</li>
+	<li>login as user 'sysadmin' with the password you just entered.</li>
+	<li>For security reasons you might want to make sure that 'includes/config_inc.php' can only be read by your webdaemon.</li>
+</ul>
+
+
+<h5 align='right'><a href='http://phplabware.sourceforge.net'>phplabware at sourceforge</a></h5>
+
+<!--********************START OF PRINTFOOTER****************************-->
+<hr>
+</BODY>
+</HTML>
