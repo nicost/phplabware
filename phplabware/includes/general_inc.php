@@ -451,8 +451,11 @@ function display_add($db,$tableinfo,$Allfields,$id,$namein,$system_settings) {
          }
          elseif ($nowfield['datatype']=='pulldown') {
             // get previous value	
-            $r=$db->Execute("SELECT typeshort,id FROM $nowfield[ass_t] ORDER BY sortkey,typeshort");
-            $text=$r->GetMenu2("$nowfield[name]",$nowfield[values],true,false);
+            $r=$db->Execute("SELECT typeshort,id FROM {$nowfield['ass_t']} ORDER BY sortkey,typeshort");
+            if ($nowfield['datatype']=='pulldown')
+               $text=$r->GetMenu2("$nowfield[name]",$nowfield['values'],true,false);
+            else
+               $text=$r->GetMenu2("$nowfield[name]",$nowfield['values'],true,true);
             echo "<tr><th>$nowfield[label]:";
             if ($nowfield['required']=='Y')
                echo"<sup style='color:red'>&nbsp;*</sup>";
@@ -489,22 +492,41 @@ function display_add($db,$tableinfo,$Allfields,$id,$namein,$system_settings) {
 	 }
 	 if ($nowfield["datatype"]=="file" || $nowfield["datatype"]=="image") {
 	    $files=get_files($db,$tableinfo->name,$id,$nowfield["columnid"],0,"big");
-	    echo "<tr>";
+	    echo '<tr>';
 	    echo "<th>$nowfield[label]:</th>\n";
 	    echo "</th>\n";
-	    echo "<td colspan=4> <table border=0>";
+	    echo '<td colspan=4> <table border=0>';
 	    for ($i=0;$i<sizeof($files);$i++)  {
-	       echo "<tr><td colspan=2>".$files[$i]["link"];
-	       echo "&nbsp;&nbsp;(<i>".$files[$i]["name"]."</i>, ".$files[$i]["type"]." file)</td>\n";
+	       echo "<tr><td colspan=2>".$files[$i]['link'];
+	       echo "&nbsp;&nbsp;(<i>".$files[$i]['name']."</i>, ".$files[$i]['type']." file)</td>\n";
 	       echo "<td><input type='submit' name='def_".$files[$i]["id"]."' value='Delete' Onclick=\"if(confirm('Are you sure the file ".$files[$i]["name"]." should be removed?')){return true;}return false;\"></td></tr>\n";
 	    }
             if ($files)
-	       echo "<tr><th>Replace ".$nowfield["datatype"]."(s) with</th>\n";
+	       echo '<tr><th>Replace '.$nowfield['datatype']."(s) with</th>\n";
             else
-	       echo "<tr><th>Upload ".$nowfield["datatype"]."</th>\n";
+	       echo '<tr><th>Upload '.$nowfield['datatype']."</th>\n";
 	    echo "<td>&nbsp;</td><td><input type='file' name='".$nowfield[name]."[]' value='$filename'></td>\n";
 	    echo "</tr></table><br>\n\n";
 	 }
+         elseif ($nowfield['datatype']=='mpulldown') {
+            // get previous value	
+            $r=$db->Execute("SELECT typeshort,id FROM {$nowfield['ass_t']} ORDER BY sortkey,typeshort");
+            $rbv=$db->Execute("SELECT typeid FROM {$nowfield['key_t']} WHERE recordid=$id");
+            while ($rbv && !$rbv->EOF) {
+               $valueArray[]=$rbv->fields[0];
+               $rbv->MoveNext();
+            }
+            $text=$r->GetMenu2($nowfield['name'].'[]',$valueArray,true,true);
+            echo "<tr><th>$nowfield[label]:";
+            if ($nowfield['required']=='Y')
+               echo"<sup style='color:red'>&nbsp;*</sup>";
+            echo "</th>\n<td>";
+            if ($USER["permissions"] & $LAYOUT) {
+               $jscript=" onclick='MyWindow=window.open (\"general.php?tablename=".$tableinfo->name."&edit_type=$nowfield[ass_t]&jsnewwindow=true&formname=form&selectname=$nowfield[name]".SID."\",\"type\",\"scrollbar=yes,resizable=yes,width=600,height=400\");MyWindow.focus()'";
+               echo "<input type='button' name='edit_button' value='Edit $nowfield[label]' $jscript><br>\n";
+            }
+            echo "$text<br>";
+         }
       }
       if (function_exists("plugin_display_add"))
          plugin_display_add($db,$tableinfo->id,$nowfield);
@@ -553,7 +575,7 @@ function getvalues($db,$tableinfo,$fields,$qfield=false,$field=false) {
       if($column!="id") {
          if ($r)
             ${$column}['values']= $r->fields[$column];
-         $rb=$db->CacheExecute(2,"SELECT id,label,datatype,display_table,display_record,associated_table,associated_column,associated_local_key,required,link_first,link_last,modifiable FROM $tableinfo->desname WHERE columnname='$column'");
+         $rb=$db->CacheExecute(2,"SELECT id,label,datatype,display_table,display_record,associated_table,key_table,associated_column,associated_local_key,required,link_first,link_last,modifiable FROM $tableinfo->desname WHERE columnname='$column'");
          ${$column}['name']=$column;
          ${$column}['columnid']=$rb->fields['id'];
          ${$column}['label']=$rb->fields['label'];
@@ -561,6 +583,7 @@ function getvalues($db,$tableinfo,$fields,$qfield=false,$field=false) {
          ${$column}['display_table']=$rb->fields['display_table'];
          ${$column}['display_record']=$rb->fields['display_record'];
          ${$column}['ass_t']=$rb->fields['associated_table'];
+         ${$column}['key_t']=$rb->fields['key_table'];
          ${$column}['ass_column']=$rb->fields['associated_column'];
          ${$column}['ass_local_key']=$rb->fields['associated_local_key'];
          ${$column}['required']=$rb->fields['required'];
@@ -597,6 +620,14 @@ function getvalues($db,$tableinfo,$fields,$qfield=false,$field=false) {
             }
             elseif ($rb->fields['datatype']=='pulldown') {
                ${$column}['text']=get_cell($db,${$column}['ass_t'],'typeshort','id',${$column}['values']); 
+            }
+            elseif ($rb->fields['datatype']=='mpulldown') {
+               unset($rasst);
+               $rasst=$db->Execute("SELECT typeid FROM {${$column}['key_t']} WHERE recordid='$id'");
+               while ($rasst && !$rasst->EOF){
+                  ${$column}['text'].=get_cell($db,${$column}['ass_t'],'typeshort','id',$rasst->fields[0]) ."<br>"; 
+                  $rasst->MoveNext();
+               }
             }
             elseif ($rb->fields['datatype']=='textlong') {
                if (${$column}['values']=="")

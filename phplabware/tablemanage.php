@@ -185,6 +185,7 @@ if ($editfield)	{
    echo "<option value='date'>date</option>\n";
    echo "<option value='table'>table</option>\n";
    echo "<option value='pulldown'>pulldown</option>\n";
+   echo "<option value='mpulldown'>mpulldown</option>\n";
    echo "<option value='link'>weblink</option>\n";
    echo "<option value='file'>file</option>\n";
    if ($system_settings["convert"])

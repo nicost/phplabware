@@ -292,16 +292,21 @@ function add_columnecg($db,$tablename2,$colname2,$label,$datatype,$Rdis,$Tdis,$r
    $SQL_reserved=",absolute,action,add,allocate,alter,are,assertion,at,between,bit,bit_length,both,cascade,cascaded,case,cast,catalog,char_length,charachter_length,cluster,coalsce,collate,collation,column,connect,connection,constraint,constraints,convert,corresponding,cross,current_date,current_time,current_timestamp,current_user,date,day,deallocate,deferrrable,deferred,describe,descriptor,diagnostics,disconnect,domain,drop,else,end-exec,except,exception,execute,external,extract,false,first,full,get,global,hour,identity,immediate,initially,inner,input,insensitive,intersect,interval,isolation,join,last,leading,left,level,local,lower,match,minute,month,names,national,natural,nchar,next,no,nullif,octet_length,only,outer,output,overlaps,pad,partial,position,prepare,preserve,prior,read,relative,restrict,revoke,right,rows,scroll,second,session,session_user,size,space,sqlstate,substring,system_user,temporary,then,time,timepstamp,timezone_hour,timezone_minute,trailing,transaction,translate,translation,trim,true,unknown,uppper,usage,using,value,varchar,varying,when,write,year,zone,";
 
    // find the id of the table and therewith the tablename
-   $r=$db->Execute("SELECT id,real_tablename,table_desc_name,label FROM tableoftables WHERE tablename='$tablename2'"); 
-   $id=$r->fields["id"];
-   $real_tablename=$r->fields["real_tablename"];
-   $desc=$r->fields["table_desc_name"];
-   $tablelabel=$r->fields["label"];
+   $r=$db->Execute("SELECT id,real_tablename,table_desc_name,label,shortname FROM tableoftables WHERE tablename='$tablename2'"); 
+   $id=$r->fields['id'];
+   $real_tablename=$r->fields['real_tablename'];
+   $desc=$r->fields['table_desc_name'];
+   $tablelabel=$r->fields['label'];
+   $shortname=$r->fields['label'];
    $search=array("' '","','","';'","'\"'","'_'","'-'");
-   $replace=array("");
+   $replace=array('');
    $colname=preg_replace ($search,$replace, $colname2);
 
-   $fieldstring="id,columnname,label,sortkey,display_table,display_record,required,modifiable,type,datatype,associated_table,associated_column"; 
+   // for adodb's dml
+   $dict=NewDataDictionary($db);
+   $taboptArray=array('mysql'=>'TYPE=ISAM');
+
+   $fieldstring="id,columnname,label,sortkey,display_table,display_record,required,modifiable,type,datatype,associated_table,associated_column,key_table"; 
    $fieldid=$db->GenId($desc."_id");
    $label=strtr($label,",'","  ");
    $colname=strtolower($colname);
@@ -309,27 +314,47 @@ function add_columnecg($db,$tablename2,$colname2,$label,$datatype,$Rdis,$Tdis,$r
    // check whether this name exists, the query should fail
    $rb=$db->Execute("SELECT $colname FROM $real_tablename");
    if ($rb)
-      $string=("This columnname is in use.  Please choose something else.");
+      $string=('This columnname is in use.  Please choose something else.');
    elseif ($colname=="")
-      $string="Please enter a columnname";
-   elseif ($label=="")
-      $string="Please enter a Label";
+      $string='Please enter a columnname';
+   elseif ($label=='')
+      $string='Please enter a Label';
    elseif (strpos($SQL_reserved,",$colname,")) 
       $string="Column name <i>$colname</i> is a reserved SQL word.  Please pick another column name";
    else {
-      if ($datatype=="pulldown") {
+      if ($datatype=='pulldown' || $datatype='mpulldown') {
          // create an associated table, not overwriting old ones, using a max number
          $tablestr=$real_tablename;
-	 $tablestr.="ass";
-
+	 $tablestr.='ass';
          // simple and robust way to get UID.  Start at 20 to avoid clashes	
          $assid=$db->GenID($tablestr,20);
 	 $tablestr.="_$assid";	
+         if ($datatype=='mpulldown') {
+            $keystr=$real_tablename;
+            $keystr.='ask';
+            $keystr.="_$assid";	
+         }
 
-	 $r=$db->Execute("INSERT INTO $desc ($fieldstring) Values($fieldid,'$colname','$label','$sort','$Tdis','$Rdis','$req','$modifiable','int','$datatype','$tablestr','')");
+	 $r=$db->Execute("INSERT INTO $desc ($fieldstring) Values($fieldid,'$colname','$label','$sort','$Tdis','$Rdis','$req','$modifiable','int','$datatype','$tablestr','','$keystr')");
 	 $rs=$db->Execute("CREATE TABLE $tablestr (id int PRIMARY KEY, sortkey int, type text, typeshort text)");
-	 $rsss=$db->Execute("ALTER table $real_tablename add column $colname int");
-	 if (($r)&&($rs)&&($rsss)&&(!($colname==""))) 
+   
+         if ($datatype=='mpulldown') {
+            $nflds="
+               recordid I8 CONSTRAINTS 'FOREIGN KEY REFERENCES $real_tablename (id)',
+               typeid I8 CONSTRAINTS 'FOREIGN KEY REFERENCES $tablestr(id)'
+            ";
+            $sqlArray=$dict->CreateTableSQL($keystr,$nflds,$taboptArray);
+            $dict->ExecuteSQLArray($sqlArray);
+             //$rss=$db->Execute("CREATE TABLE $keystr (recordid int, typeid int)");
+            // create indexes
+            $sqlArray=$dict->CreateIndexSQL($shortname."_ask_$assid".'_rid_index',$keystr,'recordid');
+            $dict->ExecuteSQLArray($sqlArray);
+            $sqlArray=$dict->CreateIndexSQL($shortname."_ask_$assid".'_tid_index',$keystr,'typeid');
+            $dict->ExecuteSQLArray($sqlArray);
+         }
+
+         $rsss=$db->Execute("ALTER table $real_tablename add column $colname int");
+	 if ($r && $rs && $rsss && (!($colname==""))) 
             $string="Added column <i>$colname</i> into table <i>$tablelabel</i>";
 	 else 
 	    $string="Problems creating this column.";
@@ -342,7 +367,7 @@ function add_columnecg($db,$tablename2,$colname2,$label,$datatype,$Rdis,$Tdis,$r
          $db->Execute("CREATE INDEX $tablestr"."_fi ON $tablestr (fileid)");
          $db->Execute("CREATE INDEX $tablestr"."_ri ON $tablestr (recordid)");
 
-	 $r=$db->Execute("INSERT INTO $desc ($fieldstring) Values($fieldid,'$colname','$label','$sort','$Tdis','$Rdis','$req','$modifiable','int','$datatype','$tablestr','')");
+	 $r=$db->Execute("INSERT INTO $desc ($fieldstring) Values($fieldid,'$colname','$label','$sort','$Tdis','$Rdis','$req','$modifiable','int','$datatype','$tablestr',NULL,NULL)");
          // we do not need this column, but not having it  might break something
 	 $rsss=$db->Execute("ALTER table $real_tablename add column $colname text");
 	 if (($r)&&($rs)&&(!($colname==""))) 
@@ -359,7 +384,7 @@ function add_columnecg($db,$tablename2,$colname2,$label,$datatype,$Rdis,$Tdis,$r
              $sqltype='text';
          $rsss=$db->Execute("ALTER table $real_tablename add column $colname $sqltype");
          if ($rsss)
-            $r=$db->Execute("INSERT INTO $desc ($fieldstring) Values($fieldid,'$colname','$label','$sort','$Tdis','$Rdis','$req','$modifiable','$sqltype','$datatype','','')");
+            $r=$db->Execute("INSERT INTO $desc ($fieldstring) Values($fieldid,'$colname','$label','$sort','$Tdis','$Rdis','$req','$modifiable','$sqltype','$datatype','','',NULL)");
  	 if (($r)&&$rsss&&(!($colname==""))) {
             $string="Added column <i>$colname</i> into table: <i>$tablelabel</i>";
             return $fieldid;

@@ -226,6 +226,12 @@ else {
       else {  
          // $id ==-1 when the record was already uploaded
          if ($id>0) {
+            // mpulldown
+            $rd=$db->Execute('SELECT columnname,key_table FROM '.$tableinfo->desname." WHERE datatype='mpulldown'");
+            while ($rd && !$rd->EOF){
+               update_mpulldown($db,$rd->fields['key_table'],$id,$HTTP_POST_VARS[$rd->fields['columnname']]);
+               $rd->MoveNext();
+            }
             // upload files
             $rb=$db->Execute("SELECT id,columnname,associated_table FROM ".$tableinfo->desname." WHERE datatype='file'");
             while (!$rb->EOF) {
@@ -255,16 +261,22 @@ else {
       }
    }
    // then look whether it should be modified
-   elseif ($submit=="Modify Record") {
+   elseif ($submit=='Modify Record') {
 //      $modfields=comma_array_SQL_where($db,$tableinfo->desname,"columnname","modifiable","Y");
       // The pdf plugin wants to modify fields that have been set to modifiable=='N'
       if (! (check_g_data($db,$HTTP_POST_VARS,$tableinfo,true) && 
-             modify($db,$tableinfo->realname,$tableinfo->fields,$HTTP_POST_VARS,$HTTP_POST_VARS["id"],$USER,$tableinfo->id)) ) {
-         add_g_form ($db,$tableinfo,$HTTP_POST_VARS,$HTTP_POST_VARS["id"],$USER,$PHP_SELF,$system_settings);
+             modify($db,$tableinfo->realname,$tableinfo->fields,$HTTP_POST_VARS,$HTTP_POST_VARS['id'],$USER,$tableinfo->id)) ) {
+         add_g_form ($db,$tableinfo,$HTTP_POST_VARS,$HTTP_POST_VARS['id'],$USER,$PHP_SELF,$system_settings);
          printfooter ();
          exit;
       }
       else { 
+         // mpulldown
+         $rd=$db->Execute('SELECT columnname,key_table FROM '.$tableinfo->desname." WHERE datatype='mpulldown'");
+         while ($rd && !$rd->EOF){
+            update_mpulldown($db,$rd->fields['key_table'],$HTTP_POST_VARS['id'],$HTTP_POST_VARS[$rd->fields['columnname']]);
+            $rd->MoveNext();
+         }
          // upload files and images
          $rc=$db->Execute("SELECT id,columnname,datatype,thumb_x_size FROM $tableinfo->desname WHERE datatype='file' OR datatype='image'");
          while (!$rc->EOF) {
@@ -419,8 +431,8 @@ else {
    }
 
    //  get a list of all fields that are displayed in the table
-   $Fieldscomma=comma_array_SQL_where($db,$tableinfo->desname,"columnname","display_table","Y");
-   $Labelcomma=comma_array_SQL_where($db,$tableinfo->desname,"label","display_table","Y");
+   $Fieldscomma=comma_array_SQL_where($db,$tableinfo->desname,'columnname','display_table','Y');
+   $Labelcomma=comma_array_SQL_where($db,$tableinfo->desname,'label','display_table','Y');
    $Allfields=getvalues($db,$tableinfo,$Fieldscomma,false,false);	
    
    // javascript to automatically execute search when pulling down 
@@ -445,7 +457,7 @@ else {
       elseif ($nowfield['name']=='date') 
          echo "<td style='width: 10%'>&nbsp;</td>\n";
       // datatype of column ownerid is text (historical oversight...)
-      elseif ($nowfield["name"]=="ownerid") {
+      elseif ($nowfield['name']=='ownerid') {
          if ($list) {
             $rowners=$db->Execute("SELECT ownerid FROM $tableinfo->realname WHERE $list");
             while ($rowners && !$rowners->EOF) {
@@ -453,7 +465,7 @@ else {
                $rowners->MoveNext();
             }
 	    if ($ownerids)
-               $ownerlist=implode(",",$ownerids);
+               $ownerlist=implode(',',$ownerids);
          }
          if ($ownerlist) {   
             $rowners2=$db->Execute("SELECT lastname,id FROM users WHERE id IN ($ownerlist)");
@@ -463,16 +475,16 @@ else {
          else
             echo "<td style='width:10%'>test</td>\n";
       }
-      elseif ($nowfield["datatype"]=="int" || $nowfield["datatype"]=="float" || $nowfield["datatype"]=="sequence" || $nowfield['datatype']=="date") {
+      elseif ($nowfield['datatype']=='int' || $nowfield['datatype']=='float' || $nowfield['datatype']=='sequence' || $nowfield['datatype']=='date') {
     	    echo  " <td style='width: 10%'><input type='text' name='$nowfield[name]' value='".${$nowfield[name]}."'size=8 align='center'></td>\n";
       }
-      elseif ($nowfield["datatype"]== "text" || $nowfield["datatype"]=="file")
+      elseif ($nowfield['datatype']== 'text' || $nowfield['datatype']=='file')
          echo  " <td style='width: 25%'><input type='text' name='$nowfield[name]' value='".${$nowfield[name]}."'size=8></td>\n";
-      elseif ($nowfield["datatype"]== "textlong")
+      elseif ($nowfield['datatype']== 'textlong')
          echo  " <td style='width: 10%'><input type='text' name='$nowfield[name]' value='".${$nowfield[name]}."'size=8></td>\n";
-      elseif ($nowfield["datatype"]== "pulldown") {
+      elseif ($nowfield['datatype']== 'pulldown' || $nowfield['datatype']=='mpulldown') {
          echo "<td style='width: 10%'>";
-         if ($USER["permissions"] & $LAYOUT)  {
+         if ($USER['permissions'] & $LAYOUT)  {
             $jscript2=" onclick='MyWindow=window.open (\"general.php?tablename=".$tableinfo->name."&edit_type=$nowfield[ass_t]&jsnewwindow=true&formname=$formname&selectname=$nowfield[name]".SID."\",\"type\",\"scrollbar=yes,resizable=yes,width=600,height=400\")'";
             echo "<input type='button' name='edit_button' value='Edit $nowfield[label]' $jscript2><br>\n";
          }	 		 			

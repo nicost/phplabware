@@ -198,23 +198,23 @@ function add ($db,$table,$fields,$fieldvalues,$USER,$tableid) {
       $values="$id";
       $column=strtok($fields,",");
       while ($column) {
-         if (!($column=="id")) {
+         if (!($column=='id')) {
             $columns.=",$column";
             // set userid
-            if ($column=="ownerid")
-               $fieldvalues["ownerid"]=$USER["id"];
+            if ($column=='ownerid')
+               $fieldvalues['ownerid']=$USER['id'];
             // set default access rights, 
-            //elseif ($column=="access") 
-             //  $fieldvalues["access"]=get_access($fieldvalues);
             elseif (in_array($column, array('gr','gw','er','ew')))
                $fieldvalues[$column]=get_access($fieldvalues,$column);
+
             // set timestamp
-            if ($column=="date") {
+            if ($column=='date') {
                $date=(time());
                $values.=",$date";
             }
             else {
                if (isset($fieldvalues[$column]) && 
+                        !(is_array($fieldvalues[$column])) && 
                         strlen($fieldvalues[$column])>0)
 	          $values.=",'$fieldvalues[$column]'";
                else
@@ -235,6 +235,18 @@ function add ($db,$table,$fields,$fieldvalues,$USER,$tableid) {
          return $id;
       else {
          echo "<h3>Database error.  Contact your system administrator.</h3>\n";
+      }
+   }
+}
+
+////
+// !For multiple choice pulldowns.  
+// Deletes entries in key_table for a give record,and then re-inserts the ones present in the array
+function update_mpulldown ($db,$key_table,$recordid,$valueArray) {
+   $db->Execute ("DELETE FROM $key_table WHERE recordid=$recordid");
+   if (is_array($valueArray)) {
+      while (list($key,$value)=each($valueArray)) {
+         $db->Execute ("INSERT INTO $key_table VALUES ($recordid,$value)");
       }
    }
 }
@@ -263,7 +275,7 @@ function modify ($db,$table,$fields,$fieldvalues,$id,$USER,$tableid) {
    $query="UPDATE $table SET ";
    $column=strtok($fields,",");
    while ($column) {
-      if (! ($column=="id" || $column=="date" || $column=="ownerid") ) {
+      if (! ($column=='id' || $column=='date' || $column=='ownerid' || is_array($fieldvalues[$column]) ) ) {
          $test=true;
          //if ($column=="access")
          //   $fieldvalues["access"]=get_access($fieldvalues);
@@ -970,7 +982,7 @@ function searchhelp ($db,$tableinfo,$column,&$columnvalues,$query,$wcappend,$and
 	 else $query[0].="$and id=0 ";
       }
       // there are some (old) cases where pulldowns are of type text...
-      elseif ($rc->fields[1]=="pulldown") {
+      elseif ($rc->fields[1]=='pulldown') {
          $columnvalues[$column]=(int)$columnvalues[$column];
          if ($columnvalues["$column"]==-1)
             $query[0].="$and ($column=''OR $column IS NULL) ";
