@@ -27,6 +27,10 @@ function add ($db,$table,$fields,$fieldvalues,$USER) {
       echo "<h3>You are not allowed to do this.<br>";
       return false;
    }
+   // test if upload already took place through variable magic
+   if ($fieldvalues["magic"])
+      if ($test=get_cell($db,$table,"id","magic",$fieldvalues["magic"]))
+         return $test;
    include('includes/defines_inc.php');
    if (!($USER["permissions"] & $WRITE) )
       return false;
