@@ -341,17 +341,17 @@ function process_image($db,$fileid,$bigsize)
    if (!$fileid)
       return false;
    $imagefile=file_path ($db,$fileid);
-   $bigthumb=$system_settings["thumbnaildir"]."/big/$fileid.jpg";
-   $smallthumb=$system_settings["thumbnaildir"]."/small/$fileid.jpg";
-   $smallsize=$system_settings["smallthumbsize"];
-   $convert=$system_settings["convert"];
+   $bigthumb=$system_settings['thumbnaildir']."/big/$fileid.jpg";
+   $smallthumb=$system_settings['thumbnaildir']."/small/$fileid.jpg";
+   $smallsize=$system_settings['smallthumbsize'];
+   $convert=$system_settings['convert'];
 
    // make big thumbnail and get image info
-   $command = "$convert -verbose -sample ".$bigsize."x".$bigsize." $action '$imagefile' jpg:$bigthumb";
+   $command = "$convert -verbose -sample ".$bigsize."x".$bigsize." $action \"$imagefile\" jpg:$bigthumb";
    exec($command, $result_str_arr, $status);
 
    // make small thumbnail
-   $command = "$convert -sample ".$smallsize."x".$smallsize." $action '$imagefile' jpg:$smallthumb";
+   $command = "$convert -sample ".$smallsize."x".$smallsize." $action \"$imagefile\" jpg:$smallthumb";
    `$command`;
 
    // get size, mime, and type from image file.  
@@ -360,22 +360,22 @@ function process_image($db,$fileid,$bigsize)
    $width=$sizearray[0];
    if ($width) {
       $height=$sizearray[1];
-      $mime=$sizearray["mime"];
+      $mime=$sizearray['mime'];
       switch ($sizearray[2]) {
-         case 1: $filename_extension="GIF"; break;
-         case 2: $filename_extension="JPG"; break;
-         case 3: $filename_extension="PNG"; break;
-         case 4: $filename_extension="SWF"; break;
-         case 5: $filename_extension="PSD"; break;
-         case 6: $filename_extension="BMP"; break;
-         case 7: $filename_extension="TIFF"; break;
-         case 8: $filename_extension="TIFF"; break;
-         case 9: $filename_extension="JPC"; break;
-         case 10: $filename_extension="JP2"; break;
-         case 11: $filename_extension="JPX"; break;
-         case 12: $filename_extension="JB2"; break;
-         case 13: $filename_extension="SWC"; break;
-         case 14: $filename_extension="IFF"; break;
+         case 1: $filename_extension='GIF'; break;
+         case 2: $filename_extension='JPG'; break;
+         case 3: $filename_extension='PNG'; break;
+         case 4: $filename_extension='SWF'; break;
+         case 5: $filename_extension='PSD'; break;
+         case 6: $filename_extension='BMP'; break;
+         case 7: $filename_extension='TIFF'; break;
+         case 8: $filename_extension='TIFF'; break;
+         case 9: $filename_extension='JPC'; break;
+         case 10: $filename_extension='JP2'; break;
+         case 11: $filename_extension='JPX'; break;
+         case 12: $filename_extension='JB2'; break;
+         case 13: $filename_extension='SWC'; break;
+         case 14: $filename_extension='IFF'; break;
       }
    }
    else {
@@ -392,12 +392,12 @@ function process_image($db,$fileid,$bigsize)
             $filename_extension = $convertresult[$i];
             $test = false; 
          }
-         if (substr ($convertresult[$i], -2) == "kb")
+         if (substr ($convertresult[$i], -2) == 'kb')
             $test = true;
       }
       // extract pixel dimensions, this fails when there are spaces in the filename
-      $width = (int) strtok ($pixels, "x+= >");
-      $height = (int) strtok ("x+= >");
+      $width = (int) strtok ($pixels, 'x+= >');
+      $height = (int) strtok ('x+= >');
    }
 
    if($mime) 
@@ -446,7 +446,7 @@ function upload_files ($db,$tableid,$id,$columnid,$columnname,$USER,$system_sett
          $mime='application/pdf';
       // work around php bug??  
       $mime=strtok ($mime,";");
-      $filestype=substr(strrchr($mime,"/"),1);
+      $filestype=substr(strrchr($mime,'/'),1);
       $size=$HTTP_POST_FILES["$columnname"]['size'][$i];
       $title=$HTTP_POST_VARS['filetitle'][$i];
       if (!$title)
@@ -514,8 +514,8 @@ function get_files ($db,$table,$id,$columnid,$format=1,$thumbtype='small') {
 // !Returns path to the file
 function file_path ($db,$fileid) {
    global $system_settings;
-   $filename=get_cell($db,"files","filename","id",$fileid);
-   return $system_settings["filedir"]."/$fileid"."_$filename";
+   $filename=get_cell($db,'files','filename','id',$fileid);
+   return $system_settings['filedir']."/$fileid"."_$filename";
 }
 
 
@@ -526,7 +526,7 @@ function delete_column_file($db,$tableid,$columnid,$recordid,$USER) {
    $r=$db->Execute("SELECT id FROM files 
                     WHERE tablesfk=$tableid AND ftableid=$recordid AND ftablecolumnid=$columnid");
    while ($r && !$r->EOF) {
-      delete_file ($db,$r->fields("id"),$USER); 
+      delete_file ($db,$r->fields('id'),$USER); 
       $r->MoveNext();
    }
 }
@@ -540,12 +540,12 @@ function delete_column_file($db,$tableid,$columnid,$recordid,$USER) {
 function delete_file ($db,$fileid,$USER) {
    global $system_settings;
 
-   $tableid=get_cell($db,"files","tablesfk","id",$fileid);
-   $tabledesc=get_cell($db,"tableoftables","table_desc_name","id",$tableid);
-   $ftableid=get_cell($db,"files","ftableid","id",$fileid);
-   $columnid=get_cell($db,"files","ftablecolumnid","id",$fileid);
-   $associated_table=get_cell($db,$tabledesc,"associated_table","id",$columnid);
-   $filename=get_cell($db,"files","filename","id",$fileid);
+   $tableid=get_cell($db,'files','tablesfk','id',$fileid);
+   $tabledesc=get_cell($db,'tableoftables','table_desc_name','id',$tableid);
+   $ftableid=get_cell($db,'files','ftableid','id',$fileid);
+   $columnid=get_cell($db,'files','ftablecolumnid','id',$fileid);
+   $associated_table=get_cell($db,$tabledesc,'associated_table','id',$columnid);
+   $filename=get_cell($db,'files','filename','id',$fileid);
    if (!may_write($db,$tableid,$ftableid,$USER))
       return false;
    @unlink($system_settings['filedir']."/$fileid"."_$filename");   
@@ -564,11 +564,11 @@ function delete_file ($db,$fileid,$USER) {
 function user_array ($db) {
    $r=$db->Execute("SELECT id,firstname,lastname FROM users ORDER BY lastname");
    while (!$r->EOF){
-      $ua[$i]["id"]=$r->fields["id"];
-      if ($r->fields["firstname"])
-         $ua[$i]["name"]=$r->fields["firstname"]." ".$r->fields["lastname"];
+      $ua[$i]["id"]=$r->fields['id'];
+      if ($r->fields['firstname'])
+         $ua[$i]['name']=$r->fields['firstname']." ".$r->fields['lastname'];
       else
-         $ua[$i]["name"]=$r->fields["lastname"];
+         $ua[$i]['name']=$r->fields['lastname'];
       $i++;
       $r->MoveNext();
    }
@@ -581,7 +581,7 @@ function user_array ($db) {
 // names are same as used in get_access
 function show_access ($db,$tableid,$id,$USER,$global_settings) {
    global $client;
-   $table=get_cell($db,"tableoftables","real_tablename","id",$tableid);
+   $table=get_cell($db,'tableoftables','real_tablename','id',$tableid);
    if ($id) {
       $ra=$db->Execute("SELECT gr,gw,er,ew,ownerid FROM $table WHERE id='$id'");
       if ($ra) {
@@ -593,21 +593,21 @@ function show_access ($db,$tableid,$id,$USER,$global_settings) {
       }
       // $access=get_cell($db,$table,"access","id",$id);
       // $ownerid=get_cell($db,$table,"ownerid","id",$id);
-      $groupid=get_cell($db,"users","groupid","id",$ownerid);
-      $group=get_cell($db,"groups","name","id",$groupid);
+      $groupid=get_cell($db,'users','groupid','id',$ownerid);
+      $group=get_cell($db,'groups','name','id',$groupid);
       $rur=$db->Execute("SELECT trusteduserid FROM trust WHERE tableid='$tableid' AND recordid='$id' AND rw='r'");
       while (!$rur->EOF) {
-         $ur[]=$rur->fields("trusteduserid");
+         $ur[]=$rur->fields('trusteduserid');
          $rur->MoveNext();
       }
       $ruw=$db->Execute("SELECT trusteduserid FROM trust WHERE tableid='$tableid' AND recordid='$id' AND rw='w'");
       while (!$ruw->EOF) {
-         $uw[]=$ruw->fields("trusteduserid");
+         $uw[]=$ruw->fields('trusteduserid');
          $ruw->MoveNext();
       }
    }
    else {
-      $access=$global_settings["access"];
+      $access=$global_settings['access'];
       // translate the $access string into our new format
       if ($access{3}=='r')
          $gr=1;
@@ -617,7 +617,7 @@ function show_access ($db,$tableid,$id,$USER,$global_settings) {
          $er=1;
       if ($access{7}=='w')
          $ew=1;
-      $group=get_cell($db,"groups","name","id",$USER["groupid"]);
+      $group=get_cell($db,'groups','name','id',$USER['groupid']);
    }
    $user_array=user_array($db);
    echo "<table border=0>\n";
