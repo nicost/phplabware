@@ -424,8 +424,12 @@ else {
    // prepare search SQL statement
    $pb_query=make_search_SQL($db,"pdbs","pb",$tableid,$fields,$USER,$search);
 
+   // get the total number of hits
+   $r=$db->CacheExecute(1,$pb_query);
+   $numrows=$r->RecordCount();
+
    // loop through all entries for next/previous buttons
-   $r=$db->PageExecute($pb_query,$num_p_r,$pb_curr_page);
+   $r=$db->CachePageExecute(1,$pb_query,$num_p_r,$pb_curr_page);
    while (!($r->EOF) && $r) {
       $r->MoveNext();
    }
@@ -442,7 +446,7 @@ else {
       echo "<td align='center'><a href='$PHP_SELF?add=Add PDB$sid'>Add PDB</a></td>\n";
    echo "</table>\n";
 
-   next_previous_buttons($r,true,$num_p_r);
+   next_previous_buttons($r,true,$num_p_r,$numrows,$pb_curr_page);
 
    // print header of table
    echo "<table border='1' align='center'>\n";
@@ -455,7 +459,7 @@ else {
    $jscript="onChange='document.pb_form.searchj.value=\"Search\"; document.pb_form.submit()'";
    echo "<input type='hidden' name='searchj' value=''>\n";
    // get a list with ids we may see
-   $r=$db->Execute($pb_query);
+   $r=$db->CacheExecute(1,$pb_query);
    $lista=make_SQL_csf ($r,false,"id",$nr_records);
    // and a list with all records we may see
    $listb=may_read_SQL($db,"pdbs",$tableid,$USER);
@@ -500,7 +504,7 @@ else {
    echo "<th>Action</th>\n";
    echo "</tr>\n";
 
-   $r=$db->PageExecute($pb_query,$num_p_r,$pb_curr_page);
+   $r=$db->CachePageExecute(1,$pb_query,$num_p_r,$pb_curr_page);
    $rownr=1;
    // print all entries
    while (!($r->EOF) && $r) {

@@ -482,8 +482,12 @@ else {
    // prepare search SQL statement
    $pd_query=make_search_SQL($db,"pdfs","pd",$tableid,$fields,$USER,$search);
 
+   // get the total number of hits
+   $r=$db->CacheExecute(1,$pd_query);
+   $numrows=$r->RecordCount();
+
    // loop through all entries for next/previous buttons
-   $r=$db->PageExecute($pd_query,$num_p_r,$pd_curr_page);
+   $r=$db->CachePageExecute(1,$pd_query,$num_p_r,$pd_curr_page);
    while (!($r->EOF) && $r) {
       $r->MoveNext();
    }
@@ -503,7 +507,7 @@ else {
    //echo "Show All</button></td></tr>\n";
    echo "</table>\n";
 
-   next_previous_buttons($r,true,$num_p_r);
+   next_previous_buttons($r,true,$num_p_r,$numrows,$pd_curr_page);
 
    // print header of table
    echo "<table border='1' align='center'>\n";
@@ -516,7 +520,7 @@ else {
    $jscript="onChange='document.pd_form.searchj.value=\"Search\"; document.pd_form.submit()'";
    echo "<input type='hidden' name='searchj' value=''>\n";
    // get a list with ids we may see
-   $r=$db->Execute($pd_query);
+   $r=$db->CacheExecute(1,$pd_query);
    $lista=make_SQL_csf ($r,false,"id",$nr_records);
    // and a list with all records we may see
    $listb=may_read_SQL($db,"pdfs",$tableid,$USER);
@@ -609,7 +613,7 @@ else {
    echo "<th>Action</th>\n";
    echo "</tr>\n";
 
-   $r=$db->PageExecute($pd_query,$num_p_r,$pd_curr_page);
+   $r=$db->CachePageExecute(1,$pd_query,$num_p_r,$pd_curr_page);
    $rownr=1;
    // print all entries
    while (!($r->EOF) && $r) {

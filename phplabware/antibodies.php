@@ -438,9 +438,11 @@ else {
 ?>
 <form name='ab_form' method='post' action='<?php echo $PHP_SELF?>?<?=SID?>'>  
 <?php
-
+   // get total number of hits
+   $r=$db->CacheExecute(1,$ab_query);
+   $numrows=$r->RecordCount();
    // loop through all entries for next/previous buttons
-   $r=$db->PageExecute($ab_query,$num_p_r,$ab_curr_page);
+   $r=$db->CachePageExecute(1,$ab_query,$num_p_r,$ab_curr_page);
    while (!($r->EOF) && $r) {
       $r->MoveNext();
    }
@@ -456,7 +458,7 @@ else {
    //echo "Show All</button></td></tr>\n";
    echo "</table>\n";
 
-   next_previous_buttons($r,true,$num_p_r);
+   next_previous_buttons($r,true,$num_p_r,$numrows,$ab_curr_page);
 
    // print header of table
    echo "<table border='1' align='center' width='100%'>\n";
@@ -468,7 +470,7 @@ else {
    //javascript that submits the form when a select was chosen
    $jscript="onChange='document.ab_form.searchj.value=\"Search\"; document.ab_form.submit()'";
    echo "<input type='hidden' name='searchj' value=''>\n";
-   $r=$db->Execute($ab_query);
+   $r=$db->CacheExecute(1,$ab_query);
    $lista=make_SQL_csf ($r,false,"id",$nr_records);
    // and a list with all records we may see
    $listb=may_read_SQL($db,"antibodies",$tableid,$USER);
@@ -580,7 +582,7 @@ else {
    echo "</tr>\n";
 
 
-   $r=$db->PageExecute($ab_query,$num_p_r,$ab_curr_page);
+   $r=$db->CachePageExecute(1,$ab_query,$num_p_r,$ab_curr_page);
    $rownr=1;
    // print all entries
    while (!($r->EOF) && $r) {

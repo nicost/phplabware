@@ -470,9 +470,11 @@ else {
  
    // prepare the search statement and remember it
    $pr_query=make_search_SQL($db,"protocols","pr",$tableid,$fields,$USER,$search);
-
+   // get total number of hits
+   $r=$db->CacheExecute(1,$pr_query);
+   $numrows=$r->RecordCount();
    // loop through all entries for next/previous buttons
-   $r=$db->PageExecute($pr_query,$num_p_r,$pr_curr_page);
+   $r=$db->CachePageExecute(1,$pr_query,$num_p_r,$pr_curr_page);
    while (!($r->EOF) && $r) {
       $r->MoveNext();
    }
@@ -490,7 +492,7 @@ else {
       echo "<td align='center'><a href='$PHP_SELF?add=Add Protocol$sid'>Add Protocol</a></td>\n";
    echo "</table>\n";
 
-   next_previous_buttons($r,true,$num_p_r);
+   next_previous_buttons($r,true,$num_p_r,$numrows,$pr_curr_page);
 
    // print header of table
    echo "<table border='1' align='center'>\n";
@@ -503,7 +505,7 @@ else {
    echo "<input type='hidden' name='searchj' value=''>\n";
    //$jscript="onChange='alert(\"You clicked wrong\")'";
    // get a list with ids we may see
-   $r=$db->Execute($pr_query);
+   $r=$db->CacheExecute(1,$pr_query);
    $lista=make_SQL_csf ($r,false,"id",$nr_records);
    // and a list with all records we may see
    $listb=may_read_SQL($db,"protocols",$tableid,$USER);
@@ -574,7 +576,7 @@ else {
    echo "</tr>\n";
 
 
-   $r=$db->PageExecute($pr_query,$num_p_r,$pr_curr_page);
+   $r=$db->CachePageExecute(1,$pr_query,$num_p_r,$pr_curr_page);
    $rownr=1;
    // print all entries
    while (!($r->EOF) && $r) {
