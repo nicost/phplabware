@@ -14,6 +14,8 @@
 // Needs getvars:tablename,reportid,recordid
 // optional getvar: tableview
 
+ini_set('max_execution_time','480');
+
 /// main include thingies
 require('include.php');
 require('includes/db_inc.php');
@@ -51,7 +53,7 @@ if (!may_read($db,$tableinfo,$recordid,$USER)) {
 }
    
 if ($reportid>0) {
-   $tp=@fopen($system_settings['templatedir']."/$reportid.tpl","r");
+   $tp=@fopen($system_settings['templatedir']."/$reportid.tpl",'r');
    if ($tp) {
       while (!feof($tp)) {
          $line=fgets($tp);
