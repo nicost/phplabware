@@ -630,7 +630,7 @@ function show_table_column_page ($db,$table_name,$addcol_name,$addcol_label) {
    echo "</tr>\n";
    $HTTP_GET_VARS['tablename']=$table_name;
    $tableinfo=new tableinfo($db);
-   $rs=$db->Execute("SELECT id,associated_table,associated_column,associated_local_key,label FROM {$tableinfo->desname} WHERE associated_table LIKE '%'");
+   $rs=$db->Execute("SELECT id,associated_table,associated_column,associated_local_key,label FROM {$tableinfo->desname} WHERE associated_table > 0");
    if ($rs && !$rs->EOF) {
       echo "<tr><td colspan=3>Grouping:</td></tr>\n";
       echo "<tr><td colspan=3><input type='radio' name='ass_to'> Make this a primary key</input></td></tr>\n";
