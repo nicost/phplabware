@@ -516,15 +516,13 @@ else {
    // javascript that submit the form with the search button when a selects was chosen
    $jscript="onChange='document.pr_form.searchj.value=\"Search\"; document.pr_form.submit()'";
    echo "<input type='hidden' name='searchj' value=''>\n";
-   //$jscript="onChange='alert(\"You clicked wrong\")'";
-   // get a list with ids we may see
-   // $r=$db->CacheExecute(1,$pr_query);
 
    $lista=make_SQL_csf ($r_master,false,"id",$nr_records);
+   $lista=" id IN ($lista) ";
    // show title we may see, when too many, revert to text box
-   if ($title) $list=$listb; else $list=$lista;
+   if ($title) $list=$listb["sql"]; else $list=$lista;
    if ($list && ($nr_records < $max_menu_length) ) {
-      $r=$db->Execute("SELECT title FROM protocols WHERE id IN ($list)");
+      $r=$db->Execute("SELECT title FROM protocols WHERE $list");
       $text=$r->GetMenu("title",$title,true,false,0,"style='width: 80%' $jscript");
       echo "<td style='width: 10%'>$text</td>\n";
    }
@@ -538,8 +536,8 @@ else {
       echo SID;
       echo "'>Edit Authors</a><br>\n";
    }
-   if ($type2) $list=$listb; else $list=$lista;
-   $r=$db->Execute("SELECT type2 FROM protocols WHERE id IN ($list)");
+   if ($type2) $list=$listb["sql"]; else $list=$lista;
+   $r=$db->Execute("SELECT type2 FROM protocols WHERE $list");
    $list2=make_SQL_ids($r,false,"type2");
    if ($list2) {
       if ($db_type=="mysql") // mysql does not use the ansi SQL || operator
@@ -562,8 +560,8 @@ else {
       echo "'>Edit Categories</a><br>\n";
    }
    // print category drop-down menu
-   if ($type1) $list=$listb; else $list=$lista;
-   $r=$db->Execute("SELECT type1 FROM protocols WHERE id IN ($list)");
+   if ($type1) $list=$listb["sql"]; else $list=$lista;
+   $r=$db->Execute("SELECT type1 FROM protocols WHERE $list");
    $list2=make_SQL_ids($r,false,"type1");
    if ($list2) {
       $r=$db->Execute("SELECT typeshort,id FROM pr_type1 WHERE id IN ($list2)");
@@ -590,16 +588,22 @@ else {
    echo "</tr>\n";
 
 
-   $r=$db->CachePageExecute(1,$pr_query,$num_p_r,$pr_curr_page);
+   //$r=$db->CachePageExecute(1,$pr_query,$num_p_r,$pr_curr_page);
    $rownr=1;
+   // deal with adodb-mysql bug
+   $r_master->Move(1);
+   $current_record=($pr_curr_page-1)*$num_p_r;
+   $last_record=$pr_curr_page*$num_p_r;
+   $r_master->Move($current_record);
+
    // print all entries
-   while (!($r->EOF) && $r) {
+   while (!($r_master->EOF) && $r_master && ($current_record < $last_record) ) {
  
       // get results of each row
-      $id = $r->fields["id"];
-      $title = $r->fields["title"];
+      $id = $r_master->fields["id"];
+      $title = $r_master->fields["title"];
       $at1=get_cell($db,"pr_type1","type","id",$r->fields["type1"]);
-      $notes = $r->fields["notes"];
+      $notes = $r_master->fields["notes"];
  
       // print start of row of selected group
       if ($rownr % 2)
@@ -637,7 +641,8 @@ else {
       echo "</td>\n";
       echo "</tr>\n";
    
-      $r->MoveNext();
+      $r_master->MoveNext();
+      $current_record+=1;
       $rownr+=1;
    }
 

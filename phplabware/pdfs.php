@@ -532,6 +532,7 @@ else {
    
    // get a list with ids we may see, $listb has all ids we may see
    $lista=make_SQL_csf ($r_master,false,"id",$nr_records);
+   $lista=" id IN ($lista) ";
 
    // show title we may see, when too many, revert to text box
 /*   if ($title) $list=$listb; else $list=$lista;
@@ -565,12 +566,12 @@ else {
       echo "'>Edit Categories</a><br>\n";
    }
    // print category drop-down menu
-   if ($type2) $list=$listb; else $list=$lista;
-   $r=$db->Execute("SELECT type2 FROM pdfs WHERE id IN ($list)");
+   if ($type2) $list=$listb["sql"]; else $list=$lista;
+   $r_type2=$db->Execute("SELECT type2 FROM pdfs WHERE $list");
    $list2=make_SQL_ids($r,false,"type2");
    if ($list2) {
-      $r=$db->Execute("SELECT typeshort,id FROM pd_type2 WHERE id IN ($list2)");
-      $text=$r->GetMenu2("type2",$type2,true,false,0,"style='width: 80%' $jscript");
+      $r_list2=$db->Execute("SELECT typeshort,id FROM pd_type2 WHERE id IN ($list2)");
+      $text=$r_list2->GetMenu2("type2",$type2,true,false,0,"style='width: 80%' $jscript");
       echo "$text</td>\n";
    }
    else
@@ -586,12 +587,12 @@ else {
       echo "'>Edit Journals</a><br>\n";
    }
    // print journals drop-down menu
-   if ($type1) $list=$listb; else $list=$lista;
-   $r=$db->Execute("SELECT type1 FROM pdfs WHERE id IN ($list)");
-   $list2=make_SQL_ids($r,false,"type1");
+   if ($type1) $list=$listb["sql"]; else $list=$lista;
+   $r_type1=$db->Execute("SELECT type1 FROM pdfs WHERE $list");
+   $list2=make_SQL_ids($r_type1,false,"type1");
    if ($list2) {
-      $r=$db->Execute("SELECT type,id FROM pd_type1 WHERE id IN ($list2) ORDER BY type");
-      $text=$r->GetMenu2("type1",$type1,true,false,0,"style='width: 80%' $jscript");
+      $r_list2=$db->Execute("SELECT type,id FROM pd_type1 WHERE id IN ($list2) ORDER BY type");
+      $text=$r_list2->GetMenu2("type1",$type1,true,false,0,"style='width: 80%' $jscript");
       echo "$text</td>\n";
    }
    else

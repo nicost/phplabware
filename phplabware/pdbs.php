@@ -472,6 +472,7 @@ else {
    
    // get a list with ids we may see
    $lista=make_SQL_csf ($r_master,false,"id",$nr_records);
+   $lista=" id IN ($lista) ";
 
    // show title we may see, when too many, revert to text box
    echo "<td><input type='text' name='title' value='$title' size=15></td>\n";
@@ -479,7 +480,7 @@ else {
    echo "<td><input type='text' name='author' value='$author' size=15></td>\n";
    echo "<td><input type='text' name='notes' value='$notes' size=15></td>\n";
    
-   if ($ownerid) $list=$listb["sql"]; else $list=$listai["sql"];
+   if ($ownerid) $list=$listb["sql"]; else $list=$lista;
    $r=$db->Execute("SELECT ownerid FROM pdbs WHERE $list");
    $list2=make_SQL_ids($r,false,"ownerid");
    if ($list2) {
@@ -515,18 +516,22 @@ else {
    echo "<th>Action</th>\n";
    echo "</tr>\n";
 
-   $r=$db->CachePageExecute(1,$pb_query,$num_p_r,$pb_curr_page);
+   //$r=$db->CachePageExecute(1,$pb_query,$num_p_r,$pb_curr_page);
    $rownr=1;
+   $r_master->move(1);
+   $current_record=($pb_curr_page-1)*$num_p_r;
+   $last_record=$pb_curr_page*$num_p_r;
+   $r_master->Move($current_record);
    // print all entries
-   while (!($r->EOF) && $r) {
+   while (!($r_master->EOF) && $r_master && ($current_record < $last_record) ) {
  
       // get results of each row
-      $id = $r->fields["id"];
-      $title = "&nbsp;".$r->fields["title"];
-      $author="&nbsp;".$r->fields["author"];
-      $notes= "&nbsp;".substr($r->fields["notes"],0,150)."...";
-      $owner="&nbsp;".get_cell($db,"users","firstname","id",$r->fields["ownerid"])." ".get_cell($db,"users","lastname","id",$r->fields["ownerid"]);
-      $pdbid=ltrim($r->fields["pdbid"]);
+      $id = $r_master->fields["id"];
+      $title = "&nbsp;".$r_master->fields["title"];
+      $author="&nbsp;".$r_master->fields["author"];
+      $notes= "&nbsp;".substr($r_master->fields["notes"],0,150)."...";
+      $owner="&nbsp;".get_cell($db,"users","firstname","id",$r_master->fields["ownerid"])." ".get_cell($db,"users","lastname","id",$r_master->fields["ownerid"]);
+      $pdbid=ltrim($r_master->fields["pdbid"]);
       if ($pdbid) {
          $Pdblink="<a href='http://www.rcsb.org/pdb/cgi/explore.cgi?pdbId=$pdbid'>$pdbid</a>\n";
          $Webmollink="<a href='webmol.php?pdbid=$pdbid'>$pdbid</a>\n";
@@ -567,7 +572,8 @@ else {
       echo "</td>\n";
       echo "</tr>\n";
    
-      $r->MoveNext();
+      $r_master->MoveNext();
+      $current_record+=1;
       $rownr+=1;
    }
 

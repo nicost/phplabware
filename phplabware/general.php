@@ -341,11 +341,11 @@ else {
 
    foreach($Allfields as $nowfield)  {
       if ($HTTP_POST_VARS[$nowfield[name]]) {
-         $list=$listb["SQL"]; 
+         $list=$listb["sql"]; 
 	 $count=$listb["numrows"];
       }
       else {
-         $list=$lista;   
+         $list= "id IN ($lista)";   
          $count=$counta;
       }
       if ($nowfield[datatype]== "link")
@@ -353,7 +353,7 @@ else {
       elseif ($nowfield[datatype]== "text") {
          // show titles we may see, when too many, revert to text box
          if ($list && ($count < $max_menu_length) )  {
-  	     $rlist=$db->CacheExecute(2,"SELECT $nowfield[name] FROM $real_tablename WHERE id IN ($list)");
+  	     $rlist=$db->CacheExecute(2,"SELECT $nowfield[name] FROM $real_tablename WHERE $list");
              $text=$rlist->GetMenu("$nowfield[name]",$HTTP_POST_VARS[$nowfield[name]],true,false,0,"style='width: 80%' $jscript");
              echo "<td style='width: 10%'>$text</td>\n";
          }
@@ -368,7 +368,7 @@ else {
             echo "<a href='$PHP_SELF?tablename=$tablename&edit_type=$nowfield[ass_t]&".SID;
             echo "'>Edit $nowfield[label]</a><br>\n";
          }	 		 			
-         $rpull=$db->Execute("SELECT $nowfield[name] FROM $real_tablename WHERE id IN ($list)");
+         $rpull=$db->Execute("SELECT $nowfield[name] FROM $real_tablename WHERE $list");
          $list2=make_SQL_ids($rpull,false,"$nowfield[name]");
          if ($list2) { 
             $rpull=$db->Execute("SELECT typeshort,id from $nowfield[ass_t] WHERE id IN ($list2) ORDER by typeshort");
@@ -384,7 +384,7 @@ else {
          if ($nowfield["ass_local_key"])
             $text="&nbsp;"; 
          else {
-            $rtable=$db->Execute("SELECT $nowfield[name] FROM $real_tablename WHERE id IN ($list)");
+            $rtable=$db->Execute("SELECT $nowfield[name] FROM $real_tablename WHERE $list");
             $list2=make_SQL_ids($rtable,false,"$nowfield[name]");
             if ($list2) {
                $rtable=$db->Execute("SELECT $nowfield[ass_column_name],id FROM $nowfield[ass_table_name] WHERE id IN ($list2)");

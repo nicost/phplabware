@@ -486,10 +486,11 @@ else {
    
    echo "<input type='hidden' name='searchj' value=''>\n";
    $lista=make_SQL_csf ($r,false,"id",$nr_records);
+   $lista=" id IN ($lista) ";
    // show title we may see, when too many, revert to text box
-   if ($name) $list=$listb; else $list=$lista;
+   if ($name) $list=$listb["sql"]; else $list=$lista;
    if ($list && ($nr_records < $max_menu_length) ) {
-      $rt=$db->Execute("SELECT name FROM antibodies WHERE id IN ($list) ORDER BY name");
+      $rt=$db->Execute("SELECT name FROM antibodies WHERE $list ORDER BY name");
       $text=$rt->GetMenu("name",$name,true,false,0,"style='width: 80%' $jscript");
       echo "<td style='width: 10%'>$text</td>\n";
    }
@@ -499,8 +500,8 @@ else {
    echo "<td><input type='text' name='notes' value='$notes' size=8></td>\n";
 
    echo "<td style='width: 10%'>";
-   if ($type1) $list=$listb; else $list=$lista;
-   $rl=$db->Execute("SELECT type1 FROM antibodies WHERE id IN ($list)");
+   if ($type1) $list=$listb["sql"]; else $list=$lista;
+   $rl=$db->Execute("SELECT type1 FROM antibodies WHERE $list");
    $list2=make_SQL_ids($rl,false,"type1");
    if ($list2) {
       $rl=$db->Execute("SELECT typeshort,id FROM ab_type1 WHERE id IN ($list2) ORDER BY sortkey");
@@ -516,8 +517,8 @@ else {
       echo SID;
       echo "'>Edit Labels</a><br>\n";
    }   
-   if ($type5) $list=$listb; else $list=$lista;
-   $r5=$db->Execute("SELECT type5 FROM antibodies WHERE id IN ($list)");
+   if ($type5) $list=$listb["sql"]; else $list=$lista;
+   $r5=$db->Execute("SELECT type5 FROM antibodies WHERE $list");
    $list2=make_SQL_ids($r5,false,"type5");
    if ($list2) {
       $r2=$db->Execute("SELECT typeshort,id FROM ab_type5 WHERE id IN ($list2) ORDER BY sortkey");
@@ -528,8 +529,8 @@ else {
       echo "&nbsp;</td>\n";
 
    echo "<td style='width: 10%'>";
-   if ($type2) $list=$listb; else $list=$lista;
-   $r2=$db->Execute("SELECT type2 FROM antibodies WHERE id IN ($list)");
+   if ($type2) $list=$listb["sql"]; else $list=$lista;
+   $r2=$db->Execute("SELECT type2 FROM antibodies WHERE $list");
    $list2=make_SQL_ids($r2,false,"type2");
    if ($list2) {
       $r2=$db->Execute("SELECT typeshort,id FROM ab_type2 WHERE id IN ($list2) ORDER BY sortkey");
@@ -545,8 +546,8 @@ else {
       echo SID;
       echo "'>Edit Hosts</a><br>\n";
    }    
-   if ($type3) $list=$listb; else $list=$lista;
-   $r3=$db->Execute("SELECT type3 FROM antibodies WHERE id IN ($list)");
+   if ($type3) $list=$listb["sql"]; else $list=$lista;
+   $r3=$db->Execute("SELECT type3 FROM antibodies WHERE $list");
    $list2=make_SQL_ids($r3,false,"type3");
    if ($list2) {
       $r3=$db->Execute("SELECT typeshort,id FROM ab_type3 WHERE id IN ($list2) ORDER BY sortkey");
@@ -562,8 +563,8 @@ else {
       echo SID;
       echo "'>Edit Classes</a><br>\n";
    }    
-   if ($type4) $list=$listb; else $list=$lista;
-   $r4=$db->Execute("SELECT type4 FROM antibodies WHERE id IN ($list)");
+   if ($type4) $list=$listb["sql"]; else $list=$lista;
+   $r4=$db->Execute("SELECT type4 FROM antibodies WHERE $list");
    $list2=make_SQL_ids($r4,false,"type4");
    if ($list2) {
       $r4=$db->Execute("SELECT typeshort,id FROM ab_type4 WHERE id IN ($list2) ORDER BY sortkey");
@@ -595,8 +596,6 @@ else {
    echo "<th>Action</th>\n";
    echo "</tr>\n";
 
-
-   //$r=$db->CachePageExecute(1,$ab_query,$num_p_r,$ab_curr_page);
    $rownr=1;
    // print all entries
    $r->Move(1);
