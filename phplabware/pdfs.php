@@ -308,9 +308,11 @@ function show_pd ($db,$fields,$id,$USER,$system_settings) {
    echo "'>".$system_settings["baseURL"].getenv("SCRIPT_NAME")."?showid=$id</a> (This page)<br>\n";
 
    echo "<a href='http://www.ncbi.nlm.nih.gov/entrez/query.fcgi?";
-   echo "cmd=Retrieve&db=PubMed&list_uids=$pmid&dopt=Abstract'>This article at Pubmed</a><br>\n";
+   if ($system_settings["pdfget"])
+      $addget="&".$system_settings["pdfget"];
+   echo "cmd=Retrieve&db=PubMed&list_uids=$pmid&dopt=Abstract$addget'>This article at Pubmed</a><br>\n";
    echo "<a href='http://www.ncbi.nlm.nih.gov/entrez/query.fcgi?";
-   echo "cmd=Link&db=PubMed&dbFrom=PubMed&from_uid=$pmid'>Related articles at Pubmed</a></td></tr>\n";
+   echo "cmd=Link&db=PubMed&dbFrom=PubMed&from_uid=$pmid$addget'>Related articles at Pubmed</a></td></tr>\n";
 
 ?>   
 <form method='post' id='pdfview' action='<?php echo $PHP_SELF?>?<?=SID?>'> 
