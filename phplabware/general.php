@@ -254,13 +254,11 @@ else {
 
    // get current page
    ${$pagename}=current_page(${$pagename},$tableshort);
- 
    // get a list with all records we may see, create temp table tempb
    $listb=may_read_SQL($db,$real_tablename,$tableid,$USER,"tempb");
 
    // prepare the search statement and remember it
    $fields_table="id,".$fields_table;
-   
    ${$queryname}=make_search_SQL($db,$real_tablename,$tableshort,$tableid,$fields_table,$USER,$search,$sortstring,$listb["sql"]);
    $r=$db->Execute(${$queryname});
 
@@ -318,7 +316,9 @@ else {
 
    // get a list with ids we may see, $listb has all the ids we may see
    //$r=$db->CacheExecute(2,${$queryname});
-   $lista=make_SQL_csf ($r,false,"id",$nr_records);
+   //$lista=make_SQL_csf ($r,false,"id",$nr_records);
+   make_temp_table($db,"tempa",$r);
+   $lista= " ($real_tablename.id=tempa.uniqueid) ";
 
    //  get a list of all fields that are displayed in the table
    $Fieldscomma=comma_array_SQL_where($db,$table_desname,"columnname","display_table","Y");
@@ -333,8 +333,8 @@ else {
    echo "<tr align='center'>\n";
    echo "<input type='hidden' name='searchj' value=''>\n";
 
-   $lista_array=explode(",",$lista);
-   $counta=sizeof($lista_array);
+   //$lista_array=explode(",",$lista);
+   //$counta=sizeof($lista_array);
    //$listb_array=explode(",",$listb);
    //$countb=sizeof($listb_array);
 
@@ -344,8 +344,8 @@ else {
 	 $count=$listb["numrows"];
       }
       else {
-         $list= "id IN ($lista)";   
-         $count=$counta;
+         $list=$lista;   
+         $count=$listb["numrows"];
       }
       if ($nowfield[datatype]== "link")
          echo "<td style='width: 10%'>&nbsp;</td>\n";
