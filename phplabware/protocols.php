@@ -207,6 +207,38 @@ function show_pr ($db,$fields,$id,$USER,$system_settings) {
 
    echo "</table></form>\n";
 }
+////
+// !Tries to convert a MsWord file into html 
+// When succesfull, the file is added to the database
+function process_file($db,$fileid,$system_settings) {
+   global $HTTP_POST_FILESi,$HTTP_POST_VARS;
+   $mimetype=get_cell($db,"files","mime","id",$fileid);
+   if (!strstr($mimetype,"html")) {
+      $word2html=$system_settings["word2html"];
+      $filepath=file_path($db,$fileid);
+      $temp=$system_settings["tmpdir"]."/".uniqid("file");
+      `$word2html $filepath $temp`;
+      echo "$word2html $filepath $temp<br>";
+      if (is_readable($temp)) {
+         unset ($HTTP_POST_FILES);
+         $r=$db->query ("SELECT filename,mime,title,tablesfk,ftableid FROM files WHERE id=$fileid");
+         if ($r && !$r->EOF) {
+            $filename=$r->fields("filename");
+            
+            $type="text/html";
+            $size=filesize($temp);
+            $id=$db->GenID("files_id_seq");
+            $query="INSERT INTO files (id,filename,mime,size,title,tablesfk,ftableid) VALUES ($id,'".$r->fields("filename")."','$type','$size','".$r->fields("title")."','".$r->fields("tablesfk")."','".$r->fields("ftableid")."')";
+            if ($db->execute($query)) {
+                $newloc=file_path($db,$id);
+               `mv $temp $newloc`;
+            }
+            else
+               unlink($temp); 
+         }    
+      }
+   }
+}
 
 /*****************************BODY*******************************/
 
@@ -269,8 +301,9 @@ else {
          exit;
       }
       else {  
-	 upload_files($db,"protocols",$id,$USER,$system_settings);
-// insert stuff to deal with word/html files
+	 $fileid=upload_files($db,"protocols",$id,$USER,$system_settings);
+         // insert stuff to deal with word/html files
+         process_file($db,$fileid,$system_settings); 
          // to not interfere with search form 
          unset ($HTTP_POST_VARS);
 	 // or we won't see the new record
@@ -279,14 +312,15 @@ else {
    }
    // then look whether it should be modified
    elseif ($submit =="Modify Protocol") {
-      if (! (check_ab_data($HTTP_POST_VARS) && modify ($db,"protocols",$fields,$HTTP_POST_VARS,$HTTP_POST_VARS["id"],$USER)) ) {
+      if (! (check_pr_data($HTTP_POST_VARS) && modify ($db,"protocols",$fields,$HTTP_POST_VARS,$HTTP_POST_VARS["id"],$USER)) ) {
          echo "</caption>\n</table>\n";
          add_pr_form ($db,$fields,$HTTP_POST_VARS,$HTTP_POST_VARS["id"],$USER,$PHP_SELF,$system_settings);
          printfooter ();
          exit;
       }
       else { 
-	 upload_files($db,"protocols",$HTTP_POST_VARS["id"],$USER,$system_settings);
+	 $fileid=upload_files($db,"protocols",$HTTP_POST_VARS["id"],$USER,$system_settings);
+         process_file($db,$fileid,$system_settings);
          // to not interfere with search form 
          unset ($HTTP_POST_VARS);
       }
