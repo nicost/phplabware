@@ -62,15 +62,15 @@ if ($jsnewwindow && $showid && $tableinfo->name) {
 // Mode can be changed through a get var and is perpetuated through post vars
 if ($HTTP_GET_VARS["md"])
    $md=$HTTP_GET_VARS["md"];
-
 foreach($HTTP_POST_VARS as $key =>$value) {
    // for table links, search in the linked table instead of the current one
    if (substr($key, 0, 3) == 'max') {
       $cname=substr($key,4);
+      $field=strtok($cname,"_");
       $value=$HTTP_POST_VARS["$cname"];
       // we need to replace this value with an id if appropriate
       if ($value)
-         $HTTP_POST_VARS["$cname"]=find_nested_match($db,$tableinfo,$cname,$value);
+         $HTTP_POST_VARS["$cname"]=find_nested_match($db,$tableinfo,$field,$value);
    }
    // check if sortup or sortdown arrow was been pressed
    else {
