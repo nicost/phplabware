@@ -65,11 +65,12 @@ function date_entry($id,$real_tablename) {
 ///////////////////////////////////////////////////////////
 //// 
 // !Displays information in table in edit mode
-function display_table_change($db,$tableid,$DB_DESNAME,$Fieldscomma,$pr_query,$num_p_r,$pr_curr_page,$page_array,$r=false) {
+//function display_table_change($db,$tableid,$DB_DESNAME,$Fieldscomma,$pr_query,$num_p_r,$pr_curr_page,$page_array,$r=false) {
+function display_table_change($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr_curr_page,$page_array,$r=false) {
    global $nr_records,$max_menu_length,$USER,$LAYOUT,$HTTP_SESSION_VARS;
 
-   $tablename=get_cell($db,"tableoftables","tablename","id",$tableid);
-   $real_tablename=get_cell($db,"tableoftables","real_tablename","id",$tableid);
+   //$tablename=get_cell($db,"tableoftables","tablename","id",$tableid);
+   //$real_tablename=get_cell($db,"tableoftables","real_tablename","id",$tableid);
    $first_record=($pr_curr_page - 1) * $num_p_r;
    $current_record=$first_record;
    $last_record=$pr_curr_page * $num_p_r;
@@ -81,8 +82,8 @@ function display_table_change($db,$tableid,$DB_DESNAME,$Fieldscomma,$pr_query,$n
       // Get required ID and title
       $id=$r->fields["id"];
       $title=$r->fields["title"];		
-      $Allfields=getvalues($db,$real_tablename,$DB_DESNAME,$tableid,$Fieldscomma,id,$id);
-      $may_write=may_write($db,$tableid,$id,$USER);
+      $Allfields=getvalues($db,$tableinfo->real_name,$tableinfo->desname,$tableinfo->id,$Fieldscomma,id,$id);
+      $may_write=may_write($db,$tableinfo->id,$id,$USER);
 
       // print start of row of selected record
       if ($current_record % 2) echo "<tr class='row_even' align='center'>\n";
@@ -160,7 +161,7 @@ function display_table_change($db,$tableid,$DB_DESNAME,$Fieldscomma,$pr_query,$n
       $current_record++;
    }
    // Add Record button
-   if (may_write($db,$tableid,false,$USER)) {
+   if (may_write($db,$tableinfo->id,false,$USER)) {
       echo "<tr><td colspan=20 align='center'>";
       echo "<input type=\"submit\" name=\"add\" value=\"Add Record\">";
       echo "</td></tr>";
