@@ -1,7 +1,8 @@
 <?php
 
 ///////////////////////////////////////////////////////////////////////
-////  display functions for general types
+////
+//  !display functions for general types
 
 ///////////////////////////////////////////////////////////
 function user_entry($id)//get the user who made the entry
@@ -512,7 +513,8 @@ function show_pr($db,$fields,$id,$USER,$system_settings,$DBNAME,$DB_DESNAME)
     return false;
 	$Allfields=getvalues($db,$DBNAME,$DB_DESNAME,$fields,id,$id);
 	display_record($Allfields,$id);
-	}
+}
+	
 ////
 // !Tries to convert a MsWord file into html 
 // It calls wvHtml.  This does not work with wvHtml version 0.7-0.72
@@ -644,7 +646,8 @@ function del_table($db,$tablename,$id) {
 }
 
 /////////////////////////////////////////////////////////////////////////
-////   creates a general table
+////   
+// !creates a general table 
 function add_table ($db,$tablename,$sortkey) 
 	{
 	global $string;
@@ -662,7 +665,7 @@ function add_table ($db,$tablename,$sortkey)
  	if ("$desc" == "$table1desc") {$isbad=1;}
  	}
 	if ($tablename==""){$string="please enter a title for the table!";}
-	if ($isbad==1){$string="A database with the name $tablename already exists!";}
+	if ($isbad==1){$string="A table with the name $tablename already exists!";}
 	else 
 		{	  
   	   $r=$db->Execute("CREATE TABLE $tablename (id int UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY, title text, access varchar(9), ownerid int(11), magic int(11), lastmodby int(11), lastmoddate int(11),date int(11))");
@@ -688,7 +691,8 @@ function add_table ($db,$tablename,$sortkey)
 }
 
 /////////////////////////////////////////////////////////////////////////
-/// modifies  the display properites of a table within navbar
+////
+// !modifies  the display properites of a table within navbar
 function mod_table($db,$id,$tablename,$tablesort,$tabledisplay) 
 	{
 	global $string;
@@ -699,7 +703,8 @@ function mod_table($db,$id,$tablename,$tablesort,$tabledisplay)
 	}
 
 /////////////////////////////////////////////////////////////////////////
-//// adds a general column entry
+//// 
+// !adds a general column entry
 function add_columnecg($db,$tablename2,$colname2,$datatype,$Rdis,$Tdis,$req,$sort)
 	{
 	$search=array("' '","','","';'","'\"'");
@@ -749,7 +754,8 @@ function add_columnecg($db,$tablename2,$colname2,$datatype,$Rdis,$Tdis,$req,$sor
 	}
 
 /////////////////////////////////////////////////////////////////////////
-//// modifies a general column entry
+//// 
+// !modifies a general column entry
 function mod_columnECG($db,$id,$sort,$tablename,$colname,$datatype,$Rdis,$Tdis,$req)
 	{
 	global $string;
@@ -761,7 +767,8 @@ function mod_columnECG($db,$id,$sort,$tablename,$colname,$datatype,$Rdis,$Tdis,$
 	}
 
 /////////////////////////////////////////////////////////////////////////
-//// deletes a general column entry
+//// 
+// !deletes a general column entry
 function rm_columnecg($db,$tablename,$id,$colname,$datatype)
 	{
 	global $string;
