@@ -432,18 +432,18 @@ else {
    // get current page
    $pb_curr_page =current_page($pb_curr_page,"pb"); 
 
+   // and a list with all records we may see
+   $listb=may_read_SQL($db,"pdbs",$tableid,$USER,"tempb");
+
    // prepare search SQL statement
-   $pb_query=make_search_SQL($db,"pdbs","pb",$tableid,$fields,$USER,$search,$sortstring);
+   $pb_query=make_search_SQL($db,"pdbs","pb",$tableid,$fields,$USER,$search,$sortstring,$listb["sql"]);
 
    // get the total number of hits
-   $r=$db->CacheExecute(1,$pb_query);
-   $numrows=$r->RecordCount();
+   $r_master=$db->Execute($pb_query);
+   $numrows=$r_master->RecordCount();
 
-   // loop through all entries for next/previous buttons
-   $r=$db->CachePageExecute(1,$pb_query,$num_p_r,$pb_curr_page);
-   while (!($r->EOF) && $r) {
-      $r->MoveNext();
-   }
+   first_last_page ($r_master, $pb_curr_page,$num_p_r,$numrows);
+   
    // print form
 ?>
 <form name='pb_form' method='post' action='<?php echo $PHP_SELF?>?<?=SID?>'>  
@@ -457,7 +457,7 @@ else {
       echo "<td align='center'><a href='$PHP_SELF?add=Add PDB$sid'>Add PDB</a></td>\n";
    echo "</table>\n";
 
-   next_previous_buttons($r,true,$num_p_r,$numrows,$pb_curr_page);
+   next_previous_buttons($r_master,true,$num_p_r,$numrows,$pb_curr_page);
 
    // print header of table
    echo "<table border='1' align='center'>\n";
@@ -469,11 +469,9 @@ else {
    // javascript that submit the form with the search button when a selects was chosen
    $jscript="onChange='document.pb_form.searchj.value=\"Search\"; document.pb_form.submit()'";
    echo "<input type='hidden' name='searchj' value=''>\n";
+   
    // get a list with ids we may see
-   $r=$db->CacheExecute(1,$pb_query);
-   $lista=make_SQL_csf ($r,false,"id",$nr_records);
-   // and a list with all records we may see
-   $listb=may_read_SQL($db,"pdbs",$tableid,$USER);
+   $lista=make_SQL_csf ($r_master,false,"id",$nr_records);
 
    // show title we may see, when too many, revert to text box
    echo "<td><input type='text' name='title' value='$title' size=15></td>\n";
@@ -481,8 +479,8 @@ else {
    echo "<td><input type='text' name='author' value='$author' size=15></td>\n";
    echo "<td><input type='text' name='notes' value='$notes' size=15></td>\n";
    
-   if ($ownerid) $list=$listb; else $list=$lista;
-   $r=$db->Execute("SELECT ownerid FROM pdbs WHERE id IN ($list)");
+   if ($ownerid) $list=$listb["sql"]; else $list=$listai["sql"];
+   $r=$db->Execute("SELECT ownerid FROM pdbs WHERE $list");
    $list2=make_SQL_ids($r,false,"ownerid");
    if ($list2) {
       if ($db_type=="mysql") // mysql does not use the ansi SQL || operator
@@ -576,7 +574,7 @@ else {
    echo "</table>\n";
 
    // next/previous buttons
-   next_previous_buttons($r);
+   next_previous_buttons($r_master);
 
    echo "</form>\n";
 
