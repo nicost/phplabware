@@ -12,7 +12,7 @@
   *  option) any later version.                                              *
   \**************************************************************************/                                                                             
 
-$version_code=0.0021;
+$version_code=0.0022;
 $localdir=exec("pwd");
 include ('includes/functions_inc.php');
 if (!file_exists("includes/config_inc.php")) {
@@ -25,7 +25,7 @@ include ('includes/config_inc.php');
 include ("includes/defines_inc.php");
 include ('adodb/adodb.inc.php');
 
-$post_vars="access,action,authmethod,baseURL,checkpwd,dateformat,filedir,pwd,secure_server_new,submit,";
+$post_vars="access,action,authmethod,baseURL,checkpwd,dateformat,filedir,pwd,secure_server_new,submit,tmpdir";
 globalize_vars($post_vars, $HTTP_POST_VARS);
 
 if ($set_local) {
@@ -102,6 +102,9 @@ if ($version) {
       if ($version<0.0021) {
          include ("dd/0_0021_inc.php");
       }
+      if ($version<0.0022) {
+         include ("dd/0_0022_inc.php");
+      }
       
       $query="UPDATE settings SET version='$version_code' WHERE id=1";
       if (!$db->Execute($query)) $test=false;
@@ -124,6 +127,14 @@ if ($version) {
             $settings["filedir"]=$filedir;
 	 else
 	    echo "<h4 align='center'>Directory $filedir is not writeable</h4>";
+      if ($tmpdir) 
+         if (is_writable($tmpdir))
+            $settings["tmpdir"]=$tmpdir;
+	 else {
+	    echo "<h4 align='center'>Directory $tmpdir is not writeable</h4>";
+            if (!isset ($settings["tmpdir"]))
+               $settings["tmpdir"]=session_save_path();
+         }
       if ($baseURL)
          $settings["baseURL"]=$baseURL;
       if ($secure_server_new=="Yes")
@@ -153,10 +164,12 @@ if ($version) {
    echo "<tr><td>Default access rights.  A 9 character string using the UNIX access method:</td>\n";
    if (!$settings["access"]) $settings["access"]="rw-r-----";
    echo "<td><input type='text' name='access' value='".$settings["access"]."'></td></tr>\n";
+
    echo "<tr><td colspan='2' align='center'><i>Directories</i></th></tr>\n";
-   echo "<tr><td>Location of directory <i>files</i>. The webdaemon should ";
-   echo "have read and write priveleges there, but it should not be directly ";
-   echo "accessible through the web.  If you changes this value, ";
+
+   echo "<tr><td>Directory <i>files</i>. The webdaemon should ";
+   echo "have read and write priveleges, but the directory should not be directly ";
+   echo "accessible through the web.  If you changes this setting, ";
    echo "the directory will be moved to the new location.</td>";
    if (!$settings["filedir"]) {
       $dir=getenv("SCRIPT_FILENAME");
@@ -165,6 +178,12 @@ if ($version) {
    }
    $filedir=$settings["filedir"];
    echo "<td><input type='text' name='filedir' value='$filedir'></td></tr>\n";
+
+   echo "<tr><td>Directory for <i>temporary</i> files. For security reasons, only the webdaemon should be able to read (and write) files here.  Usually, this is <b>not</b> the case for directory <i>/tmp</i>. </td>";
+   if (!$settings["tmpdir"]) 
+      $settings["tmpdir"]="/tmp";
+   echo "<td><input type='text' name='tmpdir' value='".$settings["tmpdir"]."'></td></tr>\n";
+   
    echo "<tr><td>Server URL.</td>\n ";
    if (!$settings["baseURL"]) {
       $settings["baseURL"]="http://".getenv("SERVER_NAME");
