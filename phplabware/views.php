@@ -99,8 +99,11 @@ echo "<td align='center'>Views: ";
 //make dropdown with viewnames, possibly dynamically changed by the selected tablename
 // when tablename was not set we not to alter our query:
 if ($tableinfo->id)
-   $tablerequirement="AND tableid={$tableinfo->id}";
-$r=$db->Execute ("SELECT viewname,viewnameid FROM viewnames WHERE viewnameid IN (SELECT viewnameid FROM tableviews WHERE userid={$USER['id']} $tablerequirement AND viewmode=1)");
+   $tablerequirement="AND tableviews.tableid={$tableinfo->id}";
+if ($db_type=='mysql')
+   $r=$db->Execute ("SELECT DISTINCT viewname,viewnames.viewnameid FROM viewnames LEFT JOIN tableviews ON viewnames.viewnameid=tableviews.viewnameid WHERE tableviews.userid={$USER['id']} $tablerequirement AND tableviews.viewmode=1");
+else
+   $r=$db->Execute ("SELECT viewname,viewnameid FROM viewnames WHERE viewnameid IN (SELECT viewnameid FROM tableviews WHERE userid={$USER['id']} $tablerequirement AND viewmode=1)");
 echo $r->GetMenu2('viewid',$viewid,true,false,0,'OnChange="document.views.submit()"');
 
 // insert Modify and Delete buttons for active view
