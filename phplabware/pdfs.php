@@ -568,7 +568,7 @@ else {
    // print category drop-down menu
    if ($type2) $list=$listb["sql"]; else $list=$lista;
    $r_type2=$db->Execute("SELECT type2 FROM pdfs WHERE $list");
-   $list2=make_SQL_ids($r,false,"type2");
+   $list2=make_SQL_ids($r_type2,false,"type2");
    if ($list2) {
       $r_list2=$db->Execute("SELECT typeshort,id FROM pd_type2 WHERE id IN ($list2)");
       $text=$r_list2->GetMenu2("type2",$type2,true,false,0,"style='width: 80%' $jscript");
