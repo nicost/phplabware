@@ -27,6 +27,8 @@ class cl_client {
          $this->browser = "Opera";
       elseif (strstr($temp, "msie"))
          $this->browser = "Internet Explorer";
+      elseif (strstr($temp, "mozilla/4"))
+         $this->browser = "Netscape 4";
       else
          $this->browser = "Netscape or the like";
       if (strstr($temp, "windows"))
@@ -264,11 +266,14 @@ function navbar($permissions) {
 ////
 // !Prints initial part of webpage
 function printheader($title,$head=false) {
-   global $db,$version, $active;
+   global $client, $db,$version, $active;
 
-   header("Cache-Control: private, no-cache, musti-revalidate");
-   header("Expires: Mon, 26 Jul 1997 05:00:00 GMT");
-   header("Pragma: no-cache");
+   // let Netscape 4 users use their back button
+   if ($client->browser != "Netscape 4") {
+      header("Cache-Control: private, no-cache, must-revalidate");
+      header("Expires: Mon, 26 Jul 1997 05:00:00 GMT");
+      header("Pragma: no-cache");
+   }
 ?>
 <!DOCTYPE HTML PUBLIC "-//W3C/DTD HTML 4.01 TRANSITIONAL//EN"
 	"http://www.w3.org/TR/html4/loose.dtd">
@@ -278,11 +283,10 @@ function printheader($title,$head=false) {
 <TITLE><?php echo "$title" ?></TITLE>
 <LINK rel="STYLESHEET" type="text/css" href="phplabware.css">
 </HEAD>
-
 <BODY BGCOLOR="#ffffff"
-  TOPMARGIN="0" BOTTOMMARGIN="0" LEFTMARGIN="0" RIGHTMARGIN="0"
+  TOPMARGIN="0" LEFTMARGIN="0" 
   MARGINWIDTH="0" MARGINHEIGHT="0">
-<table border="0" width="100%" rules="none" border="0" cellspacing="0" cellpadding="0">
+<table border="0" width="100%" rules="none" border="0" cellspacing="0" cellpadding="0" bgcolor="333388">
    <tr class='header' bgcolor="333388">
 <?php
    // first display the linkbar if activated
