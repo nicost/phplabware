@@ -18,7 +18,7 @@ function submit_changes ($tableid,$recordid,$field,$datatype,$newvalue) {
    //newWindow.focus();
 
    // Prepare the form data that we will write to the new form
-   var newForm = "<html>><body>\n";
+   var newForm = "<html><body>\n";
    newForm += "<form name='editMode' method='post' enctype='multipart/form-data' action='actionMode.php'>\n";
    newForm += "<input type='hidden' name='tableid' value='" + $tableid + "'>\n";
    newForm += "<input type='hidden' name='recordid' value='" + $recordid + "'>\n";
@@ -33,7 +33,7 @@ function submit_changes ($tableid,$recordid,$field,$datatype,$newvalue) {
 
    newWindow.document.editMode.submit();
 
-   document.onblur=newWindow.close();
+   //document.onblur=newWindow.close();
 
 }
 
