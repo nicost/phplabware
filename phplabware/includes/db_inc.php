@@ -938,7 +938,7 @@ function make_search_SQL($db,$tableinfo,$fields,$USER,$search,$searchsort="title
       $searchsort="title";
    $fieldvarsname=$tableinfo->short."_fieldvars";
    global ${$fieldvarsname};
-   $queryname=$tableshort."_query";
+   $queryname=$tableinfo->short."_query";
    if (!$whereclause)
       $whereclause=may_read_SQL ($db,$tableinfo,$USER);
    if (!$whereclause)
