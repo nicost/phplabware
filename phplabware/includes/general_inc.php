@@ -432,9 +432,10 @@ function display_add($db,$tableinfo,$Allfields,$id,$namein,$system_settings) {
   
 	
    }	
-   	/* Call to a function that runs at the end when adding a new record*/   
-       if ((function_exists("plugin_display_add_post")) && (!($id)))   
-         {plugin_display_add_post($db,$tableinfo->id); echo "</td></tr>\n";}
+   /* Call to a function that runs at the end when adding a new record*/   
+   if ((function_exists("plugin_display_add_post")) && (!($id))){
+      plugin_display_add_post($db,$tableinfo->id);
+   }
          
    echo "<td colspan=4>";
    show_access($db,$tableinfo->id,$id,$USER,$system_settings);
