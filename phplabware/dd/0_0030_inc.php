@@ -18,8 +18,10 @@
 
 $db->Execute("CREATE TABLE trust (
               tableid int,
-              recorid int,
-              trusteduserid int)");
+              recordid int,
+              trusteduserid int,
+              rw char,
+              CONSTRAINT special PRIMARY KEY (tableid,recordid,trusteduserid,rw))");
 
 
 ?>
