@@ -92,84 +92,83 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
    }
 }
 if ($editfield)	{
-	$noshow=array("id","access","ownerid","magic","lastmoddate","lastmodby","date");
-	$nodel=array("title","date","lastmodby","lastmoddate");
-	navbar($USER["permissions"]);
-	$r=$db->Execute("SELECT id FROM tableoftables WHERE tablename='$editfield'");
-	$id=$r->fields[0];
-	$currdesc=$editfield."_".$id."_desc";
-	echo "<h3 align='center'>$string</h3>";
-	echo "<h3 align='center'>Edit columns of $editfield</h3><br>";
-	echo "<table align='center'>\n";
+   $noshow=array("id","access","ownerid","magic","lastmoddate","lastmodby","date");
+   $nodel=array("title","date","lastmodby","lastmoddate");
+   navbar($USER["permissions"]);
+   $r=$db->Execute("SELECT id FROM tableoftables WHERE tablename='$editfield'");
+   $id=$r->fields[0];
+   $currdesc=$editfield."_".$id."_desc";
+   echo "<h3 align='center'>$string</h3>";
+   echo "<h3 align='center'>Edit columns of $editfield</h3><br>";
+   echo "<table align='center'>\n";
 
-	echo "<form method='post' id='coledit' enctype='multipart/form-data' ";
-	$dbstring=$PHP_SELF;echo "action='$dbstring?editfield=$editfield&".SID."'>\n"; 
-	echo "<table align='center'>\n";
-	echo "<tr>\n";
-	echo "<th>(SQL) Column Name</th>";
-	echo "<th>Label</th>";
-	echo "<th>Sortkey</th>";
-	echo "<th>Table display</th>";
-	echo "<th>Record display</th>\n";
-	echo "<th>Required </th>\n";
-	echo "<th>Datatype</th>\n";
-        echo "<th>Action</th>\n";
-	echo "</tr>\n";
-	echo "<input type='hidden' name='table_name' value='$editfield'>\n";
-	echo "<tr align='center' ><td><input type='text' name='addcol_name' value=''></td>\n";
-	echo "<td><input type='text' name='addcol_label' value=''></td>\n";
-	echo "<td><input type='text' name='addcol_sort' value=''></td>\n";
-	echo "<td><input type='radio' name='addcol_dtable' checked value='Y'>yes<input type='radio' name='addcol_dtable'  value='N'>no</td>\n";
-	echo "<td><input type='radio' name='addcol_drecord' checked value='Y'>yes<input type='radio' name='addcol_drecord'  value='N'>no</td>\n";
-	echo "<td><input type='radio' name='addcol_required'  value='Y'>yes<input type='radio' name='addcol_required' checked value='N'>no</td>\n";
-
-	echo "<td><select name='addcol_datatype'>";
-	echo "<option value='text'>text";
-	echo "<option value='textlong'>textlong";
-	echo "<option value='pulldown'>pulldown";
-	echo "<option value='link'>weblink";
-	echo "<option value='file'>file";
-	echo "</select>";
-	echo "<td align='center'><input type='submit' name='addcolumn' value='Add'></td></tr>\n";
-
-	$query = "SELECT id,sortkey,columnname,label,display_table,display_record,required,datatype FROM $currdesc order by sortkey,label";
-	$r=$db->Execute($query);
-	$rownr=0;
-	// print all entries
-	while (!($r->EOF) && $r) 
-		{
-        $label = $r->fields["label"];
-        $columnname = $r->fields["columnname"];
-	$id = $r->fields["id"];
-        $display_table = $r->fields["display_table"];
-        $display_record = $r->fields["display_record"];
-	$display_required= $r->fields["required"];
-	$datatype = $r->fields["datatype"];
-	$sort = $r->fields["sortkey"];
-	$show=1;
-	foreach($noshow as $doshow) {
-	   if ($label==$doshow)
+   echo "<form method='post' id='coledit' enctype='multipart/form-data' ";
+   $dbstring=$PHP_SELF;echo "action='$dbstring?editfield=$editfield&".SID."'>\n"; 
+   echo "<table align='center'>\n";
+   echo "<tr>\n";
+   echo "<th>(SQL) Column Name</th>";
+   echo "<th>Label</th>";
+   echo "<th>Sortkey</th>";
+   echo "<th>Table display</th>";
+   echo "<th>Record display</th>\n";
+   echo "<th>Required </th>\n";
+   echo "<th>Datatype</th>\n";
+   echo "<th>Action</th>\n";
+   echo "</tr>\n";
+   echo "<input type='hidden' name='table_name' value='$editfield'>\n";
+   echo "<tr align='center' ><td><input type='text' name='addcol_name' value=''></td>\n";
+   echo "<td><input type='text' name='addcol_label' value=''></td>\n";
+   echo "<td><input type='text' name='addcol_sort' value=''></td>\n";
+   echo "<td><input type='radio' name='addcol_dtable' checked value='Y'>yes<input type='radio' name='addcol_dtable'  value='N'>no</td>\n";
+   echo "<td><input type='radio' name='addcol_drecord' checked value='Y'>yes<input type='radio' name='addcol_drecord'  value='N'>no</td>\n";
+   echo "<td><input type='radio' name='addcol_required'  value='Y'>yes<input type='radio' name='addcol_required' checked value='N'>no</td>\n";
+   echo "<td><select name='addcol_datatype'>";
+   echo "<option value='text'>text";
+   echo "<option value='textlong'>textlong";
+   echo "<option value='pulldown'>pulldown";
+   echo "<option value='link'>weblink";
+   echo "<option value='file'>file";
+   echo "</select>";
+   echo "<td align='center'><input type='submit' name='addcolumn' value='Add'></td></tr>\n\n";
+   
+   $query = "SELECT id,sortkey,columnname,label,display_table,display_record,required,datatype FROM $currdesc order by sortkey,label";
+   $r=$db->Execute($query);
+   $rownr=0;
+   // print all entries
+   while (!($r->EOF) && $r) {
+      $label = $r->fields["label"];
+      $columnname = $r->fields["columnname"];
+      $id = $r->fields["id"];
+      $display_table = $r->fields["display_table"];
+      $display_record = $r->fields["display_record"];
+      $display_required= $r->fields["required"];
+      $datatype = $r->fields["datatype"];
+      $sort = $r->fields["sortkey"];
+      $show=1;
+      foreach($noshow as $donotshow) {
+	   if ($columnname==$donotshow)
               $show=0;
-	} 	   
-        // print start of row of selected group
-	if ($show==1) {
-	   echo "<input type='hidden' name='column_id[]' value='$id'>\n";	    
-	   echo "<input type='hidden' name='column_datatype[]' value='$datatype'>\n";
-  	   if ($rownr % 2) 
-	      echo "<tr class='row_odd' align='center'>\n";	
-  	   else 
-	      echo "<tr class='row_even' align='center'>\n";         
- 	   echo "<input type='hidden' name='column_name[]' value='$columnname'>\n";echo "<td>$columnname</td>\n";  
-	   echo "<td><input type='text' name='column_label[]' value='$label'></td>\n";
-	   echo "<td><input type='text' name='column_sort[]' value='$sort'></td>\n";
-	   if($display_table=="Y"){
-	  		echo "<td><input type='radio' name='column_dtable[$rownr]' value='Y' CHECKED >yes";
-	  		echo "<input type='radio' name='column_dtable[$rownr]' value='N'>no</td>\n";}
-	  	else{
-	  		echo "<td><input type='radio' name='column_dtable[$rownr]' value='Y'>yes";
-	  		echo" <input type='radio' name='column_dtable[$rownr]' value='N' CHECKED >no</td>";}
-	  				
-	  	if($display_record=="Y")
+      } 	   
+      // print start of row of selected group
+      if ($show==1) {
+         echo "<input type='hidden' name='column_id[$rownr]' value='$id'>\n";
+	 echo "<input type='hidden' name='column_datatype[$rownr]' value='$datatype'>\n";
+  	 if ($rownr % 2) 
+	     echo "<tr class='row_odd' align='center'>\n";	
+  	 else 
+	     echo "<tr class='row_even' align='center'>\n";         
+ 	 echo "<input type='hidden' name='column_name[$rownr]' value='$columnname'>\n";echo "<td>$columnname</td>\n";  
+	 echo "<td><input type='text' name='column_label[$rownr]' value='$label'></td>\n";
+	 echo "<td><input type='text' name='column_sort[$rownr]' value='$sort'></td>\n";
+	 if($display_table=="Y") {
+            echo "<td><input type='radio' name='column_dtable[$rownr]' value='Y' CHECKED >yes";
+	    echo "<input type='radio' name='column_dtable[$rownr]' value='N'>no</td>\n";
+	 }
+         else {
+            echo "<td><input type='radio' name='column_dtable[$rownr]' value='Y'>yes";
+            echo" <input type='radio' name='column_dtable[$rownr]' value='N' CHECKED >no</td>";
+         }
+         if($display_record=="Y")
 	  		{echo "<td><input type='radio' name='column_drecord[$rownr]' value='Y' CHECKED>yes";
 	  		echo" <input type='radio' name='column_drecord[$rownr]' value='N'> no </td>\n";}
 	  	else{
@@ -193,6 +192,7 @@ if ($editfield)	{
  		if ($candel==1){echo "$delstring</td>\n";}		
  	 	echo "</tr>\n";
    		}
+		/* Don't know what we need this for (Nico)
    	else 
    		{
 	   	echo "<input type='hidden' name='column_id[]' value='$id'>\n";	
@@ -204,6 +204,7 @@ if ($editfield)	{
 		   else{echo "<input type='hidden' value='Y' name='column_drecord[]'></td>\n";}
 	       echo "<input type='hidden' name='column_datatype[]' value='$datatype'>\n";
 		   }	
+		   */
       $r->MoveNext();
       $rownr+=1;		
 	
