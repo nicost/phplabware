@@ -23,6 +23,7 @@ navbar ($USER["permissions"]);
 if (!$USER["permissions"] & $SUPER) {
    echo "<h3 align='center'>Sorry, this page is not for you.</h3>\n";
    printfooter($db, $USER);
+   exit();
 }
 
 
