@@ -100,6 +100,13 @@ function display_table_info($db,$tableid,$DB_DESNAME,$Fieldscomma,$pr_query,$num
                $text="&nbsp;";
             echo "<td>$text</td>";
          }
+         if ($nowfield[datatype] =="table") {
+            $key=get_cell($db,$real_table,$nowfields[ass_local_key],"id",$id); 
+            $text=get_cell($db,$nowfield[ass_t],$nowfiels[ass_sql],"id",$key); 
+            if (!$text)
+               $text="&nbsp;";
+            echo "<td>$text</td>";
+         }
          if ($nowfield[datatype] == "textlong") {
             if ($nowfield[values]=="")
                echo "<td>no</td>\n";
@@ -326,7 +333,7 @@ function getvalues($db,$DBNAME,$DB_DESNAME,$fields,$qfield=false,$field=false) {
    while ($column) {
       if(!(!$id && $column=="id")) {
          ${$column}[values]= $r->fields[$column];
-         $rb=$db->Execute("SELECT label,datatype,display_table,display_record,associated_table,associated_sql,required FROM $DB_DESNAME WHERE columnname='$column'");
+         $rb=$db->CacheExecute(2,"SELECT label,datatype,display_table,display_record,associated_table,associated_sql,associated_local_key,required FROM $DB_DESNAME WHERE columnname='$column'");
          ${$column}["name"]=$column;
          ${$column}["label"]=$rb->fields["label"];
          ${$column}["datatype"]=$rb->fields["datatype"];
@@ -334,6 +341,7 @@ function getvalues($db,$DBNAME,$DB_DESNAME,$fields,$qfield=false,$field=false) {
          ${$column}["display_record"]=$rb->fields["display_record"];
          ${$column}["ass_t"]=$rb->fields["associated_table"];
          ${$column}["ass_query"]=$rb->fields["associated_sql"];
+         ${$column}["ass_local_key"]=$rb->fields["associated_local_key"];
          ${$column}["required"]=$rb->fields["required"];
       }
       array_push ($Allfields, ${$column});
