@@ -46,7 +46,7 @@ if ($searchj || $sortup || $sortdown)
 // !Checks input data.
 // returns false if something can not be fixed
 // This function queries ncbi and pulls data associated with a paper into the database
-function check_pd_data ($db,&$field_values) {
+function check_pd_data ($db,&$field_values,$modify=false) {
    global $HTTP_POST_FILES;
    // some browsers do not send a mime type??  
    if (is_readable($HTTP_POST_FILES["file"]["tmp_name"][0])) {
@@ -62,11 +62,13 @@ function check_pd_data ($db,&$field_values) {
       echo "<h3 align='center'>Please enter the Pubmed ID of the PDF reprint.</h3>";
       return false;
    }
-   // check whether we had this one already
-   $existing_id=get_cell($db,"pdfs","id","pmid",$field_values["pmid"]);
-   if ($existing_id) {
-      echo "<h3 align='center'><a href='pdfs.php?showid=$existing_id'>That paper </a>is already in the database.</h3>\n";
-      return false;
+   if (!$modify) {
+       // check whether we had this one already
+      $existing_id=get_cell($db,"pdfs","id","pmid",$field_values["pmid"]);
+      if ($existing_id) {
+         echo "<h3 align='center'><a href='pdfs.php?showid=$existing_id'>That paper </a>is already in the database.</h3>\n";
+         return false;
+      }
    }
    // this will protect quotes in the imported data
    set_magic_quotes_runtime(1);
@@ -450,7 +452,7 @@ else {
    }
    // then look whether it should be modified
    elseif ($submit=="Modify PDF reprint") {
-      if (! (check_pd_data($db,$HTTP_POST_VARS) && modify ($db,"pdfs",$fields,$HTTP_POST_VARS,$HTTP_POST_VARS["id"],$USER,$tableid)) ) {
+      if (! (check_pd_data($db,$HTTP_POST_VARS,true) && modify ($db,"pdfs",$fields,$HTTP_POST_VARS,$HTTP_POST_VARS["id"],$USER,$tableid)) ) {
          echo "</caption>\n</table>\n";
          add_pd_form ($db,$tableid,$fields,$HTTP_POST_VARS,$HTTP_POST_VARS["id"],$USER,$PHP_SELF,$system_settings);
          printfooter ();
