@@ -232,14 +232,17 @@ function display_table_change($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr
          if ( ($nowfield['modifiable']!='Y') || !$may_write) {
             echo "<td><input type='hidden' name='{$nowfield['name']}_$id' value=\"{$nowfield['values']}\">\n";
             echo "{$nowfield['text']}</td>\n";
-         }
-         elseif ($nowfield['datatype']=='text') {
+         } elseif ($nowfield['datatype']=='text') {
      	    echo "<td><input type='text' name='{$nowfield['name']}_$id' value='{$nowfield['values']}' size=15 $js>$thestar</td>\n";
-         }
-         elseif ($nowfield['datatype']=='date') {
+         } elseif ($nowfield['datatype']=='date') {
      	    echo "<td><input type='text' name='{$nowfield['name']}_$id' value='{$nowfield['text']}' size=12 $js>$thestar</td>\n";
-         }
-         elseif ($nowfield['datatype']=='int' || $nowfield['datatype']=='sequence' || $nowfield['datatype']=='float') {
+         } elseif ($nowfield['datatype']=='int' || $nowfield['datatype']=='sequence') {
+            $js="onchange='if (isAnInt(document.g_form.{$nowfield['name']}_$id.value)) { submit_changes($tableinfo->id,$id,\"{$nowfield['name']}\",document.g_form.{$nowfield['name']}_$id.value); } else {event.returnValue=false;}'";
+            //$js="onchange='var theField=document.g_form.{$nowfield['name']}_$id; if (isAnInt(document.g_form.{$nowfield['name']}_$id.value)) { submit_changes($tableinfo->id,$id,\"{$nowfield['name']}\",theField.value); } else {theField.reset();}'";
+     	    echo "<td><input type='text' name='{$nowfield['name']}_$id' value='{$nowfield['values']}' size=8 $js>$thestar</td>\n";
+         } elseif ($nowfield['datatype']=='float') {
+            //$js="onchange='var theField=document.g_form.{$nowfield['name']_$id; if (isAFloat(document.g_form.{$nowfield['name']}_$id.value)) { submit_changes($tableinfo->id,$id,\"{$nowfield['name']}\",document.g_form.{$nowfield['name']}_$id.value); } else {event.returnValue=false;}'";
+            $js="onchange='var theField=document.g_form.{$nowfield['name']}_$id; if (isAFloat(theField.value)) { submit_changes($tableinfo->id,$id,\"{$nowfield['name']}\",theField.value); } else {theField.reset();}'";
      	    echo "<td><input type='text' name='{$nowfield['name']}_$id' value='{$nowfield['values']}' size=8 $js>$thestar</td>\n";
          }
          elseif ($nowfield['datatype']=='textlong') {
@@ -449,14 +452,14 @@ function display_record($db,$Allfields,$id,$tableinfo,$backbutton=true,$previous
    global $PHP_SELF, $md,$USER;
 
    if (!$Allfields[1]['recordid']) {
-      echo "<table border=0 align='middle'>\n";
+      echo "<table border=0 align='center'>\n";
       echo "<tr>\n<td align='center'><h3>Record not found</h3>\n</td>\n</tr>";
       echo "<tr>\n<td align='center'>\n<button onclick='self.close();window.opener.focus();' name='Close' value='close'>Close</button></td></tr>\n";
       echo "</table>\n";
       exit;
    }
    echo "&nbsp;<br>\n";
-   echo "<table border=0 align='middle'>\n";
+   echo "<table border=0 align='center'>\n";
    $count=0;
    echo "<tr>\n";
    // if viewid is defined we will over-ride display record with values from the view settings
@@ -559,7 +562,7 @@ function display_record($db,$Allfields,$id,$tableinfo,$backbutton=true,$previous
    $viewmenu=viewmenu($db,$tableinfo,$viewid,false);
 
    // and now display the buttons
-   echo "<table border=0 align='middle' width='100%'>\n";
+   echo "<table border=0 align='center' width='100%'>\n";
    if ($backbutton) {
       echo "<tr>\n<td align='left'>";
       echo " $previousbutton</td><td align='center'>$modifybutton $backbutton $viewmenu</td><td align='right'>$nextbutton </td>\n</tr>\n";
@@ -649,15 +652,15 @@ function display_add($db,$tableinfo,$Allfields,$id,$namein,$system_settings) {
       $magic=time();
    echo "<input type='hidden' name='magic' value='$magic'>\n";
    echo "<input type='hidden' name='md' value='$md'>\n";
-   echo "<table border=0 align='middle'>\n";   
+   echo "<table border=0 align='center'>\n";   
    if ($id) {
-      echo "<tr><td colspan=5 align='middle'><h3>Modify ".$tableinfo->label." entry <i>$namein</i></h3></td></tr>\n";
-      echo "<input type='hidden' name='id' value='$id'>\n";
+      echo "<tr><td colspan=5 align='center'><h3>Modify ".$tableinfo->label." entry <i>$namein</i></h3>\n";
+      echo "<input type='hidden' name='id' value='$id'></td></tr>\n";
    }
    else {
-      echo "<tr><td colspan=5 align='middle'><h3>New ".$tableinfo->label." entry</h3></td></tr>\n";
+      echo "<tr><td colspan=5 align='center'><h3>New ".$tableinfo->label." entry</h3></td></tr>\n";
    }
-   echo "<table border=0 align='middle'>\n<tr align='middle'>\n<td colspan=2></td>\n";
+   echo "<table border=0 align='center'>\n<tr>\n<td colspan=2></td>\n";
    
    foreach ($Allfields as $nowfield) {
       // give plugin a chance to modify data
@@ -830,7 +833,7 @@ function display_add($db,$tableinfo,$Allfields,$id,$namein,$system_settings) {
    else $value="Add Record";
 
    // submit and clear buttons
-   echo "<td colspan=7 align='middle'>\n";
+   echo "<td colspan=7 align='center'>\n";
    if ($HTTP_SESSION_VARS['javascript_enabled']) {
       echo "<input type='hidden' name='subm' value=''>\n";
       //echo "<input type='button' name='sub' value='$value' onclick='document.subform.subm.value=\"$value\"; document.subform.submit(); window.opener.document.g_form.search.value=\"Search\"; setTimeout(\"window.opener.document.g_form.submit(); window.opener.focus(); self.close()\",300);'>\n";
@@ -1109,6 +1112,54 @@ function check_g_data ($db,&$field_values,$tableinfo,$modify=false) {
    }
 
    return true;
+}
+
+/**
+ * Go through the comma-separated list $Fieldscomma, and retrun an array ($fields) with every field that needs a value set to a default
+ *
+ * 
+ */
+function set_default($db,$tableinfo,$Fieldscomma,$USER,$system_settings) {
+   if (!may_write($db,$tableinfo->id,false,$USER)) {
+      return false;
+   }
+   $Allfields=getvalues($db,$tableinfo,$Fieldscomma);
+   foreach ($Allfields as $nowfield) {
+      // give plugin a chance to modify data
+      if (function_exists('plugin_display_add_pre')) {
+         plugin_display_add_pre($db,$tableinfo->id,$nowfield);
+      }
+      // For sequences, provide the next available number
+      if ($nowfield['datatype']=='sequence') {
+         $rmax=$db->Execute("SELECT MAX(${nowfield['name']}) AS ${nowfield['name']} FROM ".$tableinfo->realname);
+	 $fields[$nowfield['name']]=$rmax->fields[0]+1;
+      } elseif (in_array($nowfield['name'], array('gr','gw','er','ew'))) {
+         $fields[$nowfield['name']]=get_access(false,$nowfield['name']);
+      }
+
+      // For required fields, we simply enter the field name, or 0 for numerics
+      if ($nowfield['required']=='Y' && !isset($nowfield['values'])) {
+      
+         if ($nowfield['datatype']=='text' || $nowfield['datatype']=='textlong') {
+            $fields[$nowfield['name']]=$nowfield['label'];
+         } elseif ($nowfield['datatype']=='int' || $nowfield['datatype']=='float') {
+            $fields[$nowfield['name']]=0;
+         } elseif ($nowfield['datatype']=='date') {
+            // assign current date
+         } elseif ($nowfield['datatype']=='link') {
+            $fields[$nowfield['name']]=$nowfield['label'];
+         } elseif ($nowfield['datatype']=='pulldown') {
+            $fields[$nowfield['name']]=0;
+         } elseif ($nowfield['datatype']=='table') {
+            $fields[$nowfield['name']]=0;
+	 } if ($nowfield['datatype']=='file' || $nowfield['datatype']=='image') {
+            $fields[$nowfield['name']]=0;
+         } elseif ($nowfield['datatype']=='mpulldown') {
+            $fields[$nowfield['name']]=0;
+         }
+      }
+   }
+   return ($fields);
 }
 
 

@@ -286,10 +286,14 @@ if ($showid && !$jsnewwindow) {
 }
 
 // when the 'Add' button has been chosen: 
-if ($add) {
+if ($add && $md!='edit') {
    add_g_form($db,$tableinfo,$field_values,0,$USER,$PHP_SELF,$system_settings);
-}
-else { 
+} else {
+   // in edit mode, create a new record filled with default values
+   if ($md=='edit' && $add) {
+      $fieldvalues=set_default($db,$tableinfo,$tableinfo->fields,$USER,$system_settings);
+      $id=add($db,$tableinfo->realname,$tableinfo->fields,$fieldvalues,$USER,$tableinfo->id);
+   } 
     // first handle addition of a new record
    if ($submit == 'Add Record') {
       if (!(check_g_data($db, $HTTP_POST_VARS, $tableinfo) && 
@@ -462,11 +466,8 @@ else {
    if ($sid) {
       $actionLink.='&amp;'.$sid;
    }
-   //if ($tableinfo->name) $sid.="&tablename=$tableinfo->name";
 
    // print form;
-   // $headers = getallheaders();
-
    $dbstring=$PHP_SELF."?"."tablename=$tableinfo->name&";
    $formname='g_form';
    echo "<form name='$formname' method='post' id='generalform' enctype='multipart/form-data' action='$PHP_SELF?$actionLink'>\n";
@@ -490,10 +491,15 @@ else {
       $modetext.="edit'>(to edit mode)</a>\n";
    }
    // write the first line shown in table view 
-   if ($may_write)
-      echo "<td align='center'><a href='$PHP_SELF?add=Add&amp;tablename=$tableinfo->name&amp;".SID."' target='_blank'>Add Record</a></td>\n"; 
-   else
+   if ($may_write) {
+      if ($md=='edit') {
+         echo "<td align='center'><a href='$PHP_SELF?add=Add&amp;tablename=$tableinfo->name&amp;md=edit&amp;".SID."'>Add Record</a></td>\n"; 
+      } else {
+         echo "<td align='center'><a href='$PHP_SELF?add=Add&amp;tablename=$tableinfo->name&amp;".SID."' target='_blank'>Add Record</a></td>\n"; 
+      }
+   } else {
        echo "<td>&nbsp;</td>\n";
+   }
    echo "<td align='center'>$tabletext <B>$tableinfo->label</B> $modetext</td>";
    echo "<td align='center'>".viewmenu($db,$tableinfo,$viewid,false)."</td>\n";
    echo "<td align='center'><a href='import.php?tableid={$tableinfo->id}'>Import Data</a></td>\n";
