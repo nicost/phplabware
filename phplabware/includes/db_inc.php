@@ -475,7 +475,7 @@ function may_read_SQL_subselect ($db,$table,$tableid,$USER,$clause=false) {
 // helper function for may_read_SQL
 function make_SQL_ids ($r,$ids,$field="id") {
    if (!$r || $r->EOF)
-      return false;
+      return substr ($ids,0,-1);
    $id=$r->fields[$field];
    $ids .="'$id'";
    $r->MoveNext();
@@ -502,24 +502,24 @@ function may_read_SQL_JOIN ($db,$table,$USER) {
       $group_list=$USER["group_list"];
       $userid=$USER["id"];
       $query .= " WHERE ";
-      // owner
+      // owner and everyone
       $query .= "( (ownerid=$userid AND SUBSTRING(access FROM 1 FOR 1)='r') ";
       $query .= "OR (SUBSTRING(access FROM 7 FOR 1)='r')";
       $query .=")";
-      $r=$db->Execute($query);
+      $r=$db->CacheExecute(2,$query);
       if ($r) {
          $ids=make_SQL_ids($r,$ids);
       }
       // group
       $query="SELECT $table.id FROM $table LEFT JOIN users ON $table.ownerid=users.id WHERE users.groupid IN ($group_list) AND (SUBSTRING($table.access FROM 4 FOR 1)='r')";
-      $r=$db->Execute($query);
+      $r=$db->CacheExecute(2,$query);
    }
    else {     // superuser
       $query="SELECT id FROM $table ";
-      $r=$db->Execute($query);
+      $r=$db->CacheExecute(2,$query);
    }
    if ($ids)
-      $ids=$ids.",";
+      $ids.=",";
    if ($r)
       return make_SQL_ids($r,$ids);
 }
