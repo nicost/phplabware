@@ -24,11 +24,11 @@ $title = "Admin Users";
 require("include.php");
 
 // register variables
-$get_vars = "modify,id,";
+//$get_vars = "modify,id,";
 $post_vars = "email,id,firstname,lastname,login,modify,perms,pwd,pwdcheck,user_group,";
 $post_vars .= "create,user_add,";
 
-globalize_vars ($get_vars, "HTTP_GET_VARS");
+//globalize_vars ($get_vars, "HTTP_GET_VARS");
 globalize_vars ($post_vars, "HTTP_POST_VARS");
 
 
@@ -38,22 +38,22 @@ function check_input () {
    global $lastname, $login, $pwd, $user_group, $pwdcheck, $type, $PWD_MINIMUM;
    if ($lastname and $login and $user_group) {
       if ($pwd != $pwdcheck) {
-         echo "Passwords do not match! <br> Please try again.";
+         echo "<h5 align='center'>Passwords do not match! <br> Please try again.</h5>";
          return false;
       }
       elseif ($pwd && (strlen($pwd)<$PWD_MINIMUM) ) {
-         echo "The password should be at least $PWD_MINIMUM characters long.";
+         echo "<h5 align='center'>The password should be at least $PWD_MINIMUM characters long.</h5>";
          return false;
       }
       elseif ($type=="create"&& !$pwd) {
-         echo "Please provide a password.";
+         echo "<h5 align='center'>Please provide a password.</h5>";
          return false;
       } 
       else
          return true;
    }
    else
-      echo "<h5>Some input is lacking!</h5>\n";
+      echo "<h5 align='center'>Some input is lacking!</h5>\n";
    return false;
 }
 
@@ -221,7 +221,7 @@ function show_user_form ($type) {
    echo "<tr><td>Password (max. 20 characters):</td><td><input type='password' name='pwd' maxlength=20 size=10 value=''>";
    if ($type=="create")
       echo "<sup style='color:red'>&nbsp(required)</sup></td></tr>\n";
-   echo "<tr><td>Password reType(max. 10 characters):</td><td><input type='password' name='pwdcheck' maxlength=10 size=10 value=''>";
+   echo "<tr><td>Password reType(max. 20 characters):</td><td><input type='password' name='pwdcheck' maxlength=20 size=10 value=''>";
    if ($type=="create")
       echo "<sup style='color:red'>&nbsp(required)</sup></td></tr>\n";
 
