@@ -85,7 +85,7 @@ function modify ($db,$table,$fields,$fieldvalues,$id,$USER) {
    if (!may_write($db,$table,$id,$USER))
       return false;
    $query=" UPDATE $table SET ";
-   $column=strtok($fields,",");
+     $column=strtok($fields,",");
    while ($column) {
       if (! ($column=="id" || $column=="date" || $column=="ownerid" || $column=="access")) {
          $test=true;
@@ -105,8 +105,8 @@ function modify ($db,$table,$fields,$fieldvalues,$id,$USER) {
 
 ////
 // !Deletes the entry with id=$id
-// Returns true on succes, false on failurei
-// Checks whether this is allowed
+// Returns true on succes, false on failure
+// Checks whether the delete is allowed
 // This is very generic, it is likely that you will need to do more cleanup
 function delete ($db, $table, $id, $USER) {
    if (!may_write($db,$table,$id,$USER))
@@ -233,12 +233,13 @@ function add_ab_form ($db,$fields,$field_values,$id,$USER) {
       echo "<tr><td colspan=7 align='center'><h3>New Antibody</h3></td></tr>\n";
    echo "<tr align='center'>\n";
    echo "<td colspan=2></td>\n";
-   echo "<th>Primary/Secund.</th>\n<th>Label</th>\n<th>Mono-/Polyclonal</th>\n";
+   echo "<th>Primary/Second.</th>\n<th>Label</th>\n<th>Mono-/Polyclonal</th>\n";
    echo "<th>Host</th>\n<th>Class</th>\n";
    echo "</tr>\n";
    echo "<tr>\n";
    echo "<th>Name: <sup style='color:red'>&nbsp;*</sup></th>\n";
    echo "<td><input type='text' name='name' value='$name'></td>\n";
+
    $r=$db->Execute("SELECT type,id FROM ab_type1");
    $text=$r->GetMenu2("type1",$type1,false);
    echo "<td>$text</td>\n";
@@ -316,7 +317,7 @@ function show_ab ($db,$fields,$id,$USER,$settings) {
    echo "<table border=0 align='center'>\n";
    echo "<tr align='center'>\n";
    echo "<td colspan=2></td>\n";
-   echo "<th>Primary/Secund.</th>\n<th>Label</th>\n<th>Mono-/Polyclonal</th>\n";
+   echo "<th>Primary/Second.</th>\n<th>Label</th>\n<th>Mono-/Polyclonal</th>\n";
    echo "<th>Host</th>\n<th>Class</th>\n";
    echo "</tr>\n";
    echo "<tr>\n";
@@ -372,7 +373,7 @@ function show_ab ($db,$fields,$id,$USER,$settings) {
    else {
       echo "<th>Author: </th><td>".$r->fields["firstname"]." ";
       echo $r->fields["lastname"] ."</td>\n";
-   }
+    }
    echo "<td>&nbsp;</td>";
    $dateformat=get_cell($db,"dateformats","dateformat","id",$settings["dateformat"]);
    $date=date($dateformat,$date);
@@ -455,15 +456,52 @@ else {
       }
    } 
 
+   // print table with search results
+
    echo "</caption>\n";
    // print form needed for 'delete' buttons
    echo "<form name='form' method='post' action='$PHP_SELF'>\n";  
+
+   $column=strtok($fields,",");
+   while ($column) {
+      ${$column}=$HTTP_POST_VARS[$column];
+      $column=strtok(",");
+   }
+
+   // row with search form
+   echo "<tr align='center'>\n";
+   echo "<td><input type='text' name='name' value='$name' size=8></td>\n";
+   echo "<td><input type='text' name='antigen' value='$antigen' size=8></td>\n";
+   echo "<td><input type='text' name='concentration' value='$concentration' size=4></td>\n";
+   $r=$db->Execute("SELECT type,id FROM ab_type1");
+   $text=$r->GetMenu2("type1",$type1,true);
+   echo "<td>$text</td>\n";
+
+   $r=$db->Execute("SELECT type,id FROM ab_type5 ORDER BY sortkey");
+   $text=$r->GetMenu2("type5",$type5,true);
+   echo "<td>$text</td>\n";
+
+   $r=$db->Execute("SELECT type,id FROM ab_type2");
+   $text=$r->GetMenu2("type2",$type2,true);
+   echo "<td>$text</td>\n";
+
+   $r=$db->Execute("SELECT type,id FROM ab_type3");
+   $text=$r->GetMenu2("type3",$type3,true);
+   echo "<td>$text</td>\n";
+
+   $r=$db->Execute("SELECT type,id FROM ab_type4 ORDER BY sortkey");
+   $text=$r->GetMenu2("type4",$type4,true);
+   echo "<td>$text</td>\n";
+
+   echo "<td><input type='text' name='location' value='$location' size=8></td>\n";
+   echo "<td><input type=\"submit\" name=\"search\" value=\"Search\"></td>";
+   echo "</tr>\n";
 
    echo "<tr>\n";
    echo "<th>Name</th>";
    echo "<th>Antigen</th>\n";
    echo "<th>mg/ml</th>\n";
-   echo "<th>Primary/Secundary</th>\n";
+   echo "<th>Primary/Secondary</th>\n";
    echo "<th>Label</th>\n";
    echo "<th>Mono-/Polyclonal</th>\n";
    echo "<th>Host</th>\n";
@@ -476,6 +514,7 @@ else {
    $whereclause=may_read_SQL ($db,"antibodies",$USER);
    $query = "SELECT $fields FROM antibodies WHERE id IN ($whereclause) ORDER BY date DESC";
    $r=$db->Execute($query);
+   $rownr=1;
    // print all entries
    while (!($r->EOF)) {
  
@@ -490,13 +529,15 @@ else {
       $antigen = $r->fields["antigen"];
       $concentration = $r->fields["concentration"];
       $location = $r->fields["location"];
-      
+ 
+ 
       // print start of row of selected group
-      echo "<tr align='center'>\n";
-// DEAL WITH SID HERE
-?>
-<td><a href="antibodies.php?view=true&id=<?php echo $id;?>&<?=SID?>"><?php echo $name;?></td>
-<?php
+      if ($rownr % 2)
+         echo "<tr class='row_odd' align='center'>\n";
+      else
+         echo "<tr class='row_even' align='center'>\n";
+
+      echo "<td>$name</td>\n";
       echo "<td>$antigen&nbsp;</td>\n";
       echo "<td>$concentration&nbsp;</td>\n";
       echo "<td>$at1</td>\n";
@@ -519,6 +560,7 @@ else {
       echo "</tr>\n";
    
       $r->MoveNext();
+      $rownr+=1;
    }
 
    // print footer of table
