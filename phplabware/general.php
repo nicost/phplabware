@@ -44,7 +44,7 @@ if (!$id) {
    exit();
 }
 $real_tablename=$id."_$tablename";
-$table_desname=$real_tablename.="_desc";
+$table_desname=$real_tablename."_desc";
 
 // check if something should be modified, deleted or shown
 while((list($key, $val) = each($HTTP_POST_VARS))) {	
@@ -52,7 +52,7 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
    if (substr($key, 0, 3) == "mod") {
       $modarray = explode("_", $key);
       $r=$db->Execute("SELECT $fields FROM $real_tablename WHERE id=$modarray[1]"); 
-      add_g_form($db,$fields,$r->fields,$modarray[1],$USER,$PHP_SELF,$system_settings,$table_desname);
+      add_g_form($db,$fields,$r->fields,$modarray[1],$USER,$PHP_SELF,$system_settings,$real_tablename,$table_desname);
       printfooter();
       exit();
    }
@@ -65,7 +65,7 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
          echo "<h3 align='center'>Deleted file <i>$filename</i>.</h3>\n";
       else
          echo "<h3 align='center'>Failed to delete file <i>$filename</i>.</h3>\n";
-      add_g_form ($db,$fields,$HTTP_POST_VARS,$id,$USER,$PHP_SELF,$system_settings,$table_desname);
+      add_g_form ($db,$fields,$HTTP_POST_VARS,$id,$USER,$PHP_SELF,$system_settings,$real_tablename,$table_desname);
       printfooter();
       exit();
    }
@@ -125,17 +125,17 @@ if ($showid) {
 
 // when the create new table has been chosen
 if ($createnew){create_new_table($db);}
-
+echo "$real_tablename.<br>";
 // when the 'Add' button has been chosen: 
-if ($add)
-	{add_g_form($db,$fields,$field_values,0,$USER,$PHP_SELF,$system_settings,$table_desname);}
+if ($add) 
+   add_g_form($db,$fields,$field_values,0,$USER,$PHP_SELF,$system_settings,$real_tablename,$table_desname);
 else { 
     // first handle addition of a new record
    if ($submit == "Add Record") 
    	{
       if (!(check_g_data($db, $HTTP_POST_VARS, $table_desname) && $id=add($db,$real_tablename,$fields,$HTTP_POST_VARS,$USER) ) )
       	{
-         add_g_form($db,$fields,$HTTP_POST_VARS,0,$USER,$PHP_SELF,$system_settings,$table_desname);
+         add_g_form($db,$fields,$HTTP_POST_VARS,0,$USER,$PHP_SELF,$system_settings,$real_tablename,$table_desname);
          printfooter ();
          exit;
       }
@@ -152,7 +152,7 @@ else {
    // then look whether it should be modified
    elseif ($submit=="Modify Record") {
       if (! (check_g_data($db,$HTTP_POST_VARS) && modify($db,$real_tablename,$fields,$HTTP_POST_VARS,$HTTP_POST_VARS["id"],$USER)) ) {
-         add_g_form ($db,$fields,$HTTP_POST_VARS,$HTTP_POST_VARS["id"],$USER,$PHP_SELF,$system_settings,$table_desname);
+         add_g_form ($db,$fields,$HTTP_POST_VARS,$HTTP_POST_VARS["id"],$USER,$PHP_SELF,$system_settings,$real_tablename,$table_desname);
          printfooter ();
          exit;
       }
