@@ -433,11 +433,56 @@ function mod_report($db,$offset) {
 ////
 // !Deletes an entry for a report
 function rm_report($db,$offset) {
-   global $HTTP_POST_VARS,$HTTP_GET_VARS,$system_settings;
+   global $HTTP_POST_VARS,$system_settings;
 
    $id=$HTTP_POST_VARS["report_id"][$offset];
    $r=$db->Execute("DELETE FROM reports WHERE id=$id");
    @unlink ($system_settings["templatedir"]."/$id.tpl");
+}
+
+/////////////////////////////////////////////////////////////////////////
+////
+// !Deletes an entry for a report
+function test_report($db,$offset,$tablename) {
+   global $HTTP_POST_VARS,$HTTP_GET_VARS,$system_settings;
+   $HTTP_GET_VARS["tablename"]=$tablename;
+
+   $tableinfo=new tableinfo($db);
+   $real_tablename=get_cell($db,"tableoftables","real_tablename","tablename",$tablename);
+   $reportid=$HTTP_POST_VARS["report_id"][$offset];
+   $r=$db->Execute("SELECT * FROM $real_tablename");
+
+   $fields=comma_array_SQL($db,$tableinfo->desname,"columnname");
+   $Allfields=getvalues($db,$tableinfo,$fields,"id",$r->fields["id"]);
+
+   $tp=@fopen($system_settings["templatedir"]."/$reportid.tpl","r");
+   if ($tp) {
+      while (!feof($tp))
+         $template.=fgets($tp);
+      fclose($tp);
+   }
+   require("includes/report_inc.php");
+   $report=make_report($template,$Allfields);
+   return $report;
+   
+}
+/////////////////////////////////////////////////////////////////////////
+////
+// ! Streams a template back to the user
+function export_report($db,$offset) {
+   global $HTTP_POST_VARS,$system_settings;
+
+   $templatedir=$system_settings["templatedir"];
+   $id=$HTTP_POST_VARS["report_id"][$offset];
+   if (is_readable("$templatedir/$id.tpl")) {
+      header("Accept-Ranges: bytes");
+      header("Connection: close");
+      header("Content-Type: text/txt");
+      //   header("Content-Length: $filesize");
+      header("Content-Disposition-type: attachment");
+      header("Content-Disposition: attachment; filename=$filename");
+      readfile("$templatedir/$id.tpl");   
+   }
 }
 
 /////////////////////////////////////////////////////////////////////////
