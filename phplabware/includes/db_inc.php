@@ -24,6 +24,7 @@
 // Fields named 'date' are automatically filled with a Unix timestamp
 function add ($db,$table,$fields,$fieldvalues,$USER,$tableid) {
    if (!may_write($db,$tableid,false,$USER)) {
+echo "$tableid.";
       echo "<h3>You are not allowed to do this.<br>";
       return false;
    }
@@ -61,6 +62,14 @@ function add ($db,$table,$fields,$fieldvalues,$USER,$tableid) {
          }
 	 $column=strtok(",");
       }
+      // add trusted users entered on the form
+      if (is_array($fieldvalues["trust_read"]))
+         foreach ($fieldvalues["trust_read"] as $userid)
+            $db->Execute("INSERT INTO trust VALUES ('$tableid','$id','$userid','r')");
+      if (is_array($fieldvalues["trust_write"]))
+         foreach ($fieldvalues["trust_write"] as $userid)
+            $db->Execute("INSERT INTO trust VALUES ('$tableid','$id','$userid','w')");
+
       $query="INSERT INTO $table ($columns) VALUES ($values)";
       if ($db->Execute($query))
          return $id;
@@ -282,9 +291,9 @@ function user_array ($db) {
 // !Prints a table with access rights
 // input is string as 'rw-rw-rw-'
 // names are same as used in get_access
-function show_access ($db,$tableid,$id,$USER,$global_settings,$table=false) {
+function show_access ($db,$tableid,$id,$USER,$global_settings) {
    global $client;
-   $table=get_cell($db,"tableoftables","tablename","id",$tableid);
+   $table=get_cell($db,"tableoftables","real_tablename","id",$tableid);
    if ($id) {
       $access=get_cell($db,$table,"access","id",$id);
       $ownerid=get_cell($db,$table,"ownerid","id",$id);
@@ -318,13 +327,13 @@ function show_access ($db,$tableid,$id,$USER,$global_settings,$table=false) {
       $size=2;
    else
        $size=1;
-   echo "<td><select multiple size='$size' name='trust_read[]'>\n";
+   echo "<td>\n<select multiple size='$size' name='trust_read[]'>\n";
    echo "<option>nobody else</option>\n";
    foreach ($user_array as $user) {
      if (@in_array($user["id"],$ur))
          $selected="selected";
       else
-         $selected="false";
+         $selected=false;
      echo "<option $selected value=".$user["id"].">".$user["name"]."</option>\n";
    }
    echo "</select></td>\n";
@@ -334,13 +343,13 @@ function show_access ($db,$tableid,$id,$USER,$global_settings,$table=false) {
    echo "<td><input type='checkbox' $sel name='grw' value='&nbsp;'></td>\n";
    if (substr($access,7,1)=="w") $sel="checked"; else $sel=false;
    echo "<td><input type='checkbox' $sel name='evw' value='&nbsp;'></td>\n";
-   echo "<td><select multiple size='$size' name='trust_write[]'>\n";
+   echo "<td>\n<select multiple size='$size' name='trust_write[]'>\n";
    echo "<option>nobody else</option>\n";
    foreach ($user_array as $user) {
      if (@in_array($user["id"],$uw))
          $selected="selected";
       else
-         $selected="false";
+         $selected=false;
       echo "<option $selected value=".$user["id"].">".$user["name"]."</option>\n";
    }
    echo "</select></td>\n";
