@@ -196,7 +196,7 @@ function display_table_info($db,$tableid,$DB_DESNAME,$Fieldscomma,$pr_query,$num
 
       echo "<td align='center'>&nbsp;\n";  
       if ($HTTP_SESSION_VARS["javascript_enabled"]) {
-         $jscript=" onclick='open (\"general.php?tablename=$tablename&showid=$id&jsnewwindow=true\",\"view\",\"scrollbars,resizable\")'";
+         $jscript=" onclick='MyWindow=window.open (\"general.php?tablename=$tablename&showid=$id&jsnewwindow=true\",\"view\",\"scrollbars,resizable\")'";
          echo "<input type=\"button\" name=\"view_" . $id . "\" value=\"View\" $jscript>\n";
       }
       else
