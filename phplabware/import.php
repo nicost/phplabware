@@ -90,6 +90,28 @@ function check_input ($fields, $field_types, $nrfields)
    return $fields;
 }
           
+////
+// !in quoted lines, empty fields are (sometimes) not quoted
+// we try to deal nicely with those here
+function check_line(&$line,$quote,$delimiter) {
+   if ($quote) {
+      // delimiters without quotes can be a problem, so add quotes to them
+      $newlength=1;$length=0;
+      while ($newlength!=$length) {
+         $length=strlen($line);
+         $line=str_replace($quote.$delimiter.$delimiter,$quote.$delimiter.$quote.$quote.$delimiter,$line);
+         $newlength=strlen($line);
+      }
+      $newlength=1;$length=0;
+      while ($newlength!=$length) {
+         $length=strlen($line);
+         $line=str_replace($delimiter.$delimiter.$quote,$delimiter.$quote.$quote.$delimiter.$quote,$line);
+         $newlength=strlen($line);
+      }
+      $line=substr($line,1,-1);
+   }
+}
+
 
 // do the final parsing (part 3)
 if ($HTTP_POST_VARS["assign"]=="Import Data") {
@@ -154,9 +176,8 @@ if ($HTTP_POST_VARS["assign"]=="Import Data") {
             $line=chop(fgets($fh,1000000));
          // fgets should not need second parameter, but my php version does...
          while ($line=chop(fgets($fh,1000000))) {
-            if ($quote) {
-               $line=substr($line,1,-1);
-            }
+            check_line($line,$quote,$delimiter);
+            
             $fields=check_input (explode($quote.$delimiter.$quote,$line),$to_types,$nrfields);
             $worthit=false;
             unset($recordid);
@@ -293,13 +314,15 @@ if ($HTTP_POST_VARS["dataupload"]=="Continue") {
          if ($fh) {
             $firstline=chop(fgets($fh,1000000));
             // if quoted delete first and last char
-            if ($quote) {
-               $firstline=substr($firstline,1,-1);
-            }
+            // if ($quote) {
+            //   $firstline=substr($firstline,1,-1);
+           // }
+            check_line($firstline,$quote,$delimiter);
             $fields=explode($quote.$delimiter.$quote,$firstline);
             $secondline=chop(fgets($fh,1000000));
             if ($quote) {
-               $secondline=substr($secondline,1,-1);
+               check_line($secondline,$quote,$delimiter);
+               //$secondline=substr($secondline,1,-1);
             }
             $fields2=explode($quote.$delimiter.$quote,$secondline);
             $nrfields=sizeof($fields);
@@ -317,7 +340,7 @@ if ($HTTP_POST_VARS["dataupload"]=="Continue") {
          echo "<input type='hidden' name='delimiter' value='$delimiter'>\n";
          echo "<input type='hidden' name='quote_type' value='$quote_type'>\n";
          echo "<input type='hidden' name='ownerid' value='$ownerid'>\n";
-         echo "<table align='center'><tr>\n";
+         echo "<table align='center'>\n<tr>\n";
          echo "<th>First line:</th>\n";
          for($i=0;$i<$nrfields;$i++)
             echo "   <td align='center'>$fields[$i]</td>\n";
@@ -342,7 +365,7 @@ if ($HTTP_POST_VARS["dataupload"]=="Continue") {
          $colspan=$nrfields+2;
          echo "</table>\n";
 
-         echo "<table align='left'>\n";
+         echo "<br><table align='center'>\n";
 
          echo "<tr><th>Update/Overwrite policy</th>\n";
          echo "<td colspan=3><input type='radio' name='pkeypolicy' value='overwrite'> Overwrite when primary key matches, otherwise add the new record</input><br>\n";
@@ -356,7 +379,7 @@ if ($HTTP_POST_VARS["dataupload"]=="Continue") {
         // echo "<br><br>\n<table align='center>\n";
 	 
          echo "<tr><td colspan=5 align='center'><input type='submit' name='assign' value='Import Data'></input></td></tr>\n";
-         echo "</table>\n</form>";
+         echo "</table>\n</form>\n<br>\n";
 
       }
       else {
