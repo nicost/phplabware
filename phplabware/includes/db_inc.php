@@ -16,6 +16,17 @@
   *  option) any later version.                                              *
   \**************************************************************************/       
 
+if (!function_exists("array_key_exists")) {
+   function array_key_exists($find,$array){
+      while ((list($key,$value)=each($array)) && !$test) {
+         if ($key==$find)
+            $test=true;
+      }
+      return $test;
+   }
+}
+
+
 ////
 // !Inserts $fields with $fieldvalues into $table
 // Returns the id of inserted record on succes, false otherwise.
@@ -701,6 +712,8 @@ function current_page($curr_page, $sname) {
 function make_search_SQL($db,$table,$tableshort,$tableid,$fields,$USER,$search,$searchsort="title") {
    global $HTTP_POST_VARS, $HTTP_SESSION_VARS;
 
+   if (!$searchsort)
+      $searchsort="title";
    $fieldvarsname=$tableshort."_fieldvars";
    global ${$fieldvarsname};
    $queryname=$tableshort."_query";
