@@ -17,6 +17,7 @@ include ("includes/functions_inc.php");
 include ("includes/init_inc.php");
 include ("includes/db_inc.php");
 
+$db->debug=true;
 ////
 // !Writes the index files needed for full text searches of files
 function doindexfile ($db,$filetext,$fileid,$indextable,$recordid,$pagenr)
@@ -56,7 +57,7 @@ if (! ($host=="localhost" ||$host=="127.0.0.1") ) {
 }
 
 // find unindexed files with mime types we can work with
-$rfiles=$db->Execute("SELECT id,filename,tablesfk,ftableid,mime,ftablecolumnid FROM files WHERE indexed=NULL AND (mime LIKE '%text%' OR mime LIKE '%pdf%')");
+$rfiles=$db->Execute("SELECT id,filename,tablesfk,ftableid,mime,ftablecolumnid FROM files WHERE indexed IS NULL AND (mime LIKE '%text%' OR mime LIKE '%pdf%')");
 
 while ($rfiles && !($rfiles->EOF)) {
 
