@@ -199,8 +199,8 @@ function display_table_change($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr
    // print all entries
    while (!($r->EOF) && $r && $current_record < $last_record)  {
       // Get required ID and title
-      $id=$r->fields["id"];
-      $title=$r->fields["title"];		
+      $id=$r->fields['id'];
+      $title=$r->fields['title'];		
       $Allfields=getvalues($db,$tableinfo,$Fieldscomma,id,$id);
       $may_write=may_write($db,$tableinfo->id,$id,$USER);
 
@@ -210,7 +210,7 @@ function display_table_change($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr
       echo "<input type='hidden' name='chgj_".$id."' value=''>\n";
       $js="onChange='document.g_form.chgj_".$id.".value=\"Change\";document.g_form.submit()'";
       foreach($Allfields as $nowfield) {
-         if ($nowfield[required]=='Y')
+         if ($nowfield['required']=='Y')
             $thestar="<sup style='color:red'>&nbsp;*</sup>";
          else
             $thestar=false;
@@ -228,7 +228,7 @@ function display_table_change($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr
      	    echo "<td><input type='text' name='$nowfield[name]_$id' value='$nowfield[values]' size=8 $js>$thestar</td>\n";
          }
          elseif ($nowfield['datatype']=='textlong') {
-     	    echo "<td><input type='text' name='$nowfield[name]_$id' value='$nowfield[values]' size=15>$thestar</td>\n"; 
+     	    echo "<td><textarea name='$nowfield[name]_$id' cols=45 rows=3>$thestar{$nowfield['values']}</textarea></td>\n"; 
          }
          elseif ($nowfield['datatype']=='link') {
             echo "<td><input type='text' name='$nowfield[name]_$id' value='$nowfield[values]' size=15>$thestar</td>\n";
