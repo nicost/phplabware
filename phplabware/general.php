@@ -15,10 +15,20 @@
 
 /// main include thingies
 require("include.php");
+class tableinfo {
+   var $short;
+   var $real_name;
+   var $label;
+   var $desname;
+   var $queryname;
+   var $pagename;
+   var $id;
+}
+$tableinfo=new tableinfo;
 
 // find id associated with table
 $r=$db->Execute("SELECT id,shortname,tablename,real_tablename,table_desc_name,label FROM tableoftables WHERE tablename='$HTTP_GET_VARS[tablename]'");
-$tableid=$r->fields["id"];
+$tableinfo->id=$tableid=$r->fields["id"];
 if (!$tableid) {
    printheader($httptitle);
    navbar($USER["permissions"]);
@@ -26,12 +36,12 @@ if (!$tableid) {
    printfooter();
    exit();
 }
-$tableshort=$r->fields["shortname"];
-$real_tablename=$r->fields["real_tablename"];
-$tablelabel=$r->fields["label"];
-$table_desname=$r->fields["table_desc_name"];
-$queryname=$tableshort."_query";
-$pagename=$tableshort."_curr_page";
+$tableinfo->short=$tableshort=$r->fields["shortname"];
+$tableinfo->real_name=$real_tablename=$r->fields["real_tablename"];
+$tableinfo->label=$tablelabel=$r->fields["label"];
+$tableino->desname=$table_desname=$r->fields["table_desc_name"];
+$tableinfo->queryname=$queryname=$tableshort."_query";
+$tableinfo->pagename=$pagename=$tableshort."_curr_page";
 
 require("includes/db_inc.php");
 require("includes/general_inc.php");
@@ -214,11 +224,13 @@ else {
       else {  
          // $id ==-1 when the record was already uploaded
          if ($id>0) {
-            $rb=$db->Execute("SELECT id,columnname FROM $table_desname WHERE datatype='file'");
+            $rb=$db->Execute("SELECT id,columnname,associated_table FROM $table_desname WHERE datatype='file'");
             while (!$rb->EOF) {
        	       $fileid=upload_files($db,$tableid,$id,$rb->fields["id"],$rb->fields["columnname"],$USER,$system_settings);
-               // insert stuff to deal with word/html files
-               process_file($db,$fileid,$system_settings); 
+               // try to convert word files into html files
+               $htmlfileid=process_file($db,$fileid,$system_settings); 
+               // and try to index the uploaded file
+               indexfile($db,$tableinfo,$rb->fields["associated_table"],$id,$fileid,$htmlfileid);
                $rb->MoveNext(); 
             }
             // call plugin code to do something with newly added data
@@ -244,8 +256,11 @@ else {
             if ($HTTP_POST_FILES[$rc->fields["columnname"]]["name"][0]) {
                // delete all existing files
                delete_column_file ($db,$tableid,$rc->fields["id"],$HTTP_POST_VARS["id"],$USER);
+               // store the file uploaded by the user
                $fileid=upload_files($db,$tableid,$HTTP_POST_VARS["id"],$rc->fields["id"],$rc->fields["columnname"],$USER,$system_settings);
-               process_file($db,$fileid,$system_settings);
+               // try to convert it to an html file
+               $htmlfileid=process_file($db,$fileid,$system_settings);
+               // and index the file content
             }
             $rc->MoveNext(); 
          }
