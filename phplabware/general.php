@@ -51,7 +51,7 @@ globalize_vars($get_vars, $HTTP_GET_VARS);
 $post_vars = "add,md,edit_type,submit,search,searchj,serialsortdirarray";
 globalize_vars($post_vars, $HTTP_POST_VARS);
 
-$httptitle .=$tablename;
+$httptitle .=$tablelabel;
 
 // this shows a record entry in a new window, called through javascript
 if ($jsnewwindow && $showid && $tablename) {
