@@ -115,9 +115,12 @@ function display_table_change($db,$tableid,$DB_DESNAME,$Fieldscomma,$pr_query,$n
          elseif ($nowfield[datatype]=="table") {
             // only display primary key here
             if (!$nowfield["ass_local_key"]) { 
+               $text=false;
                // get previous value	
-               $rt=$db->Execute("SELECT $nowfield[ass_column_name],id FROM $nowfield[ass_table_name]");
-               $text=$rt->GetMenu2("$nowfield[name]_$id",$nowfield[values],true,false,0,$js);
+               if ($nowfield[ass_column_name] && $nowfield[ass_table_name]) { 
+                  $rt=$db->Execute("SELECT $nowfield[ass_column_name],id FROM $nowfield[ass_table_name]");
+                  $text=$rt->GetMenu2("$nowfield[name]_$id",$nowfield[values],true,false,0,$js);
+               }
                echo "<td>$text $thestar</td>\n";
             }
             else
