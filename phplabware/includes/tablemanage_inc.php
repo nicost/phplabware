@@ -339,7 +339,7 @@ function add_columnecg($db,$tablename2,$colname2,$label,$datatype,$Rdis,$Tdis,$r
 	    $string="Problems creating this column.";
       }
       else {
-         if ($datatype=="int" || $datatype=="sequence")
+         if ($datatype=="int" || $datatype=="sequence" || $datatype="date")
             $sqltype="int";
          elseif ($datatype=="float")
             $sqltype="float";
@@ -489,13 +489,14 @@ function export_report($db,$offset) {
 ////
 // ! Adds a new entry for a report
 function add_report($db) {
-   global $HTTP_POST_VARS,$HTTP_GET_VARS;
+   global $HTTP_POST_VARS,$HTTP_POST_FILES,$HTTP_GET_VARS,$system_settings;
 
    $id=$db->GenID("reports"."_gen_id_seq");
    $tablename=$HTTP_GET_VARS["editreport"];
    $r=$db->Execute("SELECT id FROM tableoftables WHERE tablename='$tablename'");
    $tableid=$r->fields["id"];
    $label=$HTTP_POST_VARS["addrep_label"];
+   $templatedir=$system_settings["templatedir"];
    $sortkey=$HTTP_POST_VARS["addrep_sortkey"];
    $sortkey=(int)$sortkey;
    if (!$sortkey)
@@ -505,14 +506,12 @@ function add_report($db) {
    if (!$label) {
       return "<h3 align='center'>Please provide a template name!</h3>\n";
    }
-
-   $fileuploaded=move_uploaded_file($HTTP_POST_FILES["addrep_template"]["tmp_name"][$offset],"$templatedir/$id.tpl");
+   $fileuploaded=move_uploaded_file($HTTP_POST_FILES["addrep_template"]["tmp_name"],"$templatedir/$id.tpl");
    if ($fileuploaded) 
-      $filesize=$HTTP_POST_FILES["addrep_template"]["size"][$offset];
+      $filesize=$HTTP_POST_FILES["addrep_template"]["size"];
    if (!$filesize)
       $filesize="NULL";
    $db->Execute("INSERT INTO reports (id,label,tableid,sortkey,filesize) VALUES ($id,'$label',$tableid,$sortkey,$filesize)");
-$db->debug=false;
 
 }
 
