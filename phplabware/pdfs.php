@@ -71,6 +71,14 @@ function check_pd_data ($db,&$field_values) {
       //echo "$jstart,$jend,$journal,$date,$year,$volume,$fpage,$lpage1,$lpage.<br>";
       $field_values["fpage"]=$fpage;
       $field_values["lpage"]=$lpage;
+      // there can be a line 2 with 'Comment in:' put in notes and delete
+      // ugly shuffle to get everything right again
+      if (substr($line[2],0,11)=="Comment in:") {
+         $field_values["notes"]=$line[2].$field_values["notes"];
+	 $line[2]=$line[3];
+	 $line[3]=$line[4];
+	 $line[5]=$line[6];
+      }
       $field_values["title"]=$line[2];
       $field_values["author"]=$line[3];
       // check whether there is an abstract
@@ -456,26 +464,26 @@ else {
    echo "<table border=0 width='50%' align='center'>\n<tr>\n";
    if (may_write($db,"pdfs",false,$USER)) 
       echo "<td align='center'><a href='$PHP_SELF?add=Add PDF$sid'>Add PDF</a></td>\n";
-   echo "<td align='center'><a href='$PHP_SELF?search=Show%20All$sid'>Show All</a></td>\n</tr>\n";
+   //echo "<td align='center'><a href='$PHP_SELF?search=Show%20All$sid'>Show All</a></td>\n</tr>\n";
    //echo "<td align='center'><button type='submit' name='search' value='Show All'>";
    //echo "Show All</button></td></tr>\n";
    echo "</table>\n";
 
    // next/previous buttons
    echo "<table border=0 align=center width=100%>\n";
-   echo "<tr><td colspan=1 align='center'>";
+   echo "<tr><td align='left'>";
    if ($r && !$r->AtFirstPage())
       echo "<input type=\"submit\" name=\"previous\" value=\"Previous\"></td>\n";
    else
-      echo "&nbsp;</td>\n";
+      echo "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp&nbsp;</td>\n";
    echo "<td align='center'>";
    echo "<input type='text' name='num_p_r' value='$num_p_r' size=3>";
    echo "Records per page</td>\n";
-   echo "<td colspan=1 align='center'>";
+   echo "<td align='right'>";
    if ($r && !$r->AtLastPage())
       echo "<input type=\"submit\" name=\"next\" value=\"Next\"></td>\n";
    else
-      echo "&nbsp;</td>\n";
+      echo "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp&nbsp;</td>\n";
    echo "</tr>\n";
    echo "</table>\n";
 
@@ -545,7 +553,10 @@ else {
 
    echo "<td>";
    echo "<input type=\"submit\" name=\"search\" value=\"Search\">&nbsp;\n";
-   echo "</tr>\n";
+   echo "<input type=\"submit\" name=\"search\" value=\"Show All\">&nbsp;\n";
+   //echo "<td align='center'><button type='submit' name='search' value='Show All'>";
+   //echo "Show All</button></td></tr>\n";
+   echo "</td></tr>\n";
 
    echo "<tr>\n";
    echo "<th>Title</th>";
