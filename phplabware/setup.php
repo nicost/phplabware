@@ -93,7 +93,7 @@ CREATE TABLE settings
 	settings text, 
 	created datetime)");
    if (!$result) $test=false;
-   $result=$db->Execute("INSERT INTO settings VALUES (1,$version_code,'',".$db->DBDate(time()).")");
+   $result=$db->Execute("INSERT INTO settings VALUES (1,0.001,'',".$db->DBDate(time()).")");
    if (!$result) $test=false;
    $result=$db->Execute("CREATE TABLE users 
 	(id int PRIMARY KEY, 
@@ -148,7 +148,7 @@ CREATE TABLE settings
       // $db->RollBackTrans();
    }
    else {
-      echo "<h3 align='center'>Succesfully created database tables!</h3>\n";
+      // echo "<h3 align='center'>Succesfully created database tables!</h3>\n";
       // $db->CommitTrans();
       $version=$version_code;
    }
@@ -207,11 +207,12 @@ if ($version) {
    // display form with current settings
    echo "<form enctype='multipart/form-data' method='post' ";
    echo "name='globals-form' action='$PHP_SELF'>\n";
-   echo "<table border=1 align='center'>\n";
+   echo "<table border=1 align='center' width='70%'>\n";
    echo "<tr><th>Description</th><th>Setting</th></tr>\n";
    echo "<tr><td colspan='2' align='center'><i>Login Options</i></th></tr>\n";
    echo "<tr><td>Is PhpLabWare accessible through a secure server? ";
-   echo "If so, passwords will be encrypted while in transit.</td>\n";
+   echo "If so, passwords will be encrypted while in transit.\n";
+   echo "Do <b>not</b> enter yes if you don't have a secure server.</td>\n";
    echo "<td>";
    if ($settings["secure_server"])
       echo "Yes <input type='radio' name='secure_server_new' checked value='Yes'>
