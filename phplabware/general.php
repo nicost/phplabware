@@ -418,7 +418,6 @@ else {
    // when search fails we'll revert to Show All after showing an error message
    if (!$r) {
       echo "<h3 align='center'>The server encountered an error executing your search.  Showing all records instead.</h3><br>\n";
-echo "${$queryname}.<br>";
       $num_p_r=$HTTP_POST_VARS['num_p_r'];
       unset ($HTTP_POST_VARS);
       ${$pagename}=1;
