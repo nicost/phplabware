@@ -601,14 +601,18 @@ function make_search_SQL($db,$table,$tableshort,$fields,$USER,$search,$searchsor
    global ${$fieldvarsname};
    $queryname=$tableshort."_query";
    $whereclause=may_read_SQL ($db,$table,$USER);
-   if ($search=="Search")
+   if ($search=="Search") {
       ${$queryname}=search($table,$fields,$HTTP_POST_VARS," id IN ($whereclause) ORDER BY $searchsort");
+      ${$fieldvarsname}=$HTTP_POST_VARS;
+   }
    elseif (session_is_registered ($queryname) && isset($HTTP_SESSION_VARS[$queryname])) {
       ${$queryname}=$HTTP_SESSION_VARS[$queryname];
       ${$fieldvarsname}=$HTTP_SESSION_VARS[$fieldvarsname];
    }
-   else
+   else {
       ${$queryname} = "SELECT $fields FROM $table WHERE id IN ($whereclause) ORDER BY date DESC";
+      ${$fieldvarsname}=$HTTP_POST_VARS;
+   }
    $HTTP_SESSION_VARS[$queryname]=${$queryname};   
    session_register($queryname);
    if (!${$fieldvarsname})
