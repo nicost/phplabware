@@ -232,10 +232,11 @@ else {
                $rb->MoveNext(); 
             }
             // upload images
-            $rc=$db->Execute("SELECT id,columnname,associated_table FROM ".$tableinfo->desname." WHERE datatype='image'");
+            $rc=$db->Execute("SELECT id,columnname,associated_table,thumb_x_size FROM ".$tableinfo->desname." WHERE datatype='image'");
             while (!$rc->EOF) {
        	       $imageid=upload_files($db,$tableinfo->id,$id,$rc->fields["id"],$rc->fields["columnname"],$USER,$system_settings);
                // make thumbnails and do image specific stuff 
+               process_image($db,$imageid,$rc->fields["thumb_x_size"]);
                $rc->MoveNext(); 
             }
             // call plugin code to do something with newly added data
@@ -257,7 +258,7 @@ else {
       }
       else { 
          // upload files and images
-         $rc=$db->Execute("SELECT id,columnname,datatype FROM $tableinfo->desname WHERE datatype='file' OR datatype='image'");
+         $rc=$db->Execute("SELECT id,columnname,datatype,thumb_x_size FROM $tableinfo->desname WHERE datatype='file' OR datatype='image'");
          while (!$rc->EOF) {
             if ($HTTP_POST_FILES[$rc->fields["columnname"]]["name"][0]) {
                // delete all existing files
@@ -270,6 +271,7 @@ else {
                }
                elseif ($rc->fields["datatype"]=="image"){
                   // make thumbnails and do image specific stuff
+                  process_image($db,$fileid,$rc->fields["thumb_x_size"]);
                }
             }
             $rc->MoveNext(); 
@@ -330,7 +332,7 @@ else {
       $num_p_r=$HTTP_POST_VARS["num_p_r"];
       unset ($HTTP_POST_VARS);
       ${$pagename}=1;
-      unset (${queryname});
+      unset (${$queryname});
       unset ($HTTP_SESSION_VARS[$queryname]);
       unset ($serialsortdirarray);
       session_unregister($queryname);
