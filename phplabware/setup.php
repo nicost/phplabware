@@ -13,14 +13,20 @@
   \**************************************************************************/                                                                             
 
 $version_code=0.001;
-
+$localdir=exec("pwd");
 include ('includes/functions_inc.php');
+if (!file_exists("includes/config_inc.php")) {
+   printheader("Not ready yet");
+   echo "<h3 align='center'>Please edit the file <i>$localdir/includes/config_inc.exp</i> and save it as <i>$localdir/includes/config_inc.php</i>.  Then come back to this page.</h3>";
+   printfooter();
+   exit();
+}
 include ('includes/config_inc.php');
+include ("includes/defines_inc.php");
 include ('adodb/adodb.inc.php');
 
 $post_vars="action,pwd,secure_server_new";
 globalize_vars($post_vars, $HTTP_POST_VARS);
-$PHP_SELF = $HTTP_SERVER_VARS["PHP_SELF"];
 
 // only allow connections from localhost
 
@@ -43,6 +49,7 @@ $version=get_cell($db, "settings", "version", "id", 1);
 
 if (! ($version || $pwd) ) {
    // This must be the first time, ask for a sysadmin password
+   printheader("Ready to install the database");
    echo "<form enctype='multipart/form-data' method='post' ";
    echo "action='$PHP_SELF'>\n";
    echo "<h3>After submitting the following form the phplabware database will ";
@@ -58,6 +65,7 @@ if (! ($version || $pwd) ) {
    echo "value='submit'></td>\n";
    echo "</tr>\n";
    echo "</table>\n";
+   printfooter();
 }
 
 if (!$version && $pwd) {
@@ -135,7 +143,6 @@ if (!$version && $pwd) {
 
 // $version is known, so we have a working database and must now authenticate
 if ($version) {
-   include ("includes/defines_inc.php");
    include ("includes/auth_inc.php");
    allowonly($SUPER, $USER["permissions"]);
    printheader("Settings");
