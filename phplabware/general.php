@@ -72,7 +72,8 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
    // show the record
    if (substr($key, 0, 4) == "view") {
       $modarray = explode("_", $key);
-      show_g($db,$fields,$modarray[1],$USER,$system_settings,$real_tablename,$table_desname);
+      echo "in view.<br>";
+      show_g($db,$fields,$modarray[1],$USER,$system_settings,$tablename,$real_tablename,$table_desname);
       printfooter();
       exit();
    }
@@ -98,9 +99,9 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
    }
    if (substr($key, 0, 6) == "dltype") {
       $modarray = explode("_", $key);
-      $table=$modarray[1]."_".$modarray[2];
+      $table=$modarray[1]."_".$modarray[2]."_".$modarray[3];
       include("includes/type_inc.php");
-      del_type($db,$table,$modarray[3],$real_tablename);
+      del_type($db,$table,$modarray[4],$real_tablename);
       show_type($db,$table,"",$tablename);
       printfooter();
       exit();
@@ -118,7 +119,7 @@ if ($edit_type && ($USER["permissions"] & $LAYOUT)) {
 
 // provide a means to hyperlink directly to a record
 if ($showid) {
-   show_g($db,$fields,$showid,$USER,$system_settings,$real_tablename,$table_desname);
+   show_g($db,$fields,$showid,$USER,$system_settings,$tablename,$real_tablename,$table_desname);
    printfooter();
    exit();
 }
