@@ -312,6 +312,18 @@ Location: ') {
           * These will break anytime a website changes its organization
           */
          switch ($host) {
+         case 'www.kluweronline.com':
+             /**
+              * These guys are straight and clear.  Thanks!
+              */
+             $website=read_web_page($host,$getstring,$header,$body,true,5); 
+             $linktopdf=get_location($header);
+             get_host_getstring($linktopdf,&$pdfhost,&$pdfgetstring); 
+             if (do_pdf_download($pdfhost,$pdfgetstring,'file')) {
+                 return true;
+             }
+         break;
+         
          case 'www.genesdev.org':
              $website=read_web_page($host,$getstring,$header,$body,true,5); 
              $linktopdf=get_location($header);
@@ -320,11 +332,29 @@ Location: ') {
               */
              $linktopdf=str_replace('content/full','reprint',$linktopdf);
              $linktopdf.='.pdf';
+//echo "link: $host$linktopdf.<br>\n";
              if (do_pdf_download($host,$linktopdf,'file')) {
                  return true;
              }
          break;
             
+         /**
+          * All of the following appear to be running the same software
+          */
+         case 'www.sciencemag.org':
+         case 'dev.biologists.org':
+         case 'www.biophysj.org':
+         case 'mct.aacrjournals.org':
+         case 'jcs.biologists.org':
+             $website=read_web_page($host,$getstring,$header,$body,true,5); 
+             $linktopdf=get_location($header);
+             $linktopdf=str_replace('content/full','reprint',$linktopdf);
+echo "link: $host$linktopdf.<br>\n";
+             if (do_pdf_download($host,$linktopdf,'file')) {
+                 return true;
+             }
+         break;
+
          case 'www.jbc.org':
              $website=read_web_page($host,$getstring,$header,$body,true,5); 
              $link=get_location($header);
