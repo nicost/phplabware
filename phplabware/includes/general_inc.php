@@ -236,7 +236,7 @@ function display_table_info($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr_c
 ///////////////////////////////////////////////////////////
 ////
 // !Display a record in a nice format
-function display_record($db,$Allfields,$id,$tablename,$real_tablename,$backbutton=true) 
+function display_record($db,$Allfields,$id,$tableinfo,$backbutton=true) 
 {
    global $PHP_SELF, $md;
 
@@ -255,7 +255,7 @@ function display_record($db,$Allfields,$id,$tablename,$real_tablename,$backbutto
             echo "<th>$nowfield[label]</th><td colspan=2>$textlarge</td>\n";
          }
          elseif ($nowfield["datatype"]=="file" || $nowfield["datatype"]=="image") {
-            $files=get_files($db,$tablename,$id,$nowfield["columnid"],0,"big");
+            $files=get_files($db,$tableinfo->name,$id,$nowfield["columnid"],0,"big");
             if ($files) { 
                echo "<th>$nowfield[label]:</th>\n<td colspan=5>";
                for ($i=0;$i<sizeof($files);$i++)  {
@@ -276,15 +276,14 @@ function display_record($db,$Allfields,$id,$tablename,$real_tablename,$backbutto
          $count++;
       }
    }
-   //user_entry($id,$real_tablename);
-   //date_entry($id,$real_tablename);
    echo "</tr>\n";
-   make_link($id,$tablename);
+   make_link($id,$tableinfo->name);
+   show_reports($db,$tableinfo,$id);
    if (function_exists ("plugin_display_show")){
       plugin_display_show ($db,$Allfields,$id);
-   return $Allfields;
-    } 
-   echo "<form method='post' action='$PHP_SELF?tablename=$tablename&".SID."'>\n";
+      return $Allfields;
+   } 
+   echo "<form method='post' action='$PHP_SELF?tablename=".$tableinfo->name."&".SID."'>\n";
    echo "<input type='hidden' name='md' value='$md'>\n";
    if ($backbutton) {
       echo "<tr>\n<td colspan=8 align='center'>";
@@ -301,9 +300,31 @@ function display_record($db,$Allfields,$id,$tablename,$real_tablename,$backbutto
 function make_link($id,$DBNAME) {
    global $PHP_SELF,$system_settings;
    echo "<tr><th>Link:</th><td colspan=7><a href='$PHP_SELF?tablename=$DBNAME&showid=$id&".SID;
-   echo "'>".$system_settings["baseURL"].getenv("SCRIPT_NAME")."?tablename=$DBNAME&showid=$id</a></td></tr>\n";
+   //echo "'>".$system_settings["baseURL"].getenv("SCRIPT_NAME")."?tablename=$DBNAME&showid=$id</a></td></tr>\n";
+   echo "'>".$system_settings["baseURL"].$PHP_SELF."?tablename=$DBNAME&showid=$id</a></td></tr>\n";
 }
 
+
+///////////////////////////////////////////////////////////
+////
+// ! Make dropdown menu with available templates
+// When one is chosen, open the formatted record in a new window
+function show_reports($db,$tableinfo,$recordid) {
+   $r=$db->Execute("SELECT id,label FROM reports WHERE tableid=".$tableinfo->id);
+   if ($r && !$r->EOF) {
+      $menu="<tr><th>Report:</th>\n";
+      $menu.="<td><select name='reportlinks' onchange='linkmenu(this)'>\n";
+      $menu.="<option value=''>---Reports---</option>\n";
+      while (!$r->EOF) {
+         $url="target "."report.php?tablename=".$tableinfo->name."&reportid=".$r->fields["id"]."&recordid=$recordid";
+         $menu.="<option value='$url'>".$r->fields["label"]."</option>\n";
+         $r->MoveNext();
+      }
+      $menu.="</select>\n";
+      $menu.="</td></tr>\n";
+      echo $menu;
+   }
+}
 ///////////////////////////////////////////////////////////
 ////
 // !display addition and modification form
@@ -641,7 +662,7 @@ function show_g($db,$tableinfo,$id,$USER,$system_settings,$backbutton=true)  {
    if (!may_read($db,$tableinfo,$id,$USER))
        return false;
    $Allfields=getvalues($db,$tableinfo,$tableinfo->fields,id,$id);
-   display_record($db,$Allfields,$id,$tableinfo->name,$tableinfo->realname,$backbutton);
+   display_record($db,$Allfields,$id,$tableinfo,$backbutton);
 }
 	
 ////
