@@ -25,7 +25,7 @@ include ('includes/config_inc.php');
 include ("includes/defines_inc.php");
 include ('adodb/adodb.inc.php');
 
-$post_vars="access,action,authmethod,checkpwd,dateformat,filedir,pwd,secure_server_new,submit,";
+$post_vars="access,action,authmethod,baseURL,checkpwd,dateformat,filedir,pwd,secure_server_new,submit,";
 globalize_vars($post_vars, $HTTP_POST_VARS);
 
 if ($set_local) {
@@ -124,6 +124,8 @@ if ($version) {
             $settings["filedir"]=$filedir;
 	 else
 	    echo "<h4 align='center'>Directory $filedir is not writeable</h4>";
+      if ($baseURL)
+         $settings["baseURL"]=$baseURL;
       if ($secure_server_new=="Yes")
          $settings["secure_server"]=true;
       else
@@ -163,6 +165,12 @@ if ($version) {
    }
    $filedir=$settings["filedir"];
    echo "<td><input type='text' name='filedir' value='$filedir'></td></tr>\n";
+   echo "<tr><td>Server URL.</td>\n ";
+   if (!$settings["baseURL"]) {
+      $settings["baseURL"]="http://".getenv("SERVER_NAME");
+   }
+      
+   echo "<td><input type='text' name='baseURL' value='".$settings["baseURL"]."'></td></tr>\n";
 
    echo "<tr><td colspan='2' align='center'><i>Localization</i></th></tr>\n";
    echo "<tr><td>Date Format:</td>\n";
