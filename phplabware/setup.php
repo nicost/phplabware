@@ -12,7 +12,7 @@
   *  option) any later version.                                              *
   \**************************************************************************/                                                                             
 
-$version_code=0.002;
+$version_code=0.0021;
 $localdir=exec("pwd");
 include ('includes/functions_inc.php');
 if (!file_exists("includes/config_inc.php")) {
@@ -167,7 +167,6 @@ if ($version) {
    // insert database updates here
    if ($version<$version_code) {
       $test=true;
-      // $db->debug=true;
       if ($version<0.002) {
          $query="CREATE TABLE authmethods 
             (id int PRIMARY KEY, 
@@ -178,10 +177,61 @@ if ($version) {
 	 $query="INSERT INTO authmethods VALUES (2,'PAM')";
 	 if (!$db->Execute($query)) $test=false;
       }
+      if ($version<0.0021) {
+         $query="CREATE TABLE antibodies (
+	    id int PRIMARY KEY,
+	    name text,
+	    type1 int,
+	    type2 int,
+	    type3 int,
+	    species int,
+	    antigen text,
+	    epitope text,
+	    concentration float,
+	    buffer text,
+	    notes text,
+	    location text,
+	    source text,
+	    date datetime)";
+	 if (!$db->Execute($query)) $test=false;
+         $query="CREATE TABLE ab_type1 
+            (id int PRIMARY KEY, 
+	     type text)";
+	 if (!$db->Execute($query)) $test=false;
+	 $query="INSERT INTO ab_type1 VALUES (1,'1')";
+	 if (!$db->Execute($query)) $test=false;
+	 $query="INSERT INTO ab_type1 VALUES (2,'2')";
+	 if (!$db->Execute($query)) $test=false;
+	 $query="INSERT INTO ab_type1 VALUES (3,'other')";
+	 if (!$db->Execute($query)) $test=false;
+         $query="CREATE TABLE ab_type2 
+            (id int PRIMARY KEY, 
+	     type text)";
+	 if (!$db->Execute($query)) $test=false;
+	 $query="INSERT INTO ab_type2 VALUES (1,'monoclonal')";
+	 if (!$db->Execute($query)) $test=false;
+	 $query="INSERT INTO ab_type2 VALUES (2,'polyclonal')";
+	 if (!$db->Execute($query)) $test=false;
+         $query="CREATE TABLE ab_type3 
+            (id int PRIMARY KEY,
+	     sortkey int,
+	     type text)";
+	 if (!$db->Execute($query)) $test=false;
+	 $query="INSERT INTO ab_type3 VALUES (1,10,'human')";
+	 if (!$db->Execute($query)) $test=false;
+	 $query="INSERT INTO ab_type3 VALUES (2,20,'mouse')";
+	 if (!$db->Execute($query)) $test=false;
+	 $query="INSERT INTO ab_type3 VALUES (3,30,'rabbit')";
+	 if (!$db->Execute($query)) $test=false;
+	 $query="INSERT INTO ab_type3 VALUES (4,40,'rat')";
+	 if (!$db->Execute($query)) $test=false;
+      }
+      
       $query="UPDATE settings SET version='$version_code' WHERE id=1";
       if (!$db->Execute($query)) $test=false;
- 	 
-       if ($test)
+
+
+      if ($test)
           echo "<h3 align='center'>Succefully updated the database to version $version_code.</h3>\n";
        else 
           echo "<h3 align='center'>Failed to update the database to version $version_code.</h3>\n";
