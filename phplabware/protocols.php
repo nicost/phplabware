@@ -235,7 +235,7 @@ function process_file($db,$fileid,$system_settings) {
       $filepath=file_path($db,$fileid);
       $temp=$system_settings["tmpdir"]."/".uniqid("file");
       `$word2html $filepath $temp`;
-      if (is_readable($temp)) {
+      if (@is_readable($temp)) {
          unset ($HTTP_POST_FILES);
          $r=$db->query ("SELECT filename,mime,title,tablesfk,ftableid FROM files WHERE id=$fileid");
          if ($r && !$r->EOF) {
