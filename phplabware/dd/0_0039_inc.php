@@ -108,9 +108,9 @@ if ($r) {
    echo "Inserted $counter records.<br>";
 
    if ($failed)
-      echo "Failed copying contents of table protocols<br>";
+      echo "Failed copying contents of table protocols.<br>";
    else {
-      echo "Succes!<br>";
+      //echo "Succes!<br>";
       // delete the old tables
       $rnt=$db->Execute("SELECT * FROM $newtable_realname");
       if ($rnt->Numrows==$rcb->Numrows) {
@@ -118,6 +118,7 @@ if ($r) {
          $db->Execute("DROP TABLE pdbs_id_seq");
          $db->Execute("DROP SEQUENCE pdbs_id_seq");
          $db->Execute("DELETE FROM tableoftables WHERE tablename='pdbs'");
+         $db->Execute("UPDATE tableoftables SET label='pdbs' WHERE id='$newtableid'");
       }
       else
          echo "Problems copying the content of table pdbs to the new table pdbs.<br>";

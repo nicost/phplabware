@@ -147,9 +147,9 @@ if ($r) {
       $rcc->MoveNext();
    }
    if ($failed)
-      echo "Failed copying contents of table protocols<br>";
+      echo "Failed copying contents of table protocols.<br>";
    else {
-      echo "Succes!<br>";
+      //echo "Succes!<br>";
       // delete the old tables
       $rnt=$db->Execute("SELECT * FROM $newtable_realname");
       if ($rnt->Numrows==$rcb->Numrows) {
@@ -163,6 +163,7 @@ if ($r) {
          $db->Execute("DROP TABLE pr_type2_id_seq"); 
          $db->Execute("DROP SEQUENCE pr_type2_id_seq"); 
          $db->Execute("DELETE FROM tableoftables WHERE tablename='protocols'");
+         $db->Execute("UPDATE tableoftables SET label='protocols' WHERE id='$newtableid'");
       }
       else
          echo "Problems copying the content of table protocols to the new table protocols.<br>";

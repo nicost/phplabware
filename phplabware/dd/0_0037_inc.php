@@ -168,9 +168,9 @@ if ($r) {
       $rcc->MoveNext();
    }
    if ($failed)
-      echo "Failed";
+      echo "Failed copying contents of table pdbs.<br>";
    else {
-      echo "Succes!<br>";
+      //echo "Succes!<br>";
       $rpdn=$db->Execute("SELECT * FROM $newtable_realname");
       if ($rpdn->Numrows==$rcb->Numrows) {
          $db->Execute("DROP TABLE pdfs");
@@ -182,6 +182,8 @@ if ($r) {
          $db->Execute("DROp TABLE pd_type2");
          $db->Execute("DROp TABLE pd_type2_id_seq");
          $db->Execute("DROp SEQUENCE pd_type2_id_seq");
+         $db->Execute("DELETE FROM tableoftables WHERE tablename='pdfs'");
+         $db->Execute("UPDATE tableoftables SET label='pdfs' WHERE id='$newtableid'");
       }
       else
          echo "Failed to copy contents of old table pdfs to new table pdfs.<br>";

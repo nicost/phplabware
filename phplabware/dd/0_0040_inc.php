@@ -2,7 +2,6 @@
 
 
 
-
 $newtableid=$db->GenID("tableoftables_gen_id_seq");
 $newtablename=ipnumbers;
 $newtablelabel="IP";
@@ -96,5 +95,8 @@ if ($r) {
          date int  ) ");
 
    }
+
+
 }
+
 ?>
