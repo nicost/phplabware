@@ -185,6 +185,21 @@ function get_cell ($db, $table, $column, $column2, $value) {
    }
 }
 
+////
+// ! Returns a formatted link with name of the person identified by id
+function get_person_link ($db,$id) {
+   $query="SELECT firstname,lastname,email FROM users WHERE id=$id";
+   $r=$db->Execute($query);
+   if ($r->fields["email"]) {
+      $submitter="<a href='mailto:".$r->fields["email"]."'>";
+      $submitter.= $r->fields["firstname"]." ".$r->fields["lastname"]."</a> ";
+   }
+   else {
+      $submitter=$r->fields["firstname"]." ";
+      $submitter.=$r->fields["lastname"] ." ";
+   }
+   return $submitter;
+}
 
 ////
 // !Prints a table with usefull links 
