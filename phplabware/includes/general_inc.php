@@ -335,15 +335,6 @@ function getvalues($db,$DBNAME,$DB_DESNAME,$fields,$qfield=false,$field=false) {
          ${$column}["ass_t"]=$rb->fields["associated_table"];
          ${$column}["ass_query"]=$rb->fields["associated_sql"];
          ${$column}["required"]=$rb->fields["required"];
-/*
-	 ${$column}[datatype]=get_cell($db,$DB_DESNAME,"datatype","label","$column");
-         ${$column}[display_table]=get_cell($db,$DB_DESNAME,"display_table","label","$column");
-         ${$column}[display_record]=get_cell($db,$DB_DESNAME,"display_record","label","$column");
-         ${$column}[ass_t]=get_cell($db,$DB_DESNAME,associated_table,label,$column);
-         ${$column}[ass_query]=get_cell($db,$DB_DESNAME,associated_sql,label,$column);
-         ${$column}[required]=get_cell($db,$DB_DESNAME,required,label,$column);
-         ${$column}[name]=$column;
-*/
       }
       array_push ($Allfields, ${$column});
       $column=strtok(",");
@@ -357,8 +348,10 @@ function getvalues($db,$DBNAME,$DB_DESNAME,$fields,$qfield=false,$field=false) {
 function display_midbar($labelcomma) {
    $labelarray=explode(",",$labelcomma);
    echo "<tr>\n";
-   foreach($labelarray as $fieldlabel) 
-      echo "<th>$fieldlabel</th>";
+   foreach($labelarray as $fieldlabel)  {
+      echo "<th><table><tr><td align=left>";
+      echo "<input src='sortdown.png' name='sortby' value='$fieldlabel'></td><th align='center'>$fieldlabel</th></tr></table></th>";
+   }
    echo "<th>Action</th>\n";
    echo "</tr>\n";
 }
