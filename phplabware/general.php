@@ -259,6 +259,7 @@ else {
 
    // prepare the search statement and remember it
    $fields_table="id,".$fields_table;
+
    ${$queryname}=make_search_SQL($db,$real_tablename,$tableshort,$tableid,$fields_table,$USER,$search,$sortstring,$listb["sql"]);
    $r=$db->Execute(${$queryname});
 
@@ -360,14 +361,14 @@ else {
          // show titles we may see, when too many, revert to text box
          if ($list && ($count < $max_menu_length) )  {
   	     $rlist=$db->CacheExecute(2,"SELECT $nowfield[name] FROM $real_tablename WHERE $list");
-             $text=$rlist->GetMenu("$nowfield[name]",$HTTP_POST_VARS[$nowfield[name]],true,false,0,"style='width: 80%' $jscript");
+             $text=$rlist->GetMenu("$nowfield[name]",${$nowfield[name]},true,false,0,"style='width: 80%' $jscript");
              echo "<td style='width: 10%'>$text</td>\n";
          }
 	 else 
-    	    echo  " <td style='width: 10%'><input type='text' name='$nowfield[name]' value='".$HTTP_POST_VARS[$nowfield[name]]."'size=8></td>\n";
+    	    echo  " <td style='width: 10%'><input type='text' name='$nowfield[name]' value='".${$nowfield[name]}."'size=8></td>\n";
       }
       elseif ($nowfield[datatype]== "textlong")
-    	    echo  " <td style='width: 10%'><input type='text' name='$nowfield[name]' value='".$HTTP_POST_VARS[$nowfield[name]]."'size=8></td>\n";
+    	    echo  " <td style='width: 10%'><input type='text' name='$nowfield[name]' value='".${$nowfield[name]}."'size=8></td>\n";
       elseif ($nowfield["datatype"]== "pulldown") {
          echo "<td style='width: 10%'>";
          if ($USER["permissions"] & $LAYOUT)  {
@@ -379,7 +380,7 @@ else {
          if ($list2) { 
             $rpull=$db->Execute("SELECT typeshort,id from $nowfield[ass_t] WHERE id IN ($list2) ORDER by typeshort");
             if ($rpull)
-	       $text=$rpull->GetMenu2("$nowfield[name]",$HTTP_POST_VARS[$nowfield[name]],true,false,0,"style='width: 80%' $jscript");   
+	       $text=$rpull->GetMenu2("$nowfield[name]",${$nowfield[name]},true,false,0,"style='width: 80%' $jscript");   
 	    else
 	       $text="&nbsp;";
     	    echo "$text</td>\n";
@@ -394,7 +395,7 @@ else {
             $list2=make_SQL_csf($rtable,false,"$nowfield[name]",$dummy);
             if ($list2) {
                $rtable=$db->Execute("SELECT $nowfield[ass_column_name],id FROM $nowfield[ass_table_name] WHERE id IN ($list2)");
-               $text=$rtable->GetMenu2($nowfield["name"],$HTTP_POST_VARS[$nowfield[name]],true,false,0,"style='width: 80%' $jscript");
+               $text=$rtable->GetMenu2($nowfield["name"],${$nowfield[name]},true,false,0,"style='width: 80%' $jscript");
             }
             else
                $text="&nbsp;";
