@@ -266,7 +266,11 @@ if ($edit_type && ($USER['permissions'] & $LAYOUT)) {
    exit();
 }
 
-printheader($httptitle);
+if ($md=='edit') {
+   printheader($httptitle,'','./includes/js/editview.js');
+} else {
+   printheader($httptitle);
+}
 navbar($USER['permissions']);
 
 // provide a means to hyperlink directly to a record
