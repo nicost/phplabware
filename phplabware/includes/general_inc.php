@@ -132,7 +132,7 @@ function display_table_change($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr
                if ($nowfield['ass_column_name'] && $nowfield['ass_table_name']) { 
                   $rcount=$db->Execute("SELECT COUNT(id) FROM {$nowfield['ass_table_name']}");
                   if ($rcount && ($rcount->fields[0] < $max_menu_length)) 
-                     $text=GetValuesMenu($db,"{$nowfield['name']}_$id",$nowfield['values'],$nowfield['ass_table_name'],$nowfield['ass_column_name'],false);
+                     $text=GetValuesMenu($db,"{$nowfield['name']}_$id",$nowfield['values'],$nowfield['ass_table_name'],$nowfield['ass_column_name'],false,$js);
                   else
                      $text="<i>CODE IN PROGRESS</i>";
                }
