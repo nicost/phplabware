@@ -123,9 +123,8 @@ function add_pr_form ($db,$fields,$field_values,$id,$USER,$PHP_SELF,$system_sett
       echo "&nbsp;&nbsp;(".$files[$i]["type"]." file)</td>\n";
       echo "<td><input type='submit' name='def_".$files[$i]["id"]."' value='Delete' Onclick=\"if(confirm('Are you sure the file ".$files[$i]["name"]." should be removed?')){return true;}return false;\"></td></tr>\n";
    }
-   echo "<tr><th>Replace file(s) with:</th>\n";
-   echo "<td><input type='file' name='file[]' value='$filename'></td>\n";
-   echo "<th>File Title:</th><td><input type='text' name='filetitle[]' value='$filetile' size=30></td><td>&nbsp;</td>\n";
+   echo "<tr><th>Replace file(s) with</th>\n";
+   echo "<td>&nbsp;</td><td><input type='file' name='file[]' value='$filename'></td>\n";
    
    echo "</tr>\n";
    echo "</table></td>\n\n";

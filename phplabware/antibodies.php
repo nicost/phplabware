@@ -134,16 +134,15 @@ function add_ab_form ($db,$fields,$field_values,$id,$USER,$PHP_SELF,$system_sett
    $files=get_files($db,"antibodies",$id);
    echo "<tr>";
    echo "<th>Files: </th>\n";
-   echo "<td colspan=4><table border=0>";
+   echo "<td colspan=5><table border=0>";
    for ($i=0;$i<sizeof($files);$i++) {
       echo "<tr><td>".$files[$i]["link"]."</td>\n";
       echo "<td><input type='submit' name='def_".$files[$i]["id"]."' value='Delete' Onclick=\"if(confirm('Are you sure the file ".$files[$i]["name"]." should be removed?')){return true;}return false;\"></td></tr>\n";
    }
    echo "<tr><td colspan=2><input type='file' name='file[]' value='$filename'></td>\n";
-   echo "<td></td><th>File Title:</th><td><input type='text' name='filetitle[]' value='$filetile' size=30></td><td>&nbsp;</td>\n";
    echo "</tr>\n";
    echo "</table></td>\n\n";
-   echo "<td colspan=4>";
+   echo "<td colspan=3>";
    show_access($db,"antibodies",$id,$USER,$system_settings);
    echo "</td></tr>\n";
    
