@@ -37,7 +37,7 @@ $tableitemid=$r->fields("ftableid");
 $filename=$r->fields("filename");
 $filesize=$r->fields("filesize");
 $mime=$r->fields("mime");
-$tablename=get_cell($db,"tables","tablename","id",$tableid);
+$tablename=get_cell($db,"tableoftables","tablename","id",$tableid);
 if (!may_read($db,$tablename,$tableitemid,$USER)) {
    echo "<html><h3>401. Forbidden.</h3></html>";
    exit;

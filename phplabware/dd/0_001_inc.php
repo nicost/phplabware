@@ -90,15 +90,15 @@
    if (!$result) $test=false;
    $db->Execute("CREATE INDEX files_id_index ON files (id)"); 
 
-   $result=$db->Execute("CREATE TABLE tables
+   $result=$db->Execute("CREATE TABLE tableoftables
          (id int PRIMARY KEY,
           sortkey int,
           tablename text,
           shortname text)");
    if (!$result) $test=false;
-   $db->Execute("CREATE INDEX tables_id_index ON tables (id)"); 
-   $db->Execute("CREATE INDEX tables_tablename_index ON tables (tablename)"); 
-   $db->Execute("CREATE INDEX tables_tablename_index ON tables (tablename(10))"); 
+   $db->Execute("CREATE INDEX tables_id_index ON tableoftables (id)"); 
+   $db->Execute("CREATE INDEX tables_tablename_index ON tableoftables (tablename)"); 
+   $db->Execute("CREATE INDEX tables_tablename_index ON tableoftables (tablename(10))"); 
 
    // insert sysadmin and admin group
    $pass= md5($pwd);

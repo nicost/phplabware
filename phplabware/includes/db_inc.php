@@ -129,8 +129,10 @@ function upload_files ($db,$table,$id,$USER,$system_settings) {
       return false;
    if (!may_write($db,$table,$id,$USER))
       return false;
-   if (!$filedir=$system_settings["filedir"]) 
+   if (!$filedir=$system_settings["filedir"]) {
+      echo "<h3><i>Filedir</i> was not set.  The file was not uploaded. Please contact your system administrator</h3>";
       return false;
+   }
    for ($i=0;$i<sizeof($HTTP_POST_FILES);$i++) {
       if (!$fileid=$db->GenID("files_id_seq"))
          return false;
@@ -142,7 +144,7 @@ function upload_files ($db,$table,$id,$USER,$system_settings) {
       $title=$HTTP_POST_VARS["filetitle"][$i];
       // this works asof php 4.02
       if (move_uploaded_file($HTTP_POST_FILES["file"]["tmp_name"][$i],"$filedir/$fileid"."_"."$originalname")) {
-         $tablesid=get_cell($db,"tables","id","tablename",$table);
+         $tablesid=get_cell($db,"tableoftables","id","tablename",$table);
          $query="INSERT INTO files (id,filename,mime,size,title,tablesfk,ftableid) VALUES ($fileid,'$originalname','$mime','$size','$title','$tablesid',$id)";
 	 $db->Execute($query);
       }
@@ -154,8 +156,8 @@ function upload_files ($db,$table,$id,$USER,$system_settings) {
 ////
 // !returns an array with id,name,title,and hyperlink to all
 // files associated with the given record
-function get_files ($db,$table,$id) {
-   $tableid=get_cell($db,"tables","id","tablename",$table);
+function get_files ($db,$table,$id,$format=1) {
+   $tableid=get_cell($db,"tableoftables","id","tablename",$table);
    $r=$db->Execute("SELECT id,filename,title FROM files WHERE tablesfk=$tableid AND ftableid=$id");
    if ($r && !$r->EOF) {
       $i=0;
@@ -164,10 +166,16 @@ function get_files ($db,$table,$id) {
          $filesid=$files[$i]["id"]=$r->fields("id");
          $filesname=$files[$i]["name"]=$r->fields("filename");
          $filestitle=$files[$i]["title"]=$r->fields("title");
-         if ($filestitle)
-            $text=$filestitle;
-         else
-             $text=$filesname;
+	 if ($format==1) {
+            if ($filestitle)
+               $text=$filestitle;
+            else
+                $text=$filesname;
+         }
+	 elseif ($format==2)
+	    $text="file_$i";
+	 else
+	    $text=$filesname;
          $files[$i]["link"]="<a href='showfile.php?id=$filesid&name=$filesname&$sid'>$text</a>\n";
          $r->MoveNext();
          $i++;
@@ -184,7 +192,7 @@ function delete_file ($db,$fileid,$USER,$global_settings) {
    $tableid=get_cell($db,"files","tablesfk","id",$fileid);
    $ftableid=get_cell($db,"files","ftableid","id",$fileid);
    $filename=get_cell($db,"files","filename","id",$fileid);
-   $table=get_cell($db,"tables","tablename","id",$tableid);
+   $table=get_cell($db,"tableoftables","tablename","id",$tableid);
    if (!may_write($db,$table,$ftableid,$USER))
       return false;
    if (unlink($global_settings["filedir"]."/$fileid"."_$filename")) {

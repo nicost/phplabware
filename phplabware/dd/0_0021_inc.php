@@ -137,8 +137,8 @@ if (!$db->Execute($query)) $test=false;
 $query="INSERT INTO ab_type5 VALUES (9,0,'None','None')";
 if (!$db->Execute($query)) $test=false;
 
-$tablesid=$db->GenID("tables_id_seq");
-$query="INSERT INTO tables VALUES ($tablesid,100,'antibodies')";
+$tablesid=$db->GenID("tableoftables_id_seq");
+$query="INSERT INTO tableoftables VALUES ($tablesid,100,'antibodies','ab')";
 if (!$db->Execute($query)) $test=false;
 
 ?>
