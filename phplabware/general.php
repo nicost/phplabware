@@ -42,6 +42,9 @@ $httptitle .=$tablename;
 printheader($httptitle);
 navbar($USER["permissions"]);
 
+//$db->debug=true;
+
+
 // find id associated with table
 if (!$edit_type) {
    $r=$db->Execute("SELECT id,shortname,tablename,real_tablename FROM tableoftables WHERE tablename='$tablename'");
@@ -235,20 +238,22 @@ else {
    // get current page
    ${$pagename}=current_page(${$pagename},$tableshort);
  
+   // get a list with all records we may see
+   $listb=may_read_SQL($db,$real_tablename,$tableid,$USER);
+
    // prepare the search statement and remember it
    $fields_table="id,".$fields_table;
   //$fields_table="id ";
-   ${$queryname}=make_search_SQL($db,$real_tablename,$tableshort,$tableid,$fields_table,$USER,$search,$sortstring);
+   ${$queryname}=make_search_SQL($db,$real_tablename,$tableshort,$tableid,$fields_table,$USER,$search,$sortstring,$listb);
    $r=$db->CacheExecute(2,${$queryname});
 
-   if ($r)
-   	{
-   	$numrows=$r->RecordCount();
-   	// loop through all entries for next/previous buttons
-   	$r=$db->CachePageExecute(2,${$queryname},$num_p_r,${$pagename});
-   	while (!($r->EOF) && $r) {
-   	   $r->MoveNext();
-   	}
+   if ($r) {
+      $numrows=$r->RecordCount();
+      // loop through all entries for next/previous buttons
+      $rp=$db->CachePageExecute(2,${$queryname},$num_p_r,${$pagename});
+      while (!($rp->EOF) && $rp) {
+         $rp->MoveNext();
+      }
    }
 
    // get variables for links 
@@ -266,23 +271,20 @@ else {
    if (may_write($db,$tableid,false,$USER)) 
       echo "<p><a href='$PHP_SELF?&add=Add&tablename=$tablename&<?=SID?>'>Add Record</a></td>\n"; 
    echo "</tr>\n</table>\n";
-   next_previous_buttons($r,true,$num_p_r,$numrows,${$pagename});
+   next_previous_buttons($rp,true,$num_p_r,$numrows,${$pagename});
 
    // print header of table
    echo "<table border='1' align='center'>\n";
 
-   // get a list with ids we may see
-   $r=$db->CacheExecute(2,${$queryname});
+   // get a list with ids we may see, $listb has all the ids we may see
+   //$r=$db->CacheExecute(2,${$queryname});
    $lista=make_SQL_csf ($r,false,"id",$nr_records);
-
-   // and a list with all records we may see
-   $listb=may_read_SQL($db,$real_tablename,$tableid,$USER);
 
    //  get a list of all fields that are displayed in the table
    $Fieldscomma=comma_array_SQL_where($db,$table_desname,"columnname","display_table","Y");
 //   $Fieldscomma .= ",id ";
    $Labelcomma=comma_array_SQL_where($db,$table_desname,"label","display_table","Y");
-   $Allfields=getvalues($db,$real_tablename,$table_desname,$tablied,$Fieldscomma);	
+   $Allfields=getvalues($db,$real_tablename,$table_desname,$tableid,$Fieldscomma);	
    
    // javascript to automatically execute search when pulling down 
    $jscript="onChange='document.g_form.searchj.value=\"Search\"; document.g_form.submit()'";
@@ -300,12 +302,12 @@ else {
          echo "<td style='width: 10%'>&nbsp;</td>\n";
       elseif ($nowfield[datatype]== "text") {
          // show titles we may see, when too many, revert to text box
-    /*     if ($list && ($nr_records < $max_menu_length) )  {
-  	     $r=$db->Execute("SELECT $nowfield[name] FROM $real_tablename WHERE id IN ($list)");
+         if ($list && ($numrows < $max_menu_length) )  {
+  	     $r=$db->CacheExecute(2,"SELECT $nowfield[name] FROM $real_tablename WHERE id IN ($list)");
              $text=$r->GetMenu("$nowfield[name]",$HTTP_POST_VARS[$nowfield[name]],true,false,0,"style='width: 80%' $jscript");
              echo "<td style='width: 10%'>$text</td>\n";
          }
-	 else */
+	 else 
     	    echo  " <td style='width: 10%'><input type='text' name='$nowfield[name]' value='".$HTTP_POST_VARS[$nowfield[name]]."'size=8></td>\n";
       }
       elseif ($nowfield[datatype]== "textlong")
@@ -317,7 +319,7 @@ else {
             echo "<a href='$PHP_SELF?tablename=$tablename&edit_type=$nowfield[ass_t]&<?=SID?>";
             echo "'>Edit $nowfield[label]</a><br>\n";
          }	 		 			
-         $r=$db->Execute("SELECT $nowfield[name] FROM $real_tablename WHERE id IN ($list)");
+         $r=$db->CacheExecute(2,"SELECT $nowfield[name] FROM $real_tablename WHERE id IN ($list)");
          $list2=make_SQL_ids($r,false,"$nowfield[name]");
          if ($list2) { 
             $r=$db->Execute("SELECT typeshort,id from $nowfield[ass_t] WHERE id IN ($list2) ORDER by typeshort");
@@ -347,7 +349,7 @@ else {
    echo "<th>Action</th>\n";
    echo "</tr>\n\n";
 
-   display_table_info($db,$tableid,$table_desname,$Fieldscomma,${$queryname},$num_p_r,${$pagename});
+   display_table_info($db,$tableid,$table_desname,$Fieldscomma,${$queryname},$num_p_r,${$pagename},$rp);
    printfooter($db,$USER);
 }
 ?>
