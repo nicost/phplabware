@@ -30,7 +30,7 @@ if ($adodb_version<1.71) {
    exit();
 }
 
-$post_vars="access,action,authmethod,baseURL,homeURL,checkpwd,dateformat,filedir,pwd,protocols_file,pdfs_file,pdfget,secure_server_new,submit,tmpdir,tmpdirpsql,word2html";
+$post_vars="access,action,authmethod,baseURL,homeURL,checkpwd,dateformat,filedir,pwd,protocols_file,pdfs_file,pdfget,secure_server_new,submit,tmpdir,tmpdirpsql,word2html,gs";
 globalize_vars($post_vars, $HTTP_POST_VARS);
 
 if ($set_local) {
