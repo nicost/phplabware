@@ -265,6 +265,7 @@ function add ($db,$table,$fields,$fieldvalues,$USER,$tableid) {
       if ($db->Execute($query))
          return $id;
       else {
+         echo "Error in query: $query.<br>";
          echo "<h3>Database error.  Contact your system administrator.</h3>\n";
       }
    }
