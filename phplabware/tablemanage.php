@@ -143,7 +143,7 @@ if ($editfield)	{
    echo "<td>&nbsp;</td>\n";
    echo "<td align='center'><input type='submit' name='addcolumn' value='Add'></td></tr>\n\n";
    
-   $query = "SELECT id,sortkey,columnname,label,display_table,display_record,required,datatype,associated_table,associated_sql,associated_local_key FROM $currdesc order by sortkey,label";
+   $query = "SELECT id,sortkey,columnname,label,display_table,display_record,required,datatype,associated_table,associated_column,associated_local_key FROM $currdesc order by sortkey,label";
    $r=$db->Execute($query);
    $rownr=0;
    // print all entries
@@ -161,7 +161,7 @@ if ($editfield)	{
       if ($r->fields["associated_table"]) {
          $ass_table=get_cell($db,"tableoftables","tablename","id",$r->fields["associated_table"]);
          $ass_desc_table=get_cell($db,"tableoftables","table_desc_name","id",$r->fields["associated_table"]);
-         $ass_column=get_cell($db,$ass_desc_table,"label","id",$r->fields["associated_sql"]);
+         $ass_column=get_cell($db,$ass_desc_table,"label","id",$r->fields["associated_column"]);
       }
       $show=1;
       foreach($noshow as $donotshow) {
