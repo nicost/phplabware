@@ -213,17 +213,17 @@ function add_table ($db,$tablename,$tablelabel,$sortkey,$plugincode) {
          $descid=$db->GenId("$desc"."_id");  
          $db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'access','access','110','N','N','N','varchar(9)','text',NULL,NULL)");
          $descid=$db->GenId("$desc"."_id");  
-         $db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'owner','ownerid','120','N','N','N','int(11)','text',NULL,NULL)");
+         $db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'owner','ownerid','120','N','N','N','int(11)','user',NULL,NULL)");
          $descid=$db->GenId("$desc"."_id");  
          $db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'magic','magic','130','N','N','N','int(11)','text',NULL,NULL)");
          $descid=$db->GenId("$desc"."_id");  
          $db->Execute("INSERT INTO $desc ($fieldstring,modifiable) Values($descid,'title','title','140','Y','Y','Y','text','text',NULL,NULL,'Y')");
          $descid=$db->GenId("$desc"."_id");  
-         $db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'lastmoddate','lastmoddate','150','N','N','N','int(11)','text',NULL,NULL)");
+         $db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'lastmoddate','lastmoddate','150','N','N','N','int(11)','date',NULL,NULL)");
          $descid=$db->GenId("$desc"."_id");  
-         $db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'lastmodby','lastmodby','160','N','N','N','int(11)','text',NULL,NULL)");
+         $db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'lastmodby','lastmodby','160','N','N','N','int(11)','user',NULL,NULL)");
          $descid=$db->GenId("$desc"."_id");  
-         $db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'date','date','170','N','N','N','int(11)','text',NULL,NULL)");
+         $db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'date','date','170','N','N','N','int(11)','date',NULL,NULL)");
       }  
       else {
          $string="Poblems adding this table.  Sorry ;(";
