@@ -52,7 +52,7 @@ function compareData($a,$b) {
 function make_report ($db,$template,$data,$tableinfo,$target=1,$counter=false) {
    global $sums;
    // to do the replacements 'greedy', we need to sort $data so that the longest names come first 
-   // first add a field with the sring length
+   // Use usort with the above helperfunction to direct the sort 
 
    usort ($data,'compareData');
 
@@ -61,7 +61,11 @@ function make_report ($db,$template,$data,$tableinfo,$target=1,$counter=false) {
          $sums[$column['name']]+=$column['values'];
          $template=str_replace("&".$column['name'],$sums[$column['name']],$template);
          // give a chance to replace with value only
-         $template=str_replace("%".$column['name'],$column['values'],$template);
+         if ($column['datatype']=='table') {
+            $template=str_replace("%".$column['name'],$column['nested']['values'],$template);
+          } else {
+             $template=str_replace("%".$column['name'],$column['values'],$template);
+          }
          if ($column['datatype']=='textlong') {
             $textlarge=nl2br(htmlentities($column['values']));
             $template=str_replace("$".$column['name'],$textlarge,$template);
