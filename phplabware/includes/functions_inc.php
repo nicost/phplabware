@@ -174,7 +174,7 @@ function loginscreen ($message="<h3>Login to PhpLabWare</h3>") {
    echo "<td><input type='password' name='pwd' size=10 value=''></td></tr>\n";
    echo "<tr><td colspan=2 align='center'>";
    if ($system_settings["secure_server"]) {
-      echo "<input type='checkbox' name='ssl' selected>Keep a secure connection";
+      echo "<input type='checkbox' name='ssl' checked>Keep a secure connection";
    }
    echo "</td></tr>\n";
    echo "<tr><td colspan=2 align='center'>";
