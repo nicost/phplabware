@@ -39,13 +39,18 @@ while (!($ra->EOF)) {
       }
       else
          $descid=$db->GenId("$desc"."_id");  
-      $db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'group read','gr','111','N','N','N','smallint','int',NULL,NULL,'Y')");
-      $descid=$db->GenId("$desc"."_id");  
-      $db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'group write','gw','112','N','N','N','smallint','int',NULL,NULL,'Y')");
-      $descid=$db->GenId("$desc"."_id");  
-      $db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'everyone read','er','113','N','N','N','smallint','int',NULL,NULL,'Y')");
-      $descid=$db->GenId("$desc"."_id");  
-      $db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'everyone write','ew','114','N','N','N','smallint','int',NULL,NULL,'Y')");
+      // now let's be sure we did not do this already:
+      unset($rt);
+      $rt=$db->Execute ("SELECT id FROM $desc WHERE columnname='gr'");
+      if (!$rt->fields[0]) {
+         $db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'group read','gr','111','N','N','N','smallint','int',NULL,NULL,'Y')");
+         $descid=$db->GenId("$desc"."_id");  
+         $db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'group write','gw','112','N','N','N','smallint','int',NULL,NULL,'Y')");
+         $descid=$db->GenId("$desc"."_id");  
+         $db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'everyone read','er','113','N','N','N','smallint','int',NULL,NULL,'Y')");
+         $descid=$db->GenId("$desc"."_id");  
+         $db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'everyone write','ew','114','N','N','N','smallint','int',NULL,NULL,'Y')");
+      }
    }
    $ra->MoveNext();
 }
