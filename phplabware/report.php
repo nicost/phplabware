@@ -30,10 +30,11 @@ if (!$tableinfo->id) {
    exit();
 }
 
-$reportid=(int)$HTTP_GET_VARS["reportid"];
-$recordid=(int)$HTTP_GET_VARS["recordid"];
+$reportid=(int)$HTTP_GET_VARS['reportid'];
+$recordid=(int)$HTTP_GET_VARS['recordid'];
+$tableview=$HTTP_GET_VARS['tableview'];
 
-if (!($reportid && $recordid) ) {
+if (!($reportid && ($recordid || $tableview)) ) {
    printheader($httptitle);
    navbar($USER["permissions"]);
    echo "<h3 align='center'>Not enough information to generate the report.</h3>";
