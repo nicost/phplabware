@@ -318,6 +318,8 @@ else {
    //$r=$db->CacheExecute(2,${$queryname});
    if ($db_type=="mysql") {
       $lista=make_SQL_csf ($r,false,"id",$nr_records);
+      if (!$lista)
+         $lista="-1";
       $lista=" id IN ($lista) ";
    }
    else {
