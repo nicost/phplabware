@@ -454,14 +454,7 @@ else {
             echo "<td style='width:10%'>test</td>\n";
       }
       elseif ($nowfield["datatype"]=="int" || $nowfield["datatype"]=="float" || $nowfield["datatype"]=="sequence") {
-         // show titles we may see, when too many, revert to text box
-         if ($list && ($count < $max_menu_length) )  {
-  	     $rlist=$db->CacheExecute(2,"SELECT $nowfield[name] FROM $tableinfo->realname WHERE $list");
-             $text=$rlist->GetMenu("$nowfield[name]",${$nowfield[name]},true,false,0,"style='width: 80%' $jscript");
-             echo "<td style='width: 10%'>$text</td>\n";
-         }
-	 else 
-    	    echo  " <td style='width: 10%'><input type='text' name='$nowfield[name]' value='".${$nowfield[name]}."'size=8></td>\n";
+    	    echo  " <td style='width: 10%'><input type='text' name='$nowfield[name]' value='".${$nowfield[name]}."'size=8 align='right'></td>\n";
       }
       elseif ($nowfield["datatype"]== "text" || $nowfield["datatype"]=="file")
          echo  " <td style='width: 25%'><input type='text' name='$nowfield[name]' value='".${$nowfield[name]}."'size=8></td>\n";
