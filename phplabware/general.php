@@ -306,14 +306,7 @@ else {
          $r=$db->Execute("SELECT $nowfield[name] FROM $real_tablename WHERE id IN ($list)");
          $list2=make_SQL_ids($r,false,"$nowfield[name]");
          if ($list2) { 
-            if ($nowfield[name]=="authors") {
-               if ($db_type=="mysql") // mysql does not use the ansi SQL || operator
-                  $r=$db->Execute("SELECT CONCAT(type, ' ', typeshort),id from $nowfield[ass_t] WHERE id IN ($list2) ORDER by typeshort");
-               else
-                  $r=$db->Execute("SELECT type || ' ' || typeshort,id from $nowfield[ass_t] WHERE id IN ($list) ORDER by typeshort");
-            }
-            else 
-               $r=$db->Execute("SELECT typeshort,id from $nowfield[ass_t] WHERE id IN ($list2) ORDER by typeshort");
+            $r=$db->Execute("SELECT typeshort,id from $nowfield[ass_t] WHERE id IN ($list2) ORDER by typeshort");
     		
             $text=$r->GetMenu2("$nowfield[name]",$HTTP_POST_VARS[$nowfield[name]],true,false,0,"style='width: 80%' $jscript");   
     	    echo "$text</td>\n";
