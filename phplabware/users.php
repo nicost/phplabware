@@ -186,8 +186,10 @@ function modify ($db, $type) {
    elseif ($type =="create") {
          $id=$db->GenID("users_id_seq");
          $pwd=md5($pwd);
-         $query = "INSERT INTO users (id, login, pwd, groupid, firstname, lastname, permissions, email, createdbyid, createdbyip, createddate) ";
-         $query .= "VALUES('$id','$login','$pwd','$user_group','$firstname','$lastname', '$permissions', '$email', '$theid', '$theip', '$thedate')"; 
+         $new_user_settings["menustyle"]=1;
+         $new_user_settings=serialize($new_user_settings);
+         $query = "INSERT INTO users (id, login, pwd, groupid, firstname, lastname, permissions, email, createdbyid, createdbyip, createddate, settings) ";
+         $query .= "VALUES('$id','$login','$pwd','$user_group','$firstname','$lastname', '$permissions', '$email', '$theid', '$theip', '$thedate', '$new_user_settings')"; 
 
          if ($db->Execute($query)) {
             echo "User <i>$firstname $lastname</i> added.<br>\n";
@@ -213,8 +215,14 @@ function modify ($db, $type) {
       }
       $query .= " WHERE id='$id';";
       echo "\n<table border=0 align='center'>\n  <tr>\n    <td align='center'>\n      ";
-      if ($db->Execute($query))
+      if ($db->Execute($query)) {
+         // modify menu view in settings
+         if ($HTTP_POST_VARS["menustyle"]==1)
+            $USER["settings"]["menustyle"]=1;
+         else
+            $USER["settings"]["menustyle"]=0;
          echo "Your settings have been modified.<br>\n";
+      }
       else
          echo "Failed to modify you settings.<br>\n";
       echo "    </td>\n  </tr>\n</table>\n\n";
@@ -271,7 +279,15 @@ function show_user_form ($type) {
       echo "<tr><td>Login Name: </td><td>$login</td></tr>\n";
       echo "<input type='hidden' name='login' value='$login'>\n";
    }
-
+   if ($type=="me") {
+      echo "<tr><td>Menu display: </td>";
+      if ($USER["settings"]["menustyle"])
+         $dchecked="checked";
+      else
+         $schecked="checked";
+      echo "<td><input type='radio' name='menustyle' $schecked value='0'>scattered &nbsp;&nbsp;<input type='radio' name='menustyle' $dchecked value='1'>drop-down</td></tr>";
+   }
+   
    if ($USER["permissions"] >= $WRITE && ($system_settings["authmethod"] <> 2
          || ($type=="me" && $HTTP_SESSION_VARS["authmethod"]=="sql") 
          || $type=="create") ) {
@@ -306,7 +322,7 @@ function show_user_form ($type) {
       echo "<input type=\"hidden\" name=\"user_group\" value=\"" . $USER["groupid"] . "\">";
    }
 
-   // Checkboxes to give user spermissions 
+   // Checkboxes to give user permissions 
    // set default choice 
    if ( !($permissions) )
       $permissions = $ACTIVE | $READ | $WRITE;
@@ -377,7 +393,7 @@ if ($type=="me") {
       $fieldname=strtok(","); 
    }
    show_user_form("me");
-   printfooter();
+   printfooter($db,$USER);
    exit();
 }
 if ($me=="Change Settings") {
@@ -386,7 +402,7 @@ if ($me=="Change Settings") {
    navbar ($USER["permissions"]);
    modify ($db, "me");
    show_user_form("me");
-   printfooter();
+   printfooter($db,$USER);
    exit();
 }
 
@@ -574,7 +590,7 @@ else {
 
 
 }
-printfooter();
+printfooter($db,$USER);
 
 ?>
 
