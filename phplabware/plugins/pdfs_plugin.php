@@ -127,8 +127,9 @@ function plugin_check_data($db,&$field_values,$table_desc,$modify=false)
       $field_values["fpage"]=(int)$fpage;
       $field_values["lpage"]=(int)$lpage;
       // there can be a line 2 with 'Comment in:' put in notes and delete
+      // same for line with Erratum in:
       // ugly shuffle to get everything right again
-      if (substr($line[2],0,11)=="Comment in:") {
+      if ((substr($line[2],0,11)=="Comment in:") || (substr($line[2],0,11)=="Erratum in:") ) {
          $field_values["notes"]=$line[2].$field_values["notes"];
 	 $line[2]=$line[3];
 	 $line[3]=$line[4];
