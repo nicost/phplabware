@@ -24,7 +24,7 @@ function update_opener_js ($db,$table) {
    $result.=" new Array(\n";
    //leave first choice blank:
    $result.="   new Array(\"\",\"\")";
-   $query = "SELECT id,typeshort FROM $table ORDER BY sortkey";
+   $query = "SELECT id,typeshort FROM $table ORDER BY sortkey,typeshort";
    $r=$db->Execute($query);
    $rownr=0;
    // enter all entries into array
@@ -78,7 +78,7 @@ function show_type ($db,$table,$name, $tablename=false) {
    echo "<td align='center'><input type='submit' name='addtype_$table' value='Add'></td></tr>\n";
 
    // retrieve records from database
-   $query = "SELECT id,type,typeshort,sortkey FROM $table ORDER BY sortkey";
+   $query = "SELECT id,type,typeshort,sortkey FROM $table ORDER BY sortkey,type";
    
    $r=$db->Execute($query);
    $rownr=0;
