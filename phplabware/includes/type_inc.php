@@ -13,7 +13,7 @@
   *  option) any later version.                                              *
   \**************************************************************************/
 
-function show_type ($db,$table,$name, $tablename) {
+function show_type ($db,$table,$name, $tablename=false) {
    global $HTTP_POST_VARS,$PHP_SELF,$HTTP_GET_VARS;
 
    $dbstring=$PHP_SELF."?";
@@ -102,32 +102,33 @@ function del_type ($db,$table,$index,$table2) {
 
    $id=$HTTP_POST_VARS["type_id"][$index]; 
    $string="";
-   if ($DBNAME)
-   	{   
-	   $recordref=get_cell($db,$DB_DESNAME,label,associated_table,$table);
-	   if ($id) 
-	   	{
-	      $r=$db->Execute("UPDATE $table2 SET $recordref='' WHERE $recordref='$id'");
-	      if ($r) 
-	         {$r=$db->Execute("DELETE FROM $table WHERE id=$id");}
-	      if ($r){$string="<h3 align='center'>Record removed</h3>\n";}
-	   	}
-	   else  {$string="<h3 align='center'>Please enter all fields</h3>\n";}
-	   }	   
-	else 
-		{
-		 if ($id) {
-      	$table_array=explode("_",$table);
-      	$r=$db->Execute("UPDATE $table2 SET ".$table_array[1]."='' WHERE ".
+   if ($DBNAME) {
+      $recordref=get_cell($db,$DB_DESNAME,label,associated_table,$table);
+      if ($id) {
+         $r=$db->Execute("UPDATE $table2 SET $recordref='' WHERE $recordref='$id'");
+         if ($r) 
+	    $r=$db->Execute("DELETE FROM $table WHERE id=$id");
+	 if ($r)
+	    $string="<h3 align='center'>Record removed</h3>\n";
+      }
+      else  
+         $string="<h3 align='center'>Please enter all fields</h3>\n";
+   }	   
+   else { 
+      if ($id) {
+         $table_array=explode("_",$table);
+      	 $r=$db->Execute("UPDATE $table2 SET ".$table_array[1]."='' WHERE ".
                        $table_array[1]."=$id");
-      	if ($r) // keep database structure intact
-      	   $r=$db->Execute("DELETE FROM $table WHERE id=$id");
-      	if ($r){$string="<h3 align='center'>Record removed</h3>\n";}
-   		}
-		else {$string="<h3 align='center'>Please enter all fields</h3>\n";}
-     	}
+      	 if ($r) // keep database structure intact
+      	    $r=$db->Execute("DELETE FROM $table WHERE id=$id");
+      	 if ($r)
+	    $string="<h3 align='center'>Record removed</h3>\n";
+      }
+      else 
+         $string="<h3 align='center'>Please enter all fields</h3>\n";
+   }
      
-	echo "$string";
+   echo "$string";
    return false;
 }
 
@@ -136,6 +137,7 @@ function del_type ($db,$table,$index,$table2) {
 //
 function mod_type ($db,$table,$index) {
    global $HTTP_POST_VARS;
+   
    $id=$HTTP_POST_VARS["type_id"][$index]; 
    $type=$HTTP_POST_VARS["type_type"][$index]; 
    $typeshort=$HTTP_POST_VARS["type_typeshort"][$index]; 
