@@ -273,6 +273,8 @@ function plugin_show($db,$tableinfo,$id,$USER,$system_settings,$backbutton=true)
       echo "<td colspan=7 align='center'><input type='submit' name='submit' value='Back'></td>\n";
       echo "</tr>\n";
    }
+   else
+      echo "<tr><td colspan=8 align='center'>&nbsp;<br><button onclick='self.close();window.opener.focus();' name='Close' value='close'>Close</button></td></tr>\n";
    echo "</table></form>\n";
 }
 

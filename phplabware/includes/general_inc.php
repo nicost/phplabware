@@ -285,9 +285,11 @@ function display_record($db,$Allfields,$id,$tablename,$real_tablename,$backbutto
    echo "<form method='post' action='$PHP_SELF?tablename=$tablename&".SID."'>\n";
    echo "<input type='hidden' name='md' value='$md'>\n";
    if ($backbutton) {
-      echo "<tr>\n<td colspan=7 align='center'>";
+      echo "<tr>\n<td colspan=8 align='center'>";
       echo "<input type='submit' name='submit' value='Back'></td>\n</tr>\n";
    }
+   else
+      echo "<tr><td colspan=8 align='center'>&nbsp;<br><button onclick='self.close();window.opener.focus();' name='Close' value='close'>Close</button></td></tr>\n";
    echo "</table>";
 }
 
