@@ -37,6 +37,14 @@ if ($searchj)
 // returns false if something can not be fixed
 // This function queries ncbi and pulls data associated with a paper into the database
 function check_pd_data ($db,&$field_values) {
+   global $HTTP_POST_FILES;
+   // some browsers do not send a mime type??  
+   if (is_readable($HTTP_POST_FILES["file"]["tmp_name"][0])) {
+      if (!$HTTP_POST_FILES["file"]["type"][0]) {
+         // we simply force it to be a pdf risking users making a mess
+         $HTTP_POST_FILES["file"]["type"][0]="application/pdf";
+      }
+   }
    // avoid problems with spaces and the like
    $field_values["pmid"]=trim($field_values["pmid"]);
    // no fun without a pmid
