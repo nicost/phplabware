@@ -264,7 +264,7 @@ function navbar($permissions) {
 ////
 // !Prints initial part of webpage
 function printheader($title,$head=false) {
-   global $db,$version;
+   global $db,$version, $active;
 
    header("Cache-Control: private, no-cache, musti-revalidate");
    header("Expires: Mon, 26 Jul 1997 05:00:00 GMT");
@@ -285,14 +285,16 @@ function printheader($title,$head=false) {
    <tr class='header' bgcolor="333388">
 <?php
    // first display the linkbar if activated
-   $r=$db->Execute("select display from tableoftables where tablename ='linkbar'");
-   if ($r->fields[0]=="1") {
-      $linkr=$db->Execute("select label,linkurl,target from linkbar where display ='Y' ORDER by sortkey");
-      if ($linkr) {
-         while (!$linkr->EOF) {
-         /*   if (($count%$links_per_row)==0)
-                  echo "</tr><tr bgcolor='ffeeff' align='center'>";
-         */
+   // only show linkbar when we have been authenticated
+   if ($active) {
+      $links_per_row=5;
+      $r=$db->Execute("select display from tableoftables where tablename ='linkbar'");
+      if ($r->fields[0]=="1") {
+         $linkr=$db->Execute("select label,linkurl,target from linkbar where display ='Y' ORDER by sortkey");
+         if ($linkr) {
+            while (!$linkr->EOF) {
+            if (($count%$links_per_row)==0)
+               echo "</tr><tr bgcolor='333388' align='center'>";
                $Tlinkname=$linkr->fields[0];
                $urlname=$linkr->fields[1];
                if ($linkr->fields[2]=="S")
@@ -305,10 +307,12 @@ function printheader($title,$head=false) {
             }
          } 
       }
-?>
+   }
+
+   ?>
       <td align=right>
          <a href="http://phplabware.sourceforge.net">
-         <font size=+1 color="#ffffff"><i>PhpLabWare  
+         <font color="#ffffff"><i>PhpLabWare  
              <?php if ($version) echo "version $version"; ?></i></font>
          </a>
       </td>
