@@ -63,8 +63,6 @@ $gs=$system_settings["gs"];
 if (!@is_readable($gs))
    echo "Could not read ghostscipt binary (gs) at '$gs'.<br>";
    
-echo "gs: $gs.<br>";
-
    
 // find unindexed files with mime types we can work with
 $rfiles=$db->Execute("SELECT id,filename,tablesfk,ftableid,mime,ftablecolumnid FROM files WHERE indexed IS NULL AND (mime LIKE '%text%' OR mime LIKE '%pdf%')");
