@@ -106,10 +106,14 @@ function modify ($db,$table,$fields,$fieldvalues,$id,$USER) {
 function delete ($db, $table, $id, $USER) {
    if (!may_write($db,$table,$id,$USER))
       return false;
-   include ('includes/defines_inc.php');
-   if ($USER["permissions"] & $ADMIN)
-      $test=true;
-
+   // check for associated files
+   $tableid=get_cell($db,"tableoftables","id","tablename",$table);
+   $r=$db->Execute("SELECT id FROM files 
+                    WHERE tablesfk=$tableid AND ftableid=$id");
+   while ($r && !$r->EOF) {
+      delete_file ($db,$r->fields("id"),$USER); 
+      $r->MoveNext();
+   }
    // and now delete for real
    if ($db->Execute("DELETE FROM $table WHERE id=$id"))
       return true;
@@ -188,14 +192,15 @@ function get_files ($db,$table,$id,$format=1) {
 // !Deletes file identified with id.
 // Checks 'mother table' whether this is allowed
 // Returns name of deleted file on succes
-function delete_file ($db,$fileid,$USER,$global_settings) {
+function delete_file ($db,$fileid,$USER) {
+   global $system_settings;
    $tableid=get_cell($db,"files","tablesfk","id",$fileid);
    $ftableid=get_cell($db,"files","ftableid","id",$fileid);
    $filename=get_cell($db,"files","filename","id",$fileid);
    $table=get_cell($db,"tableoftables","tablename","id",$tableid);
    if (!may_write($db,$table,$ftableid,$USER))
       return false;
-   if (unlink($global_settings["filedir"]."/$fileid"."_$filename")) {
+   if (unlink($system_settings["filedir"]."/$fileid"."_$filename")) {
       $db->Execute("DELETE FROM files WHERE id=$fileid");
       return $filename;
    }
