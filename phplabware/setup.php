@@ -344,20 +344,21 @@ if ($version) {
 <form enctype='multipart/form-data' method='post' name='globals-form' action='<?php echo $PHP_SELF ?>?<?=SID?>'>
 <?php
    echo "<table border=1 align='center' width='70%'>\n";
-   echo "<tr><th>Description</th><th>Setting</th></tr>\n";
+   echo "<tr><th width='50%'>Description</th><th width='50%'>Setting</th></tr>\n";
 
    echo "<tr><td colspan='2' align='center'><i>Defaults</i></th></tr>\n";
    echo "<tr><td>Default access rights.  A 9 character string using the UNIX access method:</td>\n";
    if (!$system_settings["access"]) 
       $system_settings["access"]="rw-r-----";
-   echo "<td><input type='text' name='access' value='".$system_settings["access"]."'></td></tr>\n";
+   echo "<td><input type='text' size='9' name='access' value='".$system_settings["access"]."'></td></tr>\n";
 
    echo "<tr><td>Default size of thumbnail in table view (in pixels):</td>\n";
-   if (!$system_settings["smallthumbsize"]) 
-      $system_settings["smallthumbsize"]="72";
-   echo "<td><input type='text' name='smallthumbsize' value='".$system_settings["smallthumbsize"]."'></td></tr>\n";
+   if (!$system_settings['smallthumbsize']) 
+      $system_settings['smallthumbsize']='72';
+   echo "<td><input type='text' size='4' name='smallthumbsize' value='".$system_settings["smallthumbsize"]."'></td></tr>\n";
 
    echo "<tr><td colspan='2' align='center'><i>Directories and URLs</i></th></tr>\n";
+   $dirsizestring="size='50'";
 
    echo "<tr><td>Directory <i>files</i>. The webdaemon should ";
    echo "have read and write priveleges, but the directory should not be directly ";
@@ -368,7 +369,7 @@ if ($version) {
       $system_settings["filedir"]=$dir;
    }
    $filedir=$system_settings["filedir"];
-   echo "<td><input type='text' name='filedir' value='$filedir'></td></tr>\n";
+   echo "<td><input type='text' $dirsizestring name='filedir' value='$filedir'></td></tr>\n";
 
    echo "<tr><td>Directory <i>thumbnails</i>. The webdaemon should ";
    echo "have read and write priveleges, but the directory should not be directly ";
@@ -379,7 +380,7 @@ if ($version) {
       $system_settings["thumbnaildir"]=$dir;
    }
    $thumbnaildir=$system_settings["thumbnaildir"];
-   echo "<td><input type='text' name='thumbnaildir' value='$thumbnaildir'></td></tr>\n";
+   echo "<td><input type='text' $dirsizestring name='thumbnaildir' value='$thumbnaildir'></td></tr>\n";
 
    echo "<tr><td>Directory <i>templates</i>. The webdaemon should ";
    echo "have read and write priveleges, but the directory should not be directly ";
@@ -390,7 +391,7 @@ if ($version) {
       $system_settings["templatedir"]=$dir;
    }
    $templatedir=$system_settings["templatedir"];
-   echo "<td><input type='text' name='templatedir' value='$templatedir'></td></tr>\n";
+   echo "<td><input type='text' $dirsizestring name='templatedir' value='$templatedir'></td></tr>\n";
 
    echo "<tr><td>Directory for <i>temporary</i> files. For security reasons, only the webdaemon should be able to read (and write) files here.  Usually, this is <b>not</b> the case for directory <i>/tmp</i>. </td>";
    if (!$system_settings["tmpdir"]) 
@@ -401,25 +402,25 @@ if ($version) {
       echo "<tr><td>Directory for exchange of files between the webdaemon and the postgres daemon.  Both should be able to read and write here. </td>";
       if (!$system_settings["tmpdirpsql"]) 
          $system_settings["tmpdirpsql"]="/tmp";
-      echo "<td><input type='text' name='tmpdirpsql' value='".$system_settings["tmpdirpsql"]."'></td></tr>\n";
+      echo "<td><input type='text' $dirsizestring name='tmpdirpsql' value='".$system_settings["tmpdirpsql"]."'></td></tr>\n";
    }
    
    echo "<tr><td>Server URL.</td>\n ";
    if (!$system_settings["baseURL"]) {
       $system_settings["baseURL"]="http://".getenv("SERVER_NAME");
    }
-   echo "<td><input type='text' name='baseURL' value='".$system_settings["baseURL"]."'></td></tr>\n";
+   echo "<td><input type='text' $dirsizestring name='baseURL' value='".$system_settings["baseURL"]."'></td></tr>\n";
       
    echo "<tr><td>URL to return to after logging out.\n ";
    echo "(Try: http://".getenv("SERVER_NAME").")</td>\n";
-   echo "<td><input type='text' name='homeURL' value='".$system_settings["homeURL"]."'></td></tr>\n";
+   echo "<td><input type='text' $dirsizestring name='homeURL' value='".$system_settings["homeURL"]."'></td></tr>\n";
 
    echo "<tr><td colspan='2' align='center'><i>Files with new additions</i>\n";
    echo "<br>Certain modules can write a file with information about the last added record.  You could show this information on a webpage.  If you don't use this, leave blank.</th></tr>\n";
    echo "<tr><td>New addition file for protocols.</td>\n ";
-   echo "<td><input type='text' name='protocols_file' value='".$system_settings["protocols_file"]."'></td></tr>\n";
+   echo "<td><input type='text' $dirsizestring name='protocols_file' value='".$system_settings["protocols_file"]."'></td></tr>\n";
    echo "<tr><td>New addition file for pdfs.</td>\n ";
-   echo "<td><input type='text' name='pdfs_file' value='".$system_settings["pdfs_file"]."'></td></tr>\n";
+   echo "<td><input type='text' $dirsizestring name='pdfs_file' value='".$system_settings["pdfs_file"]."'></td></tr>\n";
    
    echo "<tr><td colspan='2' align='center'><i>Helper Applications</i></th></tr>\n";
    echo "<tr><td>wvHtml (used to convert MSWord files into HTML):</td>\n";
@@ -429,7 +430,7 @@ if ($version) {
       if (!strtok(" "))
          $system_settings["word2html"]=$tok;
    }
-   echo "<td><input type='text' name='word2html' value='".$system_settings["word2html"]."'></td></tr>\n";
+   echo "<td><input type='text' $dirsizestring name='word2html' value='".$system_settings["word2html"]."'></td></tr>\n";
 
    echo "<tr><td>Ghostscript (gs, needed to index pdf files):</td>\n";
    if (!$system_settings["gs"]) { 
@@ -438,7 +439,7 @@ if ($version) {
       if (!strtok(" "))
          $system_settings["gs"]=$tok;
    }
-   echo "<td><input type='text' name='gs' value='".$system_settings["gs"]."'></td></tr>\n";
+   echo "<td><input type='text' $dirsizestring name='gs' value='".$system_settings["gs"]."'></td></tr>\n";
 
    echo "<tr><td>Imagemagick's convert (convert, needed for images):</td>\n";
    if (!$system_settings["convert"]) { 
@@ -447,14 +448,14 @@ if ($version) {
       if (!strtok(" "))
          $system_settings["convert"]=$tok;
    }
-   echo "<td><input type='text' name='convert' value='".$system_settings["convert"]."'></td></tr>\n";
+   echo "<td><input type='text' $dirsizestring name='convert' value='".$system_settings["convert"]."'></td></tr>\n";
 
 
    echo "<tr><td colspan='2' align='center'><i>Localization</i></th></tr>\n";
    echo "<tr><td>Date Format:</td>\n";
    $query="SELECT dateformat,id FROM dateformats ORDER BY sortkey";
    $r=$db->Execute($query);
-   echo "\n<td align='center'>";
+   echo "\n<td>";
    echo $r->GetMenu2("dateformat",$system_settings["dateformat"],false);
    echo "</td></tr>\n";
 
@@ -463,7 +464,7 @@ if ($version) {
    echo "If so, passwords will be encrypted while in transit.\n";
    echo "Do <b>not</b> enter yes if you don't have a secure server.</td>\n";
    echo "<td>";
-   if ($system_settings["secure_server"])
+   if ($system_settings['secure_server'])
       echo "Yes <input type='radio' name='secure_server_new' checked value='Yes'>
             &nbsp&nbsp No<input type='radio' name='secure_server_new' value='No'>
             \n";
@@ -475,19 +476,19 @@ if ($version) {
    echo "<tr><td>Authentification method.  For PAM you will need the utility 'testpwd' available <a href='http://sourceforge.net/project/showfiles.php?group_id=17393'>here</a>. </td>";
    $query="SELECT method,id FROM authmethods";
    $r=$db->Execute($query);
-   echo "\n<td align='center'>";
-   echo $r->GetMenu2("authmethod",$system_settings["authmethod"],false);
+   echo "\n<td>";
+   echo $r->GetMenu2('authmethod',$system_settings['authmethod'],false);
    echo "</td></tr>\n";
    echo "<tr><td>(When using PAM:) Location of check_pwd. ";
    echo "Please use this only in conjunction with the sudo command</td>\n";
    echo "<td>\n";
-   $checkpwd=$system_settings["checkpwd"];
+   $checkpwd=$system_settings['checkpwd'];
    echo "<input type='text' name='checkpwd' value='$checkpwd'></td></tr>\n";
 
    echo "<tr><td colspan='2' align='center'><i>Pdfs</i></th></tr>\n";
    echo "<tr><td>GET variable to add to Pubmed request (for instance: 'holding=ucsflib')</td>";
-   $pdfget=$system_settings["pdfget"];
-   echo "<td><input type='text'name='pdfget' value='$pdfget'></td></tr>\n";
+   $pdfget=$system_settings['pdfget'];
+   echo "<td><input type='text' $dirsizestring name='pdfget' value='$pdfget'></td></tr>\n";
 
    echo "<tr><td colspan=2 align='center'><input align=center type=submit 
          name=action value=submit></td></tr>\n";  
