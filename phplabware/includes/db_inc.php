@@ -74,6 +74,7 @@ function add ($db,$table,$fields,$fieldvalues,$USER) {
 // Fieldvalues must be an associative array containing all the $fields to be added.
 // If a field is not present in $fieldvalues, it will not be changed.  
 // The entry 'id' in $fields will be ignored.
+// Fields lastmodby and lastmoddate will be automatically set
 function modify ($db,$table,$fields,$fieldvalues,$id,$USER) {
    if (!may_write($db,$table,$id,$USER))
       return false;
@@ -84,6 +85,10 @@ function modify ($db,$table,$fields,$fieldvalues,$id,$USER) {
          $test=true;
          if ($column=="access")
             $fieldvalues["access"]=get_access($fieldvalues);
+         if ($column=="lastmodby")
+            $fieldvalues["lastmodby"]=$USER["id"];
+         if ($column=="lastmoddate")
+            $fieldvalues["lastmoddate"]=time();
          $query.="$column='$fieldvalues[$column]',";
       }
       $column=strtok(",");
@@ -164,7 +169,7 @@ function upload_files ($db,$table,$id,$USER,$system_settings) {
 // files associated with the given record
 function get_files ($db,$table,$id,$format=1) {
    $tableid=get_cell($db,"tableoftables","id","tablename",$table);
-   $r=$db->Execute("SELECT id,filename,title,type FROM files WHERE tablesfk=$tableid AND ftableid=$id");
+   $r=$db->Execute("SELECT id,filename,title,mime FROM files WHERE tablesfk=$tableid AND ftableid=$id");
    if ($r && !$r->EOF) {
       $i=0;
       $sid=SID;
@@ -172,7 +177,8 @@ function get_files ($db,$table,$id,$format=1) {
          $filesid=$files[$i]["id"]=$r->fields("id");
          $filesname=$files[$i]["name"]=$r->fields("filename");
          $filestitle=$files[$i]["title"]=$r->fields("title");
-         $filestype=$files[$i]["type"]=get_cell($db,"filetypes","typeshort","id",$r->fields("type"));
+         $temp=$r->fields("mime");
+         $filestype=$files[$i]["type"]=substr(strrchr($temp,"/"),1);
 	 if ($format==1) {
             if ($filestitle)
                $text=$filestitle;
