@@ -374,7 +374,7 @@ function display_midbar($labelcomma)
 function comma_array_SQL_where($db,$tablein,$column,$searchfield,$searchval)
 	{
 	$tempa=array();
-	$rs = $db->Execute("select $column from $tablein where $searchfield='$searchval'");
+	$rs = $db->Execute("select $column from $tablein where $searchfield='$searchval' order by sortkey");
 
 	if ($rs)
 		{
@@ -393,7 +393,7 @@ return $out;
 // !SQL search (entrire column) that returns a comma delimited string
 function comma_array_SQL($db,$tablein,$column) {
 	$tempa=array();
-	$rs = $db->Execute("select $column from $tablein");
+	$rs = $db->Execute("select $column from $tablein order by sortkey");
 	if ($rs)
 		{
 		while (!$rs->EOF) {
