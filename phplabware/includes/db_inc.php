@@ -527,6 +527,7 @@ function get_access ($fieldvalues) {
 function may_read_SQL_subselect ($db,$table,$tableid,$USER,$clause=false) {
    include ('includes/defines_inc.php');
    $query="SELECT id FROM $table ";
+
    if ($USER["permissions"] & $SUPER) {
       if ($clause)
          $query .= "WHERE $clause";
@@ -620,7 +621,7 @@ function may_read_SQL ($db,$tableinfo,$USER,$temptable="tempa") {
    }
    else {
       //return may_read_SQL_subselect ($db,$table,$tableid,$USER);
-      $r=$db->Execute(may_read_SQL_subselect ($db,$tableinfo->realname,$tableinfo->id,$USER));
+      $r=$db->Execute(may_read_SQL_subselect ($db,$tableinfo->realname,$tableinfo->id,$USER,false));
       $result["numrows"]=$r->NumRows();
       make_temp_table($db,$temptable,$r); 
       $result["sql"] = " ($tableinfo->realname.id = $temptable.uniqueid) ";
