@@ -1090,13 +1090,17 @@ function searchhelp ($db,$tableinfo,$column,&$columnvalues,$query,$wcappend,$and
       }
       else {
          $query[5]=true;
-         // since all tables now have desc. tables,we can check for int/floats
-         // should probably do this more upstream for performance gain
          if ($rc->fields[1]=='file' && $rc->fields[2]) {
+            // we append a wild-card here, not necessarily a cool idea 
             $rw=$db->Execute("SELECT id FROM words WHERE word LIKE '".strtolower($columnvalues[$column])."%'");
             if ($rw && $rw->fields[0]) {
+               $rid=$db->Execute("SELECT DISTINCT recordid AS id FROM {$rc->fields[2]} WHERE wordid='{$rw->fields[0]}'");
+               $list=make_SQL_ids($rid,$list);
+               $query[2].="$and {$tableinfo->realname}.id IN ($list) ";   
+               /* This resulst in very slow SQL execution
                $query[1].="LEFT JOIN {$rc->fields[2]} ON {$tableinfo->realname}.id={$rc->fields[2]}.recordid ";
                $query[2].="$and {$rc->fields[2]}.wordid='{$rw->fields[0]}' ";
+               */
             }
 	    else $query[2].="$and id=0 ";
          }
@@ -1162,6 +1166,8 @@ function searchhelp ($db,$tableinfo,$column,&$columnvalues,$query,$wcappend,$and
                $query[2].="$and {$tableinfo->realname}.id IN (-1) ";
                
          }
+         // since all tables now have desc. tables,we can check for int/floats
+         // should probably do this more upstream for performance gain
          elseif ($rc->fields[1]=='date') {
             $query[2].= datetoSQL($columnvalues[$column],$column,$and);
          }
