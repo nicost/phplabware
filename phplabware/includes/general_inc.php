@@ -226,6 +226,7 @@ function display_table_info($db,$tableid,$DB_DESNAME,$Fieldscomma,$pr_query,$num
 function display_record($db,$Allfields,$id,$tablename,$real_tablename) {
    global $PHP_SELF, $md;
 
+   echo "&nbsp;<br>\n";
    echo "<table border=0 align='center'>\n";
    $count=0;
    echo "<tr>\n";
