@@ -299,14 +299,12 @@ function delete ($db, $tableid, $id, $USER, $filesonly=false) {
       return false;
 
    // check for associated files
-   $db->debug=true;
    $r=$db->Execute("SELECT id FROM files 
                     WHERE tablesfk=$tableid AND ftableid=$id");
    while ($r && !$r->EOF) {
       delete_file ($db,$r->fields("id"),$USER); 
       $r->MoveNext();
    }
-   $db->debug=false;
    // and now delete for real
    if (!$filesonly) {
       if ($db->Execute("DELETE FROM $table WHERE id=$id"))
