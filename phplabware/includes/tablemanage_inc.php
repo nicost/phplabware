@@ -38,7 +38,7 @@ function create_new_table($db){
    echo "<td><input type='text' name='table_custom' value=''></td>\n";
    echo "<td align='center'><input type='submit' name='add_table' value='Add'></td></tr>\n";
  
-   $query = "SELECT id,tablename,Display,sortkey,Custom FROM tableoftables ORDER BY sortkey";
+   $query = "SELECT id,tablename,display,sortkey,custom FROM tableoftables ORDER BY sortkey";
    $r=$db->Execute($query);
    $rownr=0;
    // print all entries
@@ -46,9 +46,9 @@ function create_new_table($db){
       // get results of each row
       $id = $r->fields["id"];
       $name = $r->fields["type"];
-      $Display = $r->fields["Display"];
+      $Display = $r->fields["display"];
       $sortkey = $r->fields["sortkey"];
- 	 $Custom = $r->fields["Custom"];
+      $Custom = $r->fields["custom"];
    
       // print start of row of selected group
       if ($rownr % 2)
@@ -164,7 +164,7 @@ function add_table ($db,$tablename,$sortkey) {
          $r=$db->Execute("SELECT id FROM tableoftables WHERE shortname='$shortname'");
          if ($r->fields["id"])
             $shortname.="$id";
-  	 $r=$db->Execute("INSERT INTO tableoftables (id,sortkey,tablename,shortname,Display,Permission) Values($id,'$sortkey','$tablename','$shortname','Y','Users')");
+  	 $r=$db->Execute("INSERT INTO tableoftables (id,sortkey,tablename,shortname,display,permission) Values($id,'$sortkey','$tablename','$shortname','Y','Users')");
          $r=$db->Execute("CREATE TABLE $desc (
 		id int PRIMARY KEY,
 		sortkey int,
@@ -208,7 +208,7 @@ function add_table ($db,$tablename,$sortkey) {
 function mod_table($db,$id,$tablename,$tablesort,$tabledisplay) {
    global $string;
 
-   $r=$db->Execute("UPDATE tableoftables SET sortkey='$tablesort',Display='$tabledisplay' where id='$id'");   	
+   $r=$db->Execute("UPDATE tableoftables SET sortkey='$tablesort',display='$tabledisplay' where id='$id'");   	
    if ($r) 
       $string="Succesfully Changed Record $tablename";
    else 
