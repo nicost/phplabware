@@ -115,10 +115,14 @@ function modify ($db,$table,$fields,$fieldvalues,$id,$USER) {
 // Checks whether the delete is allowed
 // This is very generic, it is likely that you will need to do more cleanup
 function delete ($db, $table, $id, $USER, $filesonly=false) {
+
+   $tableid=get_cell($db,"tableoftables","id","tablename",$table);
+   if ($tableid > 9999)
+      $table .= "_".$tableid;
    if (!may_write($db,$table,$id,$USER))
       return false;
+
    // check for associated files
-   $tableid=get_cell($db,"tableoftables","id","tablename",$table);
    $r=$db->Execute("SELECT id FROM files 
                     WHERE tablesfk=$tableid AND ftableid=$id");
    while ($r && !$r->EOF) {
@@ -145,10 +149,21 @@ function delete ($db, $table, $id, $USER, $filesonly=false) {
 // returns id of last uploaded file upon succes, false otherwise
 function upload_files ($db,$table,$id,$USER,$system_settings) {
    global $HTTP_POST_FILES,$HTTP_POST_VARS,$system_settings;
-   if (!$db && $table && $id)
+
+   $tablesid=get_cell($db,"tableoftables","id","tablename",$table);
+   if ($tablesid>10000)
+      $real_tablename=$table."_".$tablesid;
+   else
+      $real_tablename=$table;
+
+   if (!$db && $tablename && $id) {
+      echo "Error in code: $db, $tablename, or $id is not defined.<br>";
       return false;
-   if (!may_write($db,$table,$id,$USER))
+   }
+   if (!may_write($db,$real_tablename,$id,$USER)) {
+      echo "You do not have permission to write to table $real_tablename.<br>";
       return false;
+   }
    if (isset($HTTP_POST_FILES["file"]["name"][0]) && !$filedir=$system_settings["filedir"]) {
       echo "<h3><i>Filedir</i> was not set.  The file was not uploaded. Please contact your system administrator</h3>";
       return false;
@@ -166,7 +181,6 @@ function upload_files ($db,$table,$id,$USER,$system_settings) {
       $type=$HTTP_POST_VARS["filetype"][$i];
       // this works asof php 4.02
       if (move_uploaded_file($HTTP_POST_FILES["file"]["tmp_name"][$i],"$filedir/$fileid"."_"."$originalname")) {
-         $tablesid=get_cell($db,"tableoftables","id","tablename",$table);
          $query="INSERT INTO files (id,filename,mime,size,title,tablesfk,ftableid,type) VALUES ($fileid,'$originalname','$mime','$size','$title','$tablesid',$id,'$filestype')";
 	 $db->Execute($query);
       }
@@ -229,10 +243,13 @@ function file_path ($db,$fileid) {
 // Returns name of deleted file on succes
 function delete_file ($db,$fileid,$USER) {
    global $system_settings;
+
    $tableid=get_cell($db,"files","tablesfk","id",$fileid);
    $ftableid=get_cell($db,"files","ftableid","id",$fileid);
    $filename=get_cell($db,"files","filename","id",$fileid);
    $table=get_cell($db,"tableoftables","tablename","id",$tableid);
+   if ($tableid > 9999)
+      $table = $table ."_".$tableid;
    if (!may_write($db,$table,$ftableid,$USER))
       return false;
    if (unlink($system_settings["filedir"]."/$fileid"."_$filename")) {
