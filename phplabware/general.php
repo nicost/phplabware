@@ -19,7 +19,7 @@ require("includes/db_inc.php");
 require("includes/general_inc.php");
 
 // register variables
-$getvars="tablename,showid,edit_type,add";
+$get_vars="tablename,showid,edit_type,add";
 globalize_vars($get_vars, $HTTP_GET_VARS);
 $post_vars = "add,submit,search,searchj";
 globalize_vars($post_vars, $HTTP_POST_VARS);
