@@ -211,8 +211,8 @@ function add ($db,$table,$fields,$fieldvalues,$USER,$tableid) {
       return false;
    }
    // test if upload already took place through variable magic
-   if ($fieldvalues["magic"])
-      if ($test=get_cell($db,$table,"id","magic",$fieldvalues["magic"])) {
+   if ($fieldvalues['magic'])
+      if ($test=get_cell($db,$table,'id','magic',$fieldvalues['magic'])) {
          echo "<h3 align='center'>That record was already uploaded.</h3>\n";
          return -1;
       }
@@ -257,11 +257,11 @@ function add ($db,$table,$fields,$fieldvalues,$USER,$tableid) {
 	 $column=strtok(",");
       }
       // add trusted users entered on the form
-      if (is_array($fieldvalues["trust_read"]))
-         foreach ($fieldvalues["trust_read"] as $userid)
+      if (is_array($fieldvalues['trust_read']))
+         foreach ($fieldvalues['trust_read'] as $userid)
             $db->Execute("INSERT INTO trust VALUES ('$tableid','$id','$userid','r')");
-      if (is_array($fieldvalues["trust_write"]))
-         foreach ($fieldvalues["trust_write"] as $userid)
+      if (is_array($fieldvalues['trust_write']))
+         foreach ($fieldvalues['trust_write'] as $userid)
             $db->Execute("INSERT INTO trust VALUES ('$tableid','$id','$userid','w')");
       $query="INSERT INTO $table ($columns) VALUES ($values)";
       if ($db->Execute($query))
@@ -296,6 +296,8 @@ function update_mpulldown ($db,$key_table,$recordid,$valueArray) {
 function modify ($db,$table,$fields,$fieldvalues,$id,$USER,$tableid) {
    if (!may_write($db,$tableid,$id,$USER))
       return false;
+//$db->debug=true;
+//print_r($fieldvalues);
    // delete all entries in trust related to this record first
    $db->Execute("DELETE FROM trust WHERE tableid='$tableid' and recordid='$id'");
    // then add back trusted users entered on the form
@@ -331,6 +333,7 @@ function modify ($db,$table,$fields,$fieldvalues,$id,$USER,$tableid) {
    if ($test) {
       $query.=" WHERE id='$id'";
       $result=$db->Execute($query);
+//$db->debug=false;
       if ($result) {
          if (function_exists('plugin_modify')) {
             plugin_modify($db,$tableid,$id);
