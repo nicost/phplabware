@@ -254,7 +254,7 @@ function display_record($db,$Allfields,$id,$tablename,$real_tablename,$backbutto
             $textlarge=nl2br(htmlentities($nowfield[values]));
             echo "<th>$nowfield[label]</th><td colspan=2>$textlarge</td>\n";
          }
-         elseif ($nowfield[datatype]=="file") {
+         elseif ($nowfield["datatype"]=="file" || $nowfield["datatype"]=="image") {
             $files=get_files($db,$tablename,$id,$nowfield["columnid"]);
             if ($files) { 
                echo "<th>Files:</th>\n<td colspan=5>";
@@ -416,7 +416,7 @@ function display_add($db,$tableinfo,$Allfields,$id,$namein,$system_settings) {
 	       echo"<sup style='color:red'>&nbsp;*</sup>";
 	    echo "</th><td colspan=6><textarea name='$nowfield[name]' rows='5' cols='100%'>$nowfield[values]</textarea>";
 	 }
-	 if ($nowfield["datatype"]=="file") {
+	 if ($nowfield["datatype"]=="file" || $nowfield["datatype"]=="image") {
 	    $files=get_files($db,$tableinfo->name,$id,$nowfield["columnid"]);
 	    echo "<tr>";
 	    echo "<th>$nowfield[label]:</th>\n";
@@ -427,7 +427,10 @@ function display_add($db,$tableinfo,$Allfields,$id,$namein,$system_settings) {
 	       echo "&nbsp;&nbsp;(<i>".$files[$i]["name"]."</i>, ".$files[$i]["type"]." file)</td>\n";
 	       echo "<td><input type='submit' name='def_".$files[$i]["id"]."' value='Delete' Onclick=\"if(confirm('Are you sure the file ".$files[$i]["name"]." should be removed?')){return true;}return false;\"></td></tr>\n";
 	    }
-	    echo "<tr><th>Replace file(s) with</th>\n";
+            if ($files)
+	       echo "<tr><th>Replace ".$nowfield["datatype"]."(s) with</th>\n";
+            else
+	       echo "<tr><th>Upload ".$nowfield["datatype"]."</th>\n";
 	    echo "<td>&nbsp;</td><td><input type='file' name='".$nowfield[name]."[]' value='$filename'></td>\n";
 	    echo "</tr></table><br>\n\n";
 	 }
@@ -523,12 +526,21 @@ function getvalues($db,$tableinfo,$fields,$qfield=false,$field=false) {
                else 
                   ${$column}["text"]="yes";
             }
-            elseif ($rb->fields["datatype"]=="file") {
+            elseif ($rb->fields["datatype"]=="file" || $rb->fields["datatype"]=="image") {
                $tbname=get_cell($db,"tableoftables","tablename","id",$tableinfo->id);
                $files=get_files($db,$tbname,$id,${$column}["columnid"],3);
                if ($files) 
                   for ($i=0;$i<sizeof($files);$i++)
                      ${$column}["text"].=$files[$i]["link"];
+/*
+print_r(${$column});
+echo "<br>";
+print_r($files);
+echo "<br>";
+print_r($rb->fields);
+echo "<br>";
+*/
+
             }
             elseif ($rb->fields["datatype"]=="user") {
                $rname=$db->Execute("SELECT firstname,lastname,email FROM users WHERE id=".${$column}["values"]);

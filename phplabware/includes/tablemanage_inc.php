@@ -363,22 +363,38 @@ function add_columnecg($db,$tablename2,$colname2,$label,$datatype,$Rdis,$Tdis,$r
 /////////////////////////////////////////////////////////////////////////
 //// 
 // !modifies a general column entry
-function mod_columnECG($db,$id,$sort,$tablename,$colname,$label,$datatype,$Rdis,$Tdis,$req,$modifiable) {
-   global $string;
+function mod_columnECG($db,$sort,$offset) {
+   global $string,$HTTP_POST_VARS;
+
+   $id=$HTTP_POST_VARS["column_id"][$offset]; 
+   $colname=$HTTP_POST_VARS["column_name"][$offset];
+   $label=$HTTP_POST_VARS["column_label"][$offset];
+   $datatype=$HTTP_POST_VARS["column_datatype"][$offset];
+   $thumbsize=$HTTP_POST_VARS["thumbsize"."_$offset"];
+   if (!$thumbsize)
+      $thumbsize="NULL";
+   $Rdis=$HTTP_POST_VARS["column_drecord"][$offset];
+   $Tdis=$HTTP_POST_VARS["column_dtable"][$offset];
+   $sort=$HTTP_POST_VARS["column_sort"][$offset];
+   $req=$HTTP_POST_VARS["column_required"][$offset];
+   $modif=$HTTP_POST_VARS["column_modifiable"][$offset];
+
    // find the id of the table and therewith the tablename
+   $tablename=$HTTP_POST_VARS["table_name"];
    $r=$db->Execute("SELECT id FROM tableoftables WHERE tablename='$tablename'");
    $tableid=$r->fields["id"];
-   // escape bad stuffin label
-   $label=strtr($label,",'","  ");
    $real_tablename=get_cell($db,"tableoftables","real_tablename","id",$tableid);
    $desc=$real_tablename."_desc";
-   $r=$db->Execute("UPDATE $desc SET sortkey='$sort',display_table='$Tdis', display_record='$Rdis',required='$req',label='$label',modifiable='$modifiable' where id='$id'");   	
+
+   // escape bad stuffin label
+   $label=strtr($label,",'","  ");
+   $r=$db->Execute("UPDATE $desc SET sortkey='$sort',display_table='$Tdis', display_record='$Rdis',required='$req',label='$label',modifiable='$modifiable',thumb_x_size=$thumbsize where id='$id'");   	
    if ($r) { 
       $string="Succesfully Changed Column $colname in $tablename";
       return true;
    }
    else 
-      $string="Please enter all fields";
+      $string="Failed to modify column $colname.";
    return false;	
 }
 

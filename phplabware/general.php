@@ -223,14 +223,20 @@ else {
       else {  
          // $id ==-1 when the record was already uploaded
          if ($id>0) {
+            // upload files
             $rb=$db->Execute("SELECT id,columnname,associated_table FROM ".$tableinfo->desname." WHERE datatype='file'");
             while (!$rb->EOF) {
        	       $fileid=upload_files($db,$tableinfo->id,$id,$rb->fields["id"],$rb->fields["columnname"],$USER,$system_settings);
                // try to convert word files into html files
                $htmlfileid=process_file($db,$fileid,$system_settings); 
-               // and try to index the uploaded file
-               //indexfile($db,$tableinfo,$rb->fields["associated_table"],$id,$fileid,$htmlfileid);
                $rb->MoveNext(); 
+            }
+            // upload images
+            $rc=$db->Execute("SELECT id,columnname,associated_table FROM ".$tableinfo->desname." WHERE datatype='image'");
+            while (!$rc->EOF) {
+       	       $imageid=upload_files($db,$tableinfo->id,$id,$rc->fields["id"],$rc->fields["columnname"],$USER,$system_settings);
+               // make thumbnails and do image specific stuff 
+               $rc->MoveNext(); 
             }
             // call plugin code to do something with newly added data
             if (function_exists("plugin_add"))
@@ -250,16 +256,21 @@ else {
          exit;
       }
       else { 
-         $rc=$db->Execute("SELECT id,columnname FROM $tableinfo->desname WHERE datatype='file'");
+         // upload files and images
+         $rc=$db->Execute("SELECT id,columnname,datatype FROM $tableinfo->desname WHERE datatype='file' OR datatype='image'");
          while (!$rc->EOF) {
             if ($HTTP_POST_FILES[$rc->fields["columnname"]]["name"][0]) {
                // delete all existing files
                delete_column_file ($db,$tableinfo->id,$rc->fields["id"],$HTTP_POST_VARS["id"],$USER);
                // store the file uploaded by the user
                $fileid=upload_files($db,$tableinfo->id,$HTTP_POST_VARS["id"],$rc->fields["id"],$rc->fields["columnname"],$USER,$system_settings);
-               // try to convert it to an html file
-               $htmlfileid=process_file($db,$fileid,$system_settings);
-               // and index the file content
+               if ($rc->fields["datatype"]=="file") {
+                  // try to convert it to an html file
+                  $htmlfileid=process_file($db,$fileid,$system_settings);
+               }
+               elseif ($rc->fields["datatype"]=="image"){
+                  // make thumbnails and do image specific stuff
+               }
             }
             $rc->MoveNext(); 
          }
@@ -416,13 +427,13 @@ else {
          $list=$lista;   
          $count=$listb["numrows"];
       }
-      if ($nowfield[datatype]== "link")
+      if ($nowfield["datatype"]== "link")
          echo "<td style='width: 10%'>&nbsp;</td>\n";
       // datatype of column date is text (historical oversight...)
-      elseif ($nowfield[name]=="date") 
+      elseif ($nowfield["name"]=="date") 
          echo "<td style='width: 10%'>&nbsp;</td>\n";
       // datatype of column ownerid is text (historical oversight...)
-      elseif ($nowfield[name]=="ownerid") {
+      elseif ($nowfield["name"]=="ownerid") {
          if ($list) {
             $rowners=$db->Execute("SELECT ownerid FROM $tableinfo->realname WHERE $list");
             while ($rowners && !$rowners->EOF) {
@@ -450,17 +461,15 @@ else {
 	 else 
     	    echo  " <td style='width: 10%'><input type='text' name='$nowfield[name]' value='".${$nowfield[name]}."'size=8></td>\n";
       }
-      elseif ($nowfield[datatype]== "text" || $nowfield[datatype]=="file")
+      elseif ($nowfield["datatype"]== "text" || $nowfield["datatype"]=="file")
          echo  " <td style='width: 25%'><input type='text' name='$nowfield[name]' value='".${$nowfield[name]}."'size=8></td>\n";
-      elseif ($nowfield[datatype]== "textlong")
+      elseif ($nowfield["datatype"]== "textlong")
          echo  " <td style='width: 10%'><input type='text' name='$nowfield[name]' value='".${$nowfield[name]}."'size=8></td>\n";
       elseif ($nowfield["datatype"]== "pulldown") {
          echo "<td style='width: 10%'>";
          if ($USER["permissions"] & $LAYOUT)  {
             $jscript2=" onclick='MyWindow=window.open (\"general.php?tablename=".$tableinfo->name."&edit_type=$nowfield[ass_t]&jsnewwindow=true&formname=$formname&selectname=$nowfield[name]".SID."\",\"type\",\"scrollbar=yes,resizable=yes,width=600,height=400\")'";
             echo "<input type='button' name='edit_button' value='Edit $nowfield[label]' $jscript2><br>\n";
-            //echo "<a href='$PHP_SELF?tablename=$tableinfo->name&edit_type=$nowfield[ass_t]&".SID;
-            //echo "'>Edit $nowfield[label]</a><br>\n";
          }	 		 			
          $rpull=$db->Execute("SELECT typeshort,id from $nowfield[ass_t] ORDER by sortkey,typeshort");
          if ($rpull)
@@ -485,10 +494,8 @@ else {
          }
          echo "$text</td>\n";
       }
-      elseif ($nowfield["datatype"] == "file")
+      elseif ($nowfield["datatype"]=="image")
          echo "<td style='width: 10%'>&nbsp;</td>";
-      //elseif ($nowfield[datatype] == "table")
-      //   echo "<td style='width: 10%'>&nbsp;</td>";
    }	 
    echo "<td style='width: 5%'><input type=\"submit\" name=\"search\" value=\"Search\">&nbsp;";
    echo "<input type=\"submit\" name=\"search\" value=\"Show All\"></td>";

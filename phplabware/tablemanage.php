@@ -75,17 +75,7 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
    }   	
    elseif (substr($key, 0, 9) == "modcolumn") {  
       $modarray = explode("_", $key);
-      $tablename=$HTTP_POST_VARS["table_name"];
-      $id=$HTTP_POST_VARS["column_id"][$modarray[1]]; 
-      $colname=$HTTP_POST_VARS["column_name"][$modarray[1]];
-      $collabel=$HTTP_POST_VARS["column_label"][$modarray[1]];
-      $datatype=$HTTP_POST_VARS["column_datatype"][$modarray[1]];
-      $Rdis=$HTTP_POST_VARS["column_drecord"][$modarray[1]];
-      $Tdis=$HTTP_POST_VARS["column_dtable"][$modarray[1]];
-      $sort=$HTTP_POST_VARS["column_sort"][$modarray[1]];
-      $req=$HTTP_POST_VARS["column_required"][$modarray[1]];
-      $modif=$HTTP_POST_VARS["column_modifiable"][$modarray[1]];
-      mod_columnECG($db,$id,$sort,$tablename,$colname,$collabel,$datatype,$Rdis,$Tdis,$req,$modif);
+      mod_columnECG($db,$sort,$modarray[1]);
       break;
    }   	
    elseif (substr($key, 0, 9) == "delcolumn") { 
@@ -109,7 +99,6 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
       $link_b=get_cell($db,$table_desc,"link_last","id",$id);
       navbar($USER["permissions"]);
       show_active_link_page($db,$tablename,$colname,$collabel,$link_a,$link_b);
-//      rm_columnecg($db,$tablename,$id,$colname,$datatype);
       printfooter();
       exit();
       break;
@@ -129,7 +118,7 @@ if ($editfield)	{
    echo "<h3 align='center'>$string</h3>";
    echo "<h3 align='center'>Edit columns of table <i>$tablelabel</i></h3><br>";
 
-   echo "<form method='post' id='coledit' enctype='multipart/form-data' ";
+   echo "<form method='post' name='tableform' id='coledit' enctype='multipart/form-data' ";
    $dbstring=$PHP_SELF;echo "action='$dbstring?editfield=$editfield&".SID."'>\n"; 
    echo "<table align='center' border='0' cellpadding='2' cellspacing='0'>\n";
    echo "<tr>\n";
@@ -163,12 +152,14 @@ if ($editfield)	{
    echo "<option value='pulldown'>pulldown</option>\n";
    echo "<option value='link'>weblink</option>\n";
    echo "<option value='file'>file</option>\n";
+   if ($system_settings["convert"])
+      echo "<option value='image'>image</option>\n";
    echo "</select></td>\n";
    echo "<td>&nbsp;</td>\n";
    echo "<td>&nbsp;</td>\n";
    echo "<td align='center'><input type='submit' name='addcolumn' value='Add'></td></tr>\n\n";
    
-   $query = "SELECT id,sortkey,columnname,label,display_table,display_record,required,datatype,associated_table,associated_column,associated_local_key,link_first,modifiable FROM $currdesc order by sortkey,label";
+   $query = "SELECT id,sortkey,columnname,label,display_table,display_record,required,datatype,thumb_x_size,associated_table,associated_column,associated_local_key,link_first,modifiable FROM $currdesc order by sortkey,label";
    $r=$db->Execute($query);
    $rownr=0;
    // print all entries
@@ -180,6 +171,7 @@ if ($editfield)	{
       $display_record = $r->fields["display_record"];
       $display_required= $r->fields["required"];
       $datatype = $r->fields["datatype"];
+      $thumbsize=$r->fields["thumb_x_size"];
       $modifiable = $r->fields["modifiable"];
       $link_first = $r->fields["link_first"];
       $sort = $r->fields["sortkey"];
@@ -257,8 +249,13 @@ if ($editfield)	{
             echo "<td>Y</td>\n";
          else
             echo "<td>N</td>\n";
-	 $modstring = "<input type='submit' name='modcolumn"."_$rownr' value='Modify'>";
-	 $alinkstring = "<input type='submit' name='alinkcolumn"."_$rownr' value='Active Link'>";
+	 $modstring = "<input type='submit' name='modcolumn"."_$rownr' value='Modify'>\n";
+         if ($datatype=="image") {
+	    $alinkstring = "<input type='hidden' name='thumbsize"."_$rownr' value='$thumbsize'>\n";
+            $alinkstring.="<input type='submit' name='modcolumn"."_$rownr' value='Thumbnail size' Onclick='var temp=window.prompt(\"Please enter the maximum thumbnail size (in pixels):\",\"$thumbsize\");if (temp) {document.tableform.thumbsize"."_$rownr.value=temp} else {return false}; return true;' >\n";
+         }
+         else
+	    $alinkstring = "<input type='submit' name='alinkcolumn"."_$rownr' value='Active Link'>\n";
          $delstring = "<input type='submit' name='delcolumn"."_$rownr' value='Remove' ";
          $delstring .= "Onclick=\"if(confirm('Are you absolutely sure that the column $label should be removed? (No undo possible!)')){return true;}return false;\">";  
    	 echo "<td align='center'>$modstring".$alinkstring;
