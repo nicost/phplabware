@@ -41,13 +41,17 @@ function get_cell ($db, $table, $column, $column2, $value) {
       return false;
 }
 
+
 ////
 // !Prints a table with usefull links 
 function navbar($permissions) {
-   global $SUPER,$READ,$WRITE;
+   include ('includes/defines_inc.php');
 
    echo "<table border=0 width=100%>\n";
    echo "<tr bgcolor='eeeeff' align='right'>\n";
+   if ($permissions & $ADMIN) {
+      echo "<td align='center'><a href='users.php'>users</a></td>";
+   }
    if ($permissions & $SUPER) {
       echo "<td align='center'><a href='setup.php'>system</a></td>";
    }
