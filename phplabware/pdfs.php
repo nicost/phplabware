@@ -22,8 +22,8 @@ $title .= "PDFs";
 $fields="id,access,ownerid,magic,pmid,title,author,type1,type2,notes,date,lastmodby,lastmoddate,volume,fpage,lpage,abstract,year";
 
 // register variables
-$showid=$HTTP_GET_VARS["showid"];
-$edit_type=$HTTP_GET_VARS["edit_type"];
+$get_vars="edit_type,showid,search";
+globalize_vars($get_vars, $HTTP_GET_VARS);
 $post_vars = "add,submit,search,searchj";
 globalize_vars ($post_vars, $HTTP_POST_VARS);
 if ($searchj)
@@ -350,9 +350,6 @@ if ($add)
    add_pd_form ($db,$fields,$field_values,0,$USER,$PHP_SELF,$system_settings);
 
 else {
-   // print header of table
-   echo "<table border='1' align='center'>\n";
-   echo "<caption>\n";
    // first handle addition of a new reprint
    if ($submit == "Add PDF reprint") {
       if (! (check_pd_data($db, $HTTP_POST_VARS) && $id=add ($db, "pdfs",$fields,$HTTP_POST_VARS,$USER) ) ){
@@ -401,16 +398,10 @@ else {
       }
    } 
 
-   echo "</caption>\n";
-   // print form
-?>
-<form name='pd_form' method='post' action='<?php echo $PHP_SELF?>?<?=SID?>'>  
-<?php
-
    if ($search=="Show All") {
       $num_p_r=$HTTP_POST_VARS["num_p_r"];
       unset ($HTTP_POST_VARS);
-      $curr_page=1;
+      $pd_curr_page=1;
       session_unregister("pd_query");
    }
    $column=strtok($fields,",");
@@ -429,6 +420,69 @@ else {
       $pd_query = "SELECT $fields FROM pdfs WHERE id IN ($whereclause) ORDER BY date DESC";
    $HTTP_SESSION_VARS["pd_query"]=$pd_query;   
    session_register("pd_query");
+
+   // paging stuff
+   if (!$num_p_r)
+      $num_p_r=$USER["settings"]["num_p_r"];
+   if (isset($HTTP_POST_VARS["num_p_r"]))
+      $num_p_r=$HTTP_POST_VARS["num_p_r"];
+   if (!isset($num_p_r))
+      $num_p_r=10;
+   $USER["settings"]["num_p_r"]=$num_p_r;
+   if (!isset($pd_curr_page))
+      $pd_curr_page=$HTTP_SESSION_VARS["pd_curr_page"];
+   if (isset($HTTP_POST_VARS["next"]))
+      $pd_curr_page+=1;
+   if (isset($HTTP_POST_VARS["previous"]))
+      $pd_curr_page-=1;
+   if ($pd_curr_page<1)
+      $pd_curr_page=1;
+   $HTTP_SESSION_VARS["pd_curr_page"]=$pd_curr_page; 
+   session_register("pd_curr_page");
+
+   // loop through all entries for next/previous buttons
+   $r=$db->PageExecute($pd_query,$num_p_r,$pd_curr_page);
+   while (!($r->EOF) && $r) {
+      $r->MoveNext();
+   }
+   // print form
+?>
+<form name='pd_form' method='post' action='<?php echo $PHP_SELF?>?<?=SID?>'>  
+<?php
+
+   // row with action links
+   $sid=SID;
+   if ($sid) $sid="&".$sid;
+   echo "<table border=0 width='50%' align='center'>\n<tr>\n";
+   if (may_write($db,"pdfs",false,$USER)) 
+      echo "<td align='center'><a href='$PHP_SELF?add=Add PDF$sid'>Add PDF</a></td>\n";
+   echo "<td align='center'><a href='$PHP_SELF?search=Show%20All$sid'>Show All</a></td>\n</tr>\n";
+   //echo "<td align='center'><button type='submit' name='search' value='Show All'>";
+   //echo "Show All</button></td></tr>\n";
+   echo "</table>\n";
+
+   // next/previous buttons
+   echo "<table border=0 align=center width=100%>\n";
+   echo "<tr><td colspan=1 align='center'>";
+   if ($r && !$r->AtFirstPage())
+      echo "<input type=\"submit\" name=\"previous\" value=\"Previous\"></td>\n";
+   else
+      echo "&nbsp;</td>\n";
+   echo "<td align='center'>";
+   echo "<input type='text' name='num_p_r' value='$num_p_r' size=3>";
+   echo "Records per page</td>\n";
+   echo "<td colspan=1 align='center'>";
+   if ($r && !$r->AtLastPage())
+      echo "<input type=\"submit\" name=\"next\" value=\"Next\"></td>\n";
+   else
+      echo "&nbsp;</td>\n";
+   echo "</tr>\n";
+   echo "</table>\n";
+
+   // print header of table
+   echo "<table border='1' align='center'>\n";
+   echo "<caption>\n";
+   echo "</caption>\n";
 
    // row with search form
    echo "<tr align='center'>\n";
@@ -464,6 +518,7 @@ else {
 */
 
    echo "<td><input type='text' name='author' value='$author' size=15></td>\n";
+   echo "<td><input type='text' name='abstract' value='$abstract' size=15></td>\n";
    
    // print link to edit table 'Journals'
    echo "<td style='width: 10%'>";
@@ -488,38 +543,20 @@ else {
    echo "<td><input type='text' name='fpage' value='$fpage' size=7></td>\n";
    echo "<td>&nbsp;</td>\n";
 
-   echo "<td><input type=\"submit\" name=\"search\" value=\"Search\">&nbsp;";
-   echo "<input type=\"submit\" name=\"search\" value=\"Show All\"></td>";
+   echo "<td>";
+   echo "<input type=\"submit\" name=\"search\" value=\"Search\">&nbsp;\n";
    echo "</tr>\n";
 
    echo "<tr>\n";
    echo "<th>Title</th>";
    echo "<th>Author(s)</th>";
+   echo "<th>Abstract</th>";
    echo "<th>Journal</th>\n";
    echo "<th>Volume</th>\n";
    echo "<th>First Page</th>\n";
    echo "<th>Files</th>\n";
    echo "<th>Action</th>\n";
    echo "</tr>\n";
-
-   // paging stuff
-   if (!$num_p_r)
-      $num_p_r=$USER["settings"]["num_p_r"];
-   if (isset($HTTP_POST_VARS["num_p_r"]))
-      $num_p_r=$HTTP_POST_VARS["num_p_r"];
-   if (!isset($num_p_r))
-      $num_p_r=10;
-   $USER["settings"]["num_p_r"]=$num_p_r;
-   if (!isset($pd_curr_page))
-      $pd_curr_page=$HTTP_SESSION_VARS["pd_curr_page"];
-   if (isset($HTTP_POST_VARS["next"]))
-      $pd_curr_page+=1;
-   if (isset($HTTP_POST_VARS["previous"]))
-      $pd_curr_page-=1;
-   if ($pd_curr_page<1)
-      $pd_curr_page=1;
-   $HTTP_SESSION_VARS["pd_curr_page"]=$pd_curr_page; 
-   session_register("pd_curr_page");
 
    $r=$db->PageExecute($pd_query,$num_p_r,$pd_curr_page);
    $rownr=1;
@@ -530,6 +567,7 @@ else {
       $id = $r->fields["id"];
       $title = "&nbsp;".$r->fields["title"];
       $author= "&nbsp;".$r->fields["author"];
+      $abstract= "&nbsp;".substr($r->fields["abstract"],0,15)."...";
       $journal="&nbsp;".get_cell($db,"pd_type1","type","id",$r->fields["type1"]);
       $volume = "&nbsp;".$r->fields["volume"];
       $fpage = "&nbsp;".$r->fields["fpage"];
@@ -542,6 +580,7 @@ else {
 
       echo "<td>$title</td>\n";
       echo "<td>$author</td>\n";
+      echo "<td>$abstract</td>\n";
       echo "<td>$journal</td>\n";
       echo "<td>$volume</td>\n";
       echo "<td>$fpage</td>\n";
@@ -570,23 +609,15 @@ else {
       $rownr+=1;
    }
 
-   // Add PDF button
-   if (may_write($db,"pdfs",false,$USER)) {
-      echo "<tr><td colspan=7 align='center'>";
-      echo "<input type=\"submit\" name=\"add\" value=\"Add PDF reprint\">";
-      echo "</td></tr>";
-   }
+   echo "</table>\n";
 
    // next/previous buttons
-   echo "<tr><td colspan=1 align='center'>";
+   echo "<table border=0 width=100%>\n<tr width=100%>\n<td align='left'>";
    if ($r && !$r->AtFirstPage())
       echo "<input type=\"submit\" name=\"previous\" value=\"Previous\"></td>\n";
    else
       echo "&nbsp;</td>\n";
-   echo "<td colspan=4 align='center'>";
-   echo "<input type='text' name='num_p_r' value='$num_p_r' size=3>";
-   echo "Records per page</td>\n";
-   echo "<td colspan=1 align='center'>";
+   echo "<td align='right'>";
    if ($r && !$r->AtLastPage())
       echo "<input type=\"submit\" name=\"next\" value=\"Next\"></td>\n";
    else
