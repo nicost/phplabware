@@ -59,6 +59,57 @@ function delete ($db, $table, $id) {
 // !Prints a form with antibody stuff
 // $id=0 for a new entry, otherwise it is the id
 function add_ab_form ($db, $fields,$field_values,$id) {
+   // get values in a smart way
+
+   echo "<table border=0 align='center'>\n";
+   if ($id)
+      echo "<tr><td colspan=5 align='center'><h3>Modify Antibody $name</h3></td></tr>\n";
+   else
+      echo "<tr><td colspan=5 align='center'><h3>New Antibody</h3></td></tr>\n";
+   echo "<tr>\n";
+   echo "<td>Name: </td><td><input type='text' name='name' value='$name'></td>\n";
+   $r=$db->Execute("SELECT type,id FROM ab_type1");
+   $text=$r->GetMenu2("type1",$type1,false);
+   echo "<td>$text</td>\n";
+   
+   $r=$db->Execute("SELECT type,id FROM ab_type2");
+   $text=$r->GetMenu2("type2",$type2,false);
+   echo "<td>$text</td>\n";
+
+   $r=$db->Execute("SELECT type,id FROM ab_type3");
+   $text=$r->GetMenu2("type3",$type3,false);
+   echo "<td>$text</td>\n";
+   echo "</tr>\n";
+
+   echo "<tr>\n";
+   echo "<td>Antigen: </td><td><input type='text' name='antigen' value='$antigen'></td>\n";
+   echo "<td>&nbsp;</td>";
+   echo "<td>Epitope: </td><td><input type='text' name='epitope' value='$epitope'></td>\n";
+   echo "</tr>\n";
+   
+   echo "<tr>";
+   echo "<td>Buffer: </td><td><input type='text' name='buffer' value='$buffer'></td>\n";
+   echo "<td>&nbsp;</td>";
+   echo "<td>Concentration (mg/ml): </td><td><input type='text' name='concentration' value='$concentration'></td>\n";
+   echo "</tr>\n";
+   
+   echo "<tr>";
+   echo "<td>Source: </td><td><input type='text' name='source' value='$source'></td>\n";
+   echo "<td>&nbsp;</td>";
+   echo "<td>Location: </td><td><input type='text' name='locationn' value='$locations'></td>\n";
+   echo "</tr>\n";
+   
+   echo "<tr>";
+   echo "<td>Notes: </td><td colspan=4><input type='text' name='notes' value='$notes'></td>\n";
+   echo "</tr>\n";
+   
+   
+   echo "<tr>";
+   echo "<td colspan=5 align='center'><input type='submit' name='add' value='Add Antibody'></td>\n";
+   echo "</tr>\n";
+   
+
+   echo "</table></form>\n";
 }
 
 ////
