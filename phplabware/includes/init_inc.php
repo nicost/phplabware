@@ -29,7 +29,7 @@ if (!@$db->PConnect($db_host, $db_user, $db_pwd, $db_name)) {
 
 // read in the database settings
 $version=get_cell($db,"settings","version","id",1);
-$settings=unserialize(get_cell($db,"settings","settings","id",1));
+$system_settings=unserialize(get_cell($db,"settings","settings","id",1));
 
 $title="PhpLabware: ";
 ?>
