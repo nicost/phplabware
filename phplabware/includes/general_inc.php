@@ -997,11 +997,11 @@ function check_g_data ($db,&$field_values,$tableinfo,$modify=false) {
    global $max_menu_length, $system_settings;
 
    // make sure all the required fields are there 
-   $rs = $db->Execute("SELECT columnname,datatype FROM {$tableinfo->desname} where required='Y' and (datatype != 'file')");
+   $rs = $db->Execute("SELECT columnname,datatype,label FROM {$tableinfo->desname} where required='Y' and (datatype != 'file')");
    while (!$rs->EOF) {
       $fieldA=$rs->fields[0];
       if (!$field_values["$fieldA"]) {
-         echo "<h3 color='red' align='center'>Please enter all fields marked with a <sup style='color:red'>&nbsp;*</sup>.</h3>";
+         echo "<h3 color='red' align='center'>Please enter all fields marked with a <sup style='color:red'>&nbsp;*</sup>. Currently, a value for field: <i>{$rs->fields[2]}</i> is missing.</h3>";
 	 return false;
       }
       $rs->MoveNext();
