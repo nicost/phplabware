@@ -313,7 +313,7 @@ function display_add($db,$tableid,$real_tablename,$tabledesc,$Allfields,$id,$nam
             echo "<input type='hidden' name='$nowfield[name]' value='$nowfield[values]'>\n";
             if ($nowfield[text] && $nowfield[text]!="" && $nowfield[text]!=" ") {
                echo "<tr><th>$nowfield[label]:</th>"; 
-               echo "<td>$nowfield[text]</td></tr>\n";
+               echo "<td>$nowfield[text]";
             }
          }
          elseif ($nowfield[datatype]=="text" || $nowfield[datatype]=="int" || $nowfield[datatype]=="float") {
@@ -326,19 +326,19 @@ function display_add($db,$tableid,$real_tablename,$tabledesc,$Allfields,$id,$nam
                $size=60;
             else
                $size=10;
-     	    echo "<td><input type='text' name='$nowfield[name]' value='$nowfield[values]' size=60> </td>\n</tr>";
+     	    echo "<td><input type='text' name='$nowfield[name]' value='$nowfield[values]' size=60>";
          }
          elseif ($nowfield[datatype]=="textlong") {
             echo "<tr><th>$nowfield[label]:";
             if ($nowfield[required]=="Y") 
                echo "<sup style='color:red'>&nbsp;*</sup>";
-     	    echo "<td><textarea name='$nowfield[name]' rows='5' cols='100%' value='$nowfield[values]'>$nowfield[values]</textarea></td></tr>\n";     	     
+     	    echo "<td><textarea name='$nowfield[name]' rows='5' cols='100%' value='$nowfield[values]'>$nowfield[values]</textarea>";
          }
          elseif ($nowfield[datatype]=="link") {
             echo "<tr><th>$nowfield[label] (http link)";
             if ($nowfield[required]=="Y")
                echo "<sup style='color:red'>&nbsp;*</sup>";
-            echo "<td><input type='text' name='$nowfield[name]' value='$nowfield[values]' size=60> </td>\n</tr>";
+            echo "<td><input type='text' name='$nowfield[name]' value='$nowfield[values]' size=60>";
          }
          elseif ($nowfield[datatype]=="pulldown") {
             // get previous value	
@@ -352,7 +352,6 @@ function display_add($db,$tableid,$real_tablename,$tabledesc,$Allfields,$id,$nam
             if ($nowfield[required]=="Y")
                echo"<sup style='color:red'>&nbsp;*</sup>";
             echo "</th>\n<td>$text<br>";
-            echo "</tr>";
          }
          elseif ($nowfield[datatype]=="table") {
             // only display primary key here
@@ -364,14 +363,13 @@ function display_add($db,$tableid,$real_tablename,$tabledesc,$Allfields,$id,$nam
                if ($nowfield[required]=="Y")
                   echo"<sup style='color:red'>&nbsp;*</sup>";
                echo "</th>\n<td>$text<br>";
-               echo "</tr>";
             }
          }
 	 if ($nowfield[datatype]=="textlarge") {
 	    echo "<tr><th>$nowfield[name]";
             if ($nowfield[required]=="Y")
 	       echo"<sup style='color:red'>&nbsp;*</sup>";
-	    echo "</th><td colspan=6><textarea name='$nowfield[name]' rows='5' cols='100%'>$nowfield[values]</textarea></td></tr>\n";
+	    echo "</th><td colspan=6><textarea name='$nowfield[name]' rows='5' cols='100%'>$nowfield[values]</textarea>";
 	 }
 	 if ($nowfield[datatype]=="file") {
 	    $files=get_files($db,$real_tablename,$id,$nowfield["id"]);
@@ -386,9 +384,12 @@ function display_add($db,$tableid,$real_tablename,$tabledesc,$Allfields,$id,$nam
 	    }
 	    echo "<tr><th>Replace file(s) with</th>\n";
 	    echo "<td>&nbsp;</td><td><input type='file' name='file[]' value='$filename'></td>\n";
-	    echo "</tr></table></td></tr><br>\n\n";
+	    echo "</tr></table><br>\n\n";
 	 }
       }
+      if (function_exists("plugin_display_add"))
+         plugin_display_add($db,$tableid,$nowfield);
+      echo "</td></tr>\n";
 	
    }	
    echo "<td colspan=4>";
@@ -491,7 +492,7 @@ function getvalues($db,$DBNAME,$DB_DESNAME,$tableid,$fields,$qfield=false,$field
       $column=strtok(",");
    }		
    if (function_exists("plugin_getvalues"))
-      plugin_getvalues($db,$Allfields,$id);
+      plugin_getvalues($db,$Allfields,$id,$tableid);
    return $Allfields;
 }
 
