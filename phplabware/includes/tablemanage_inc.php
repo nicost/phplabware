@@ -244,7 +244,7 @@ function add_columnecg($db,$tablename2,$colname2,$label,$datatype,$Rdis,$Tdis,$r
    {
    global $string;
 
-   $SQL_reserved="absolute,action,add,allocate,alter,are,assertion,at,between,bit,bit_length,both,cascade,cascaded,case,cast,catalog,char_length,charachter_length,cluster,coalsce,collate,collation,column,connect,connection,constraint,constraints,convert,corresponding,cross,current_date,current_time,current_timestamp,current_user,date,day,deallocate,deferrrable,deferred,describe,descriptor,diagnostics,disconnect,domain,drop,else,end-exec,except,exception,execute,external,extract,false,first,full,get,global,hour,identity,immediate,initially,inner,input,insensitive,intersect,interval,isolation,join,last,leading,left,level,local,lower,match,minute,month,names,national,natural,nchar,next,no,nullif,octet_length,only,outer,output,overlaps,pad,partial,position,prepare,preserve,prior,read,relative,restrict,revoke,right,rows,scroll,second,session,session_user,size,space,sqlstate,substring,system_user,temporary,then,time,timepstamp,timezone_hour,timezone_minute,trailing,transaction,translate,translation,trim,true,unknown,uppper,usage,using,value,varchar,varying,when,write,year,zone";
+   $SQL_reserved=",absolute,action,add,allocate,alter,are,assertion,at,between,bit,bit_length,both,cascade,cascaded,case,cast,catalog,char_length,charachter_length,cluster,coalsce,collate,collation,column,connect,connection,constraint,constraints,convert,corresponding,cross,current_date,current_time,current_timestamp,current_user,date,day,deallocate,deferrrable,deferred,describe,descriptor,diagnostics,disconnect,domain,drop,else,end-exec,except,exception,execute,external,extract,false,first,full,get,global,hour,identity,immediate,initially,inner,input,insensitive,intersect,interval,isolation,join,last,leading,left,level,local,lower,match,minute,month,names,national,natural,nchar,next,no,nullif,octet_length,only,outer,output,overlaps,pad,partial,position,prepare,preserve,prior,read,relative,restrict,revoke,right,rows,scroll,second,session,session_user,size,space,sqlstate,substring,system_user,temporary,then,time,timepstamp,timezone_hour,timezone_minute,trailing,transaction,translate,translation,trim,true,unknown,uppper,usage,using,value,varchar,varying,when,write,year,zone,";
 
    // find the id of the table and therewith the tablename
    $r=$db->Execute("SELECT id FROM tableoftables WHERE tablename='$tablename2'"); 
@@ -273,7 +273,7 @@ function add_columnecg($db,$tablename2,$colname2,$label,$datatype,$Rdis,$Tdis,$r
       $string="Please enter a columnname";
    elseif ($label=="")
       $string="Please enter a Label";
-   elseif (strpos($SQL_reserved,$colname)) 
+   elseif (strpos($SQL_reserved,",$colname,")) 
       $string="Column name <i>$colname</i> is a reserved SQL word.  Please pick another column name";
    elseif ($filecolumnfound)
       $string="Only one column can be of Datatype <i>file</i>.";
@@ -350,16 +350,18 @@ function rm_columnecg($db,$tablename,$id,$colname,$datatype) {
       while (!$r->EOF)
          delete_file($db,$r->fields["id"],$USER);
    } 
-   $r=$db->Execute("ALTER TABLE $real_tablename DROP COLUMN '$colname'");
-   $rv=$db->Execute("select associated_table from $desc where id ='$id'");
-   $tempTAB=array();
-   if ($rv) {
-      while (!$rv->EOF) {
-         if ($rv->fields[0])
-             $db->Execute("DROP TABLE ".$rv->fields[0]);
-            $rv->MoveNext();
+   elseif ($r->fields["datatype"]=="pulldown") {
+      $rv=$db->Execute("select associated_table from $desc where id ='$id'");
+      // $tempTAB=array();
+      if ($rv) {
+         while (!$rv->EOF) {
+            if ($rv->fields[0])
+                $db->Execute("DROP TABLE ".$rv->fields[0]);
+               $rv->MoveNext();
+         }
       }
    }
+   $r=$db->Execute("ALTER TABLE $real_tablename DROP COLUMN $colname");
    $rrr=$db->Execute("DELETE FROM $desc WHERE id='$id'");
    if (($r)&&($rrr)) 
       $string="Deleted Column <i>$colname</i> from Table <i>$tablename</i>.";
@@ -401,8 +403,8 @@ function show_table_column_page ($db,$table_name,$addcol_name,$addcol_label) {
    echo add_js ($the_array);
    $jscript="onChange=\"fillSelectFromArray(this.form.table_column_select,((this.selectedIndex == -1) ? null : modelinfo[this.selectedIndex-1]));\"";
 
+   echo "<h3 align='center'>Choose Table and column to be associated with column <i>$addcol_label</i> in table <i>$table_name</i>.</h3>\n";
    echo "<table align='center' cellpadding='2' cellspacing='0'>\n";
-   echo "<caption>Choose Table and column to be associated with column <i>$addcol_label</i> in table <i>$table_name</i>.</caption>\n";
    echo "<tr><th>Table</th>\n<th>Column</th><th>&nbsp;</th></tr>\n";
    $r->MoveFirst();
    echo "<tr><td>".$r->GetMenu2("table_select","",true,false,0,$jscript)."</td>\n";
