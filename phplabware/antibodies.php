@@ -11,13 +11,11 @@
   *  under the terms of the GNU General Public License as published by the   *
   *  Free Software Foundation; either version 2 of the License, or (at your  *
   *  option) any later version.                                              *
-  \**************************************************************************/                                             
+  \**************************************************************************/
 
 // main include thingies
 require("include.php");
 require ("includes/db_inc.php");
-
-allowonly($READ, $USER["permissions"]);
 
 // main global vars
 $title .= "Antibodies";
@@ -224,7 +222,7 @@ function show_ab ($db,$fields,$id,$USER,$system_settings) {
    else {
       echo "<th>Author: </th><td>".$r->fields["firstname"]." ";
       echo $r->fields["lastname"] ."</td>\n";
-    }
+   }
    echo "<td>&nbsp;</td>";
    $dateformat=get_cell($db,"dateformats","dateformat","id",$system_settings["dateformat"]);
    $date=date($dateformat,$date);
@@ -235,6 +233,16 @@ function show_ab ($db,$fields,$id,$USER,$system_settings) {
    $notes=nl2br(htmlentities($notes));
    echo "<th>Notes: </th><td colspan=6>$notes</td>\n";
    echo "</tr>\n";
+
+   $files=get_files($db,"antibodies",$id);
+   if ($files) {
+      echo "<tr><th>Files:</th>\n<td colspan=5>";
+      for ($i=0;$i<sizeof($files);$i++) {
+         echo $files[$i]["link"]."<br>\n";
+      }
+      echo "</tr>\n";
+   }
+
 ?>   
 <form method='post' id='antibodyview action='<?php echo $PHP_SELF?>?<?=SID?>'> 
 <?php
@@ -282,14 +290,17 @@ else {
    echo "<caption>\n";
    // first handle addition of a new antibody
    if ($submit == "Add Antibody") {
-      if (! (check_ab_data($HTTP_POST_VARS) && add ($db, "antibodies",$fields,$HTTP_POST_VARS,$USER) ) ){
+      if (! (check_ab_data($HTTP_POST_VARS) && $id=add ($db, "antibodies",$fields,$HTTP_POST_VARS,$USER) ) ){
          echo "</caption>\n</table>\n";
          add_ab_form ($db,$fields,$HTTP_POST_VARS,0,$USER,$PHP_SELF);
          printfooter ();
          exit;
       }
-      else  // to not interfere with search form 
+      else {  
+	 upload_files($db,"antibodies",$id,$USER,$system_settings);
+         // to not interfere with search form 
          unset ($HTTP_POST_VARS);
+      }
    }
    // then look whether it should be modified
    elseif ($submit =="Modify Antibody") {
@@ -299,8 +310,9 @@ else {
          printfooter ();
          exit;
       }
-      else {  // to not interfere with search form 
+      else {   
 	 upload_files($db,"antibodies",$HTTP_POST_VARS["id"],$USER,$system_settings);
+         // to not interfere with search form 
          unset ($HTTP_POST_VARS);
       }
    } 
