@@ -139,6 +139,52 @@ function searchfield ($db,$tableinfo,$nowfield,$HTTP_POST_VARS,$jscript) {
        echo "<td style='width: 10%'>&nbsp;</td>";
 }
 
+////////////////////////////////////////////////////////
+////
+//! Generated comma separated list of columns based on view prefs
+function viewlist($db,$tableinfo,$viewid) {
+   global $USER;
+
+   $r=$db->Execute("SELECT columnid FROM tableviews WHERE viewnameid=$viewid");
+   while ($r && !$r->EOF) {
+      $rb=$db->Execute("SELECT columnname,sortkey FROM {$tableinfo->desname} WHERE id={$r->fields[0]}");
+      $list[$rb->fields[1]]=$rb->fields[0];
+      $r->MoveNext();
+   }
+   ksort($list);
+   reset($list);
+   return implode (",",$list);
+}
+
+      
+////////////////////////////////////////////////////////
+////
+//! Generated menu with user-defined views
+function viewmenu($db, $tableinfo,$viewid) {
+   global $USER;
+   
+   // first find views accessible to user
+   $r=$db->Execute("SELECT viewname,viewnameid FROM viewnames WHERE viewnameid IN (SELECT viewnameid FROM tableviews WHERE userid IN ({$USER['group_list']}) AND tableid={$tableinfo->id} AND viewmode=1)"); 
+   if ($r) {
+      $viewname.= 'View: '.$r->GetMenu2('viewid',$viewid,true,false,0,'OnClick="document.g_form.submit()"');
+   }
+/*
+   if ($r[0]) {
+      $viewmenu='View: ';
+      while ($r && !$r->EOF) {
+         $rv=$db->Execute("SELECT viewname FROM viewnames WHERE viewnameid={$r->fields[0]}");
+         $r->MoveNext();
+      }
+   }
+*/
+   if ($viewid)
+      $viewidtext="&viewid=$viewid";
+   $viewname.="<a href='views.php?tablename={$tableinfo->name}$viewidtext'>Edit views</a>";
+
+   return $viewname;
+}
+
+
 ///////////////////////////////////////////////////////////
 //// 
 // !Displays information in table in edit mode
