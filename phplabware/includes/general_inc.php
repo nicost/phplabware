@@ -294,6 +294,8 @@ function display_table_info($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr_c
       foreach($Allfields as $nowfield) {
          if ($nowfield['link'])
             echo "<td>{$nowfield['link']}</td>\n";
+         elseif ($nowfield['datatype']=='mpulldown')
+            echo "<td align='left' cellpadding='5%'>{$nowfield['text']}</td>\n"; 
          else
             echo "<td>{$nowfield['text']}</td>\n"; 
          // write file ids to a file so that we do not need to check them again when downloading thumbnails
@@ -751,10 +753,20 @@ function getvalues($db,$tableinfo,$fields,$qfield=false,$field=false) {
             }
             elseif ($rb->fields['datatype']=='mpulldown') {
                unset($rasst);
+               unset($rasst2);
+               unset ($typeids);
                $rasst=$db->Execute("SELECT typeid FROM {${$column}['key_t']} WHERE recordid='$id'");
                while ($rasst && !$rasst->EOF){
-                  ${$column}['text'].=get_cell($db,${$column}['ass_t'],'typeshort','id',$rasst->fields[0]) ."<br>"; 
+                  $typeids.=$rasst->fields[0].',';
                   $rasst->MoveNext();
+               }
+               if ($typeids){
+                  $typeids=substr($typeids,0,-1);
+                  $rasst2=$db->Execute("SELECT typeshort from {${$column}['ass_t']} where id IN ($typeids) ORDER BY sortkey");
+                  while ($rasst2 && !$rasst2->EOF) {
+                     ${$column}['text'].=$rasst2->fields[0].'<br>'; 
+                     $rasst2->MoveNext();
+                  }
                }
             }
             elseif ($rb->fields['datatype']=='textlong') {
