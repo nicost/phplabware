@@ -66,6 +66,7 @@ function navbar($permissions) {
       echo "<td align='center'><a href='users.php'>users</a></td>";
    }
    if ($permissions & $SUPER) {
+      echo "<td align='center'><a href='groups.php'>groups</a></td>";
       echo "<td align='center'><a href='setup.php'>system</a></td>";
    }
    if ($permissions)
