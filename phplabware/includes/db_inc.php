@@ -534,6 +534,8 @@ function may_read_SQL ($db,$table,$tableid,$USER,$temptable="tempa") {
    global $db_type;
    if ($db_type=="mysql") {
       $list=may_read_SQL_JOIN ($db,$table,$USER);
+      if (!$list)
+         $list="-1";
       $result["sql"]= " id IN ($list) ";
       $result["numrows"]=substr_count($list,",");
    }
@@ -566,7 +568,7 @@ function make_temp_table ($db,$temptable,$r) {
 function may_read ($db,$tableid,$id,$USER) {
    $table=get_cell($db,"tableoftables","real_tablename","id",$tableid);
    $list=may_read_SQL($db,$table,$tableid,$USER);
-   $query="SELECT id FROM $table WHERE $id IN ($list)";
+   $query="SELECT id FROM $table WHERE ".$list["sql"];
    $r=$db->Execute($query);
    if (!$r)
       return false;
