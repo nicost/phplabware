@@ -131,7 +131,6 @@ echo "$tableid.";
       if (is_array($fieldvalues["trust_write"]))
          foreach ($fieldvalues["trust_write"] as $userid)
             $db->Execute("INSERT INTO trust VALUES ('$tableid','$id','$userid','w')");
-
       $query="INSERT INTO $table ($columns) VALUES ($values)";
       if ($db->Execute($query))
          return $id;
@@ -480,12 +479,12 @@ function make_SQL_ids ($r,$ids,$field="id") {
    if (!$r || $r->EOF)
       return substr ($ids,0,-1);
    $id=$r->fields[$field];
-   $ids .="'$id'";
+   $ids .="$id";
    $r->MoveNext();
    $column_count=1;
    while (!$r->EOF) {
       $id=$r->fields[$field];
-      $ids .=",'$id'";
+      $ids .=",$id";
       $r->MoveNext();
       $column_count+=1;
    }
@@ -603,7 +602,7 @@ function make_SQL_csf ($r,$ids,$field="id",&$column_count) {
    if (!$r || $r->EOF)
       return false;
    $id=$r->fields[$field];
-   $ids .="'$id'";
+   $ids .="$id";
    $r->MoveNext();
    $column_count=1;
    while (!$r->EOF) {
