@@ -238,8 +238,7 @@ function show_pb ($db,$tableid,$fields,$id,$USER,$system_settings) {
    if ($files) {
       echo "<tr><th>Files:</th>\n<td>";
       for ($i=0;$i<sizeof($files);$i++) {
-         echo $files[$i]["link"]."&nbsp;&nbsp;(".$files[$i]["type"];
-         echo " file)<br>\n";
+         echo $files[$i]["link"]." (".$files[$i]["type"]." file, ".$files[$i]["size"].")<br>\n";
       }
       echo "</tr>\n";
    }
@@ -529,13 +528,13 @@ else {
       $author="&nbsp;".$r->fields["author"];
       $notes= "&nbsp;".substr($r->fields["notes"],0,150)."...";
       $owner="&nbsp;".get_cell($db,"users","firstname","id",$r->fields["ownerid"])." ".get_cell($db,"users","lastname","id",$r->fields["ownerid"]);
-      $pdbid=$r->fields["pdbid"];
+      $pdbid=ltrim($r->fields["pdbid"]);
       if ($pdbid) {
          $Pdblink="<a href='http://www.rcsb.org/pdb/cgi/explore.cgi?pdbId=$pdbid'>$pdbid</a>\n";
          $Webmollink="<a href='webmol.php?pdbid=$pdbid'>$pdbid</a>\n";
       }
       else
-         $Webmolllink=$Pdblink="&nbsp;";
+         $Webmollink=$Pdblink="&nbsp;";
  
       // print start of row of selected group
       if ($rownr % 2)

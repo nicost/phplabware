@@ -308,8 +308,7 @@ function show_pd ($db,$tableid,$fields,$id,$USER,$system_settings) {
    if ($files) {
       echo "<tr><th>Files:</th>\n<td>";
       for ($i=0;$i<sizeof($files);$i++) {
-         echo $files[$i]["link"]."&nbsp;&nbsp;(".$files[$i]["type"];
-         echo " file)<br>\n";
+         echo $files[$i]["link"]." (".$files[$i]["type"]." file, ".$files[$i]["size"].")<br>\n";
       }
       echo "</tr>\n";
    }
