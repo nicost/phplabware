@@ -52,10 +52,10 @@ function show_type ($db,$table,$name, $tablename=false) {
       $dbstring.="tablename=$tablename&"; 
    $dbstring.="edit_type=$table&";
    // propagate the form and select name as GET variables to be able to manipulate the select list with javascript
-   $dbstring.="formname=".$HTTP_GET_VARS["formname"]."&";
-   $dbstring.="selectname=".$HTTP_GET_VARS["selectname"]."&";
-   if($HTTP_POST_VARS[type_name]) {
-      $name=$HTTP_POST_VARS[type_name];
+   $dbstring.='formname='.$HTTP_GET_VARS['formname'].'&';
+   $dbstring.='selectname='.$HTTP_GET_VARS['selectname'].'&';
+   if($HTTP_POST_VARS['type_name']) {
+      $name=$HTTP_POST_VARS['type_name'];
    }
    echo "<form method='post' id='typeform' enctype='multipart/form-data' ";
    echo "action='$dbstring".SID."'>\n"; 
