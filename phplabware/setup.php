@@ -239,8 +239,8 @@ if ($version) {
    echo "(Try: http://".getenv("SERVER_NAME").")</td>\n";
    echo "<td><input type='text' name='homeURL' value='".$system_settings["homeURL"]."'></td></tr>\n";
 
-   echo "<tr><td colspan='2' align='center'><i>Files with new additions</i></th>\n";
-   echo "<br>Certain modules can write a file with information about the last added record.  You could show this inforation on a webpage.  If you don't use this, leave blank.</tr>\n";
+   echo "<tr><td colspan='2' align='center'><i>Files with new additions</i>\n";
+   echo "<br>Certain modules can write a file with information about the last added record.  You could show this inforation on a webpage.  If you don't use this, leave blank.</th></tr>\n";
    echo "<tr><td>New addition file for protocols.</td>\n ";
    echo "<td><input type='text' name='protocols_file' value='".$system_settings["protocols_file"]."'></td></tr>\n";
    echo "<tr><td>New addition file for pdfs.</td>\n ";
