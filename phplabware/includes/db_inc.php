@@ -278,7 +278,61 @@ function delete ($db, $tableid, $id, $USER, $filesonly=false) {
       return true;
 }
 
+////
+// !Generates thumbnails and extracts information from 2-D image files
+function process_image($db,$fileid) 
+{
+   global $USER, $system_settings;
 
+   $imagefile=file_path ($db,$fileid);
+
+   $command = "$convert_path -verbose -sample ".$x_size."x".$y_size." $action $bla jpg:$bla2 2> $stderr_log";
+   exec($command, $result_str_arr, $status);
+
+   // get size, mime, and type from image file.  
+   // Try exif function, if that fails use convert 
+   $sizearray=getimagesize($path_file);
+   $width=$sizearray[0];
+   $height=$sizearray[1];
+   $mime=$sizearray["mime"];
+   switch ($sizearray[2]) {
+      case 1: $filename_extension="GIF"; break;
+      case 2: $filename_extension="JPG"; break;
+      case 3: $filename_extension="PNG"; break;
+      case 4: $filename_extension="SWF"; break;
+      case 5: $filename_extension="PSD"; break;
+      case 6: $filename_extension="BMP"; break;
+      case 7: $filename_extension="TIFF"; break;
+      case 8: $filename_extension="TIFF"; break;
+      case 9: $filename_extension="JPC"; break;
+      case 10: $filename_extension="JP2"; break;
+      case 11: $filename_extension="JPX"; break;
+      case 12: $filename_extension="JB2"; break;
+      case 13: $filename_extension="SWC"; break;
+      case 14: $filename_extension="IFF"; break;
+   }
+   if (!$pixels_x) {
+      // get filetype and size in pixels from convert. Take first token after filesize.  Don't know if it always works.
+      // appparently convert yields:
+      // original filename, dimensions, Class, (optional) colordepht, size (in kb), filetype, ???, ???
+      $convertresult[0] = strtok ($result_str_arr[0]," ");
+      $test = false;
+      for ($i=1; $i<7; $i++) {
+         $convertresult[$i] = strtok (" ");
+         if ($i == 1) 
+            $pixels = $convertresult[$i];
+         if ($test) {
+            $filename_extension = $convertresult[$i];
+            $test = false; 
+         }
+         if (substr ($convertresult[$i], -2) == "kb")
+            $test = true;
+      }
+      // extract pixel dimensions, this fails when there are spaces in the filename
+      $pixels_x = (int) strtok ($pixels, "x+= >");
+      $pixels_y = (int) strtok ("x+= >");
+   }
+}
 
 ////
 // !Upload files and enters then into table files
