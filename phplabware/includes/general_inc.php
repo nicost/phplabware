@@ -62,7 +62,8 @@ function display_tablehead($db,$DBNAME,$real_tablename,$DB_DESNAME,$Allfields,$l
       if ($nowfield[datatype]== "text") {
 	   // show title we may see, when too many, revert to text box
          if ($list && ($nr_records < $max_menu_length) )  {
-  	      $r=$db->Execute("SELECT $nowfield[name] FROM $DBNAME WHERE id IN ($list)");
+	 $db->debug=true;
+  	      $r=$db->Execute("SELECT $nowfield[name] FROM $real_tablename WHERE id IN ($list)");
               $text=$r->GetMenu("$nowfield[name]","",true,false,0,"style='width: 80%' $jscript");
               echo "<td style='width: 10%'>$text</td>\n";
          }
