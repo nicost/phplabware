@@ -252,13 +252,13 @@ function navbar($permissions) {
    include ('includes/defines_inc.php');
    global $db, $USER, $HTTP_SESSION_VARS; 
 
-   if ($HTTP_SESSION_VARS["javascript_enabled"] && $USER["settings"]["menustyle"]) 
-      $mode="menu";
-   if ($mode=="menu") { 
+   if ($HTTP_SESSION_VARS['javascript_enabled'] && $USER['settings']['menustyle']) 
+      $mode='menu';
+   if ($mode=='menu') { 
       // construct link menu
       if ($permissions) {
          $r=$db->Execute("select display from tableoftables where tablename ='linkbar'");
-         if ($r->fields[0]=="1") {
+         if ($r->fields[0]=='1') {
             $linkr=$db->Execute("select label,linkurl,target from linkbar where display ='Y' ORDER by sortkey");
             if ($linkr) {
                $linkmenu="<select name='themenu' onchange='linkmenu(this)'>\n";
@@ -267,8 +267,8 @@ function navbar($permissions) {
                   $Tlinkname=$linkr->fields[0];
                   $urlname=$linkr->fields[1];
                   // we use 'target ' as a code for js linkmenu to open a new win
-                  if ($linkr->fields[2]=="N")
-                     $urlname="target ".$urlname;
+                  if ($linkr->fields[2]=='N')
+                     $urlname='target '.$urlname;
                   $linkmenu.="<option value='$urlname'>$Tlinkname</option>\n";    
                   $linkr->MoveNext(); 
                }
@@ -327,10 +327,13 @@ function navbar($permissions) {
          $systemmenu.="   <option value='users.php$SID'>users</a>\n";
       if ($permissions & $SUPER) {
          $systemmenu.="   <option value='groups.php$SID'>groups</a>\n";
+         $systemmenu.="   <option value=''>-------</a>\n";
          $systemmenu.="   <option value='tablemanage.php$SID'>table design</a>\n";
-         $systemmenu.="   <option value='dumptable.php$SID'>export tables</a>\n";
+         $systemmenu.="   <option value='restoretable.php$SID'>import table</a>\n";
+         $systemmenu.="   <option value='dumptable.php$SID'>export table</a>\n";
          $systemmenu.="   <option value='import.php$SID'>import data</a>\n";
          $systemmenu.="   <option value='dumpcontent.php$SID'>export data</a>\n";
+         $systemmenu.="   <option value=''>-------</a>\n";
          $systemmenu.="   <option value='linkbar.php$SID'>linkbar</a>\n";
          $systemmenu.="   <option value='setup.php$SID'>setup</a>\n";
       }
@@ -363,26 +366,26 @@ function navbar($permissions) {
          $count=0;
          if ($records) {
             $query="SELECT tableid FROM groupxtable_display WHERE (groupid='".$USER["group_array"][0]."' ";
-            for ($i=1;$i<sizeof($USER["group_array"]);$i++)
-               $query.="OR groupid='".$USER["group_array"][$i]."' ";
-	    $query.=")";
+            for ($i=1;$i<sizeof($USER['group_array']);$i++)
+               $query.="OR groupid='".$USER['group_array'][$i]."' ";
+	    $query.=')';
             $rb=$db->Execute($query);
             while ($rb && !$rb->EOF) {
-               $showtables[]=$rb->fields["tableid"];
+               $showtables[]=$rb->fields['tableid'];
                $rb->MoveNext();
             }
             while (!$records->EOF) {
-               if (in_array($records->fields["id"],$showtables)) {
+               if (in_array($records->fields['id'],$showtables)) {
                   if (($count % $links_per_row)==0)
                      echo "</tr>\n<tr bgcolor='eeeeff' align='center'>\n";
                   $tabname=$records->fields[0];
                   $scriptname=$records->fields[1];
-                  $label=$records->fields["label"];
+                  $label=$records->fields['label'];
                   $linkname="";
-                  if ($scriptname=="")
+                  if ($scriptname=='')
                      $linkname="general.php?tablename=$tabname&".SID;
                   else 
-                     $linkname=$scriptname."?".SID;
+                     $linkname=$scriptname.'?'.SID;
                   echo "      <td style='width: 20%' align='center'><a href=\"$linkname\">$label</a></td>\n";
                   $count++;
 	       }
