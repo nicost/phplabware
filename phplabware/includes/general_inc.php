@@ -62,7 +62,6 @@ function display_tablehead($db,$DBNAME,$real_tablename,$DB_DESNAME,$Allfields,$l
       if ($nowfield[datatype]== "text") {
 	   // show title we may see, when too many, revert to text box
          if ($list && ($nr_records < $max_menu_length) )  {
-	 $db->debug=true;
   	      $r=$db->Execute("SELECT $nowfield[name] FROM $real_tablename WHERE id IN ($list)");
               $text=$r->GetMenu("$nowfield[name]","",true,false,0,"style='width: 80%' $jscript");
               echo "<td style='width: 10%'>$text</td>\n";
@@ -531,7 +530,7 @@ function process_file($db,$fileid,$system_settings) {
       $temp=$system_settings["tmpdir"]."/".uniqid("file");
       $command= "$word2html $filepath $temp";
       $result=exec($command);
-      if (is_readable($temp)) {
+      if (@is_readable($temp)) {
          unset ($HTTP_POST_FILES);
          $r=$db->query ("SELECT filename,mime,title,tablesfk,ftableid FROM files WHERE id=$fileid");
          if ($r && !$r->EOF) {
