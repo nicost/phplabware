@@ -23,6 +23,7 @@ $fields="id,access,ownerid,magic,title,type1,type2,notes,date,lastmodby,lastmodd
 
 // register variables
 $showid=$HTTP_GET_VARS["showid"];
+$edit_type=$HTTP_GET_VARS["edit_type"];
 $post_vars = "add,submit,search,";
 globalize_vars ($post_vars, $HTTP_POST_VARS);
 
@@ -70,19 +71,15 @@ function add_pr_form ($db,$fields,$field_values,$id,$USER,$PHP_SELF,$system_sett
       echo "<tr><td colspan=5 align='center'><h3>New Protocol</h3></td></tr>\n";
    echo "<tr align='center'>\n";
    echo "<td colspan=2></td>\n";
-   echo "<th>Category</th>\n<th>Keyword</th>\n";
+   echo "<td>&nbsp;</td>\n<th>Category</th>\n";
    echo "</tr>\n";
    echo "<tr>\n";
    echo "<th>Title: <sup style='color:red'>&nbsp;*</sup></th>\n";
    echo "<td><input type='text' name='title' value='$title' size=60></td>\n";
 
    $r=$db->Execute("SELECT type,id FROM pr_type1 ORDER BY sortkey");
-   $text=$r->GetMenu2("type1",$type1,false);
-   echo "<td>$text</td>\n";
-   
-   $r=$db->Execute("SELECT type,id FROM pr_type2 ORDER BY sortkey");
-   $text=$r->GetMenu2("type5",$type2,true);
-   echo "<td>$text</td>\n";
+   $text=$r->GetMenu2("type1",$type1,true);
+   echo "<td></td>\n<td>$text</td>\n";
    
    echo "</tr>\n";
 
@@ -144,20 +141,14 @@ function show_pr ($db,$fields,$id,$USER,$system_settings) {
    echo "<table border=0 align='center'>\n";
    echo "<tr align='center'>\n";
    echo "<td colspan=2></td>\n";
-   echo "<td></td>\n<th>Category</th>\n<th>Keywords</th>\n";
+   echo "<td></td><td></td>\n<th>Category</th>\n";
    echo "</tr>\n";
    echo "<tr>\n";
    echo "<th>Title: <sup style='color:red'>&nbsp;*</sup></th>\n";
-   echo "<td>$title</td>\n";
+   echo "<td colspan=2>$title</td>\n";
    
-   $r=$db->Execute("SELECT type,id FROM pr_type1 ORDER BY sortkey");
-   $text=get_cell($db,"pr_type5","type","id",$type1);
-   echo "<td align='center'>$text</td>\n";
-   
-   $r=$db->Execute("SELECT type,id FROM pr_type2 ORDER BY sortkey");
-   $text=get_cell($db,"pr_type2","type","id",$type2);
-   echo "<td align='center'>$text</td>\n";
-
+   $text=get_cell($db,"pr_type1","type","id",$type1);
+   echo "<td></td><td align='center'>$text</td>\n";
    
    echo "<tr>";
    $query="SELECT firstname,lastname,email FROM users WHERE id=$ownerid";
@@ -220,7 +211,6 @@ function show_pr ($db,$fields,$id,$USER,$system_settings) {
    echo "<tr>";
    echo "<td colspan=7 align='center'><input type='submit' name='submit' value='Dismiss'></td>\n";
    echo "</tr>\n";
-   
 
    echo "</table></form>\n";
 }
@@ -293,6 +283,42 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
       printfooter();
       exit();
    }
+   if (substr($key, 0, 7) == "addtype") {
+      $modarray = explode("_", $key);
+      $table=$modarray[1]."_".$modarray[2];
+      include("includes/type_inc.php");
+      if (!add_type($db,$table)) {
+         show_type($db,$table,"Category");
+         printfooter();
+         exit();
+      }
+   }
+   if (substr($key, 0, 6) == "mdtype") {
+      $modarray = explode("_", $key);
+      $table=$modarray[1]."_".$modarray[2];
+      include("includes/type_inc.php");
+      if (!mod_type($db,$table,$modarray[3])) {
+         show_type($db,$table,"Category");
+         printfooter();
+         exit();
+      }
+   }
+   if (substr($key, 0, 6) == "dltype") {
+      $modarray = explode("_", $key);
+      $table=$modarray[1]."_".$modarray[2];
+      include("includes/type_inc.php");
+      del_type($db,$table,$modarray[3],"protocols");
+      show_type($db,$table,"Category");
+      printfooter();
+      exit();
+   }
+}
+
+if ($edit_type && ($USER["permissions"] & $LAYOUT)) {
+   include("includes/type_inc.php");
+   show_type($db,$edit_type,"Category");
+   printfooter();
+   exit();
 }
 
 // provide a means to hyperlink directly to a record
@@ -301,7 +327,6 @@ if ($showid) {
    printfooter();
    exit();
 }
-
 
 // when the 'Add' button has been chosen: 
 if ($add)
@@ -338,7 +363,7 @@ else {
          exit;
       }
       else { 
-         if (isset ($HTTP_POST_FILES["file"]["name"][0]) ) {
+         if ($HTTP_POST_FILES["file"]["name"][0]) {
             // delete all existing file
             delete ($db,"protocols",$HTTP_POST_VARS["id"],$USER,true);
             $fileid=upload_files($db,"protocols",$HTTP_POST_VARS["id"],$USER,$system_settings);
@@ -378,13 +403,27 @@ else {
       $column=strtok(",");
    }
 
+   // prepare search SQL statement
+   $whereclause=may_read_SQL ($db,"protocols",$USER);
+   if ($search=="Search")
+      $pr_query=search("protocols",$fields,$HTTP_POST_VARS," id IN ($whereclause) ORDER BY title");
+   elseif (session_is_registered ("pr_query") && isset($HTTP_SESSION_VARS["pr_query"]))
+      $pr_query=$HTTP_SESSION_VARS["pr_query"];
+   else
+      $pr_query = "SELECT $fields FROM protocols WHERE id IN ($whereclause) ORDER BY date DESC";
+   $HTTP_SESSION_VARS["pr_query"]=$pr_query;   
+   session_register("pr_query");
+
    // row with search form
    echo "<tr align='center'>\n";
    // get a list with ids we may see
-   $list=may_read_SQL($db,"protocols",$USER);
+   $r=$db->Execute($pr_query);
+   $lista=make_SQL_csf ($r,false,"id",$nr_records);
+   // and a list with all records we may see
+   $listb=may_read_SQL($db,"protocols",$USER);
    // show title we may see, when too many, revert to text box
-   $r=$db->Execute("SELECT COUNT (title) FROM protocols");
-   if ($r->fields(0) < 20) {
+   if ($title) $list=$listb; else $list=$lista;
+   if ($list && ($nr_records < $max_menu_length) ) {
       $r=$db->Execute("SELECT title FROM protocols WHERE id IN ($list)");
       $text=$r->GetMenu("title",$title,true,false,0,"style='width: 80%'");
       echo "<td style='width: 10%'>$text</td>\n";
@@ -392,6 +431,7 @@ else {
    else
       echo "<td><input type='text' name='title' value='$title' size=8></td>\n";
    // show a list with users having stuff we may see
+   if ($ownerid) $list=$listb; else $list=$lista;
    $r=$db->Execute("SELECT ownerid FROM protocols WHERE id IN ($list)");
    $list2=make_SQL_ids($r,false,"ownerid");
    if ($list2) {
@@ -405,13 +445,24 @@ else {
       $text="&nbsp;";
    echo "<td style='width: 10%'>$text</td>\n";
    echo "<td><input type='text' name='notes' value='$notes' size=8></td>\n";
-   $r=$db->Execute("SELECT typeshort,id FROM pr_type1");
-   $text=$r->GetMenu2("type1",$type1,true,false,0,"style='width: 80%'");
-   echo "<td style='width: 10%'>$text</td>\n";
-
-   $r=$db->Execute("SELECT typeshort,id FROM pr_type2 ORDER BY sortkey");
-   $text=$r->GetMenu2("type2",$type2,true,false,0,"style='width: 80%'");
-   echo "<td style='width: 10%'>$text</td>\n";
+   // print links to edit 'type' tables
+   echo "<td style='width: 10%'>";
+   if ($USER["permissions"] & $LAYOUT) {
+      echo "<a href='$PHP_SELF?edit_type=pr_type1&";
+      echo SID;
+      echo "'>Edit Categories</a><br>\n";
+   }
+   // print category drop-down menu
+   if ($type1) $list=$listb; else $list=$lista;
+   $r=$db->Execute("SELECT type1 FROM protocols WHERE id IN ($list)");
+   $list2=make_SQL_ids($r,false,"type1");
+   if ($list2) {
+      $r=$db->Execute("SELECT typeshort,id FROM pr_type1 WHERE id IN ($list2)");
+      $text=$r->GetMenu2("type1",$type1,true,false,0,"style='width: 80%'");
+      echo "$text</td>\n";
+   }
+   else
+      echo "&nbsp;</td>\n";
 
    echo "<td>&nbsp;</td>";
    echo "<td><input type=\"submit\" name=\"search\" value=\"Search\">&nbsp;";
@@ -423,22 +474,10 @@ else {
    echo "<th>Author</th>";
    echo "<th>Notes</th>\n";
    echo "<th>Category</th>\n";
-   echo "<th>Keyword</th>\n";
    echo "<th>Files</th>\n";
    echo "<th>Action</th>\n";
    echo "</tr>\n";
 
-   // retrieve all protocols and their info from database
-   $whereclause=may_read_SQL ($db,"protocols",$USER);
-   if ($search=="Search")
-      $pr_query=search("protocols",$fields,$HTTP_POST_VARS," id IN ($whereclause) ORDER BY title");
-   elseif (session_is_registered ("pr_query") && isset($HTTP_SESSION_VARS["pr_query"]))
-      $pr_query=$HTTP_SESSION_VARS["pr_query"];
-   else
-      $pr_query = "SELECT $fields FROM protocols WHERE id IN ($whereclause) ORDER BY date DESC";
-   $HTTP_SESSION_VARS["pr_query"]=$pr_query;   
-   session_register("pr_query");
-   
    // paging stuff
    if (!$num_p_r)
       $num_p_r=$USER["settings"]["num_p_r"];
@@ -467,7 +506,6 @@ else {
       $id = $r->fields["id"];
       $title = $r->fields["title"];
       $at1=get_cell($db,"pr_type1","type","id",$r->fields["type1"]);
-      $at2=get_cell($db,"pr_type2","type","id",$r->fields["type2"]);
       $notes = $r->fields["notes"];
  
       // print start of row of selected group
@@ -485,7 +523,6 @@ else {
       else
          echo "<td>no</td>\n";
       echo "<td>&nbsp;$at1</td>\n";
-      echo "<td>&nbsp;$at2</td>\n";
       $files=get_files($db,"protocols",$id,3);
       echo "<td>";
       if ($files) 
@@ -524,7 +561,7 @@ else {
       echo "<input type=\"submit\" name=\"previous\" value=\"Previous\"></td>\n";
    else
       echo "&nbsp;</td>\n";
-   echo "<td colspan=5 align='center'>";
+   echo "<td colspan=4 align='center'>";
    echo "<input type='text' name='num_p_r' value='$num_p_r' size=3>";
    echo "Records per page</td>\n";
    echo "<td colspan=1 align='center'>";
