@@ -147,8 +147,8 @@ if ($editfield)	{
 
    $r=$db->Execute("SELECT id,table_desc_name,label FROM tableoftables WHERE tablename='$editfield'");
    $id=$r->fields["id"];
-   $currdesc=$r->fields["table_desc_name"];
-   $tablelabel=$r->fields["label"];
+   $currdesc=$r->fields['table_desc_name'];
+   $tablelabel=$r->fields['label'];
    echo "<h3 align='center'>$string</h3>";
    echo "<h3 align='center'>Edit columns of table <i>$tablelabel</i></h3><br>";
 
@@ -156,10 +156,10 @@ if ($editfield)	{
    $dbstring=$PHP_SELF;echo "action='$dbstring?editfield=$editfield&".SID."'>\n"; 
    echo "<table align='center' border='0' cellpadding='2' cellspacing='0'>\n";
    echo "<tr>\n";
-   echo "<th>(SQL) Column Name</th>";
-   echo "<th>Label</th>";
-   echo "<th>Sortkey</th>";
-   echo "<th>Table display</th>";
+   echo '<th>(SQL) Column Name</th>';
+   echo '<th>Label</th>';
+   echo '<th>Sortkey</th>';
+   echo '<th>Table display</th>';
    echo "<th>Record display</th>\n";
    echo "<th>Required </th>\n";
    echo "<th>Modifiable </th>\n";
@@ -233,7 +233,7 @@ if ($editfield)	{
  	 echo "<input type='hidden' name='column_name[$rownr]' value='$columnname'>\n";echo "<td>$columnname</td>\n";  
 	 echo "<td><input type='text' name='column_label[$rownr]' value='$label' size='10'></td>\n";
 	 echo "<td><input type='text' name='column_sort[$rownr]' value='$sort' size='5'></td>\n";
-	 if($display_table=="Y") {
+	 if($display_table=='Y') {
             echo "<td><input type='radio' name='column_dtable[$rownr]' value='Y' CHECKED >yes";
 	    echo "<input type='radio' name='column_dtable[$rownr]' value='N'>no</td>\n";
 	 }
@@ -241,7 +241,7 @@ if ($editfield)	{
             echo "<td><input type='radio' name='column_dtable[$rownr]' value='Y'>yes";
             echo" <input type='radio' name='column_dtable[$rownr]' value='N' CHECKED >no</td>";
          }
-         if($display_record=="Y") {
+         if($display_record=='Y') {
             echo "<td><input type='radio' name='column_drecord[$rownr]' value='Y' CHECKED>yes";
             echo" <input type='radio' name='column_drecord[$rownr]' value='N'> no </td>\n";
          }
@@ -250,7 +250,7 @@ if ($editfield)	{
             echo" <input type='radio' name='column_drecord[$rownr]' checked value='N'> no </td>\n";
          }
 	  	
-         if($display_required=="Y") {
+         if($display_required=='Y') {
             echo "<td><input type='radio' name='column_required[$rownr]' value='Y' CHECKED>yes";
             echo" <input type='radio' name='column_required[$rownr]' value='N'> no </td>\n";
          }
@@ -261,7 +261,7 @@ if ($editfield)	{
 	  		 		
          if (in_array($columnname,$nomodifiable))
             echo "<td>no</td>\n";
-         elseif($modifiable=="Y") {
+         elseif($modifiable=='Y') {
             echo "<td><input type='radio' name='column_modifiable[$rownr]' value='Y' CHECKED>yes";
             echo" <input type='radio' name='column_modifiable[$rownr]' value='N'> no </td>\n";
          }
