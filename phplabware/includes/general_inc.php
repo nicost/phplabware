@@ -63,6 +63,102 @@ function date_entry($id,$DBNAME) {
 
 ///////////////////////////////////////////////////////////
 //// 
+// !Displays information in table in edit mode
+function display_table_change($db,$tableid,$DB_DESNAME,$Fieldscomma,$pr_query,$num_p_r,$pr_curr_page,$r=false) {
+   global $nr_records,$max_menu_length,$USER,$LAYOUT;
+   $tablename=get_cell($db,"tableoftables","tablename","id",$tableid);
+
+   $real_tablename=get_cell($db,"tableoftables","real_tablename","id",$tableid);
+   if (!$r)
+      $r=$db->CachePageExecute(2,$pr_query,$num_p_r,$pr_curr_page);
+   else
+      $r->MoveFirst();
+   $rownr=1;
+
+   // print all entries
+   while (!($r->EOF) && $r)  {
+      // Get required ID and title
+      $id=$r->fields["id"];
+      $title=$r->fields["title"];		
+      $Allfields=getvalues($db,$real_tablename,$DB_DESNAME,$tableid,$Fieldscomma,id,$id);
+      $may_write=may_write($db,$tableid,$id,$USER);
+      echo "<input type='hidden' name='chgj_".$id."' value=''>\n";
+      $js="onChange='document.g_form.chgj_".$id.".value=\"Change\";document.g_form.submit()'";
+
+      // print start of row of selected record
+      if ($rownr % 2)echo "<tr class='row_odd' align='center'>\n";
+         else echo "<tr class='row_even' align='center'>\n";
+      foreach($Allfields as $nowfield) {
+         if ($nowfield[required]=="Y")
+            $thestar="<sup style='color:red'>&nbsp;*</sup>";
+         else
+            $thestar=false;
+         if ( ($nowfield["modifiable"]=="N") || !$may_write) {
+            echo "<input type='hidden' name='$nowfield[name]_$id' value='$nowfield[values]'>\n";
+            echo "<td>$nowfield[text]</td>\n";
+         }
+         elseif ($nowfield[datatype]=="text") {
+     	    echo "<td><input type='text' name='$nowfield[name]_$id' value='$nowfield[values]' size=15 $js>$thestar</td>\n";
+         }
+         elseif ($nowfield[datatype]=="textlong") {
+     	    echo "<td><input type='text' name='$nowfield[name]_$id' value='$nowfield[values]' size=15>$thestar</td>\n"; 
+         }
+         elseif ($nowfield[datatype]=="link") {
+            echo "<td><input type='text' name='$nowfield[name]_$id' value='$nowfield[values]' size=15>$thestar</td>\n";
+         }
+         elseif ($nowfield[datatype]=="pulldown") {
+            // get previous value	
+            $rp=$db->Execute("SELECT typeshort,id FROM $nowfield[ass_t] ORDER BY sortkey");
+            $text=$rp->GetMenu2("$nowfield[name]_$id",$nowfield[values],true,false,0,$js);
+            echo "\n<td>$text $thestar</td>\n";
+         }
+         elseif ($nowfield[datatype]=="table") {
+            // only display primary key here
+            if (!$nowfield["ass_local_key"]) { 
+               // get previous value	
+               $rt=$db->Execute("SELECT $nowfield[ass_column_name],id FROM $nowfield[ass_table_name]");
+               $text=$rt->GetMenu2("$nowfield[name]_$id",$nowfield[values],true,false,0,$js);
+               echo "<td>$text $thestar</td>\n";
+            }
+            else
+               echo "<td>$nowfield[text] $thestar</td>\n";
+         }
+	 elseif ($nowfield[datatype]=="textlarge") {
+	    echo "<td colspan=6><textarea name='$nowfield[name]_$id' rows='5' cols='100%'>$nowfield[values]</textarea>$thestar</td>\n";
+	 }
+         else
+            echo "<td>$nowfield[text]</td>\n";
+      }
+
+      echo "<td align='center'>&nbsp;\n";  
+      echo "<input type=\"submit\" name=\"view_" . $id . "\" value=\"View\">\n";
+      if ($may_write) {
+         echo "<input type=\"submit\" name=\"chg_" . $id . "\" value=\"Change\">\n";
+         $delstring = "<input type=\"submit\" name=\"del_" . $id . "\" value=\"Remove\" ";
+         $delstring .= "Onclick=\"if(confirm('Are you sure that you want to remove record $title?'))";
+         $delstring .= "{return true;}return false;\">"; 
+         echo "$delstring\n";
+      }
+      echo "</td>\n";
+      echo "</tr>\n";
+      $r->MoveNext();
+      $rownr+=1;
+   }
+   // Add Record button
+   if (may_write($db,$tableid,false,$USER)) {
+      echo "<tr><td colspan=10 align='center'>";
+      echo "<input type=\"submit\" name=\"add\" value=\"Add Record\">";
+      echo "</td></tr>";
+   }
+
+   echo "</table>\n";
+   next_previous_buttons($r);
+   echo "</form>\n";
+}
+
+
+///////////////////////////////////////////////////////////
+//// 
 // !Displays all information within the table
 function display_table_info($db,$tableid,$DB_DESNAME,$Fieldscomma,$pr_query,$num_p_r,$pr_curr_page,$r=false) {
    global $nr_records,$max_menu_length,$USER,$LAYOUT;
@@ -117,39 +213,50 @@ function display_table_info($db,$tableid,$DB_DESNAME,$Fieldscomma,$pr_query,$num
 ////
 // !Display a record in a nice format
 function display_record($db,$Allfields,$id,$tablename,$real_tablename) {
-   global $PHP_SELF;
+   global $PHP_SELF, $md;
 
    echo "<table border=0 align='center'>\n";
+   $count=0;
+   echo "<tr>\n";
    foreach ($Allfields as $nowfield) {
       //see if display_table is set
       if ($nowfield[display_record]=="Y") {
+         if ($count && !($count % 2))
+            echo "</tr><tr>\n";
          if ($nowfield[datatype]=="textlong") {
             $textlarge=nl2br(htmlentities($nowfield[values]));
-            echo "<tr><th>$nowfield[label]</th><td colspan=6>$textlarge</td>\n";
-            echo "</tr>\n";
+            echo "<th>$nowfield[label]</th><td colspan=2>$textlarge</td>\n";
+            //echo "<tr><th>$nowfield[label]</th><td colspan=6>$textlarge</td>\n";
+            //echo "</tr>\n";
          }
          elseif ($nowfield[datatype]=="file") {
             $files=get_files($db,$tablename,$id,$nowfield["columnid"]);
             if ($files) { 
-               echo "<tr><th>Files:</th>\n<td colspan=5>";
+               echo "<th>Files:</th>\n<td colspan=5>";
+               //echo "<tr><th>Files:</th>\n<td colspan=5>";
                for ($i=0;$i<sizeof($files);$i++)  {
                   echo $files[$i]["link"]."&nbsp;&nbsp;(".$files[$i]["type"];
                   echo " file, ".$files[$i]["size"].")<br>\n";
                }
-               echo "<td></tr>\n";
+               echo "<td>\n";
+               //echo "<td></tr>\n";
             }				
          }
          // most datatypes are handled in getvalues
          else {
-            echo "<tr><th>$nowfield[label]</th>\n";
-            echo "<td colspan=2>$nowfield[text]</td></tr>\n";
+            //echo "<tr><th>$nowfield[label]</th>\n";
+            //echo "<td colspan=2>$nowfield[text]</td></tr>\n";
+            echo "<th>$nowfield[label]</th>\n";
+            echo "<td colspan=2>$nowfield[text]</td>\n";
          }
+         $count++;
       }
    }
    user_entry($id,$real_tablename);
    date_entry($id,$real_tablename);
    make_link($id,$tablename);
    echo "<form method='post' action='$PHP_SELF?tablename=$tablename&".SID."'>\n";
+   echo "<input type='hidden' name='md' value='$md'>\n";
    echo "<tr>\n<td colspan=7 align='center'>";
    echo "<input type='submit' name='submit' value='Back'></td>\n</tr>\n";
    echo "</table>";
@@ -168,15 +275,17 @@ function make_link($id,$DBNAME) {
 ////
 // !display addition and modification form
 function display_add($db,$tableid,$real_tablename,$tabledesc,$Allfields,$id,$namein,$system_settings) { 
-   global $PHP_SELF, $db_type, $USER;
+   global $PHP_SELF, $db_type, $md, $USER;
 
    $tablename=get_cell($db,"tableoftables","tablename","id",$tableid);
    $dbstring=$PHP_SELF;$dbstring.="?";$dbstring.="tablename=$tablename&";
    echo "<form method='post' id='protocolform' enctype='multipart/form-data' action='$dbstring";
 	?><?=SID?>'><?php
 
-   if (!$magic) $magic=time();
+   if (!$magic)
+      $magic=time();
    echo "<input type='hidden' name='magic' value='$magic'>\n";
+   echo "<input type='hidden' name='md' value='$md'>\n";
    echo "<table border=0 align='center'>\n";   
    if ($id) {
       echo "<tr><td colspan=5 align='center'><h3>Modify $tablename entry <i>$namein</i></h3></td></tr>\n";
