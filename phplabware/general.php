@@ -127,7 +127,10 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
    // show the record
    if (substr($key, 0, 4) == "view") {
       $modarray = explode("_", $key);
-      show_g($db,$fields,$modarray[1],$USER,$system_settings,$tableid,$real_tablename,$table_desname);
+      if (function_exists("plugin_show"))
+         plugin_show($db,$fields,$modarray[1],$USER,$system_settings,$tableid,$real_tablename,$table_desname);
+      else
+         show_g($db,$fields,$modarray[1],$USER,$system_settings,$tableid,$real_tablename,$table_desname);
       printfooter();
       exit();
    }
@@ -177,7 +180,10 @@ if ($edit_type && ($USER["permissions"] & $LAYOUT)) {
 
 // provide a means to hyperlink directly to a record
 if ($showid) {
-   show_g($db,$fields,$showid,$USER,$system_settings,$tableid,$real_tablename,$table_desname);
+   if (function_exists("plugin_show"))
+      plugin_show($db,$fields,$showid,$USER,$system_settings,$tableid,$real_tablename,$table_desname);
+   else
+      show_g($db,$fields,$showid,$USER,$system_settings,$tableid,$real_tablename,$table_desname);
    printfooter();
    exit();
 }
