@@ -122,6 +122,7 @@ function del_table($db,$tablename,$id,$USER) {
 /////////////////////////////////////////////////////////////////////////
 ////   
 // !creates a general table 
+// also adds the tabledescription table and the entry in tableoftables
 function add_table ($db,$tablename,$tablelabel,$sortkey) {
     global $string;
     $shortname=substr($tablename,0,3);
