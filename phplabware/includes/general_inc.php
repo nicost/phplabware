@@ -331,7 +331,7 @@ function display_add($db,$tableinfo,$Allfields,$id,$namein,$system_settings) {
       // see if display_record is set
       if ( (($nowfield["display_record"]=="Y") || ($nowfield["display_table"]=="Y")) ) {
          // To persist between multiple invocation, grab POST vars 
-         if ($nowfield["modifiable"]=="Y" && isset($HTTP_POST_VARS[$nowfield["name"]]) && $HTTP_POST_VARS[$nowfield["name"]])
+         if ($nowfield["modifiable"]=="Y" && isset($HTTP_POST_VARS[$nowfield["name"]]) && $HTTP_POST_VARS[$nowfield["name"]] && isset($HTTP_POST_VARS["submit"]))
             $nowfield["values"]=$HTTP_POST_VARS[$nowfield["name"]];
          if ($nowfield["modifiable"]=="N" && $nowfield["datatype"]!="sequence") {
             echo "<input type='hidden' name='$nowfield[name]' value='$nowfield[values]'>\n";
@@ -587,7 +587,7 @@ function check_g_data ($db,&$field_values, $DB_DESNAME,$modify=false) {
    while (!$rs->EOF) {
       $fieldA=$rs->fields[0];
       if (!$field_values["$fieldA"]) {
-         echo "<h3 color='red'>Please enter all starred fields.</center></h3>";
+         echo "<h3 color='red' align='center'>Please enter all fields marked with a <sup style='color:red'>&nbsp;*</sup>.</h3>";
 	 return false;
       }
       $rs->MoveNext();
