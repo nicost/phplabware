@@ -24,16 +24,17 @@ globalize_vars($get_vars, $HTTP_GET_VARS);
 $post_vars = "add,submit,search,searchj,serialsortdirarray";
 globalize_vars($post_vars, $HTTP_POST_VARS);
 
+// extract fields to be sorted
 foreach($HTTP_POST_VARS as $key =>$value) {
    list($testkey,$testvalue)=explode("_",$key);
    if ($testkey=="sortup")
       $sortup=$testvalue;
    if ($testkey=="sortdown")
       $sortdown=$testvalue;
-}   
-if ($searchj)  $search="Search";
-elseif ($sortup) $search="Search";
-elseif ($sortdown) $search="Search";
+} 
+reset ($HTTP_POST_VARS);
+if ($searchj || $sortup || $sortdown)
+   $search="Search";
 
 $httptitle .=$tablename;
 
@@ -145,11 +146,6 @@ if ($showid) {
    exit();
 }
 
-/*
-// when create new table has been chosen
-if ($createnew){create_new_table($db);}
-*/
-
 // when the 'Add' button has been chosen: 
 if ($add) {
    add_g_form($db,$fields,$field_values,0,$USER,$PHP_SELF,$system_settings,$real_tablename,$tableid,$table_desname);
@@ -222,34 +218,7 @@ else {
  
    // sort stuff
    $sortdirarray=unserialize(stripslashes($serialsortdirarray));
-   if ($sortup && $sortup<>" ") {
-      if (is_array($sortdirarray) && array_key_exists($sortup,$sortdirarray)) {
-         if ($sortdirarray[$sortup]=="asc")
-            unset($sortdirarray[$sortup]);
-         else
-            $sortdirarray[$sortup]="asc";
-      }
-      elseif (!is_array($sortdirarray) || !array_key_exists($sortup,$sortdirarray))
-         $sortdirarray[$sortup]="asc";
-   } 
-   if ($sortdown && $sortdown <>" ") {
-      if (is_array($sortdirarray) && array_key_exists($sortdown,$sortdirarray)) {
-         if ($sortdirarray[$sortdown]=="desc")
-            unset($sortdirarray[$sortdown]);
-         else
-            $sortdirarray[$sortdown]="desc";
-      }
-      elseif (!is_array($sortdirarray) || !array_key_exists($sortdown,$sortdirarray))
-         $sortdirarray[$sortdown]="desc";
-   }
-
-   if ($sortdirarray) {
-      foreach($sortdirarray as $key => $value) {
-         if ($sortstring)
-            $sortstring .= ", ";
-         $sortstring .= "$key $value";
-      }
-   }
+   $sortstring=sortstring($sortdirarray,$sortup,$sortdown);
 
    // paging stuff
    $num_p_r=paging($num_p_r,$USER);
@@ -364,21 +333,8 @@ else {
    if ($sortdirarray)
       echo "<input type='hidden' name='serialsortdirarray' value='".serialize($sortdirarray)."'>\n";
    echo "<tr>\n";
-   foreach ($labelarray As $key => $fieldlabel) {
-      echo "<th><table><td align='left'>";
-      if ($sortdirarray[$fieldarray[$key]]=="asc")
-         $sortupicon="icons/sortup_active.png";
-      else
-         $sortupicon="icons/sortup.png";
-      echo "<input type='image' name='sortup_".$fieldarray[$key]."' value='$fieldlabel' src='$sortupicon' alt='Sort Up'>";
-      echo "</td><th>$fieldlabel</th><td align='right'>";
-      if ($sortdirarray[$fieldarray[$key]]=="desc")
-         $sortdownicon="icons/sortdown_active.png";
-      else
-         $sortdownicon="icons/sortdown.png";
-      echo "<input type='image' name='sortdown_".$fieldarray[$key]."' value='$fieldlabel' src='$sortdownicon' alt='Sort Down'>";
-      echo "</td></tr></table></th>\n";
-   }
+   foreach ($labelarray As $key => $fieldlabel) 
+      tableheader ($sortdirarray,$fieldarray[$key], $fieldlabel);
    echo "<th>Action</th>\n";
    echo "</tr>\n\n";
 
