@@ -1,10 +1,19 @@
 <?php
 
-///////////////////////////////////////////////////////////////////////
-////
-//  !display functions for general types
+// general_inc.php - functions used by general.php, user-defined tabels
+// general.php - author: Ethan Garner, Nico Stuurman <nicost@sf.net>
+  /***************************************************************************
+  * Copyright (c) 2001 by Ethan Garner, Nico Stuurman                        *
+  * ------------------------------------------------------------------------ *
+  *  Part of phplabware, a web-driven groupware suite for research labs      *
+  *  This file contains classes and functions needed in general.php.         *
+  *                                                                          *
+  *  This program is free software; you can redistribute it and/or modify it *
+  *  under the terms of the GNU General Public License as published by the   *
+  *  Free Software Foundation; either version 2 of the License, or (at your  *
+  *  option) any later version.                                              *
+  \**************************************************************************/
 
-///////////////////////////////////////////////////////////
 //// 
 // !get the user who made the entry
 function user_entry($id,$DBNAME) {
@@ -111,8 +120,8 @@ function display_table_info($db,$tablename,$real_tablename,$DB_DESNAME,$Fieldsco
       if (may_write($db,$real_tablename,$id,$USER)) {
          echo "<input type=\"submit\" name=\"mod_" . $id . "\" value=\"Modify\">\n";
          $delstring = "<input type=\"submit\" name=\"del_" . $id . "\" value=\"Remove\" ";
-         $delstring .= "Onclick=\"if(confirm('Are you want to remove $title";
-         $delstring .= "?')){return true;}return false;\">";                                           
+         $delstring .= "Onclick=\"if(confirm('Are you sure that you want to remove record <i>$title</i>?'))";
+         $delstring .= "{return true;}return false;\">"; 
          echo "$delstring\n";
       }
       echo "</td>\n";
@@ -321,8 +330,8 @@ echo "<form method='post' id='protocolform' enctype='multipart/form-data' action
 ////
 // !Get all description table values out for a display
 function getvalues($db,$DBNAME,$DB_DESNAME,$fields,$qfield=false,$field=false) {
-	if ($qfield)
-	   $r=$db->Execute("SELECT $fields FROM $DBNAME WHERE $qfield=$field"); 
+   if ($qfield)
+      $r=$db->Execute("SELECT $fields FROM $DBNAME WHERE $qfield=$field"); 
 	else
 	   $r=$db->Execute("SELECT $fields FROM $DBNAME"); 
 	$column=strtok($fields,",");
@@ -499,301 +508,6 @@ function process_file($db,$fileid,$system_settings) {
          }    
       }
    }
-}
-
-/////////////////////////////////////////////////////////////////////
-////  
-// !Prints form with access to table management functions
-function create_new_table($db){
-   global $HTTP_POST_VARS,$PHP_SELF;
-   echo "<form method='post' id='tablemanage' enctype='multipart/form-data' ";
-   $dbstring=$PHP_SELF;
-   echo "action='$dbstring".SID."'>\n"; 
-   echo "<table align='center'>\n";
-   echo "<caption><h3>Edit tables</h3></caption>\n";
-   echo "<tr>\n";
-   echo "<th>Name</th>";
-   echo "<th>Display</th>";
-   echo "<th>Sort key</th>\n";
-   echo "<th>Custom</th>\n";
-   echo "<th>Action</th>\n";
-   echo "</tr>\n";
-   echo "<tr><td><input type='text' name='table_name' value=''></td>\n";
-   echo "<td><input type='text' name='table_display' value=''></td>\n";
-   echo "<td><input type='text' name='table_sortkey' value=''></td>\n";
-   echo "<td><input type='text' name='table_custom' value=''></td>\n";
-   echo "<td align='center'><input type='submit' name='add_table' value='Add'></td></tr>\n";
- 
-   $query = "SELECT id,tablename,Display,sortkey,Custom FROM tableoftables ORDER BY sortkey";
-   $r=$db->Execute($query);
-   $rownr=0;
-   // print all entries
-   while (!($r->EOF) && $r) {
-      // get results of each row
-      $id = $r->fields["id"];
-      $name = $r->fields["type"];
-      $Display = $r->fields["Display"];
-      $sortkey = $r->fields["sortkey"];
- 	 $Custom = $r->fields["Custom"];
-   
-      // print start of row of selected group
-      if ($rownr % 2)
-         echo "<tr class='row_odd' align='center'>\n";
-      else
-         echo "<tr class='row_even' align='center'>\n";
-      echo "<input type='hidden' name='type_id[]' value='$id'>\n";
-      echo "<td><input type='text' name='table_name[]' value='$name'></td>\n";
-      echo "<td><input type='text' name='table_display[]' value='$Display'></td>\n";
-      echo "<td><input type='text' name='type_sortkey[]' value='$sortkey'></td>\n";
-      echo "<td><input type='text' name='table_custom[]' value='$Custom'></td>\n";
-      
-      $modstring = "<input type='submit' name='tamod"."_$rownr' value='Modify'>";
-      $delstring = "<input type='submit' name='tadel"."_$rownr' value='Remove' ";
-      $delstring .= "Onclick=\"if(confirm('Are you sure the $name \'$type\' ";
-      $delstring .= "should be removed?')){return true;}return false;\">";                                           
-      echo "<td align='center'>$modstring $delstring</td>\n";
-      echo "</tr>\n";
-      $r->MoveNext();
-      $rownr+=1;
-   }
-
-   // Dismiss button
-   echo "<tr><td colspan=4 align='center'>\n";
-   echo "<input type='submit' name='submit' value='Dismiss'>\n";
-   echo "</td></tr>\n";
-
-   echo "</table>\n";
-   echo "</form>\n";
-
-	}
-
-/////////////////////////////////////////////////////////////////////////
-////  
-// !deletes a user-generated table, including associated tables
-function del_table($db,$tablename,$id) {
-   global $HTTP_POST_VARS, $string;
-
-   $real_tablename=$tablename."_".$id;
-   $desc=$real_tablename."_desc";
-   echo "$desc, $real_tablename.<br>";
-   $r=$db->Execute("select associated_table from $desc");
-   $tempTAB=array();
-   if ($r) {
-      while (!$r->EOF) {
-         if ($r->fields["associated_table"]) {
-            $db->Execute("DROP TABLE ".$r->fields["associated_table"]);
-            $db->Execute("DROP TABLE ".$r->fields["associated_table"]."_id_seq");
-         }
-         $r->MoveNext();
-      }
-   }
-   $r=$db->Execute("DROP TABLE $real_tablename");
-   $r=$db->Execute("DROP TABLE $real_tablename_id");
-   $r=$db->Execute("DROP SEQUENCE $real_tablename_id");
-   $r=$db->Execute("DROP TABLE $desc");
-   $r=$db->Execute("DROP TABLE $desc"."_id");
-   $r=$db->Execute("DROP SEQUENCE $desc"."_id");
-   $r=$db->Execute("Delete from tableoftables WHERE id=$id");
-   if ($r) 
-      $string="Table $tablename has been deleted";
-   return $string;
-}
-
-/////////////////////////////////////////////////////////////////////////
-////   
-// !creates a general table 
-function add_table ($db,$tablename,$sortkey) {
-    global $string;
-    $shortname=substr($tablename,0,3);
-   
-   //check to ensure that duplicate table or database does not exist
-   $r=$db->Execute("SELECT tablename FROM tableoftables");
-   $ALLTABLES=$r->GetArray();
-   foreach($ALLTABLES as $table1) {
-      if ("$tablename" == "$table1")
-         $isbad=true; 
-   }
-   if ($tablename=="")
-      $string="Please enter a title for the table!";
-   if ($isbad)
-      $string="A table with the name $tablename already exists!";
-   if (preg_match("/\W/",$tablename)) {
-      $string="Please use only letters (no numbers, spaces and the like) in the tablename.";
-      $isbad=true;
-   }
-   if (preg_match("/^[0-9]/",$tablename)) {
-      $string="Tablenames should not start with a number. Sorry ;(";
-      $isbad=true;
-   }
-   if (!$isbad && $tablename) {
-      // ids > 10000 are available to users
-      $id=$db->GenID("tableoftables"."gen_id_seq",10000);
-      $real_tablename=$tablename."_".$id;
-      $desc=$real_tablename . "_desc";
-      $r=$db->Execute("CREATE TABLE $real_tablename (
-		id int PRIMARY KEY, 
-		title text, 
-		access varchar(9), 
-		ownerid int, 
-		magic int, 
-		lastmodby int, 
-		lastmoddate int, 
-		date int)");
-      if ($r) {
-         $string= "Succesfully Added Table $tablename";
-         // check if shortname has been taken, if so, add id
-         $r=$db->Execute("SELECT id FROM tableoftables WHERE shortname='$shortname'");
-         if ($r->fields["id"])
-            $shortname.="$id";
-  	 $r=$db->Execute("INSERT INTO tableoftables (id,sortkey,tablename,shortname,Display,Permission) Values($id,'$sortkey','$tablename','$shortname','Y','Users')");
-         $r=$db->Execute("CREATE TABLE $desc (
-		id int PRIMARY KEY,
-		sortkey int,
-		label text, 
-		display_table char(1), 
-		display_record char(1), 
-		required char(1), 
-		type text, 
-		datatype text, 
-		associated_table text, 
-		associated_sql text)");   
-
-         $fieldstring="id,label,sortkey,display_table,display_record, required, type, datatype, associated_table, associated_sql"; 
-         $descid=$db->GenId("$desc"."_id");  
-  	 $db->Execute("INSERT INTO $desc ($fieldstring) Values($descid'id','100','N','N','N','int(11)','text','','')");
-         $descid=$db->GenId("$desc"."_id");  
-         $db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'access','110','N','N','N','varchar(9)','text','','')");
-         $descid=$db->GenId("$desc"."_id");  
-         $db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'ownerid','120','N','N','N','int(11)','text','','')");
-         $descid=$db->GenId("$desc"."_id");  
-         $db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'magic','130,'N','N','N','int(11)','text','','')");
-         $descid=$db->GenId("$desc"."_id");  
-         $db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'title','140','Y','Y','Y','text','text','','')");
-         $descid=$db->GenId("$desc"."_id");  
-         $db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'lastmoddate','150','N','N','N','int(11)','text','','')");
-         $descid=$db->GenId("$desc"."_id");  
-         $db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'lastmodby','160','N','N','N','int(11)','text','','')");
-         $descid=$db->GenId("$desc"."_id");  
-         $db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'date','170','N','N','N','int(11)','text','','')");
-      }  
-      else {
-         $string="Poblems adding this table.  Sorry ;(";
-      }
-   return false;
-   }
-}
-
-/////////////////////////////////////////////////////////////////////////
-////
-// !modifies  the display properites of a table within navbar
-function mod_table($db,$id,$tablename,$tablesort,$tabledisplay) 
-	{
-	global $string;
-    $r=$db->Execute("UPDATE tableoftables SET sortkey='$tablesort',Display='$tabledisplay' where id='$id'");   	
-    if ($r) {$string="Succesfully Changed Record $tablename";}
-    else {$string="Please enter all fields";}
-    return false;
-	}
-
-/////////////////////////////////////////////////////////////////////////
-//// 
-// !adds a general column entry
-function add_columnecg($db,$tablename2,$colname2,$datatype,$Rdis,$Tdis,$req,$sort)
-   {
-   global $string;
-
-   $SQL_reserved="absolute,action,add,allocate,alter,are,assertion,at,between,bit,bit_length,both,cascade,cascaded,case,cast,catalog,char_length,charachter_length,cluster,coalsce,collate,collation,column,connect,connection,constraint,constraints,convert,corresponding,cross,current_date,current_time,current_timestamp,current_user,date,day,deallocate,deferrrable,deferred,describe,descriptor,diagnostics,disconnect,domain,drop,else,end-exec,except,exception,execute,external,extract,false,first,full,get,global,hour,identity,immediate,initially,inner,input,insensitive,intersect,interval,isolation,join,last,leading,left,level,local,lower,match,minute,month,names,national,natural,nchar,next,no,nullif,octet_length,only,outer,output,overlaps,pad,partial,position,prepare,preserve,prior,read,relative,restrict,revoke,right,rows,scroll,second,session,session_user,size,space,sqlstate,substring,system_user,temporary,then,time,timepstamp,timezone_hour,timezone_minute,trailing,transaction,translate,translation,trim,true,unknown,uppper,usage,using,value,varchar,varying,when,write,year,zone";
-
-   // find the id of the table and therewith the tablename
-   $r=$db->Execute("SELECT id FROM tableoftables WHERE tablename='$tablename2'");
-   $id=$r->fields["id"];
-   $search=array("' '","','","';'","'\"'");
-   $replace=array("_","_","","");
-   $colname = preg_replace ($search,$replace, $colname2);
-   $real_tablename=$tablename2."_".$id;
-
-   $fieldstring="id,label,sortkey, display_table, display_record,required, type, datatype, associated_table, associated_sql"; 
-   $desc=$real_tablename . "_desc";
-   $fieldid=$db->GenId($desc."_id");
-   if ($colname=="")
-      $string="Please enter a columnname";
-   elseif (strpos($SQL_reserved,strtolower($colname))) 
-      $string="Column name <i>$colname</i> is a reserved SQL word.  Please pick another column name";
-   else {
-      if ($datatype=="pulldown") {
-         // create an associated table, not overwriting old ones, using a max number
-         $ALLTABLES=$db->MetaTables();  
-         $tablestr=$real_tablename;$tablestr.="ass";
-	 $tables=array();
-	 $tables=preg_grep("/$tablestr/",$ALLTABLES); 
-	 $tables2=array_values($tables);
-	 $numhave=array_count_values($tables2);
-	 $allnums=array();	
-	 array_push($allnums,"0");
-	 foreach($tables2 as $currvalues)
-			{
-	    $DDD=explode("_",$currvalues);
-	    $nownumber=$DDD[1];
-	    array_push($allnums,$nownumber);
-	 }		
-	 $maxnum=max($allnums);$newnum=$maxnum+1;
-	 $tablestr.="_$newnum";	
-	 $r=$db->Execute("INSERT INTO $desc ($fieldstring) Values($fieldid,'$colname','$sort','$Tdis','$Rdis','$req','text','$datatype','$tablestr','$colname from $tablestr where ')");
-	 $rs=$db->Execute("CREATE TABLE $tablestr (id int PRIMARY KEY, sortkey int, type text, typeshort text)");
-	 $rsss=$db->Execute("ALTER table $real_tablename add column $colname text");
-	 if (($r)&&($rs)&&($rsss)&&(!($colname==""))) 
-            $string="Added column <i>$colname</i> into table <i>$tablename2</i>";
-	 else 
-	    $string="Problems creating this column.";
-      }
-      else {
-         $r=$db->Execute("INSERT INTO $desc ($fieldstring) Values($fieldid,'$colname','$sort','$Tdis','$Rdis','$req','text','$datatype','','')");
-         $rsss=$db->Execute("ALTER table $real_tablename add column $colname text");
- 	 if (($r)&&$rsss&&(!($colname==""))) 
-            $string="Added column <i>$colname</i> into table: <i>$tablename2</i>";
-         else 
-            $string="Please enter all values";
-      }
-   }
-}
-
-/////////////////////////////////////////////////////////////////////////
-//// 
-// !modifies a general column entry
-function mod_columnECG($db,$id,$sort,$tablename,$colname,$datatype,$Rdis,$Tdis,$req) {
-   global $string;
-   $desc=$tablename;$desc.="_desc";
-   $r=$db->Execute("UPDATE $desc SET sortkey='$sort',display_table='$Tdis', display_record='$Rdis',required='$req' where id='$id'");   	
-   if ($r) 
-      $string="Succesfully Changed Column $colname in $tablename";
-   else 
-      $string="Please enter all fields";
-   return false;	
-}
-
-/////////////////////////////////////////////////////////////////////////
-//// 
-// !deletes a general column entry
-function rm_columnecg($db,$tablename,$id,$colname,$datatype) {
-	global $string;
-	// find the id of the table and therewith the tablename
-	$r=$db->Execute("SELECT id FROM tableoftables WHERE tablename='$tablename'");
-	$fieldid=$r->fields["id"];
-	$real_tablename=$tablename."_".$fieldid;
-	$desc=$real_tablename."_desc";
-	$r=$db->Execute("ALTER TABLE $real_tablename DROP COLUMN $colname");
-	$rv=$db->Execute("select associated_table from $desc where id ='$id'");
-    $tempTAB=array();
-	if ($rv) {
-	   while (!$rv->EOF) {
-              if ($rv->fields[0])
-                 $db->Execute("DROP TABLE ".$rv->fields[0]);
-	      $rv->MoveNext();
-	   }
-        }
-        $rrr=$db->Execute("DELETE FROM $desc WHERE id='$id'");
-	if (($r)&&($rrr)) 
-	     $string="Deleted Column <i>$colname</i> from Table <i>$tablename</i>.";
 }
 
 
