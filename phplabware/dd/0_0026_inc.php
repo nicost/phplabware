@@ -23,13 +23,20 @@ $db->Execute("UPDATE tableoftables SET Custom='antibodies.php'  where tablename 
 $db->Execute("UPDATE tableoftables SET Custom='pdfs.php'  where tablename = 'pdfs'");
 $db->Execute("UPDATE tableoftables SET Custom='protocols.php'  where tablename = 'protocols'");
 $db->Execute("UPDATE tableoftables SET Custom='pdbs.php'  where tablename = 'pdbs'");
-$db->Execute("ALTER TABLE tableoftables modify id int UNSIGNED NOT NULL AUTO_INCREMENT");
+//$db->Execute("ALTER TABLE tableoftables modify id int UNSIGNED NOT NULL AUTO_INCREMENT");
 
 // Import existing tables into the updated navbar display funtion.
 $db->Execute("UPDATE tableoftables SET Permission='Users'  where sortkey > 1");
 $db->Execute("UPDATE tableoftables SET Display='Y'  where sortkey > 1");
 
 // Create the linkbar table and associated entries
-$db->Execute("Create table linkbar (id int UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY, label text, linkurl text, sortkey int(11),display char(1),target char(1))");
-$db->Execute("INSERT INTO tableoftables (sortkey,tablename,shortname,Display,Permission,Custom) VALUES('0','linkbar','li','0','System','System')");
+$db->Execute("Create table linkbar (
+	id int PRIMARY KEY, 
+	label text, 
+	linkurl text, 
+	sortkey int(11),
+	display char(1),
+	target char(1))");
+$id=$db->GenID("tableoftables."_id_seq",10);
+$db->Execute("INSERT INTO tableoftables (id,sortkey,tablename,shortname,Display,Permission,Custom) VALUES($id,'0','linkbar','li','0','System','System')");
 ?>
