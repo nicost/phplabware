@@ -41,12 +41,12 @@ function check_pd_data ($db,&$field_values) {
    }
    // data from pubmed and parse
    $pmid=$field_values["pmid"];
-   $pubmedinfo=file("http://www.ncbi.nlm.nih.gov/entrez/utils/pmfetch.fcgi?db=PubMed&id=$pmid&report=abstract&report=abstract&mode=text");
+   $pubmedinfo=@file("http://www.ncbi.nlm.nih.gov/entrez/utils/pmfetch.fcgi?db=PubMed&id=$pmid&report=abstract&report=abstract&mode=text");
    if ($pubmedinfo) {
       // lines appear to be broken randomly, but parts are separated by empty lines
       // get them into array $line
       for ($i=0; $i<sizeof($pubmedinfo);$i++) {
-         $line[$lc].=rtrim($pubmedinfo[$i]);
+         $line[$lc].=str_replace("\n"," ",$pubmedinfo[$i]);
          if ($pubmedinfo[$i]=="\n")
 	    $lc++;
       }
@@ -82,6 +82,10 @@ function check_pd_data ($db,&$field_values) {
 	       $field_values["type1"]=$tid;
 	 }
       }
+   }
+   else {
+      echo "<h3>Failed to import the Pubmed data</h3>\n";
+      return false;
    }
    return true;
 }
@@ -176,21 +180,13 @@ function show_pd ($db,$fields,$id,$USER,$system_settings) {
    }
 
    echo "<table border=0 align='center'>\n";
-   echo "<tr align='center'>\n";
-   echo "<td colspan=2></td>\n";
-   echo "<td></td><td></td>\n<th>Category</th>\n";
-   echo "</tr>\n";
    echo "<tr>\n";
-   echo "<th>Title: </th>\n";
-   echo "<td colspan=2>$title</td>\n";
-   $text=get_cell($db,"pr_type1","type","id",$type1);
-   echo "<td></td><td align='center'>$text</td></tr>\n";
+   echo "<th>Article: </th>\n";
+   echo "<td colspan=2>$title<br>\n";
+   $text=get_cell($db,"pd_type1","type","id",$type1);
+   echo "$text ($year), <b>$volume</b>:$fpage-$lpage<br>\n";
+   echo "$author</td></tr>\n";
    
-   echo "<tr>\n";
-   echo "<th>Author: </th>\n";
-   $r=$db->Execute("SELECT type,typeshort FROM pr_type2 WHERE id=$type2");
-   echo "<td colspan=2>".$r->fields["type"]." ".$r->fields["typeshort"]."</td></tr>\n";
-
    echo "<tr>";
    $query="SELECT firstname,lastname,email FROM users WHERE id=$ownerid";
    $r=$db->Execute($query);
@@ -232,7 +228,7 @@ function show_pd ($db,$fields,$id,$USER,$system_settings) {
    echo "<th>Notes: </th><td colspan=6>$notes</td>\n";
    echo "</tr>\n";
 
-   $files=get_files($db,"protocols",$id);
+   $files=get_files($db,"pdfs",$id);
    if ($files) {
       echo "<tr><th>Files:</th>\n<td colspan=5>";
       for ($i=0;$i<sizeof($files);$i++) {
@@ -361,7 +357,7 @@ else {
    elseif ($submit=="Modify PDF reprint") {
       if (! (check_pd_data($db,$HTTP_POST_VARS) && modify ($db,"pdfs",$fields,$HTTP_POST_VARS,$HTTP_POST_VARS["id"],$USER)) ) {
          echo "</caption>\n</table>\n";
-         add_pr_form ($db,$fields,$HTTP_POST_VARS,$HTTP_POST_VARS["id"],$USER,$PHP_SELF,$system_settings);
+         add_pd_form ($db,$fields,$HTTP_POST_VARS,$HTTP_POST_VARS["id"],$USER,$PHP_SELF,$system_settings);
          printfooter ();
          exit;
       }
@@ -417,6 +413,7 @@ else {
       $pd_query = "SELECT $fields FROM pdfs WHERE id IN ($whereclause) ORDER BY date DESC";
    $HTTP_SESSION_VARS["pd_query"]=$pd_query;   
    session_register("pd_query");
+
    // row with search form
    echo "<tr align='center'>\n";
    // javascript that submit the form with the search button when a selects was chosen
@@ -427,40 +424,54 @@ else {
    $lista=make_SQL_csf ($r,false,"id",$nr_records);
    // and a list with all records we may see
    $listb=may_read_SQL($db,"pdfs",$USER);
+
    // show title we may see, when too many, revert to text box
-   if ($title) $list=$listb; else $list=$lista;
+/*   if ($title) $list=$listb; else $list=$lista;
    if ($list && ($nr_records < $max_menu_length) ) {
       $r=$db->Execute("SELECT title FROM pdfs WHERE id IN ($list)");
       $text=$r->GetMenu("title",$title,true,false,0,"style='width: 80%' $jscript");
       echo "<td style='width: 10%'>$text</td>\n";
    }
-   else
-      echo "<td><input type='text' name='title' value='$title' size=8></td>\n";
+   else 
+*/
+
+   echo "<td><input type='text' name='title' value='$title' size=15></td>\n";
 
    // show a list with authors having stuff we may see
-   echo "<td style='width: 10%'>\n";
-   echo "<td><input type='text' name='notes' value='$notes' size=8></td>\n";
+/*   if ($author) $list=$listb; else $list=$lista;
+   if ($list && ($nr_records < $max_menu_length) ) {
+      $r=$db->Execute("SELECT author FROM pdfs WHERE id IN ($list)");
+      $text=$r->GetMenu("author",$author,true,false,0,"style='width: 80%' $jscript");
+      echo "<td style='width: 10%'>$text</td>\n";
+   }
+   else 
+*/
 
-   // print link to edit table 'Categories'
+   echo "<td><input type='text' name='author' value='$author' size=15></td>\n";
+   
+   // print link to edit table 'Journals'
    echo "<td style='width: 10%'>";
    if ($USER["permissions"] & $LAYOUT) {
       echo "<a href='$PHP_SELF?edit_type=pd_type1&";
       echo SID;
-      echo "'>Edit Categories</a><br>\n";
+      echo "'>Edit Journals</a><br>\n";
    }
-   // print category drop-down menu
+   // print journals drop-down menu
    if ($type1) $list=$listb; else $list=$lista;
    $r=$db->Execute("SELECT type1 FROM pdfs WHERE id IN ($list)");
    $list2=make_SQL_ids($r,false,"type1");
    if ($list2) {
-      $r=$db->Execute("SELECT typeshort,id FROM pd_type1 WHERE id IN ($list2)");
+      $r=$db->Execute("SELECT type,id FROM pd_type1 WHERE id IN ($list2) ORDER BY type");
       $text=$r->GetMenu2("type1",$type1,true,false,0,"style='width: 80%' $jscript");
       echo "$text</td>\n";
    }
    else
       echo "&nbsp;</td>\n";
 
-   echo "<td>&nbsp;</td>";
+   echo "<td><input type='text' name='volume' value='$volume' size=7></td>\n";
+   echo "<td><input type='text' name='fpage' value='$fpage' size=7></td>\n";
+   echo "<td>&nbsp;</td>\n";
+
    echo "<td><input type=\"submit\" name=\"search\" value=\"Search\">&nbsp;";
    echo "<input type=\"submit\" name=\"search\" value=\"Show All\"></td>";
    echo "</tr>\n";
@@ -471,7 +482,6 @@ else {
    echo "<th>Journal</th>\n";
    echo "<th>Volume</th>\n";
    echo "<th>First Page</th>\n";
-   echo "<th>Notes</th>\n";
    echo "<th>Files</th>\n";
    echo "<th>Action</th>\n";
    echo "</tr>\n";
@@ -502,9 +512,11 @@ else {
  
       // get results of each row
       $id = $r->fields["id"];
-      $title = $r->fields["title"];
-      $at1=get_cell($db,"pd_type1","type","id",$r->fields["type1"]);
-      $notes = $r->fields["notes"];
+      $title = "&nbsp;".$r->fields["title"];
+      $author= "&nbsp;".$r->fields["author"];
+      $journal="&nbsp;".get_cell($db,"pd_type1","type","id",$r->fields["type1"]);
+      $volume = "&nbsp;".$r->fields["volume"];
+      $fpage = "&nbsp;".$r->fields["fpage"];
  
       // print start of row of selected group
       if ($rownr % 2)
@@ -512,14 +524,11 @@ else {
       else
          echo "<tr class='row_even' align='center'>\n";
 
-      echo "<td>&nbsp;$title</td>\n";
-      $author= "&nbsp;".$r->fields["author"];
+      echo "<td>$title</td>\n";
       echo "<td>$author</td>\n";
-      if ($notes)
-         echo "<td>yes</td>\n";
-      else
-         echo "<td>no</td>\n";
-      echo "<td>&nbsp;$at1</td>\n";
+      echo "<td>$journal</td>\n";
+      echo "<td>$volume</td>\n";
+      echo "<td>$fpage</td>\n";
       $files=get_files($db,"pdfs",$id,3);
       echo "<td>";
       if ($files) 
@@ -545,7 +554,7 @@ else {
       $rownr+=1;
    }
 
-   // Add Protocol button
+   // Add PDF button
    if (may_write($db,"pdfs",false,$USER)) {
       echo "<tr><td colspan=7 align='center'>";
       echo "<input type=\"submit\" name=\"add\" value=\"Add PDF reprint\">";
