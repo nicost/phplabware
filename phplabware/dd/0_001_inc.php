@@ -2,7 +2,7 @@
 
 // 0_001_inc.php - initial database definition
 // 0_001_inc.php - author: Nico Stuurman <nicost@sourceforge.net>
-
+// TABLES: settings authmethods users groups usersxgroups dateformats tableoftables files
   /***************************************************************************
   * Copyright (c) 2001 by Nico Stuurman                                      *
   * ------------------------------------------------------------------------ *
