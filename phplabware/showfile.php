@@ -39,8 +39,13 @@ $filesize=$r->fields("size");
 $mime=$r->fields("mime");
 $tablename=get_cell($db,"tableoftables","tablename","id",$tableid);
 if (!may_read($db,$tablename,$tableitemid,$USER)) {
-   echo "<html><h3>401. Forbidden.</h3></html>";
-   exit;
+   // UGLY: try wether this is 'general' table with another name
+   if (may_read($db,$tablename."_".$tableid,$tableitemid,$USER))
+      $tablename.="_".$tableid;
+   else {
+      echo "<html><h3>401. Forbidden.</h3></html>";
+      exit;
+   }
 }
 $filedir=$system_settings["filedir"];
 // send headers
