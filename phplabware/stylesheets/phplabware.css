@@ -1,8 +1,7 @@
 BODY  
 {
 	background-color : White;
-	font-family : Arial, Helvetica;
-	generic-family : sans-serif;
+	font-family : Arial, Helvetica, sans-serif;
 	font-size : 10pt;
         margin : 0;
 }
@@ -30,8 +29,7 @@ A:Visited
 
 Table, P, DIV, H5, A, OL, TD, UL 
 {
-	font-family : Arial, Helvetica;
-	generic-family : sans-serif;
+	font-family : Arial, Helvetica, sans-serif;
 	font-size : 10pt;
 }
 
@@ -54,9 +52,8 @@ TR.row_even
 
 TH  
 {
-	font-family : Arial, Helvetica;
-	generic-family : sans-serif;
-	font-size : 10pt;
+	font-family : Arial, Helvetica, sans-serif;
+	font-size : 8pt;
 	color: #FFFFFF;
 	background-color : #5555CC;
 	font-weight : bold;
@@ -97,38 +94,32 @@ Col.center
 TEXTAREA.read_only
 {
 	background-color : White;
-	font-family : Arial, Helvetica;
-	generic-family : sans-serif;
+	font-family : Arial, Helvetica, sans-serif;
 	font-size : 10pt;
 }
 .nav
 {
 	background-color : #333388;
         color : White;
-	font-color : White;
 }
 .nav:link
 {
 	background-color : #333388;
         color : White;
-	font-color : White;
 }
 .nav:active
 {
 	background-color : #333388;
         color : White;
-	font-color : White;
 }
 .nav:hover
 {
 	background-color : #333388;
         color : White;
-	font-color : White;
 }
 .nav:visited
 {
 	background-color : #333388;
         color : White;
-	font-color : White;
 }
 .navorange { background-color : White; }
