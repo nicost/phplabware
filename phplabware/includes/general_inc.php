@@ -412,8 +412,8 @@ function display_add($db,$tableinfo,$Allfields,$id,$namein,$system_settings) {
 	       echo"<sup style='color:red'>&nbsp;*</sup>";
 	    echo "</th><td colspan=6><textarea name='$nowfield[name]' rows='5' cols='100%'>$nowfield[values]</textarea>";
 	 }
-	 if ($nowfield[datatype]=="file") {
-	    $files=get_files($db,$tableinfo->realname,$id,$nowfield["id"]);
+	 if ($nowfield["datatype"]=="file") {
+	    $files=get_files($db,$tableinfo->name,$id,$nowfield["columnid"]);
 	    echo "<tr>";
 	    echo "<th>$nowfield[label]:</th>\n";
 	    echo "</th>\n";
