@@ -279,8 +279,8 @@ function report_protocol_addition ($db,$id,$system_settings) {
 
 ////
 // !Tries to convert a MsWord file into html 
-// It calls wvHtml.  This does not work with wvHtml version 0.7-0.72
-// Version 0.67 is fine....
+// It calls wvHtml. Version 0.7 and up need to be called differently than  
+// prior versions
 // When succesfull, the file is added to the database
 function process_file($db,$fileid,$system_settings) {
    global $HTTP_POST_FILES,$HTTP_POST_VARS;
@@ -288,9 +288,15 @@ function process_file($db,$fileid,$system_settings) {
    if (!strstr($mimetype,"html")) {
       $word2html=$system_settings["word2html"];
       $filepath=file_path($db,$fileid);
-      $temp=$system_settings["tmpdir"]."/".uniqid("file");
+      $converted_file=uniqid("file");
+      $temp=$system_settings["tmpdir"]."/$converted_file";
       $command= "$word2html $filepath $temp";
       $result=exec($command);
+      // wvHtml version 0.7 and up are called differently:
+      if (!@is_readable($temp)) {
+         $command="$word2html --targetdir=".$system_settings["tmpdir"]." $filepath $converted_file";
+         $result=exec($command);
+      }
       if (@is_readable($temp)) {
          unset ($HTTP_POST_FILES);
          $r=$db->query ("SELECT filename,mime,title,tablesfk,ftableid FROM files WHERE id=$fileid");
@@ -302,7 +308,7 @@ function process_file($db,$fileid,$system_settings) {
             $type=substr(strrchr($mime,"/"),1);
             $size=filesize($temp);
             $id=$db->GenID("files_id_seq");
-            $query="INSERT INTO files (id,filename,mime,size,title,tablesfk,ftableid,type) VALUES ($id,'$filename','$mime','$size','".$r->fields("title")."','".$r->fields("tablesfk")."','".$r->fields("ftableid")."','$type')";
+            $query="INSERT INTO files (id,filename,mime,size,title,tablesfk,ftableid,ftablecolumnid,type) VALUES ($id,'$filename','$mime','$size','".$r->fields("title")."','".$r->fields("tablesfk")."','".$r->fields("ftableid")."',1,'$type')";
             if ($db->execute($query)) {
                 $newloc=file_path($db,$id);
                `mv $temp $newloc`;
