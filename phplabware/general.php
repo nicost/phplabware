@@ -474,7 +474,7 @@ echo "${$queryname}.<br>";
    else
        echo "<td>&nbsp;</td>\n";
    echo "<td align='center'>$tabletext <B>$tableinfo->label</B> $modetext</td>";
-   echo "<td align='center'>".viewmenu($db,$tableinfo,$viewid)."</td>\n";
+   echo "<td align='center'>".viewmenu($db,$tableinfo,$viewid,false)."</td>\n";
    echo "</tr>\n</table>\n";
    next_previous_buttons($rp,true,$num_p_r,$numrows,${$pagename},$db,$tableinfo);
 
