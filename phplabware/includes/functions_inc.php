@@ -259,6 +259,7 @@ function navbar($permissions) {
       ?>
       <td align='center'><a href="groups.php?<?=SID?>">groups</a></td>
       <td align='center'><a href="tablemanage.php?<?=SID?>">tables</a></td>
+      <td align='center'><a href="linkbar.php?<?=SID?>">linkbar</a></td>
       <td align='center'><a href="setup.php?<?=SID?>">system</a></td>
       <?php
    }
