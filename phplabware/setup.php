@@ -85,14 +85,7 @@ if (!$version && $pwd) {
    // we connected to an empty database and have the password
    // now create the initial tables
    // $db->debug = true;
-   // $db->BeginTrans();
    $test=true;
-   //$db->debug=true;
-/*
-CREATE SEQUENCE settings_id_seq
-CREATE TABLE settings
-   id INT4 DEAFAULT nextval('settings_id_seq');
-*/
    $result=$db->Execute("CREATE TABLE settings 
 	(id int PRIMARY KEY, 
 	version  float(8), 
@@ -136,31 +129,17 @@ CREATE TABLE settings
 	outdir text)");
    if (!$result) $test=false;
    
-   if (!$db->Execute("CREATE INDEX users_id_pkey ON users (id)"))
-      $test=false;
-   if (!$db->Execute("CREATE INDEX users_login_key ON users (login)"))
-      $test=false;
-   if (!$db->Execute("CREATE INDEX users_pwd_key ON users (pwd)"))
-      $test=false;
-
-$result=$db->Execute("CREATE TABLE groups 
+   $result=$db->Execute("CREATE TABLE groups 
 	(id int PRIMARY KEY, 
 	name text, 
 	description text)");
    if (!$result) $test=false;
-   if (!$db->Execute("CREATE INDEX groups_id_pkey ON groups (id)"))
-      $test=false;
-   if (!$db->Execute("CREATE INDEX groups_name_pkey ON groups (name)"))
-      $test=false;
 
    $result=$db->Execute("CREATE TABLE usersxgroups
 	(usersid int,
 	groupsid int)");
    if (!$result) $test=false;
-   if (!$db->Execute("CREATE INDEX usersxgroups_usersid_pkey ON usersxgroups (usersid)"))
-      $test=false;
-   if (!$db->Execute("CREATE INDEX usersxgroups_groupsid_pkey ON usersxgroups (groupsid)"))
-      $test=false;
+
    // insert sysadmin and admin group
    $pass= md5($pwd);
    $id=$db->GenID("users_id_seq");
@@ -188,12 +167,10 @@ $result=$db->Execute("CREATE TABLE groups
 	($idg, 'users', 'That is us')");
    if (!$result) $test=false;
    if (!$test) {
-      echo "<h3 align='center'>Problems creating database tables!</h3>\n";
-      // $db->RollBackTrans();
+      echo "<h3 align='center'>Problems creating database tables!\n";
+      echo "Some function might not work.</h3>\n";
    }
    else {
-      // echo "<h3 align='center'>Succesfully created database tables!</h3>\n";
-      // $db->CommitTrans();
       $version=$version_code;
    }
 } 
