@@ -325,6 +325,15 @@ if ($HTTP_POST_VARS['assign']=='Import Data') {
       $fh=fopen("$tmpdir/$tmpfile",'r');
       if ($fh) {
          $access=$system_settings['access'];
+         // translate the $access string into our new format
+         if ($access{3}=='r')
+            $gr=1;
+         if ($access{4}=='w')
+            $gw=1;
+         if ($access{6}=='r')
+            $er=1;
+         if ($access{7}=='w')
+            $ew=1;
          $lastmoddate=time();
          $lastmodby=$USER['id'];
          if ($skipfirstline=='yes')
@@ -418,9 +427,9 @@ $db->debug=true;
                   if (!$newid) {
                      $id=$db->GenID($table."_id_seq");
                      if ($id && $newdate)
-                        $query="$query_start id,access,lastmoddate,lastmodby,ownerid) $query_end '$id','$access','$lastmoddate','$lastmodby','$ownerid')";
+                        $query="$query_start id,gr,gw,er,ew,lastmoddate,lastmodby,ownerid) $query_end '$id',$gr,$gw,$er,$ew,'$lastmoddate','$lastmodby','$ownerid')";
                      else
-                        $query="$query_start id,access,date,lastmoddate,lastmodby,ownerid) $query_end '$id','$access','$lastmoddate','$lastmoddate','$lastmodby','$ownerid')";
+                        $query="$query_start id,gr,gw,er,ew,date,lastmoddate,lastmodby,ownerid) $query_end '$id',$gr,$gw,$er,$ew,'$lastmoddate','$lastmoddate','$lastmodby','$ownerid')";
                   }
                   else {
                      // let's make sure the 'next' id will be higher
@@ -431,9 +440,9 @@ $db->debug=true;
                      if (get_cell($db,$table,'id','id',$newid))
                         $duplicateid++;
                      if ($newdate)
-                     $query="$query_start access,lastmoddate,lastmodby,ownerid) $query_end '$access','$lastmoddate','$lastmodby','$ownerid')";
+                     $query="$query_start gr,gw,er,ew,lastmoddate,lastmodby,ownerid) $query_end $gr,$gw,$er,$ew,'$lastmoddate','$lastmodby','$ownerid')";
                      else
-                        $query="$query_start access,date,lastmoddate,lastmodby,ownerid) $query_end '$access','$lastmoddate','$lastmoddate','$lastmodby','$ownerid')";
+                        $query="$query_start gr,gw,er,ew,date,lastmoddate,lastmodby,ownerid) $query_end $gr,$gw,$er,$ew,'$lastmoddate','$lastmoddate','$lastmodby','$ownerid')";
                   }
                   if ($r=$db->Execute($query)) {
                       $inserted++;
