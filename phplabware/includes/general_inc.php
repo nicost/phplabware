@@ -69,7 +69,7 @@ function display_table_info($db,$tableid,$DB_DESNAME,$Fieldscomma,$pr_query,$num
 
    $tablename=get_cell($db,"tableoftables","tablename","id",$tableid);
    $real_tablename=get_cell($db,"tableoftables","real_tablename","id",$tableid);
-   $r=$db->PageExecute($pr_query,$num_p_r,$pr_curr_page);
+   $r=$db->CachePageExecute(2,$pr_query,$num_p_r,$pr_curr_page);
    $rownr=1;
    // print all entries
    while (!($r->EOF) && $r)  {
@@ -133,7 +133,7 @@ function display_table_info($db,$tableid,$DB_DESNAME,$Fieldscomma,$pr_query,$num
    }
    // Add Record button
    if (may_write($db,$tableid,false,$USER)) {
-      echo "<tr><td colspan=100 align='center'>";
+      echo "<tr><td colspan=10 align='center'>";
       echo "<input type=\"submit\" name=\"add\" value=\"Add Record\">";
       echo "</td></tr>";
    }
