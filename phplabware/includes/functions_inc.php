@@ -322,6 +322,7 @@ function navbar($permissions) {
          $SID="?".SID;
       if ($permissions) {
          $systemmenu.="   <option value='users.php?type=me&dummy=true&".SID."'>my settings</a>\n";
+         $systemmenu.="   <option value='views.php?".SID."'>table views</a>\n";
       }
       if ($permissions & $ADMIN)
          $systemmenu.="   <option value='users.php$SID'>users</a>\n";
