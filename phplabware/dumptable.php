@@ -43,7 +43,7 @@ fwrite ($fp,'$newtablename='."$tablename;\n");
 fwrite ($fp,'$newtablelabel='."\"$table_label\";\n");
 fwrite ($fp,'for ($i=0;$i<$hownew;$i++) {$newtablelabel.="new";}'."\n");
 fwrite ($fp, 'while (get_cell($db,"tableoftables","id","tablename",$newtablename)) {
-   $newtablename.="new";
+   $newtablename.="n";
    $hownew++;
 }
 for ($i=0;$i<$hownew;$i++) 
