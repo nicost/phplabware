@@ -481,7 +481,7 @@ function get_files ($db,$table,$id,$columnid,$format=1,$thumbtype='small') {
 	    $text="file_$i";
 	 else
 	    $text=$filesname;
-         $text.="<br>\n";
+         //$text.="<br>\n";
          $icon="icons/$filestype.jpg";
          if (@is_readable($icon))
             $text="<img src='$icon'>";
