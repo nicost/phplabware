@@ -243,7 +243,6 @@ else {
    elseif ($submit=="Modify Record") {
       if (! (check_g_data($db,$HTTP_POST_VARS,$tableinfo->desname,true) && 
              modify($db,$tableinfo->realname,$tableinfo->fields,$HTTP_POST_VARS,$HTTP_POST_VARS["id"],$USER,$tableinfo->id)) ) {
-echo "But check_g_data did return false???<br>";
          add_g_form ($db,$tableinfo,$HTTP_POST_VARS,$HTTP_POST_VARS["id"],$USER,$PHP_SELF,$system_settings);
          printfooter ();
          exit;
