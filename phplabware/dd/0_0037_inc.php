@@ -145,22 +145,26 @@ if ($r) {
    }
    echo "Inserted $counter records.<br>";
    // Now copy supporting table (type1=journal, type2=categories
-   $rcj=$db->Execute("SELECT * FROM pd_type1");
+   $rcj=$db->Execute("SELECT * FROM pd_type1 ORDER By id");
    while ($rcj && !$rcj->EOF) {
       $newid=$db->Genid($ass_tablej."_id_seq");
       $row=$rcj->fields;
       $rcj_copy=$db->Execute("INSERT INTO $ass_tablej VALUES ('$newid','$row[sortkey]','$row[type]','$row[typeshort]')");
       if (!$rcj_copy)
          $failed=true;
+      // since the ids are not necessarily the same, we'll have to adjust the links
+      // in the main table
+      $db->Execute("UPDATE $newtable_realname SET journal='$newid' WHERE journal='$row[id]'");
       $rcj->MoveNext();
    }
-   $rcc=$db->Execute("SELECT * FROM pd_type2");
+   $rcc=$db->Execute("SELECT * FROM pd_type2 ORDER BY id");
    while ($rcc && !$rcc->EOF) {
       $newid=$db->Genid($ass_tablec."_id_seq");
       $row=$rcc->fields;
       $rcc_copy=$db->Execute("INSERT INTO $ass_tablec VALUES ('$newid','$row[sortkey]','$row[type]','$row[typeshort]')");
       if (!$rcc_copy)
          $failed=true;
+      $db->Execute("UPDATE $newtable_realname SET category='$newid' WHERE category='$row[id]'");
       $rcc->MoveNext();
    }
    if ($failed)
