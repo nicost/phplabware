@@ -963,8 +963,8 @@ function searchhelp ($db,$tableinfo,$column,&$columnvalues,$query,$wcappend,$and
       $query[1]=true;
       // since all tables now have desc. tables,we can check for int/floats
       // should probably do this more upstream for performance gain
-      $rc=$db->Execute("SELECT type,datatype,associated_table FROM ".$tableinfo->desname." WHERE columnname='$column'");
-      if ($rc->fields[1]=="file" && $rc->fields[2]) {
+      $rc=$db->Execute("SELECT type,datatype,associated_table,key_table FROM ".$tableinfo->desname." WHERE columnname='$column'");
+      if ($rc->fields[1]=='file' && $rc->fields[2]) {
          $rw=$db->Execute("SELECT id FROM words WHERE word LIKE '".strtolower($columnvalues[$column])."'");
          if ($rw && $rw->fields[0]) {
             $rh=$db->Execute("SELECT recordid FROM ".$rc->fields[2]." WHERE wordid='".$rw->fields[0]."'");
@@ -985,9 +985,23 @@ function searchhelp ($db,$tableinfo,$column,&$columnvalues,$query,$wcappend,$and
       elseif ($rc->fields[1]=='pulldown') {
          $columnvalues[$column]=(int)$columnvalues[$column];
          if ($columnvalues["$column"]==-1)
-            $query[0].="$and ($column=''OR $column IS NULL) ";
+            $query[0].="$and ($column='' OR $column IS NULL) ";
          else
             $query[0].="$and $column='$columnvalues[$column]' ";
+      }
+      elseif ($rc->fields[1]=='mpulldown') {
+      // 
+         $rmp=$db->Execute("SELECT recordid FROM {$rc->fields[3]} WHERE typeid='{$columnvalues[$column]}'");
+         if ($rmp) {
+            $id_list=$rmp->fields[0];
+            $rmp->MoveNext();
+            while (!$rmp->EOF) {
+               $id_list.=",{$rmp->fields[0]}";
+               $rmp->MoveNExt();
+            }
+         }
+         if ($id_list)
+            $query[0].="$and id IN ($id_list) ";
       }
       elseif (substr($rc->fields[0],0,3)=="int") {
          $query[0].=numerictoSQL ($columnvalues[$column],$column,"int",$and); 
