@@ -302,6 +302,8 @@ function add_columnecg($db,$tablename2,$colname2,$label,$datatype,$Rdis,$Tdis,$r
    $search=array("' '","','","';'","'\"'","'_'","'-'");
    $replace=array('');
    $colname=preg_replace ($search,$replace, $colname2);
+   if (!$sort)
+      $sort='0';
 
    // for adodb's dml
    $dict=NewDataDictionary($db);
