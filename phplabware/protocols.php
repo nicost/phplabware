@@ -610,7 +610,7 @@ else {
       // get results of each row
       $id = $r_master->fields["id"];
       $title = $r_master->fields["title"];
-      $at1=get_cell($db,"pr_type1","type","id",$r->fields["type1"]);
+      $at1=get_cell($db,"pr_type1","type","id",$r_master->fields["type1"]);
       $notes = $r_master->fields["notes"];
  
       // print start of row of selected group
