@@ -279,7 +279,8 @@ function printheader($title,$head=false) {
 <LINK rel="STYLESHEET" type="text/css" href="phplabware.css">
 </HEAD>
 
-<BODY BGCOLOR="#ffffff">
+<BODY BGCOLOR="#ffffff"
+  TOPMARGIN="0" LEFTMARGIN="0">
 <a name="top"></a>
 <table border=0 width=100% rules="none" border="0" cellspacing="0" cellpadding="0">
    <tr class='header' bgcolor="333388">
@@ -313,7 +314,7 @@ function printheader($title,$head=false) {
       <td align=right>
          <a href="http://phplabware.sourceforge.net">
          <font color="#ffffff"><i>PhpLabWare  
-             <?php if ($version) echo "version $version"; ?></i></font>
+             <?php if ($version) echo "version $version"; ?> </i></font>
          </a>
       </td>
    </tr>
