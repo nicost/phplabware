@@ -173,13 +173,12 @@ function display_table_info($db,$tablename,$real_tablename,$DB_DESNAME,$Fieldsco
 }
 
 ///////////////////////////////////////////////////////////
-//Display a record in a nice format
-function display_record($Allfields,$id)
-	{
-	global $db,$DBNAME,$DB_DESNAME, $system_settings;
-	echo "<table border=0 align='center'>\n";
-    echo "<tr align='center'>\n";
-    echo "<td colspan=2></td>\n";
+////
+// !Display a record in a nice format
+function display_record($db,$Allfields,$id,$DBNAME) {
+   echo "<table border=0 align='center'>\n";
+   echo "<tr align='center'>\n";
+   echo "<td colspan=2></td>\n";
 	foreach ($Allfields as $nowfield) 
 		{
 	    //see if display_table is set
@@ -508,12 +507,11 @@ function add_g_form ($db,$fields,$field_values,$id,$USER,$PHP_SELF,$system_setti
 
 ////
 // !Shows a page with nice information on the record
-function show_g($db,$fields,$id,$USER,$system_settings,$DBNAME,$DB_DESNAME) 
-	{
-    if (!may_read($db,"$DBNAME",$id,$USER))
-    return false;
-	$Allfields=getvalues($db,$DBNAME,$DB_DESNAME,$fields,id,$id);
-	display_record($Allfields,$id);
+function show_g($db,$fields,$id,$USER,$system_settings,$tablename,$DBNAME,$DB_DESNAME)  {
+   if (!may_read($db,"$DBNAME",$id,$USER))
+       return false;
+   $Allfields=getvalues($db,$DBNAME,$DB_DESNAME,$fields,id,$id);
+   display_record($db,$Allfields,$id,$tablename);
 }
 	
 ////
