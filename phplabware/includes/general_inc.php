@@ -339,7 +339,7 @@ function show_reports($db,$tableinfo,$recordid) {
 ////
 // !display addition and modification form
 function display_add($db,$tableinfo,$Allfields,$id,$namein,$system_settings) { 
-   global $PHP_SELF,$db_type,$md,$max_menu_length,$USER,$LAYOUT,$HTTP_POST_VARS;
+   global $PHP_SELF,$md,$max_menu_length,$USER,$LAYOUT,$HTTP_POST_VARS;
    
    $dbstring=$PHP_SELF;$dbstring.="?";$dbstring.="tablename=".$tableinfo->name."&";
    echo "<form method='post' id='protocolform' enctype='multipart/form-data' name='form' action='$dbstring";
@@ -435,7 +435,8 @@ function display_add($db,$tableinfo,$Allfields,$id,$namein,$system_settings) {
                // get previous value	
                $r=$db->Execute("SELECT COUNT(id) FROM {$nowfield['ass_table_name']}");
                if ($r->fields[0] > $max_menu_length) {
-                  $text="<input type='text' name='{$nowfield['name']}' value='{$nowfield['text']}'>";
+                  $text="<input type='hidden' name='max_{$nowfield['name']}' value='true'>\n";
+                  $text.="<input type='text' name='{$nowfield['name']}' value='{$nowfield['text']}'>";
                }
                else {
                   $text=GetValuesMenu($db,$nowfield['name'],$nowfield['values'],$nowfield['ass_table_name'],$nowfield['ass_column_name'],false);
@@ -636,16 +637,7 @@ function check_g_data ($db,&$field_values, $DB_DESNAME,$modify=false) {
          elseif ($rs->fields[1]=='float')
             $field_values["$fieldA"]=(float)$field_values["$fieldA"];
          elseif ($rs->fields[1]=='table') {
-            $source_tableinfo=new tableinfo($db,false,$rs->fields[2]);
-            $rcount=$db->Execute("SELECT COUNT(id) FROM {$source_tableinfo->realname}");
-            if ($rcount->fields[0] > $max_menu_length) {
-               // go through some stuff to discover which item the user wants to link against.  Guess we should even ask for input if we are in doubt
-               $source_columnname=get_cell($db,$source_tableinfo->desname,'columnname','id',$rs->fields[3]);
-               $rtable=$db->Execute("SELECT id FROM {$source_tableinfo->realname} WHERE $source_columnname='{$field_values["$fieldA"]}'");
-               $field_values["$fieldA"]=$rtable->fields[0];
-            }
-            else
-               $field_values["$fieldA"]=(int)$field_values["$fieldA"];
+             $field_values["$fieldA"]=(int)$field_values["$fieldA"];
          }
          elseif ($rs->fields[1]=='date') {
             $field_values["$fieldA"]=strtotime($field_values["$fieldA"]);

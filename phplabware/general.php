@@ -63,14 +63,24 @@ if ($jsnewwindow && $showid && $tableinfo->name) {
 if ($HTTP_GET_VARS["md"])
    $md=$HTTP_GET_VARS["md"];
 
-// check if sortup or sortdown arrow was been pressed
 foreach($HTTP_POST_VARS as $key =>$value) {
-   list($testkey,$testvalue)=explode("_",$key);
-   if ($testkey=="sortup"){
-      $sortup=$testvalue;
+   // for table links, search in the linked table instead of the current one
+   if (substr($key, 0, 3) == 'max') {
+      $cname=substr($key,4);
+      $value=$HTTP_POST_VARS["$cname"];
+      // we need to replace this value with an id if appropriate
+      if ($value)
+         $HTTP_POST_VARS["$cname"]=find_nested_match($db,$tableinfo,$cname,$value);
    }
-   if ($testkey=="sortdown") {
-      $sortdown=$testvalue;
+   // check if sortup or sortdown arrow was been pressed
+   else {
+      list($testkey,$testvalue)=explode("_",$key);
+      if ($testkey=="sortup"){
+         $sortup=$testvalue;
+      }
+      if ($testkey=="sortdown") {
+         $sortdown=$testvalue;
+      }
    }
 } 
 reset ($HTTP_POST_VARS);
@@ -91,23 +101,23 @@ if (!may_see_table($db,$USER,$tableinfo->id)) {
 // check if something should be modified, deleted or shown
 while((list($key, $val) = each($HTTP_POST_VARS))) {	
    // display form with information regarding the record to be changed
-   if (substr($key, 0, 3) == "mod") {
+   if (substr($key, 0, 3) == 'mod') {
       printheader($httptitle);
-      navbar($USER["permissions"]);
-      $modarray = explode("_", $key);
+      navbar($USER['permissions']);
+      $modarray = explode('_', $key);
       $r=$db->Execute("SELECT $tableinfo->fields FROM ".$tableinfo->realname." WHERE id=$modarray[1]"); 
       add_g_form($db,$tableinfo,$r->fields,$modarray[1],$USER,$PHP_SELF,$system_settings);
       printfooter();
       exit();
    }
-   if (substr($key, 0, 3) == "chg") {
-      $chgarray = explode("_", $key);
-      if ($val=="Change") {
-         $Fieldscomma=comma_array_SQL_where($db,$tableinfo->desname,"columnname","display_table","Y");
-         $Fieldsarray=explode(",",$Fieldscomma);
+   if (substr($key, 0, 3) == 'chg') {
+      $chgarray = explode('_', $key);
+      if ($val=='Change') {
+         $Fieldscomma=comma_array_SQL_where($db,$tableinfo->desname,'columnname','display_table','Y');
+         $Fieldsarray=explode(',',$Fieldscomma);
          reset($HTTP_POST_VARS);
          while((list($key, $val) = each($HTTP_POST_VARS))) {	
-            $testarray=explode("_",$key);
+            $testarray=explode('_',$key);
             if ( ($testarray[1]==$chgarray[1]) && (in_array ($testarray[0],$Fieldsarray))) 
                $change_values[$testarray[0]]=$val;  
          }
@@ -117,12 +127,12 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
       }
    } 
    // delete file and show protocol form
-   if (substr($key, 0, 3) == "def") {
+   if (substr($key, 0, 3) == 'def') {
       printheader($httptitle);
-      navbar($USER["permissions"]);
-      $modarray = explode("_", $key);
+      navbar($USER['permissions']);
+      $modarray = explode('_', $key);
       $filename=delete_file($db,$modarray[1],$USER);
-      $id=$HTTP_POST_VARS["id"];
+      $id=$HTTP_POST_VARS['id'];
       if ($filename)
          echo "<h3 align='center'>Deleted file <i>$filename</i>.</h3>\n";
       else
@@ -132,11 +142,11 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
       exit();
    }
    // show the record only when javascript is not active
-   if (substr($key, 0, 4) == "view" && !$HTTP_SESSION_VARS["javascript_enabled"]) {
+   if (substr($key, 0, 4) == 'view' && !$HTTP_SESSION_VARS['javascript_enabled']) {
       printheader($httptitle);
-      navbar($USER["permissions"]);
-      $modarray = explode("_", $key);
-      if (function_exists("plugin_show"))
+      navbar($USER['permissions']);
+      $modarray = explode('_', $key);
+      if (function_exists('plugin_show'))
          plugin_show($db,$tableinfo,$showid,$USER,$system_settings,false);
       else
          show_g($db,$tableinfo,$modarray[1],$USER,$system_settings,true);
@@ -145,12 +155,12 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
    }
 
 // Add/modify/delete pulldown menu items 
-   if (substr($key, 0, 7) == "addtype" && ($USER["permissions"] & $LAYOUT)) {
-      printheader($httptitle,"","includes/js/tablemanage.js");
-      $modarray = explode("_", $key);
-      include("includes/type_inc.php");
+   if (substr($key, 0, 7) == 'addtype' && ($USER['permissions'] & $LAYOUT)) {
+      printheader($httptitle,'','includes/js/tablemanage.js');
+      $modarray = explode('_', $key);
+      include('includes/type_inc.php');
       add_type($db,$edit_type);
-      show_type($db,$edit_type,"",$tableinfo->name);	
+      show_type($db,$edit_type,'',$tableinfo->name);	
       printfooter();
       exit();
    }
@@ -171,15 +181,6 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
       show_type($db,$edit_type,"",$tableinfo->name);
       printfooter();
       exit();
-   }
-   // for table links, search in the linked table instead of the current one
-   if (substr($key, 0, 3) == "max") {
-      $cname=substr($key,4);
-      // echo "$cname.<br>";
-      $value=$HTTP_POST_VARS["$cname"];
-      // we need to replace this value with an id if appropriate
-      if ($value)
-         $HTTP_POST_VARS["$cname"]=find_nested_match($db,$tableinfo,$cname,$value);
    }
 }
 
@@ -484,10 +485,6 @@ else {
             $list2=make_SQL_csf($rtable,false,"$nowfield[name]",$dummy);
             // if aprevious search had been done while count>$max_menu_length
             // we need to backtranslate the id # to a reasonable text:
-            if ($HTTP_POST_VARS['max_'.$nowfield['name']]) {
-               $tblvalue=getvalues($db,$tableinfo,$nowfield['name'],$nowfield['name'],${$nowfield['name']});
-               ${$nowfield['name']}=$tblvalue[0]['text'];
-            }
             if ($list2) {
                $rcount=$db->Execute("SELECT COUNT(id) FROM {$nowfield['ass_table_name']} WHERE id IN ($list2)");
                if ($rcount && ($rcount->fields[0] < $max_menu_length)) {
@@ -495,6 +492,10 @@ else {
                 $text=GetValuesMenu($db,$nowfield['name'],${$nowfield['name']},$nowfield['ass_table_name'],$nowfield['ass_column_name'],"WHERE id IN ($list2)","style='width: 80%' $jscript");
                 }
                 else {
+                   if (${$nowfield['name']}) {
+                      $tblvalue=getvalues($db,$tableinfo,$nowfield['name'],$nowfield['name'],${$nowfield['name']});
+                      ${$nowfield['name']}=$tblvalue[0]['text'];
+                   }
                    $text="<input type='hidden' name='max_{$nowfield['name']}' value='true'>\n";
                    $text.="<input type='text' name='{$nowfield['name']}' value='{$$nowfield['name']}'>\n";
                 }
