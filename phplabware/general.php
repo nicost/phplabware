@@ -476,7 +476,7 @@ if ($add && $md!='edit') {
    echo "<form name='$formname' method='post' id='generalform' enctype='multipart/form-data' action='$PHP_SELF?$actionLink'>\n";
    echo "<input type='hidden' name='md' value='$md'>\n";
 
-   echo "<table border=0 width='50%' align='center'>\n<tr>\n";
+   echo "<table border=0 width='75%' align='center'>\n<tr>\n";
    
    // variable md contains edit/view mode setting.  Propagated as post var to remember state.  md can only be changed as a get variable
    $modetext="<a href='$PHP_SELF?tablename=$tableinfo->name&amp;md=";

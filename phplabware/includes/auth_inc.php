@@ -17,8 +17,10 @@
 
 $client = new cl_client;
 
-// protect from outside variables
+// protect from outside variables, this is not needed on a well-configure server
 $auth=false;
+
+// the following can probably be cleaned up, we now always use sessions
 $use_sessions=true;
 
 if ($use_sessions) {
@@ -28,12 +30,31 @@ if ($use_sessions) {
       session_cache_limiter('private');
    session_start();
 
-   // if this is a login, authenticate the user:
-   if ($HTTP_POST_VARS['logon']=='true') {
-      $PHP_AUTH_USER=$HTTP_POST_VARS['user'];
-      $PHP_AUTH_PW=$HTTP_POST_VARS['pwd'];
-      if ($PHP_AUTH_USER && $PHP_AUTH_PW) {
+   // If we have PHP_AUTH_USER in the session, this user is authenticated 
+   $PHP_AUTH_USER = $HTTP_SESSION_VARS['PHP_AUTH_USER'];
 
+   if (!isset($PHP_AUTH_USER)) {
+      // logins can happen through a post or get mechanism (the latter restricted for security reason, post logins run through a secure server when available)  
+      if ($HTTP_POST_VARS['logon']=='true') {
+         $PHP_AUTH_USER=$HTTP_POST_VARS['user'];
+         $PHP_AUTH_PW=$HTTP_POST_VARS['pwd'];
+      } elseif (isset($system_settings['direct_login'])) {
+         $PHP_AUTH_USER=$HTTP_GET_VARS['user'];
+         // we'll only continue if this user is allowed to do URL based logins 
+         $permissions2=get_cell($db,'users','permissions2','login',$PHP_AUTH_USER); 
+         if (! ($permissions2 & $URL_LOGIN) ) {
+echo "$permissions2 $URL_LOGIN";
+            // delay to discourage brute force cracks
+            usleep(500000);
+            $PHP_AUTH_USER = false;
+            loginscreen("<h4>Your credentials were not accepted, Please try again</h4>");
+            exit();
+         }
+         
+         $PHP_AUTH_PW=$HTTP_GET_VARS['pwd'];
+      }
+
+      if ($PHP_AUTH_USER && $PHP_AUTH_PW) {
          // check submitted login and passwd in SQL database
          $pwd=md5($PHP_AUTH_PW);
          $db_query = "SELECT login FROM users WHERE login='$PHP_AUTH_USER' AND pwd='$pwd'";
@@ -48,7 +69,7 @@ if ($use_sessions) {
          // if pam_prg is present, check whether the user is known on the system 
          $pam_prg=$system_settings['checkpwd'];
          if ($system_settings['authmethod']==2 && $pam_prg && ! $auth) {
-            // this only makes sense if the user has an account on sidb
+            // this only makes sense if the user has an account on this instance of phplabware
             if (get_cell($db,'users','login','login',$PHP_AUTH_USER)) {
                $esc_user = escapeshellarg($PHP_AUTH_USER);
                $esc_pass = escapeshellarg($PHP_AUTH_PW);
@@ -62,7 +83,7 @@ if ($use_sessions) {
  
          // if authenticated, this session is OK:
          if ($auth) {
-            if ($HTTP_SESSION_VARS['javascript_enabled'] || $HTTP_POST_VARS["javascript_enabled"])
+            if ($HTTP_SESSION_VARS['javascript_enabled'] || ($HTTP_POST_VARS['javascript_enabled'] || $HTTP_GET_VARS['javascript_enabled']))
                $HTTP_SESSION_VARS['javascript_enabled']=true;
             else
                $HTTP_SESSION_VARS['javascript_enabled']=false;
@@ -83,26 +104,23 @@ if ($use_sessions) {
                $url=url_get_string($url);
                echo "<html>\n<head>\n";
                echo "<meta http-equiv='refresh' content=0;URL='$url'>";
-               //echo "<meta http-equiv='refresh' content=0;URL='$url'>\n";
                echo "</head>\n</html>";
                exit();
             } 
          }
          else {
             $PHP_AUTH_USER = false;
+            // delay to discourage brute force cracks
+            usleep(500000);
             loginscreen("<h4>Your credentials were not accepted, Please try again</h4>");
             exit();
          }
-      }
-      else { 
+      } else { // no username and/or passwd found in get or post
          loginscreen("<h4>Please enter your username and password</h4>");
          exit();
       }
-   } 
+   }
 
-   // if the $PHP_AUTH_USER is not set, we need to identify and authenticate 
-   if (!$PHP_AUTH_USER)
-      $PHP_AUTH_USER = $HTTP_SESSION_VARS['PHP_AUTH_USER'];
    // need to call this to maintain javascript state
    $javascript_enabled=$HTTP_SESSION_VARS['javascript_enabled'];
    if (!$PHP_AUTH_USER) {

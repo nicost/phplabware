@@ -12,7 +12,7 @@
   *  option) any later version.                                              *
   \**************************************************************************/                                                                             
 
-$version_code=0.401;
+$version_code=0.41;
 $localdir=exec('pwd');
 include ('./includes/functions_inc.php');
 if (!file_exists('./includes/config_inc.php')) {
@@ -29,7 +29,7 @@ if ($adodb_version<$adodb_version_required) {
    exit();
 }
 
-$post_vars="access,action,authmethod,baseURL,homeURL,checkpwd,convert,dateformat,filedir,thumbnaildir,templatedir,gs,pwd,protocols_file,pdfs_file,pdfget,secure_server_new,smallthumbsize,submit,tmpdir,tmpdirpsql,word2html";
+$post_vars="access,action,authmethod,baseURL,homeURL,checkpwd,convert,dateformat,filedir,thumbnaildir,templatedir,gs,pwd,protocols_file,pdfs_file,pdfget,secure_server_new,direct_login_new,smallthumbsize,submit,tmpdir,tmpdirpsql,word2html";
 globalize_vars($post_vars, $HTTP_POST_VARS);
 
 if ($set_local) {
@@ -222,6 +222,10 @@ if ($version) {
             include ("./dd/0_3002_inc.php");
          }
       }
+      if ($version<0.41) {
+         // Add column permissions2 to table users
+         $db->Execute('ALTER TABLE users ADD COLUMN permissions2 int;');
+      }
 
       $query="UPDATE settings SET version='$version_code' WHERE id=1";
       if (!$db->Execute($query)) $test=false;
@@ -351,12 +355,16 @@ if ($version) {
       else
          unset ($system_settings["pdfs_file"]);
       if ($secure_server_new=="Yes")
-         $system_settings["secure_server"]=true;
+         $system_settings['secure_server']=true;
       else
-         $system_settings["secure_server"]=false;
+         $system_settings['secure_server']=false;
+      if ($direct_login_new=="Yes")
+         $system_settings['direct_login']=true;
+      else
+         $system_settings['direct_login']=false;
       if ($authmethod)
-         $system_settings["authmethod"]=$authmethod;
-      $system_settings["checkpwd"]=$checkpwd;
+         $system_settings['authmethod']=$authmethod;
+      $system_settings['checkpwd']=$checkpwd;
       $system_settings["pdfget"]=$pdfget;
       
       $settings_ser=serialize($system_settings);
@@ -500,6 +508,19 @@ if ($version) {
    else 
       echo "Yes <input type='radio' name='secure_server_new' value='Yes'>
             &nbsp&nbsp No<input type='radio' name='secure_server_new' checked 
+            value='No'>\n";
+   echo "</td></tr>\n";
+   echo "<tr><td>Allow logins that have user=username&pwd=secret in the URL (GET mechanism)? ";
+   echo "This is potentially less secure, but is useful for guest logins.\n";
+   echo "You will also have to enable this feature for every user individually\n";
+   echo "<td>";
+   if ($system_settings['direct_login'])
+      echo "Yes <input type='radio' name='direct_login_new' checked value='Yes'>
+            &nbsp&nbsp No<input type='radio' name='direct_login_new' value='No'>
+            \n";
+   else 
+      echo "Yes <input type='radio' name='direct_login_new' value='Yes'>
+            &nbsp&nbsp No<input type='radio' name='direct_login_new' checked 
             value='No'>\n";
    echo "</td></tr>\n";
    echo "<tr><td>Authentification method.  For PAM you will need the utility 'testpwd' available <a href='http://sourceforge.net/project/showfiles.php?group_id=17393'>here</a>. </td>";

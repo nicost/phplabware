@@ -16,19 +16,18 @@
   *  option) any later version.                                              *
   \**************************************************************************/                                                                                     
 
-$userfields ='id,login,firstname,lastname,pwd,groupid,permissions,email,indir,outdir';
+$userfields ='id,login,firstname,lastname,pwd,groupid,permissions,permissions2,email,indir,outdir';
 
 // main include calls
 require('./include.php');
 
 // register variables
-$post_vars = 'email,id,firstname,lastname,login,me,modify,perms,pwd,pwdcheck,user_group,user_add_groups,';
+$post_vars = 'email,id,firstname,lastname,login,me,modify,perms,perms2,pwd,pwdcheck,user_group,user_add_groups,';
 $post_vars .= 'create,user_add,';
 
 if (!$type)
    $type=$HTTP_GET_VARS['type'];
 globalize_vars ($post_vars, $HTTP_POST_VARS);
-
 
 /**
  *  check the form input data for validity
@@ -85,6 +84,7 @@ function delete_user ($db, $id) {
    include ('./includes/defines_inc.php');
    $tables=tablestring($db);
    $original_permissions=get_cell ($db,'users','permissions','id',$id);
+   $original_permissions2=get_cell ($db,'users','permissions2','id',$id);
    $original_login=get_cell($db,'users','login','id',$id);
    if (!$original_login)
       return true;
@@ -97,6 +97,7 @@ function delete_user ($db, $id) {
       echo "You are not allowed to do this. <br>";
       return false;
    }
+// TODO (IMPORTANT!) Remove files and images owned by this user
    // cleanup records owned by this user
    $db->BeginTrans();
    $test=true;
@@ -130,7 +131,7 @@ function delete_user ($db, $id) {
  * can be called to create (type=create) or modify (type=modify) other users or oneselves (type=me) 
  */
 function modify ($db, $type) {
-   global $HTTP_POST_VARS, $USER, $perms, $post_vars;
+   global $HTTP_POST_VARS, $USER, $perms, $perms2,  $post_vars;
 
    $id=$HTTP_POST_VARS['id'];
    $login=$HTTP_POST_VARS['login'];
@@ -147,6 +148,11 @@ function modify ($db, $type) {
          $permissions=$permissions | $perms[$i];
    if (!$permissions)
       $permissions=0;
+   if($perms2)
+      for ($i=0; $i<sizeof($perms2); $i++)
+         $permissions2=$permissions2 | $perms2[$i];
+   if (!$permissions2)
+      $permissions2=0;
 
    // include here, to avoid being overwritten by post_vars 
    include ('./includes/defines_inc.php');
@@ -174,7 +180,8 @@ function modify ($db, $type) {
       $query = "UPDATE users SET login='$login', firstname='$firstname', 
                      lastname='$lastname',  
                      groupid='$user_group', email='$email',  
-                     permissions='$permissions', modbyid='$theid',
+                     permissions='$permissions', permissions2='$permissions2',
+                     modbyid='$theid',
 		     modbyip='$theip', moddate='$thedate'";
       if ($pwd) {
           $pwd=md5($pwd);
@@ -187,8 +194,7 @@ function modify ($db, $type) {
 	 if ($user_add_groups)
 	    foreach ($user_add_groups AS $add_groupid)
 	       $db->Execute("INSERT INTO usersxgroups VALUES ('$id','$add_groupid')");
-      }    
-      else
+      } else
          echo "Could not modify settings of user: <i>$firstname $lastname</i>.<br>\n";
    }
    elseif ($type =='create') {
@@ -196,8 +202,8 @@ function modify ($db, $type) {
          $pwd=md5($pwd);
          $new_user_settings['menustyle']=1;
          $new_user_settings=serialize($new_user_settings);
-         $query = "INSERT INTO users (id, login, pwd, groupid, firstname, lastname, permissions, email, createdbyid, createdbyip, createddate, settings) ";
-         $query .= "VALUES('$id','$login','$pwd','$user_group','$firstname','$lastname', '$permissions', '$email', '$theid', '$theip', '$thedate', '$new_user_settings')"; 
+         $query = "INSERT INTO users (id, login, pwd, groupid, firstname, lastname, permissions, permissions2, email, createdbyid, createdbyip, createddate, settings) ";
+         $query .= "VALUES('$id','$login','$pwd','$user_group','$firstname','$lastname', '$permissions', '$permissions2','$email', '$theid', '$theip', '$thedate', '$new_user_settings')"; 
 
          if ($db->Execute($query)) {
             echo "User <i>$firstname $lastname</i> added.<br>\n";
@@ -267,6 +273,10 @@ function show_user_form ($type) {
    if($perms)
       for ($i=0; $i<sizeof($perms); $i++)
          $permissions=$permissions | $perms[$i];
+
+   if($perms2)
+      for ($i=0; $i<sizeof($perms2); $i++)
+         $permissions2=$permissions2 | $perms2[$i];
 
    if (!$groupid) $groupid = $USER["groupid"];
 
@@ -345,8 +355,7 @@ function show_user_form ($type) {
       $r = $db->Execute("SELECT name,id FROM groups");
       echo $r->GetMenu2("user_add_groups[]",$add_groups,true,true,3);
       echo "</td>\n</tr>";
-   }
-   else {
+   } else {
       // hidden value.  Needs to be inside table to be w3c compliant
       echo "<tr><td><input type=\"hidden\" name=\"user_group\" value=\"" . $USER["groupid"] . "\"></td></tr>\n";
    }
@@ -364,12 +373,6 @@ function show_user_form ($type) {
          echo "<tr><td colspan=2 align='center'>Leave the password fields blank to keep the current password</td></tr>\n";
       if ($type=='create' && $system_settings['authmethod']==2)
          echo "<tr><td colspan=2 align='center'>Leave the password fields blank to force PAM-based authentification</td></tr>\n";
-/*      if ($permissions & $ACCESS_EDIT )
-        $checked = "checked";
-      else
-         $checked = '';
-      echo "<tr><td>Control access settings:</td>\n<td><input type='checkbox' name='perms[]' value='$ACCESS_EDIT' $checked></td></tr>\n";
-*/
    }
 
 
@@ -413,6 +416,15 @@ function show_user_form ($type) {
          $checked = '';
       echo "<tr><td>Login Allowed:</td>\n";
       echo "<td><input type='checkbox' name='perms[]' value='$ACTIVE' $checked></td></tr>\n";
+      if ($USER['permissions'] & $SUPER) {
+         if ($permissions2 & $URL_LOGIN) {
+            $checked = ' checked';
+         } else {
+            $checked = '';
+         }
+         echo "<tr><td>Allow URL-based login:</td>\n";
+         echo "<td><input type='checkbox' name='perms2[]' value='$URL_LOGIN' $checked></td></tr>\n";
+      }
    }
     
    if ($type == 'modify')
