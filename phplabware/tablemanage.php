@@ -120,11 +120,13 @@ if ($editfield)	{
    $noshow=array("id","access","ownerid","magic","lastmoddate","lastmodby","date");
    $nodel=array("title","date","lastmodby","lastmoddate");
    navbar($USER["permissions"]);
-   $r=$db->Execute("SELECT id,table_desc_name FROM tableoftables WHERE tablename='$editfield'");
+
+   $r=$db->Execute("SELECT id,table_desc_name,label FROM tableoftables WHERE tablename='$editfield'");
    $id=$r->fields["id"];
    $currdesc=$r->fields["table_desc_name"];
+   $tablelabel=$r->fields["label"];
    echo "<h3 align='center'>$string</h3>";
-   echo "<h3 align='center'>Edit columns of table <i>$editfield</i></h3><br>";
+   echo "<h3 align='center'>Edit columns of table <i>$tablelabel</i></h3><br>";
 
    echo "<form method='post' id='coledit' enctype='multipart/form-data' ";
    $dbstring=$PHP_SELF;echo "action='$dbstring?editfield=$editfield&".SID."'>\n"; 
