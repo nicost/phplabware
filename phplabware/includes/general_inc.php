@@ -433,7 +433,6 @@ function display_record($db,$Allfields,$id,$tableinfo,$backbutton=true,$previous
    $count=0;
    echo "<tr>\n";
    // if viewid is defined we will over-ride display record with values from the view settings
-//echo "$viewid.<br>";
    if ($viewid) {
       $r=$db->Execute("SELECT columnid FROM tableviews WHERE viewnameid=$viewid AND viewmode=2");
       while ($r && !$r->EOF) {
@@ -471,7 +470,12 @@ function display_record($db,$Allfields,$id,$tableinfo,$backbutton=true,$previous
             echo "<th>$nowfield[label]</th><td colspan=2>$textlarge</td>\n";
          }
          elseif ($nowfield['datatype']=='file' || $nowfield['datatype']=='image') {
-            $files=get_files($db,$tableinfo->name,$id,$nowfield['columnid'],0,'big');
+            // if this came through a associated table:
+            if ($nowfield['nested']['nested_tbname'] && $nowfield['nested']['nested_columnid'])
+               $files=get_files($db,$nowfield['nested']['nested_tbname'],$nowfield['nested']['nested_id'],$nowfield['nested']['nested_columnid'],0,'big');
+            // the normal/direct way
+            else
+               $files=get_files($db,$tableinfo->name,$id,$nowfield['columnid'],0,'big');
             if ($files) { 
                echo "<th>$nowfield[label]:</th>\n<td colspan=5>";
                for ($i=0;$i<sizeof($files);$i++)  {
@@ -861,14 +865,11 @@ function getvalues($db,$tableinfo,$fields,$qfield=false,$field=false)
                         ${$column}['nested']['values']=$tmpvalue[0]['values']; 
                         ${$column}['nested']['datatype']=$tmpvalue[0]['datatype']; 
                         ${$column}['nested']['fileids']=$tmpvalue[0]['fileids']; 
+                        //the following are needed to get files and images right
+                        ${$column}['nested']['nested_id']=$tmpvalue[0]['nested_id'];
+                        ${$column}['nested']['nested_tbname']=$tmpvalue[0]['nested_tbname'];
+                        ${$column}['nested']['nested_columnid']=$tmpvalue[0]['nested_columnid'];
                      }
-/*
-                     $text=$tmpvalue[0]['text'];
-                     $values=$tmpvalue[0]['values'];
-                     $datatype=$tmpvalue[0]['datatype'];
-                     $fileids=$tmpvalue[0]['fileids'];
-*/
-                     
                   }
                   else {
                      $text=$tmpvalue[0];
@@ -879,12 +880,6 @@ function getvalues($db,$tableinfo,$fields,$qfield=false,$field=false)
                if (!$text)
                   $text="&nbsp;";
                ${$column}['text']=$text;
-/*
-               ${$column}['values']=$values;
-               ${$column}['fileids']=$fileids;
-               if ($datatype)
-                  ${$column}['datatype']=$datatype;
-*/
             }
 
             // datatype link
@@ -892,9 +887,11 @@ function getvalues($db,$tableinfo,$fields,$qfield=false,$field=false)
                if (${$column}['values'])
                   ${$column}['text']="<a href='".${$column}["values"]."' target='_blank'>link</a>";
             }
+            // datatype pulldown
             elseif ($rb->fields['datatype']=='pulldown') {
                ${$column}['text']=get_cell($db,${$column}['ass_t'],'typeshort','id',${$column}['values']); 
             }
+            // datatype mpulldown
             elseif ($rb->fields['datatype']=='mpulldown') {
                unset($rasst);
                unset($rasst2);
@@ -913,6 +910,7 @@ function getvalues($db,$tableinfo,$fields,$qfield=false,$field=false)
                   }
                }
             }
+            // datatype textlong
             elseif ($rb->fields['datatype']=='textlong') {
                if (${$column}['values']=="")
                   ${$column}['text']='';
@@ -920,15 +918,20 @@ function getvalues($db,$tableinfo,$fields,$qfield=false,$field=false)
                   //${$column}['text']='Click on View';
                   ${$column}['text']="<input type=\"button\" name=\"view_$id\" value=\"View\" onclick='MyWIndow=window.open(\"general.php?tablename={$tableinfo->name}&showid=$id&jsnewwindow=true\",\"view\",\"scrollbars,resizable,width=600,height=400\")'>\n";
             }
+            // datatypes file and image
             elseif ($rb->fields['datatype']=='file' || $rb->fields['datatype']=='image') {
                $tbname=get_cell($db,'tableoftables','tablename','id',$tableinfo->id);
                // we can get naming conflicts here. Use a really weird name
                $fzsk=get_files($db,$tbname,$id,${$column}['columnid'],3);
-               if ($fzsk) 
+               if ($fzsk) {
+                  ${$column}['nested_id']=$id;
+                  ${$column}['nested_tbname']=$tbname;
+                  ${$column}['nested_columnid']=${$column}['columnid'];
                   for ($i=0;$i<sizeof($fzsk);$i++) {
                      ${$column}['text'].=$fzsk[$i]['link'];
                      ${$column}['fileids'][]=$fzsk[$i]['id'];
                   }
+               }
             }
             elseif ($rb->fields['datatype']=='user') {
                $rname=$db->Execute("SELECT firstname,lastname,email FROM users WHERE id=".${$column}["values"]);
