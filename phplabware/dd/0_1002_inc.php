@@ -13,9 +13,12 @@ while (!($rdesc->EOF)) {
          if ($rfile->fields[id]) {
             $tablestr=$rdesc->fields[real_tablename]."_wi_".$rfile->fields[id];
             $rs=$db->Execute("CREATE TABLE $tablestr (wordid int, fileid int,pagenr int, recordid int,UNIQUE (wordid,fileid,pagenr,recordid))");
+            // Create indices
             $db->Execute("CREATE INDEX $tablestr"."_wi ON $tablestr(wordid)");
             $db->Execute("CREATE INDEX $tablestr"."_fi ON $tablestr(fileid)");
             $db->Execute("CREATE INDEX $tablestr"."_ri ON $tablestr(recordid)");
+            // And add entry in description table
+            $db->Execute("UPDATE ".$rdesc->fields[table_desc_name]." SET associated_table='$tablestr' WHERE id=".$rfile->fields[id]);
          }
          $rfile->MoveNext();
       }
