@@ -39,6 +39,7 @@ function check_pd_data ($db,&$field_values) {
       echo "<h3>Please enter the Pubmed ID the PDF reprint.</h3>";
       return false;
    }
+   set_magic_quotes_runtime(1);
    // data from pubmed and parse
    $pmid=$field_values["pmid"];
    $pubmedinfo=@file("http://www.ncbi.nlm.nih.gov/entrez/utils/pmfetch.fcgi?db=PubMed&id=$pmid&report=abstract&report=abstract&mode=text");
@@ -90,8 +91,10 @@ function check_pd_data ($db,&$field_values) {
    }
    else {
       echo "<h3>Failed to import the Pubmed data</h3>\n";
+      set_magic_quotes_runtime(0);
       return false;
    }
+   set_magic_quotes_runtime(0);
    return true;
 }
 
