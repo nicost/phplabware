@@ -351,10 +351,12 @@ Location: ') {
          case 'mct.aacrjournals.org':
          case 'jcs.biologists.org':
          case 'www.jbc.org':
+         case 'www.jcb.org':
              $website=read_web_page($host,$getstring,$header,$body,true,5); 
              $link=get_location($header);
              $link=str_replace('content/full','reprint',$link);
              $link.='.pdf';
+//echo "$host$link.<br>";
              if (do_pdf_download($host,$link,'file')) {
                  return true;
              }
@@ -486,7 +488,7 @@ Location: ') {
                }
             }
          break; // end of linkinghub.elsevier.com
-               
+/*               
          case 'www.jcb.org':
             // jcb gives a page with a redirect on it.  The redirect has the link to the pdf on it, however, once the redirect address is known, we can simply construct  the link to the pdf and grab it.
             $fp=fsockopen($host,80,$errno,$errstr,5);
@@ -512,7 +514,7 @@ Location: ') {
                }
             }
          break;
-
+*/
          case 'www.pubmedcentral.gov' :
             /**
              * For pubmed central we need the 'artid'.  Retrieve this using elink
