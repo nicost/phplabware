@@ -214,13 +214,14 @@ if ($version) {
 	 if (!$db->Execute($query)) $test=false;
          $query="CREATE TABLE ab_type1 
             (id int PRIMARY KEY, 
-	     type text)";
+	     type text,
+             sortkey int)";
 	 if (!$db->Execute($query)) $test=false;
-	 $query="INSERT INTO ab_type1 VALUES (1,'Primary')";
+	 $query="INSERT INTO ab_type1 VALUES (1,'Primary',10)";
 	 if (!$db->Execute($query)) $test=false;
-	 $query="INSERT INTO ab_type1 VALUES (2,'Secundary')";
+	 $query="INSERT INTO ab_type1 VALUES (2,'Secondary',20)";
 	 if (!$db->Execute($query)) $test=false;
-	 $query="INSERT INTO ab_type1 VALUES (3,'other')";
+	 $query="INSERT INTO ab_type1 VALUES (3,'other',30)";
 	 if (!$db->Execute($query)) $test=false;
          $query="CREATE TABLE ab_type2 
             (id int PRIMARY KEY, 
