@@ -197,6 +197,7 @@ function navbar($permissions) {
       ?>
       <td align='center'><a href="antibodies.php?<?=SID?>">antibodies</a></td>
       <td align='center'><a href="protocols.php?<?=SID?>">protocols</a></td>
+      <td align='center'><a href="pdfs.php?<?=SID?>">PDFs</a></td>
       <td align='center'><a href="users.php?type=me&<?=SID?>">settings</a></td>
       <?php
    }
