@@ -646,6 +646,11 @@ function display_add($db,$tableinfo,$Allfields,$id,$namein,$system_settings) {
                // mike likes this to be a textlong field, let's try
      	       echo "<td><textarea name='{$nowfield['name']}' rows='2' cols='100%' value='{$nowfield['values']}'>{$nowfield['values']}</textarea>";
             }
+            // for dates we have to dsiplay the test and not the value
+            elseif ($nowfield['datatype']=='date') {
+               $size=10;
+     	       echo "<td><input type='text' name='{$nowfield['name']}' value='{$nowfield['text']}' $size>";
+            }
             else {
                $size=10;
      	       echo "<td><input type='text' name='{$nowfield['name']}' value='{$nowfield['values']}' $size>";
@@ -960,7 +965,9 @@ function getvalues($db,$tableinfo,$fields,$qfield=false,$field=false)
                ${$column}['text']='&nbsp;';
          }
       }
-      array_push ($Allfields, ${$column});
+      $Allfields[]= ${$column};
+      //array_push ($Allfields, ${$column});
+      //$Allfields[${$column}['name']]=${$column};
    }
    if (function_exists("plugin_getvalues"))
       plugin_getvalues($db,$Allfields,$id,$tableinfo->id);
