@@ -595,23 +595,23 @@ else {
    echo "<td><input type='text' name='name' value='$name' size=8></td>\n";
    echo "<td><input type='text' name='antigen' value='$antigen' size=8></td>\n";
    echo "<td><input type='text' name='notes' value='$notes' size=8></td>\n";
-   $r=$db->Execute("SELECT type,id FROM ab_type1");
+   $r=$db->Execute("SELECT typeshort,id FROM ab_type1");
    $text=$r->GetMenu2("type1",$type1,true,false,0,"style='width: 80%'");
    echo "<td style='width: 10%'>$text</td>\n";
 
-   $r=$db->Execute("SELECT type,id FROM ab_type5 ORDER BY sortkey");
+   $r=$db->Execute("SELECT typeshort,id FROM ab_type5 ORDER BY sortkey");
    $text=$r->GetMenu2("type5",$type5,true,false,0,"style='width: 80%'");
    echo "<td style='width: 10%'>$text</td>\n";
 
-   $r=$db->Execute("SELECT type,id FROM ab_type2");
+   $r=$db->Execute("SELECT typeshort,id FROM ab_type2");
    $text=$r->GetMenu2("type2",$type2,true,false,0,"style='width: 80%'");
    echo "<td style='width: 10%'>$text</td>\n";
 
-   $r=$db->Execute("SELECT type,id FROM ab_type3");
+   $r=$db->Execute("SELECT typeshort,id FROM ab_type3");
    $text=$r->GetMenu2("type3",$type3,true,false,0,"style='width: 80%'");
    echo "<td style='width: 10%'>$text</td>\n";
 
-   $r=$db->Execute("SELECT type,id FROM ab_type4 ORDER BY sortkey");
+   $r=$db->Execute("SELECT typeshort,id FROM ab_type4 ORDER BY sortkey");
    $text=$r->GetMenu2("type4",$type4,true,false,0,"style='width: 80%'");
    echo "<td style='width: 10%'>$text</td>\n";
 
