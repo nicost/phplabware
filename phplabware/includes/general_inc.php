@@ -569,9 +569,10 @@ function getvalues($db,$tableinfo,$fields,$qfield=false,$field=false) {
             }
             elseif ($rb->fields['datatype']=='textlong') {
                if (${$column}['values']=="")
-                  ${$column}['text']='no';
+                  ${$column}['text']='';
                else 
-                  ${$column}['text']='yes';
+                  //${$column}['text']='Click on View';
+                  ${$column}['text']="<input type=\"button\" name=\"view_$id\" value=\"View\" onclick='MyWIndow=window.open(\"general.php?tablename={$tableinfo->name}&showid=$id&jsnewwindow=true\",\"view\",\"scrollbar=yes,resizable=yes,width=600,height=400\")'>\n";
             }
             elseif ($rb->fields['datatype']=='file' || $rb->fields['datatype']=='image') {
                $tbname=get_cell($db,'tableoftables','tablename','id',$tableinfo->id);
