@@ -12,7 +12,7 @@
   *  option) any later version.                                              *
   \**************************************************************************/                                                                             
 
-$version_code=0.1003;
+$version_code=0.1004;
 $localdir=exec("pwd");
 include ('includes/functions_inc.php');
 if (!file_exists("includes/config_inc.php")) {
@@ -30,7 +30,7 @@ if ($adodb_version<1.71) {
    exit();
 }
 
-$post_vars="access,action,authmethod,baseURL,homeURL,checkpwd,convert,dateformat,filedir,gs,pwd,protocols_file,pdfs_file,pdfget,secure_server_new,smallthumbsize,submit,tmpdir,tmpdirpsql,word2html";
+$post_vars="access,action,authmethod,baseURL,homeURL,checkpwd,convert,dateformat,filedir,thumbnaildir,gs,pwd,protocols_file,pdfs_file,pdfget,secure_server_new,smallthumbsize,submit,tmpdir,tmpdirpsql,word2html";
 globalize_vars($post_vars, $HTTP_POST_VARS);
 
 if ($set_local) {
@@ -158,6 +158,13 @@ if ($version) {
          // Introduces datatype user and date
          include ("dd/0_1003_inc.php");
       }
+      if ($version<0.1004) {
+         // Creates table images
+         $rs=$db->Execute("CREATE TABLE images (id int UNIQUE NOT NULL, x_size int, y_size int, xbt_size int, ybt_size int, xst_size int, yst_size int, xnmperpixel int, ynmperpixel int, rotation int, seq int, type text) ");
+         // Create index
+         $db->Execute("CREATE INDEX images_id ON images(id)");
+      }
+
       $query="UPDATE settings SET version='$version_code' WHERE id=1";
       if (!$db->Execute($query)) $test=false;
 
@@ -183,6 +190,11 @@ if ($version) {
             $system_settings["filedir"]=$filedir;
 	 else
 	    echo "<h4 align='center'>Directory $filedir is not writeable</h4>";
+      if ($thumbnaildir) 
+         if (is_writable($thumbnaildir))
+            $system_settings["thumbnaildir"]=$thumbnaildir;
+	 else
+	    echo "<h4 align='center'>Directory $thumbnaildir is not writeable</h4>";
       if ($tmpdir) 
          if (is_writeable($tmpdir))
             $system_settings["tmpdir"]=$tmpdir;
@@ -314,8 +326,7 @@ if ($version) {
 
    echo "<tr><td>Directory <i>files</i>. The webdaemon should ";
    echo "have read and write priveleges, but the directory should not be directly ";
-   echo "accessible through the web.  If you change this setting, ";
-   echo "the directory will be moved to the new location.</td>";
+   echo "accessible through the web.";
    if (!$system_settings["filedir"]) {
       $dir=getenv("SCRIPT_FILENAME");
       $dir=substr($dir,0,strrpos($dir,"/")+1)."files";
@@ -323,6 +334,17 @@ if ($version) {
    }
    $filedir=$system_settings["filedir"];
    echo "<td><input type='text' name='filedir' value='$filedir'></td></tr>\n";
+
+   echo "<tr><td>Directory <i>thumbnails</i>. The webdaemon should ";
+   echo "have read and write priveleges, but the directory should not be directly ";
+   echo "accessible through the web. ";
+   if (!$system_settings["thumbnaildir"]) {
+      $dir=getenv("SCRIPT_FILENAME");
+      $dir=substr($dir,0,strrpos($dir,"/")+1)."thumbnails";
+      $system_settings["thumbnaildir"]=$dir;
+   }
+   $thumbnaildir=$system_settings["thumbnaildir"];
+   echo "<td><input type='text' name='thumbnaildir' value='$thumbnaildir'></td></tr>\n";
 
    echo "<tr><td>Directory for <i>temporary</i> files. For security reasons, only the webdaemon should be able to read (and write) files here.  Usually, this is <b>not</b> the case for directory <i>/tmp</i>. </td>";
    if (!$system_settings["tmpdir"]) 
