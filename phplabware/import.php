@@ -211,7 +211,7 @@ if ($HTTP_POST_VARS["assign"]=="Import Data") {
                      // $query.=" WHERE $to_fields[$pkey]='$fields[$pkey]'";
                      // only the first record that matched will be modified
                      // when doing an update we leave access and owner untouched
-                     $query.=" lastmoddate='$lastmoddate', lastmodby='$lastmodby' WHERE id='$recordid'";
+                     $query.=" lastmoddate='$lastmoddate', lastmodby='$lastmodby' WHERE $to_fields[$pkey]='$fields[$pkey]'";
                      if ($r=$db->Execute($query))
                          $modified++;
                   }
