@@ -660,7 +660,7 @@ function process_file($db,$fileid,$system_settings) {
             $query="INSERT INTO files (id,filename,mime,size,title,tablesfk,ftableid,ftablecolumnid,type) VALUES ($id,'$filename','$mime','$size','".$r->fields("title")."','".$r->fields("tablesfk")."','".$r->fields("ftableid")."','".$r->fields("ftablecolumnid")."','$type')";
            if ($db->execute($query)) {
                 $newloc=file_path($db,$id);
-               `mv $temp $newloc`;
+               `mv $temp '$newloc'`;
             }
             else
                unlink($temp); 
