@@ -50,8 +50,6 @@ function check_pd_data ($db,&$field_values) {
          if ($pubmedinfo[$i]=="\n")
 	    $lc++;
       }
-for ($i=0; $i<sizeof($line);$i++)
-   echo "$i: ".$line[$i].".<br>";
       // parse the first line.  1: journal  date;Vol:fp-lp
       $jstart=strpos($line[1],": ");
       $jend=strpos($line[1],"  ");
@@ -63,7 +61,7 @@ for ($i=0; $i<sizeof($line);$i++)
       // if we can not find this, it might not have vol. first/last page
       if ($vend) {
          $volumeinfo=trim(substr($line[1],$dend+1,$vend-$dend-1));
-         $volume=$field_values["volume"]=strtok($volumeinfo,"("); 
+         $volume=$field_values["volume"]=trim(strtok($volumeinfo,"(")); 
          $pages=trim(substr($line[1],$vend+1));
          $fpage=strtok($pages,"-");
          $lpage1=strtok("-");
@@ -253,9 +251,9 @@ function show_pd ($db,$fields,$id,$USER,$system_settings) {
    echo "'>".$system_settings["baseURL"].getenv("SCRIPT_NAME")."?showid=$id</a> (This page)<br>\n";
 
    echo "<a href='http://www.ncbi.nlm.nih.gov/entrez/query.fcgi?";
-   echo "cmd=Retrieve&db=PubMed&list_uids=$pmid&dopt=Abstract'>Paper at Pubmed</a><br>\n";
+   echo "cmd=Retrieve&db=PubMed&list_uids=$pmid&dopt=Abstract'>This article at Pubmed</a><br>\n";
    echo "<a href='http://www.ncbi.nlm.nih.gov/entrez/query.fcgi?";
-   echo "cmd=Link&db=PubMed&dbFrom=PubMed&from_uid=$pmid'>Related papers at Pubmed</a></td></tr>\n";
+   echo "cmd=Link&db=PubMed&dbFrom=PubMed&from_uid=$pmid'>Related articles at Pubmed</a></td></tr>\n";
 
 ?>   
 <form method='post' id='protocolview' action='<?php echo $PHP_SELF?>?<?=SID?>'> 
