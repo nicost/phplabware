@@ -272,9 +272,16 @@ if ($HTTP_POST_VARS["dataupload"]=="Continue") {
          $fh=fopen("$tmpdir/$filename","r");
          if ($fh) {
             $firstline=chop(fgets($fh,1000000));
-            $fields=explode($delimiter,$firstline);
+            // if quoted delete first and last char
+            if ($quoted) {
+               $firstline=substr($firstline,-1,-1);
+            }
+            $fields=explode("\"$delimiter\"",$firstline);
             $secondline=chop(fgets($fh,1000000));
-            $fields2=explode($delimiter,$secondline);
+            if ($quoted) {
+               $secondline=substr($firstline,-1,-1);
+            }
+            $fields2=explode("\"$delimiter\"",$secondline);
             $nrfields=substr_count($firstline,$delimiter)+1;
             fclose($fh);
          }
