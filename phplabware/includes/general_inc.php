@@ -66,7 +66,7 @@ function date_entry($id,$real_tablename) {
 //// 
 // !Displays information in table in edit mode
 function display_table_change($db,$tableid,$DB_DESNAME,$Fieldscomma,$pr_query,$num_p_r,$pr_curr_page,$page_array,$r=false) {
-   global $nr_records,$max_menu_length,$USER,$LAYOUT;
+   global $nr_records,$max_menu_length,$USER,$LAYOUT,$HTTP_SESSION_VARS;
 
    $tablename=get_cell($db,"tableoftables","tablename","id",$tableid);
    $real_tablename=get_cell($db,"tableoftables","real_tablename","id",$tableid);
@@ -141,7 +141,12 @@ function display_table_change($db,$tableid,$DB_DESNAME,$Fieldscomma,$pr_query,$n
       }
 
       echo "<td align='center'>&nbsp;\n";  
-      echo "<input type=\"submit\" name=\"view_" . $id . "\" value=\"View\">\n";
+      if ($HTTP_SESSION_VARS["javascript_enabled"]) {
+         $jscript=" onclick='MyWindow=window.open (\"general.php?tablename=$tablename&showid=$id&jsnewwindow=true\",\"view\",\"scrollbar=yes,resizable=yes,width=600,height=400\")'";
+         echo "<input type=\"button\" name=\"view_" . $id . "\" value=\"View\" $jscript>\n";
+      }
+      else
+         echo "<input type=\"submit\" name=\"view_" . $id . "\" value=\"View\">\n";
       if ($may_write) {
          echo "<input type=\"submit\" name=\"chg_" . $id . "\" value=\"Change\">\n";
          $delstring = "<input type=\"submit\" name=\"del_" . $id . "\" value=\"Remove\" ";
