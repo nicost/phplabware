@@ -146,8 +146,7 @@ if ($version) {
       }
       if ($baseURL)
          $system_settings["baseURL"]=$baseURL;
-      if ($homeURL)
-         $system_settings["homeURL"]=$homeURL;
+      $system_settings["homeURL"]=$homeURL;
       if ($secure_server_new=="Yes")
          $system_settings["secure_server"]=true;
       else
@@ -201,10 +200,8 @@ if ($version) {
    }
    echo "<td><input type='text' name='baseURL' value='".$system_settings["baseURL"]."'></td></tr>\n";
       
-   echo "<tr><td>URL to return to after logging out.</td>\n ";
-   if (!$system_settings["homeURL"]) {
-      $system_settings["homeURL"]="http://".getenv("SERVER_NAME");
-   }
+   echo "<tr><td>URL to return to after logging out.\n ";
+   echo "(Try: http://".getenv("SERVER_NAME").")</td>\n";
    echo "<td><input type='text' name='homeURL' value='".$system_settings["homeURL"]."'></td></tr>\n";
 
    echo "<tr><td colspan='2' align='center'><i>Helper Applications</i></th></tr>\n";
