@@ -542,24 +542,24 @@ else {
    echo "<td><input type='text' name='antigen' value='$antigen' size=8></td>\n";
    echo "<td><input type='text' name='concentration' value='$concentration' size=4></td>\n";
    $r=$db->Execute("SELECT type,id FROM ab_type1");
-   $text=$r->GetMenu2("type1",$type1,true);
-   echo "<td>$text</td>\n";
+   $text=$r->GetMenu2("type1",$type1,true,false,0,"style='width: 80%'");
+   echo "<td style='width: 10%'>$text</td>\n";
 
    $r=$db->Execute("SELECT type,id FROM ab_type5 ORDER BY sortkey");
-   $text=$r->GetMenu2("type5",$type5,true);
-   echo "<td>$text</td>\n";
+   $text=$r->GetMenu2("type5",$type5,true,false,0,"style='width: 80%'");
+   echo "<td style='width: 10%'>$text</td>\n";
 
    $r=$db->Execute("SELECT type,id FROM ab_type2");
-   $text=$r->GetMenu2("type2",$type2,true);
-   echo "<td>$text</td>\n";
+   $text=$r->GetMenu2("type2",$type2,true,false,0,"style='width: 80%'");
+   echo "<td style='width: 10%'>$text</td>\n";
 
    $r=$db->Execute("SELECT type,id FROM ab_type3");
-   $text=$r->GetMenu2("type3",$type3,true);
-   echo "<td>$text</td>\n";
+   $text=$r->GetMenu2("type3",$type3,true,false,0,"style='width: 80%'");
+   echo "<td style='width: 10%'>$text</td>\n";
 
    $r=$db->Execute("SELECT type,id FROM ab_type4 ORDER BY sortkey");
-   $text=$r->GetMenu2("type4",$type4,true);
-   echo "<td>$text</td>\n";
+   $text=$r->GetMenu2("type4",$type4,true,false,0,"style='width: 80%'");
+   echo "<td style='width: 10%'>$text</td>\n";
 
    echo "<td><input type='text' name='location' value='$location' size=8></td>\n";
    echo "<td><input type=\"submit\" name=\"search\" value=\"Search\"></td>";
