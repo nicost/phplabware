@@ -75,7 +75,6 @@ function display_table_change($db,$tableid,$DB_DESNAME,$Fieldscomma,$pr_query,$n
    if (!$r)
       $r=$db->Execute($pr_query);
    $r->Move($first_record);
-   $rownr=1;
    // print all entries
    while (!($r->EOF) && $r && $current_record < $last_record)  {
       // Get required ID and title
@@ -83,12 +82,12 @@ function display_table_change($db,$tableid,$DB_DESNAME,$Fieldscomma,$pr_query,$n
       $title=$r->fields["title"];		
       $Allfields=getvalues($db,$real_tablename,$DB_DESNAME,$tableid,$Fieldscomma,id,$id);
       $may_write=may_write($db,$tableid,$id,$USER);
-      echo "<input type='hidden' name='chgj_".$id."' value=''>\n";
-      $js="onChange='document.g_form.chgj_".$id.".value=\"Change\";document.g_form.submit()'";
 
       // print start of row of selected record
-      if ($rownr % 2)echo "<tr class='row_odd' align='center'>\n";
-         else echo "<tr class='row_even' align='center'>\n";
+      if ($current_record % 2) echo "<tr class='row_even' align='center'>\n";
+         else echo "<tr class='row_odd' align='center'>\n";
+      echo "<input type='hidden' name='chgj_".$id."' value=''>\n";
+      $js="onChange='document.g_form.chgj_".$id.".value=\"Change\";document.g_form.submit()'";
       foreach($Allfields as $nowfield) {
          if ($nowfield[required]=="Y")
             $thestar="<sup style='color:red'>&nbsp;*</sup>";
@@ -144,7 +143,6 @@ function display_table_change($db,$tableid,$DB_DESNAME,$Fieldscomma,$pr_query,$n
       echo "</tr>\n";
       $r->MoveNext();
       $current_record++;
-      $rownr+=1;
    }
    // Add Record button
    if (may_write($db,$tableid,false,$USER)) {
@@ -173,15 +171,14 @@ function display_table_info($db,$tableid,$DB_DESNAME,$Fieldscomma,$pr_query,$num
    if (!$r)
       $r=$db->Execute($pr_query);
    $r->Move($first_record);
-   $rownr=1;
    // print all entries
-   while (!($r->EOF) && $r && $current_record < $last_record)  {
+   while (!($r->EOF) && $r && ($current_record < $last_record) )  {
       // Get required ID and title
       $id=$r->fields["id"];
       $title=$r->fields["title"];		
       $Allfields=getvalues($db,$real_tablename,$DB_DESNAME,$tableid,$Fieldscomma,id,$id);
       // print start of row of selected group
-      if ($rownr % 2)echo "<tr class='row_odd' align='center'>\n";
+      if ($current_record % 2) echo "<tr class='row_odd' align='center'>\n";
          else echo "<tr class='row_even' align='center'>\n";
   
       foreach($Allfields as $nowfield) 
@@ -200,7 +197,6 @@ function display_table_info($db,$tableid,$DB_DESNAME,$Fieldscomma,$pr_query,$num
       echo "</tr>\n";
       $r->MoveNext();
       $current_record++;
-      $rownr+=1;
    }
    // Add Record button
    if (may_write($db,$tableid,false,$USER)) {

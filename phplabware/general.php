@@ -262,12 +262,13 @@ else {
    $fields_table="id,".$fields_table;
   //$fields_table="id ";
 
-
    ${$queryname}=make_search_SQL($db,$real_tablename,$tableshort,$tableid,$fields_table,$USER,$search,$sortstring,$listb);
    $r=$db->Execute(${$queryname});
 
    // set variables needed for paging
    $numrows=$r->RecordCount();
+   // work around bug in adodb/mysql
+   $r->Move(1);
    if (${$pagename} < 2)
       $rp->AtFirstPage=true;
    else
