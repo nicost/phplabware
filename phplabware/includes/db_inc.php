@@ -767,7 +767,7 @@ function searchhelp ($db,$tableinfo,$column,&$columnvalues,$query,$wcappend,$and
                 $ids=join (",",$rhtemp);
                 $query[0].="$and id IN ($ids) ";
              }
-	     // if we come up ampty handed, the SQL search should too:
+	     // if we come up empty handed, the SQL search should too:
 	     else $query[0].="$and id=0 ";
          }
 	 else $query[0].="$and id=0 ";
