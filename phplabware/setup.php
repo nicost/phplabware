@@ -63,7 +63,7 @@ if (! ($version || $pwd) ) {
    // This must be the first time, ask for a sysadmin password
    printheader("Ready to install the database");
 ?>
-<form enctype='multipart/form-data' method='post' action='<?php echo $PHP_SELF?>?<?=SID?>'>
+<form enctype='multipart/form-data' method='post' action='<?php echo $PHP_SELF?>'>
 <?php
    echo "<h3>After submitting the following form the phplabware database will ";
    echo "be created and you will be asked to login.<br>";
