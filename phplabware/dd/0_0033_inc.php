@@ -19,7 +19,6 @@
 $r=$db->Execute("SELECT table_desc_name FROM tableoftables WHERE table_desc_name IS NOT NULL");
 while (!$r->EOF) {
    $table_desc_name=$r->fields["table_desc_name"];
-   echo $r->Fields[0].",".$r->fields[table_desc_name].".<br>";
    $db->Execute("ALTER TABLE $table_desc_name CHANGE associated_sql associated_column text");
    $db->Execute("ALTER TABLE $table_desc_name RENAME associated_sql TO associated_column");
    $db->Execute("ALTER TABLE $table_desc_name ADD COLUMN link_first text");
