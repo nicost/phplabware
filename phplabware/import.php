@@ -159,13 +159,15 @@ if ($HTTP_POST_VARS["assign"]=="Import Data") {
             }
             $fields=check_input (explode($quote.$delimiter.$quote,$line),$to_types,$nrfields);
             $worthit=false;
+            unset($recordid);
             // if there is a column being used as primary key, we do an SQL
             // UPDATE, otherwise an insert
             if (isset($pkey) && $pkey!="") {
                // check if we already had such a record
                $r=$db->Execute("SELECT id FROM $table WHERE $to_fields[$pkey]='$fields[$pkey]'");
                $recordid=$r->fields[0];
-               if (isset($recordid) && $pkeypolicy=="overwrite") {
+            }
+               if (isset($recordid) && ($pkeypolicy=='overwrite' || $pkeypolicy=='onlyupdate')) {
                   $query="UPDATE $table SET ";
                   // import data from file into SQL statement
                   for ($i=0; $i<$nrfields;$i++) {
@@ -191,11 +193,10 @@ if ($HTTP_POST_VARS["assign"]=="Import Data") {
                          $modified++;
                   }
                }
-            }
 
             // if there is no primary key set, we simply INSERT a new record
             //if ( !(isset($pkey) || isset($recordid)) ) {
-	    else {
+	    elseif ($pkeypolicy!='onlyupdate') {
                $query_start="INSERT INTO $table (";
                $query_end=" VALUES (";
                $newid=false;
@@ -343,9 +344,10 @@ if ($HTTP_POST_VARS["dataupload"]=="Continue") {
 
          echo "<table align='left'>\n";
 
-         echo "<tr><th>When a record with identical Primary key is already present, overwrite existing data or skip the record?</th>\n";
-         echo "<td><input type='radio' name='pkeypolicy' value='overwrite'> overwrite</input></td>\n";
-         echo "<td><input type='radio' name='pkeypolicy' value='skip' checked> skip</input></td></tr>\n";
+         echo "<tr><th>Update/Overwrite policy</th>\n";
+         echo "<td colspan=3><input type='radio' name='pkeypolicy' value='overwrite'> Overwrite when primary key matches, otherwise add the new record</input><br>\n";
+         echo "<input type='radio' name='pkeypolicy' value='onlyupdate'> Overwrite when primary key matches, otherwise ignore the new record</input><br>\n";
+         echo "<input type='radio' name='pkeypolicy' value='skip' checked> Skip when primary key matches, otherwise add the new record</input></td></tr>\n";
 
          echo "<tr><th>Skip first line?</th>\n";
          echo "<td><input type='radio' name='skipfirstline' value='yes'> Yes</input></td>\n";
