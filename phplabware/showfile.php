@@ -19,7 +19,7 @@
 require("include.php");
 require("includes/db_inc.php");
 
-$get_vars = "id,name";
+$get_vars = "id";
 globalize_vars ($get_vars,$HTTP_GET_VARS);
 
 if (!id) {
