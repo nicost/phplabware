@@ -64,24 +64,33 @@ $pre_seperator="";
 $post_seperator="\t";
 
 // open file to write output to
-$outfile=$system_settings['tmpdir'].'/dumpcontent.txt';
-$filedir=$system_settings['tmpdir'].'/files/';
+$tmpdir=$system_settings['tmpdir'].'/phplabwaredump';
+if (!file_exists($tmpdir))
+   mkdir ($tmpdir);
+$outfile=$tmpdir.'/dumpcontent.txt';
+$filedir=$tmpdir.'/files/';
+$filetable=$tmpdir.'/files.txt';
 // since it is a tmp dir we can destroy all content (right?)
 if (file_exists($filedir))
    `rm -rf {$filedir}*`;
 else
-   `mkdir $filedir`;
+   mkdir ($filedir);
 
-$fp=fopen($outfile,"w");
+$fp=fopen($outfile,'w');
 if (!$fp) {
    echo "<h3 align='center'>Failed to open <i>$outfile</i> for output</h3>\n";
+   printfooter($db, $USER);
+}
+$ff=fopen($filetable,'w');
+if (!$ff) {
+   echo "<h3 align='center'>Failed to open <i>$filetable</i> for output</h3>\n";
    printfooter($db, $USER);
 }
 
 if ($HTTP_GET_VARS['fields']) 
    $fields=$HTTP_GET_VARS['fields'];
 else
-   $fields="id,".comma_array_SQL($db,$tableinfo->desname,'columnname');
+   $fields='id,'.comma_array_SQL($db,$tableinfo->desname,'columnname');
 $headers=getvalues($db,$tableinfo,$fields);
 if ($HTTP_GET_VARS['valuesOnly'])
    $valuesOnly=true;
@@ -90,7 +99,7 @@ foreach ($headers as $header) {
    if ($header['label'])
       fwrite ($fp,$pre_seperator.$header['label'].$post_seperator);
    else
-      fwrite ($fp,$pre_seperator."id".$post_seperator);
+      fwrite ($fp,$pre_seperator.'id'.$post_seperator);
 }
 fwrite ($fp,"\n");
 
@@ -102,14 +111,17 @@ while ($r->fields["id"] && !$r->EOF) {
          // files will be exported to the directory files
          if ($row['datatype']=='file') {
             $files=get_files($db,$tableinfo->name,$row['recordid'],$row['columnid'],0);
+            fwrite ($fp,$pre_seperator);
             for ($i=0;$i<sizeof($files);$i++) {
                $filecounter++;
-               // instead of the following line write a temp table with all the file info,and provide an comma separated list of ids to that table here
-               fwrite ($fp,$pre_seperator.$files[$i]['name'].$post_seperator);
+               // write a temp table with all the file info,and provide an comma separated list of ids to that table here
+               fwrite ($ff,++$filenr."\t".$files[$i]['name']."\t".$files[$i]['mime']."\t".$files[$i]['size']."\t".$files[$i]['type']."\n");
+               fwrite ($fp,$filenr.',');
                $path=file_path($db,$files[$i]['id']);
                $cpstr="cp $path {$filedir}{$files[$i]['name']}";
               `$cpstr`;
             }
+            fwrite ($fp,$post_seperator);
          }
          else {
             
@@ -117,7 +129,7 @@ while ($r->fields["id"] && !$r->EOF) {
             fwrite ($fp,$pre_seperator.$row['values'].$post_seperator);
          }
          else {
-            if ($row['datatype']=="textlong")
+            if ($row['datatype']=='textlong')
                fwrite ($fp,$pre_seperator.$row['values'].$post_seperator);
             else
                fwrite ($fp,$pre_seperator.$row['text'].$post_seperator);
