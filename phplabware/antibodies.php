@@ -35,7 +35,26 @@ globalize_vars ($post_vars, $HTTP_POST_VARS);
 // !Inserts $fields with $fieldvalues into $table
 // Returns the id of inserted record on succes, false otherwise.
 // Fieldvalues must be an associative array containing all the $fields to be added.
-function add ($db, $table,$fields,$fieldvalues){
+function add ($db, $table,$fields,$fieldvalues) {
+   // generate the new ID
+   $id=$db->GenID($table."_id_seq");
+   if ($id) {
+      $columns="id";
+      $values="$id";
+      $column=strtok($fields,",");
+      while ($column) {
+         if (!($column=="id")) {
+            $columns.=",$column";
+	    $value=$fieldvalues[$column];
+            $values.=",'$value'";
+         }
+	 $column=strtok(",");
+      }
+      $query="INSERT INTO $table ($columns) VALUES ($values)";
+      //$db->debug=true;
+      if ($db->Execute($query))
+         return $id;
+   }
 }
 
 ////
@@ -61,15 +80,26 @@ function delete ($db, $table, $id) {
 function add_ab_form ($db, $fields,$field_values,$id) {
    // get values in a smart way
 
+
+   echo "<form method='post' id='antibodyform action='$PHP_SELF'>\n"; 
    echo "<table border=0 align='center'>\n";
    if ($id)
       echo "<tr><td colspan=5 align='center'><h3>Modify Antibody $name</h3></td></tr>\n";
    else
       echo "<tr><td colspan=5 align='center'><h3>New Antibody</h3></td></tr>\n";
+   echo "<tr align='center'>\n";
+   echo "<td colspan=2></td>\n";
+   echo "<th>Primary/Secund.</th>\n<th>Label</th>\n<th>Mono-/Polyclonal</th>\n";
+   echo "<th>Host</th>\n<th>Class</th>\n";
+   echo "</tr>\n";
    echo "<tr>\n";
-   echo "<td>Name: </td><td><input type='text' name='name' value='$name'></td>\n";
+   echo "<th>Name: </th><td><input type='text' name='name' value='$name'></td>\n";
    $r=$db->Execute("SELECT type,id FROM ab_type1");
    $text=$r->GetMenu2("type1",$type1,false);
+   echo "<td>$text</td>\n";
+   
+   $r=$db->Execute("SELECT type,id FROM ab_type5 ORDER BY sortkey");
+   $text=$r->GetMenu2("type5",$type5,false);
    echo "<td>$text</td>\n";
    
    $r=$db->Execute("SELECT type,id FROM ab_type2");
@@ -79,33 +109,38 @@ function add_ab_form ($db, $fields,$field_values,$id) {
    $r=$db->Execute("SELECT type,id FROM ab_type3");
    $text=$r->GetMenu2("type3",$type3,false);
    echo "<td>$text</td>\n";
+
+   $r=$db->Execute("SELECT type,id FROM ab_type4 ORDER BY sortkey");
+   $text=$r->GetMenu2("type4",$type4,false);
+   echo "<td>$text</td>\n";
+
    echo "</tr>\n";
 
    echo "<tr>\n";
-   echo "<td>Antigen: </td><td><input type='text' name='antigen' value='$antigen'></td>\n";
+   echo "<th>Antigen: </th><td><input type='text' name='antigen' value='$antigen'></td>\n";
    echo "<td>&nbsp;</td>";
-   echo "<td>Epitope: </td><td><input type='text' name='epitope' value='$epitope'></td>\n";
+   echo "<th>Epitope: </th><td colspan=3><input type='text' name='epitope' value='$epitope'></td>\n";
    echo "</tr>\n";
    
    echo "<tr>";
-   echo "<td>Buffer: </td><td><input type='text' name='buffer' value='$buffer'></td>\n";
+   echo "<th>Buffer: </th><td><input type='text' name='buffer' value='$buffer'></td>\n";
    echo "<td>&nbsp;</td>";
-   echo "<td>Concentration (mg/ml): </td><td><input type='text' name='concentration' value='$concentration'></td>\n";
+   echo "<th>Concentration (mg/ml): </th><td colspan=3><input type='text' name='concentration' value='$concentration'></td>\n";
    echo "</tr>\n";
    
    echo "<tr>";
-   echo "<td>Source: </td><td><input type='text' name='source' value='$source'></td>\n";
+   echo "<th>Source: </th><td><input type='text' name='source' value='$source'></td>\n";
    echo "<td>&nbsp;</td>";
-   echo "<td>Location: </td><td><input type='text' name='locationn' value='$locations'></td>\n";
+   echo "<th>Location: </th><td colspan=3><input type='text' name='location' value='$location'></td>\n";
    echo "</tr>\n";
    
    echo "<tr>";
-   echo "<td>Notes: </td><td colspan=4><input type='text' name='notes' value='$notes'></td>\n";
+   echo "<th>Notes: </th><td colspan=6><textarea name='notes' rows='5' cols='140'>$notes</textarea></td>\n";
    echo "</tr>\n";
    
    
    echo "<tr>";
-   echo "<td colspan=5 align='center'><input type='submit' name='add' value='Add Antibody'></td>\n";
+   echo "<td colspan=7 align='center'><input type='submit' name='submit' value='Add Antibody'></td>\n";
    echo "</tr>\n";
    
 
@@ -139,9 +174,9 @@ else {
    echo "<caption>\n";
    // first handle addition of a new antibody
    if ($submit == "Add Antibody") {
-      if (! $test = add ($db, "antibodies",$fields,$fieldvalues) ) {
+      if (! $test = add ($db, "antibodies",$fields,$HTTP_POST_VARS) ) {
          echo "</caption>\n</table>\n";
-         add_ab_form ($fields,$field_values,0);
+         add_ab_form ($db,$fields,$field_values,0);
          printfooter ();
          exit;
       }
@@ -197,12 +232,14 @@ else {
       // get results of each row
       $id = $r->fields["id"];
       $name = $r->fields["name"];
-      $at1=get_cell($db,"ab_type1","type","id",$r->fields["ab_type1"]);
-      $at2=get_cell($db,"ab_type2","type","id",$r->fields["ab_type2"]);
-      $at3=get_cell($db,"ab_type3","type","id",$r->fields["ab_type2"]);
+      $at1=get_cell($db,"ab_type1","type","id",$r->fields["type1"]);
+      $at2=get_cell($db,"ab_type2","type","id",$r->fields["type2"]);
+      $at3=get_cell($db,"ab_type3","type","id",$r->fields["type2"]);
+      $antigen = $r->fields["antigen"];
+      $location = $r->fields["location"];
       
       // print start of row of selected group
-      echo "<tr>\n";
+      echo "<tr align='center'>\n";
 // DEAL WITH SID HERE
 ?>
 <td><a href="antibodies.php?id=<?php echo $id;?>&<?=SID?>"><?php echo $name;?></td>
@@ -210,8 +247,8 @@ else {
       echo "<td>$at1</td>\n";
       echo "<td>$at2</td>\n";
       echo "<td>$at3</td>\n";
-      echo "<td>$antigen</td>\n";
-      echo "<td>$location</td>\n";
+      echo "<td>$antigen&nbsp;</td>\n";
+      echo "<td>$location&nbsp;</td>\n";
       
       
       // print last columns with links to adjust group
