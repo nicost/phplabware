@@ -206,6 +206,7 @@ function add_table ($db,$tablename,$tablelabel,$sortkey,$plugincode) {
 		associated_table text, 
 		associated_column text,
 		associated_local_key text,
+                key_table text,
 		thumb_x_size int,
 		thumb_y_size int,
 		link_first text,
