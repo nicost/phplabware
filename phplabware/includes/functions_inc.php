@@ -323,8 +323,9 @@ function navbar($permissions) {
       if ($permissions & $SUPER) {
          $systemmenu.="   <option value='groups.php$SID'>groups</a>\n";
          $systemmenu.="   <option value='tablemanage.php$SID'>tables</a>\n";
+         $systemmenu.="   <option value='dumptable.php$SID'>export tables</a>\n";
          $systemmenu.="   <option value='import.php$SID'>import data</a>\n";
-         $systemmenu.="   <option value='dumptable.php$SID'>export data</a>\n";
+         $systemmenu.="   <option value='dumpcontent.php$SID'>export data</a>\n";
          $systemmenu.="   <option value='linkbar.php$SID'>linkbar</a>\n";
          $systemmenu.="   <option value='setup.php$SID'>setup</a>\n";
       }
