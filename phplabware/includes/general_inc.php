@@ -629,11 +629,11 @@ function process_file($db,$fileid,$system_settings) {
    $mimetype=get_cell($db,"files","mime","id",$fileid);
    if (!strstr($mimetype,"html")) {
       $word2html=$system_settings["word2html"];
-      $wv_version=$system_settings["wvHtml_verision"];
+      $wv_version=$system_settings["wvHtml_version"];
+      $filepath=file_path($db,$fileid);
+      if (!$filepath)
+         return false;
       if ($wv_version<0.7) {
-         $filepath=file_path($db,$fileid);
-         if (!$filepath)
-            return false;
          $temp=$system_settings["tmpdir"]."/".uniqid("file");
          $command= "$word2html $filepath $temp";
          $result=exec($command);
@@ -641,12 +641,14 @@ function process_file($db,$fileid,$system_settings) {
       // version of wvHtml >= 0.7 have to be called differently:
       //if (@is_readable($temp) || @filesize($temp) < 1) {
       else {
+         $converted_file=uniqid("file");
          $command="$word2html --targetdir=".$system_settings["tmpdir"]." \"$filepath\" $converted_file";
          $result=exec($command);
+	 $temp=$system_settings["tmpdir"]."/".$converted_file;
       } 
       if (@is_readable($temp) && filesize($temp)) {
          unset ($HTTP_POST_FILES);
-         $r=$db->query ("SELECT filename,mime,title,tablesfk,ftableid FROM files WHERE id=$fileid");
+         $r=$db->query ("SELECT filename,mime,title,tablesfk,ftableid,ftablecolumnid FROM files WHERE id=$fileid");
          if ($r && !$r->EOF) {
             $filename=$r->fields("filename");
             // change .doc to .html in a lousy way
@@ -655,7 +657,7 @@ function process_file($db,$fileid,$system_settings) {
             $type=substr(strrchr($mime,"/"),1);
             $size=filesize($temp);
             $id=$db->GenID("files_id_seq");
-            $query="INSERT INTO files (id,filename,mime,size,title,tablesfk,ftableid,type) VALUES ($id,'$filename','$mime','$size','".$r->fields("title")."','".$r->fields("tablesfk")."','".$r->fields("ftableid")."','$type')";
+            $query="INSERT INTO files (id,filename,mime,size,title,tablesfk,ftableid,ftablecolumnid,type) VALUES ($id,'$filename','$mime','$size','".$r->fields("title")."','".$r->fields("tablesfk")."','".$r->fields("ftableid")."','".$r->fields("ftablecolumnid")."','$type')";
            if ($db->execute($query)) {
                 $newloc=file_path($db,$id);
                `mv $temp $newloc`;
