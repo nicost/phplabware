@@ -120,7 +120,7 @@ function display_table_info($db,$tablename,$real_tablename,$DB_DESNAME,$Fieldsco
       if (may_write($db,$real_tablename,$id,$USER)) {
          echo "<input type=\"submit\" name=\"mod_" . $id . "\" value=\"Modify\">\n";
          $delstring = "<input type=\"submit\" name=\"del_" . $id . "\" value=\"Remove\" ";
-         $delstring .= "Onclick=\"if(confirm('Are you sure that you want to remove record <i>$title</i>?'))";
+         $delstring .= "Onclick=\"if(confirm('Are you sure that you want to remove record $title?'))";
          $delstring .= "{return true;}return false;\">"; 
          echo "$delstring\n";
       }
