@@ -29,8 +29,8 @@ if (!$tableinfo->id) {
    exit();
 }
 
-$reportid=$HTTP_GET_VARS["reportid"];
-$recordid=$HTTP_GET_VARS["recordid"];
+$reportid=(int)$HTTP_GET_VARS["reportid"];
+$recordid=(int)$HTTP_GET_VARS["recordid"];
 
 if (!($reportid && $recordid) ) {
    printheader($httptitle);
@@ -40,15 +40,33 @@ if (!($reportid && $recordid) ) {
    exit();
 }
 
+if (!may_read($db,$tableinfo,$recordid,$USER)) {
+   printheader($httptitle);
+   navbar($USER["permissions"]);
+   echo "<h3 align='center'>This information is not intended to be seen by you.</h3>";
+   printfooter();
+   exit();
+}
+   
 $fields=comma_array_SQL($db,$tableinfo->desname,"columnname");
 $Allfields=getvalues($db,$tableinfo,$fields,"id",$recordid);
 
-//print_r($Allfields);
 $db->debug=true;
-$template=get_cell($db,"reports","template","id",$reportid);
+$tp=fopen($system_settings["templatedir"]."/$reportid.tpl","r");
+while (!feof($tp))
+   $template.=fgets($tp);
+fclose($tp);
+ 
+if (!$template) {
+   printheader($httptitle);
+   navbar($USER["permissions"]);
+   echo "<h3 align='center'>Template file was not found!</h3>";
+   printfooter();
+   exit();
+}
 
 $report=make_report($template,$Allfields);
-echo $template;
+//echo $template;
 echo $report;
 
 ?>
