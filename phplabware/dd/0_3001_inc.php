@@ -13,7 +13,7 @@ ini_set("max_execution_time","0");
 $dict=NewDataDictionary($db);
 
 $fields='userid I NotNull, tableid I NotNull, viewmode I NotNull, viewnameid I, columnid I NotNull\n';
-$options=array('mysql'=>'TYPE=ISAM');
+$options=array('mysql'=>' TYPE=ISAM');
 $sqlArray=$dict->CreateTableSQL('tableviews',$fields,$options);
 $dict->ExecuteSQLArray($sqlArray);
 // and make indices on them
@@ -28,10 +28,11 @@ $dict->ExecuteSQLArray($sqlArray);
 $sqlArray=$dict->CreateIndexSQL('tableviews_columnid_index','tableviews','columnid');
 $dict->ExecuteSQLArray($sqlArray);
 
-$fields='viewnameid I NotNull, viewname C\n';
+$fields='viewnameid I NotNull, viewname X\n';
 $sqlArray=$dict->CreateTableSQL('viewnames',$fields,$options);
 $dict->ExecuteSQLArray($sqlArray);
 // and make indices on them
 $sqlArray=$dict->CreateIndexSQL('viewnames_viewnameid_index','viewnames','viewnameid');
 $dict->ExecuteSQLArray($sqlArray);
 
+?>
