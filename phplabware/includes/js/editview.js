@@ -7,7 +7,7 @@ var newWindow;
 function submit_changes ($tableid,$recordid,$field,$datatype,$newvalue) {
    // Open new window under existing one, make sure it does not yes exist
    if (!newWindow || newWindow.closed) {
-      newWindow = window.open("","PHPLabware","status,height=200,width=300");
+      newWindow = window.open("","PHPLabware","status,height=10,width=10");
       newWindow.blur();
       window.focus();
       // supposedly needed for IE, current Mozilla does not know it
@@ -33,7 +33,7 @@ function submit_changes ($tableid,$recordid,$field,$datatype,$newvalue) {
 
    newWindow.document.editMode.submit();
 
-   //document.onblur=newWindow.close();
+   document.onblur=newWindow.close();
 
 }
 
