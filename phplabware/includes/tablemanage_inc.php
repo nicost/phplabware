@@ -420,7 +420,6 @@ function add_associated_table($db,$table,$column,$table_ass,$column_ass) {
    $table_desc=$r->fields["table_desc_name"];
    $r=$db->Execute("SELECT id FROM $table_desc WHERE associated_table='$table_ass' AND associated_local_key IS NULL");
    if ($r && !$r->EOF) {
-print_r ($r);
       $prim_column=$r->fields["id"];
       $r=$db->Execute("UPDATE $table_desc SET associated_table='$table_ass', associated_sql='$column_ass', associated_local_key='$prim_column' WHERE columnname='$column'");
    }
