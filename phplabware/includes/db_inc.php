@@ -498,7 +498,6 @@ function upload_files ($db,$tableid,$id,$columnid,$columnname,$USER,$system_sett
 if (file_exists($HTTP_POST_FILES[$columnname]['tmp_name'][$i])) {
 }
       if (move_uploaded_file($HTTP_POST_FILES["$columnname"]['tmp_name'][$i],"$filedir/$fileid"."_"."$originalname")) {
-echo "File is OK.<br>";
          $query="INSERT INTO files (id,filename,mime,size,title,tablesfk,ftableid,ftablecolumnid,type) VALUES ($fileid,'$originalname','$mime','$size',$title,'$tableid',$id,'$columnid','$filestype')";
 	 $db->Execute($query);
       } else {
@@ -509,7 +508,7 @@ echo "File is OK.<br>";
         $dirname=dirname($HTTP_POST_FILES[$columnname]['tmp_name'][$i]);
         $tmpdir=$system_settings['tmpdir'];
         if (dirname($HTTP_POST_FILES[$columnname]['tmp_name'][$i]) == $system_settings['tmpdir']) {
-           if (!rename($HTTP_POST_FILES[$columnname]['tmp_name'][$i],"$filedir/$fileid".'_'.$originalname)) {
+           if (!@rename($HTTP_POST_FILES[$columnname]['tmp_name'][$i],"$filedir/$fileid".'_'.$originalname)) {
               $fileid=false;
             } else {
                $query="INSERT INTO files (id,filename,mime,size,title,tablesfk,ftableid,ftablecolumnid,type) VALUES ($fileid,'$originalname','$mime','$size',$title,'$tableid',$id,'$columnid','$filestype')";
