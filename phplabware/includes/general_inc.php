@@ -487,6 +487,8 @@ function getvalues($db,$DBNAME,$DB_DESNAME,$tableid,$fields,$qfield=false,$field
       array_push ($Allfields, ${$column});
       $column=strtok(",");
    }		
+   if (function_exists("plugin_getvalues"))
+      plugin_getvalues($db,$Allfields,$id);
    return $Allfields;
 }
 
