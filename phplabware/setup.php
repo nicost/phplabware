@@ -178,10 +178,23 @@ if ($version) {
             if (!isset ($system_settings["tmpdirpsql"]))
                $system_settings["tmpdirpsql"]="/tmp";
          }
-      if (isset($word2html) && @is_readable($word2html))
+      if (isset($word2html) && @is_readable($word2html)) {
          $system_settings["word2html"]=$word2html;
+         // attempt to discover version of wvWare used
+         $wvWare=str_replace("Html","Ware",$word2html);
+         $wvresult=exec("$wvWare -v");
+         //last attempt to get something
+         if (!$wvresult)
+            $wvresult=exec("$word2html -v");
+         $wvresult=explode(" ",$wvresult);
+         if ($wvresult)
+            $system_setting["wvHtml_version"]=$wvresult[1];
+         else
+            $system_setting["wvHtml_version"]=0.6;
+      }      
       else {
          unset($system_settings["word2html"]);
+         unset($system_settings["wvHtml_version"]);
 	 if (isset($word2html))
 	    echo "<h3 align='center'>wvHtml was not found at '$word2html'.</h3>";
       }
