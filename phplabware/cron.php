@@ -29,11 +29,11 @@ function doindexfile ($db,$filetext,$fileid,$indextable,$recordid,$pagenr)
       $pagenr=1;
    $thetext=split("[ ,.:;\"\n]",$filetext);
    foreach ($thetext as $word) {
-      if (strlen($word)>3) {
+      if (strlen($word)>2) {
          $r=$db->Execute("SELECT id FROM words WHERE word='$word'");
          $wordid=$r->fields[0];
          if (!$wordid) {
-            $wordid=$db->GenID("word_seq");
+            $wordid=$db->GenID('word_seq');
             $db->Execute("INSERT INTO words VALUES ($wordid,'$word')");
          }
          $db->Execute("INSERT INTO $indextable VALUES ($wordid,$fileid,$pagenr,$recordid)");
@@ -54,7 +54,7 @@ function doindexfile ($db,$filetext,$fileid,$indextable,$recordid,$pagenr)
 $starttime=microtime();
 
 $host=getenv('HTTP_HOST');
-if (! ($host=='localhost' ||$host=='127.0.0.1') ) {
+if (! ($host=='localhost' || $host=='127.0.0.1') ) {
    echo "This script should only be called by the CRON daemon.";
    exit ();
 }
@@ -70,10 +70,10 @@ $rfiles=$db->Execute("SELECT id,filename,tablesfk,ftableid,mime,ftablecolumnid F
 while ($rfiles && !($rfiles->EOF)) {
 
    // find out to which table we are going to write the index 
-   $rdesc=$db->Execute("SELECT table_desc_name FROM tableoftables WHERE id=".$rfiles->fields[tablesfk]);
+   $rdesc=$db->Execute("SELECT table_desc_name FROM tableoftables WHERE id=".$rfiles->fields['tablesfk']);
    if($rdesc->fields['table_desc_name']) {
       $rindextable=$db->Execute("SELECT associated_table FROM ".$rdesc->fields[table_desc_name]." WHERE id=".$rfiles->fields['ftablecolumnid']);
-      if ($rindextable->fields[associated_table]) {
+      if ($rindextable->fields['associated_table']) {
          // add the filename to the text so that it will be indexed too
          $filepath=file_path($db,$rfiles->fields['id']);
          $filename=$rfiles->fields['filename'];
@@ -111,9 +111,9 @@ while ($rfiles && !($rfiles->EOF)) {
               //strip out all the trash from the string
               //$tempstring = string_clean($tempstring,$preventIndex,$keepIndex);
                $filetext=strtolower($tempstring)."\n".$filename;
-               doindexfile ($db,$filetext,$rfiles->fields[id],$rindextable->fields[associated_table],$rfiles->fields[ftableid],$page); 
+               doindexfile ($db,$filetext,$rfiles->fields['id'],$rindextable->fields['associated_table'],$rfiles->fields['ftableid'],$page); 
             }
-            $db->Execute ("UPDATE files SET indexed=1 WHERE id=".$rfiles->fields[id]);
+            $db->Execute ("UPDATE files SET indexed=1 WHERE id=".$rfiles->fields['id']);
             $pdffilecounter++;
          }
       }
