@@ -62,8 +62,9 @@ $version=get_cell($db, "settings", "version", "id", 1);
 if (! ($version || $pwd) ) {
    // This must be the first time, ask for a sysadmin password
    printheader("Ready to install the database");
-   echo "<form enctype='multipart/form-data' method='post' ";
-   echo "action='$PHP_SELF'>\n";
+?>
+<form enctype='multipart/form-data' method='post' action='<?php echo $PHP_SELF?>?<?=SID?>'>"
+<?php
    echo "<h3>After submitting the following form the phplabware database will ";
    echo "be created and you will be asked to login.<br>";
    echo "Login as <i>sysadmin</i> using the password you enter here.</h3>\n";
@@ -327,8 +328,9 @@ if ($version) {
    }
 
    // display form with current settings
-   echo "<form enctype='multipart/form-data' method='post' ";
-   echo "name='globals-form' action='$PHP_SELF'>\n";
+?>
+<form enctype='multipart/form-data' method='post' name='globals-form' action='<?php echo $PHP_SELF ?>?<?=SID?>'>
+<?php
    echo "<table border=1 align='center' width='70%'>\n";
    echo "<tr><th>Description</th><th>Setting</th></tr>\n";
    echo "<tr><td colspan='2' align='center'><i>Localization</i></th></tr>\n";

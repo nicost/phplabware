@@ -120,8 +120,9 @@ function delete_group ($db, $groupid) {
 // if groupid is given this is to modify, otherwise add a new group
 function group_form ($groupid, $groupname) {
    global $PHP_SELF;
-
-   echo "<form method='post' action='$PHP_SELF'>\n";
+?>
+<form method='post' action='<?php echo $PHP_SELF ?>?<?=SID?>'>
+<?php
    if ($groupid)
       echo "<input type='hidden' name='groupid' value='$groupid'>\n";
    echo "<table align='center'>\n";
@@ -193,11 +194,11 @@ else {
 
    echo "</caption>\n";
    // print form needed for 'delete' buttons
-   echo "<form name='form' method='post' action='$PHP_SELF'>\n";  
-
+?>
+<form name='form' method='post' action='<?php echo $PHP_SELF?>?<?=SID?>'>
+<?php
    echo "<tr>\n";
    echo "<th>Group</th>";
-//   echo "<th>Used space</th>\n";
    echo "<th>Admins</th>";
    echo "<th>Users</th>";
    echo "<th colspan=\"2\">Action</th>\n";
@@ -260,12 +261,10 @@ else {
       // print last columns with links to adjust group
       $modstring = "<input type=\"submit\" name=\"mod_" . $groupid . "\" value=\"Modify\">";
       echo "<td align='center'>$modstring</td>\n";
-      //echo "<td><a href='$PHP_SELF?mod=true&groupid=$groupid&groupname=$groupname'>Modify</a></td>\n";
       $delstring = "<input type=\"submit\" name=\"del_" . $groupid . "\" value=\"Remove\" ";
       $delstring .= "Onclick=\"if(confirm('Are you sure the group $groupname ";
       $delstring .= "should be removed?')){return true;}return false;\">";                                           
       echo "<td align='center'>$delstring</td>\n";
-      //echo "<td><a href='$PHP_SELF?del=true&groupid=$db_row_groupid'>Delete</a></td>\n";
       echo "</tr>\n";
    
       $r->MoveNext();
@@ -275,8 +274,6 @@ else {
    echo "<tr><td colspan=5 align='center'>";
    echo "<input type=\"submit\" name=\"add\" value=\"Add Group\">";
    echo "</td></tr>";
-// <a href=\"$PHP_SELF?add=true\">";
-//   echo "Add a Group</a></td></tr>";
    echo "</table>\n";
    echo "</form>\n";
 

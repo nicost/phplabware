@@ -213,8 +213,9 @@ function show_user_form ($type) {
       echo "<h3 align='center'>You are not allowed to do this. </h3>";
       return false;
    }
-
-   echo "<form method='post' action='$PHP_SELF'>\n";
+?>
+<form method='post' action='<?php echo $PHP_SELF?>?<?=SID?>'>
+<?php
    echo "<input type='hidden' name='id' value='$id'>\n";
    echo "<table align='center'>\n";
 
@@ -403,8 +404,9 @@ else {
       }
    }
    echo "</h5></caption>\n";
-   echo "<form name='form' method='post' action='$PHP_SELF'>\n";
-
+?>
+<form method='post' name='form' action='<?php echo $PHP_SELF?>?<?=SID?>'>
+<?php
    // set database query
    $db_query = "SELECT * FROM users";
 

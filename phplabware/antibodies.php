@@ -284,8 +284,9 @@ function add_ab_form ($db,$fields,$field_values,$id,$USER) {
       ${$column}=$field_values[$column];
       $column=strtok(",");
    }
-
-   echo "<form method='post' id='antibodyform action='$PHP_SELF'>\n"; 
+?>
+<form method='post' id='antibodyform action='<?php echo $PHP_SELF?>?<?=SID?>'> 
+<?php
    echo "<table border=0 align='center'>\n";
    if ($id) {
       echo "<tr><td colspan=7 align='center'><h3>Modify Antibody <i>$name</i></h3></td></tr>\n";
@@ -446,8 +447,9 @@ function show_ab ($db,$fields,$id,$USER,$system_settings) {
    $notes=nl2br(htmlentities($notes));
    echo "<th>Notes: </th><td colspan=6>$notes</td>\n";
    echo "</tr>\n";
-   
-   echo "<form method='post' id='antibodyview action='$PHP_SELF'>\n"; 
+?>   
+<form method='post' id='antibodyview action='<?php echo $PHP_SELF?>?<?=SID?>'> 
+<?php
    echo "<tr>";
    echo "<td colspan=7 align='center'><input type='submit' name='submit' value='Dismiss'></td>\n";
    echo "</tr>\n";
@@ -503,7 +505,6 @@ else {
    }
    // then look whether it should be modified
    elseif ($submit =="Modify Antibody") {
-      echo "Trying to modify.<br>";
       if (! (check_ab_data($HTTP_POST_VARS) && modify ($db,"antibodies",$fields,$HTTP_POST_VARS,$HTTP_POST_VARS["id"],$USER)) ) {
          echo "</caption>\n</table>\n";
          add_ab_form ($db,$fields,$HTTP_POST_VARS,$HTTP_POST_VARS["id"],$USER);
@@ -524,12 +525,12 @@ else {
       }
    } 
 
-   // print table with search results
 
    echo "</caption>\n";
    // print form needed for 'delete' buttons
-   echo "<form name='form' method='post' action='$PHP_SELF'>\n";  
-
+?>
+<form name='form' method='post' action='<?php echo $PHP_SELF?>?<?=SID?>'>  
+<?php
    $column=strtok($fields,",");
    while ($column) {
       ${$column}=$HTTP_POST_VARS[$column];
