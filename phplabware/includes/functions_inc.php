@@ -250,7 +250,7 @@ function get_person_link ($db,$id) {
 // !Prints a table with usefull links 
 function navbar($permissions) {
    include ('./includes/defines_inc.php');
-   global $db, $USER, $HTTP_SESSION_VARS; 
+   global $db, $USER, $PHP_SELF, $HTTP_SESSION_VARS; 
    if ($HTTP_SESSION_VARS['javascript_enabled'] && $USER['settings']['menustyle']) 
       $mode='menu';
    if ($mode=='menu') { 
@@ -320,39 +320,40 @@ function navbar($permissions) {
       if (SID)
          $SID="?".SID;
       if ($permissions) {
-         $systemmenu.="   <option value='users.php?type=me&dummy=true&".SID."'>my settings</a>\n";
-         $systemmenu.="   <option value='views.php?".SID."'>table views</a>\n";
+         $systemmenu.="   <option value=\"users.php?type=me&dummy=true&".SID."\">my settings</option>\n";
+         $systemmenu.="   <option value='views.php?".SID."'>table views</option>\n";
       }
       if ($permissions & $ADMIN)
-         $systemmenu.="   <option value='users.php$SID'>users</a>\n";
+         $systemmenu.="   <option value='users.php$SID'>users</option>\n";
       if ($permissions & $SUPER) {
-         $systemmenu.="   <option value='groups.php$SID'>groups</a>\n";
-         $systemmenu.="   <option value=''>-------</a>\n";
-         $systemmenu.="   <option value='tablemanage.php$SID'>table design</a>\n";
-         $systemmenu.="   <option value='restoretable.php$SID'>import table</a>\n";
-         $systemmenu.="   <option value='dumptable.php$SID'>export table</a>\n";
-         $systemmenu.="   <option value='import.php$SID'>import data</a>\n";
-         $systemmenu.="   <option value='dumpcontent.php$SID'>export data</a>\n";
-         $systemmenu.="   <option value=''>-------</a>\n";
-         $systemmenu.="   <option value='linkbar.php$SID'>linkbar</a>\n";
-         $systemmenu.="   <option value='setup.php$SID'>setup</a>\n";
+         $systemmenu.="   <option value='groups.php$SID'>groups</option>\n";
+         $systemmenu.="   <option value=''>-------</option>\n";
+         $systemmenu.="   <option value='tablemanage.php$SID'>table design</option>\n";
+         $systemmenu.="   <option value='restoretable.php$SID'>import table</option>\n";
+         $systemmenu.="   <option value='dumptable.php$SID'>export table</option>\n";
+         $systemmenu.="   <option value='import.php$SID'>import data</option>\n";
+         $systemmenu.="   <option value='dumpcontent.php$SID'>export data</option>\n";
+         $systemmenu.="   <option value=''>-------</option>\n";
+         $systemmenu.="   <option value='linkbar.php$SID'>linkbar</option>\n";
+         $systemmenu.="   <option value='setup.php$SID'>setup</option>\n";
       }
       if ($permissions) {
-         $systemmenu.="   <option value='logout.php$SID'>logout</a>\n";
+         $systemmenu.="   <option value='logout.php$SID'>logout</option>\n";
          $systemmenu .="</select>\n";
       }
       else
          $systemmenu="<a href='login.php'>login</a>\n";
 
       // display the menus
-      echo "<table border=0 width=100% cellspacing='0' cellpadding='0' bgcolor='eeeeff'>\n";
-      echo "<tr>\n<form name='menubar'>\n";
+      echo "<form name='menubar' action='$PHP_SELF'>\n";
+      echo "<table border=0 width='100%' cellspacing='0' cellpadding='0' bgcolor='eeeeff'>\n";
+      echo "<tr>\n";
       echo "<td width='7%'>&nbsp;</td>\n";
       echo "<td width='1%'>$linkmenu</td>\n";
       echo "<td width='1%'>$tablemenu</td>\n";
       echo "<td width='1%'>$systemmenu</td>\n";
       echo "<td width='90%'>&nbsp;</td>\n";
-      echo "</tr>\n</form>\n</table>\n";
+      echo "</tr>\n</table>\n</form>\n";
    }
    
    // No javascript or the user preferes the old style menus:
@@ -361,7 +362,7 @@ function navbar($permissions) {
    
       if ($permissions & $ACTIVE) {
 				
-         echo "<table border=0 width=100% cellspacing='0' cellpadding='0' bgcolor='eeeeff'>\n";
+         echo "<table border=0 width='100%' cellspacing='0' cellpadding='0' bgcolor='eeeeff'>\n";
          $records=$db->Execute("select tablename,custom,id,label from tableoftables where display='Y' and permission='Users' ORDER by sortkey");
          $count=0;
          if ($records) {
@@ -402,7 +403,7 @@ function navbar($permissions) {
       }
       echo "</tr>\n</table>\n\n";
 
-      echo "<table border=0 width=100% cellspacing='0' cellpadding='0'>\n";
+      echo "<table border=0 width='100%' cellspacing='0' cellpadding='0'>\n";
       echo "<tr bgcolor='eeeeff' align='center'>";
       if ($permissions) {
          ?>
@@ -465,7 +466,7 @@ function printheader($title,$head=false, $jsfile=false) {
 <?php 
 echo $head;
 if ($HTTP_SESSION_VARS['javascript_enabled'] && $USER['settings']['menustyle']) {
-   echo "\n<script language='Javascript'>\n<!--\n";
+   echo "\n<script type='text/javascript' language='Javascript'>\n<!--\n";
    if ($jsfile && is_readable($jsfile))
       readfile($jsfile);
    readfile('./includes/js/linkmenu.js');

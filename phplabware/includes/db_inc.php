@@ -1294,7 +1294,7 @@ function first_last_page (&$r,&$current_page,$r_p_p,$numrows) {
 // When $paging is true, the records per page field will also be displayed
 // $num_p_r holds the (global) records per page variable
 function next_previous_buttons($r,$paging=false,$num_p_r=false,$numrows=false,$pagenr=false,$db=false,$tableinfo=false) {
-   echo "<table border=0 width=100%>\n<tr width=100%>\n<td align='left'>";
+   echo "<table border=0 width='100%'>\n<tr width='100%'>\n<td align='left'>";
    if (function_exists($r->AtFirstPage))
       $r->AtFirstPage=$r->AtFirstPage();
    if ($r && !$r->AtFirstPage)

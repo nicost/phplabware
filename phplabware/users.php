@@ -284,8 +284,8 @@ function show_user_form ($type) {
    if ($type == 'create')
       echo "<tr><td>Login Name (max. 20 characters):</td><td><input type='text' name='login' maxlength=20 size=20 value='$login'><sup style='color:red'>&nbsp(required)</sup></td></tr>\n";
    else {
-      echo "<tr><td>Login Name: </td><td>$login</td></tr>\n";
-      echo "<input type='hidden' name='login' value='$login'>\n";
+      echo "<tr><td>Login Name: </td><td>$login\n";
+      echo "<input type='hidden' name='login' value='$login'></td></tr>\n";
    }
    if ($type=='me') {
       echo "<tr><td>Menu display: </td>";
@@ -305,7 +305,7 @@ function show_user_form ($type) {
       while (false !== ($file=$d->read())) {
          if (substr($file,0,10)=='phplabware') {
              if (substr($file,10,1)=='_') {
-                 $entry=substr($file,11,-4)."<br>\n";
+                 $entry=substr($file,11,-4)."\n";
              } else {
                  $entry='default';
              }
