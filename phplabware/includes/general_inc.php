@@ -639,10 +639,18 @@ function check_g_data ($db,&$field_values,$tableinfo,$modify=false) {
    while ($rs && !$rs->EOF) {
       $fieldA=$rs->fields[0];
       if (isset($field_values["$fieldA"]) && (strlen($field_values[$fieldA]) >0)) {
-         if ($rs->fields[1]=='int')
-            $field_values["$fieldA"]=(int)$field_values["$fieldA"];
-         elseif ($rs->fields[1]=='float')
-            $field_values["$fieldA"]=(float)$field_values["$fieldA"];
+         if ($rs->fields[1]=='int') {
+            if ($field_values["$fieldA"]==' ')
+               $field_values["$fieldA"]='';
+            else
+               $field_values["$fieldA"]=(int)$field_values["$fieldA"];
+         }
+         elseif ($rs->fields[1]=='float') {
+            if ($field_values["$fieldA"]==' ')
+               $field_values["$fieldA"]='';
+            else
+               $field_values["$fieldA"]=(float)$field_values["$fieldA"];
+         }
          elseif ($rs->fields[1]=='table') {
              $field_values["$fieldA"]=(int)$field_values["$fieldA"];
          }
