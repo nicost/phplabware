@@ -67,7 +67,9 @@ function plugin_check_data($db,&$field_values,$table_desc,$modify=false)
    }
    // avoid problems with spaces and the like
    $field_values["pmid"]=trim($field_values["pmid"]);
+   $pmid=$field_values["pmid"];
 
+/*
    // no fun without a pmid
    if (!$field_values["pmid"]) {
       if ($modify)
@@ -77,11 +79,8 @@ function plugin_check_data($db,&$field_values,$table_desc,$modify=false)
          return false;
       }
    }
+*/
 
-   // rename file to pmid.pdf
-   if ($HTTP_POST_FILES["file"]["name"][0]) {
-      $HTTP_POST_FILES["file"]["name"][0]=$field_values["pmid"].".pdf";
-   }
    
    // check whether we had this one already
    if (!$modify) {
@@ -95,69 +94,82 @@ function plugin_check_data($db,&$field_values,$table_desc,$modify=false)
    // this will protect quotes in the imported data
    set_magic_quotes_runtime(1);
 
-   // data from pubmed and parse
-   $pmid=$field_values["pmid"];
-   $pubmedinfo=@file("http://www.ncbi.nlm.nih.gov/entrez/utils/pmfetch.fcgi?db=PubMed&id=$pmid&report=abstract&report=abstract&mode=text");
-   if ($pubmedinfo) {
-      // lines appear to be broken randomly, but parts are separated by empty lines
-      // get them into array $line
-      for ($i=0; $i<sizeof($pubmedinfo);$i++) {
-         $line[$lc].=str_replace("\n"," ",$pubmedinfo[$i]);
-         if ($pubmedinfo[$i]=="\n")
-	    $lc++;
+   if ($pmid) {
+      // rename file to pmid.pdf
+      if ($HTTP_POST_FILES["file"]["name"][0]) {
+         $HTTP_POST_FILES["file"]["name"][0]=$field_values["pmid"].".pdf";
       }
-      // parse the first line.  1: journal  date;Vol:fp-lp
-      $jstart=strpos($line[1],": ");
-      $jend=strpos($line[1],". ")-1;
-      $journal=trim(substr($line[1],$jstart+1,$jend-$jstart));
-      $dend=strpos($line[1],";");
-      $date=trim(substr($line[1],$jend+2,$dend-$jend-1));
-      $year=$field_values["pubyear"]=strtok($date," ");
-      $vend=strpos($line[1],":",$dend);
-      // if we can not find this, it might not have vol. first/last page
-      if ($vend) {
-         $volumeinfo=trim(substr($line[1],$dend+1,$vend-$dend-1));
-         $volume=$field_values["volume"]=trim(strtok($volumeinfo,"(")); 
-         $pages=trim(substr($line[1],$vend+1));
-         $fpage=strtok($pages,"-");
-         $lpage1=strtok("-");
-         $lpage=substr_replace($fpage,$lpage1,strlen($fpage)-strlen($lpage1));
+      // get data from pubmed and parse
+      $pubmedinfo=@file("http://www.ncbi.nlm.nih.gov/entrez/utils/pmfetch.fcgi?db=PubMed&id=$pmid&report=abstract&report=abstract&mode=text");
+      if ($pubmedinfo) {
+         // lines appear to be broken randomly, but parts are separated by empty lines
+         // get them into array $line
+         for ($i=0; $i<sizeof($pubmedinfo);$i++) {
+            $line[$lc].=str_replace("\n"," ",$pubmedinfo[$i]);
+            if ($pubmedinfo[$i]=="\n")
+	       $lc++;
+         }
+         // parse the first line.  1: journal  date;Vol:fp-lp
+         $jstart=strpos($line[1],": ");
+         $jend=strpos($line[1],". ")-1;
+         $journal=trim(substr($line[1],$jstart+1,$jend-$jstart));
+         $dend=strpos($line[1],";");
+         $date=trim(substr($line[1],$jend+2,$dend-$jend-1));
+         $year=$field_values["pubyear"]=strtok($date," ");
+         $vend=strpos($line[1],":",$dend);
+         // if we can not find this, it might not have vol. first/last page
+         if ($vend) {
+            $volumeinfo=trim(substr($line[1],$dend+1,$vend-$dend-1));
+            $volume=$field_values["volume"]=trim(strtok($volumeinfo,"(")); 
+            $pages=trim(substr($line[1],$vend+1));
+            $fpage=strtok($pages,"-");
+            $lpage1=strtok("-");
+            $lpage=substr_replace($fpage,$lpage1,strlen($fpage)-strlen($lpage1));
+         }
+         // echo "$jstart,$jend,$journal,$date,$year,$volume,$fpage,$lpage1,$lpage.<br>";
+         $field_values["fpage"]=(int)$fpage;
+         $field_values["lpage"]=(int)$lpage;
+         // there can be a line 2 with 'Comment in:' put in notes and delete
+         // same for line with Erratum in:
+         // ugly shuffle to get everything right again
+         if ((substr($line[2],0,11)=="Comment in:") || (substr($line[2],0,11)=="Erratum in:") ) {
+            $field_values["notes"]=$line[2].$field_values["notes"];
+            $line[2]=$line[3];
+	    $line[3]=$line[4];
+             $line[5]=$line[6];
+         }
+         $field_values["title"]=$line[2];
+         $field_values["author"]=$line[3];
+         // check whether there is an abstract
+         if ((substr($line[5],0,4)!="PMID"))
+            $field_values["abstract"]=$line[5];
+         // check wether the journal is in journaltable, if not, add it
+         $r=$db->Execute("SELECT id FROM $journaltable WHERE typeshort='$journal'");
+         if ($r && $r->fields("id"))
+            $field_values["journal"]=$r->fields("id");
+         else {
+            $tid=$db->GenID("$journaltable"."_id_seq");
+            if ($tid) {
+	       $r=$db->Execute("INSERT INTO $journaltable (id,type,typeshort,sortkey) VALUES ($tid,'$journal','$journal',0)");
+	       if ($r)
+	          $field_values["journal"]=$tid;
+	    }
+         }
       }
-      // echo "$jstart,$jend,$journal,$date,$year,$volume,$fpage,$lpage1,$lpage.<br>";
-      $field_values["fpage"]=(int)$fpage;
-      $field_values["lpage"]=(int)$lpage;
-      // there can be a line 2 with 'Comment in:' put in notes and delete
-      // same for line with Erratum in:
-      // ugly shuffle to get everything right again
-      if ((substr($line[2],0,11)=="Comment in:") || (substr($line[2],0,11)=="Erratum in:") ) {
-         $field_values["notes"]=$line[2].$field_values["notes"];
-	 $line[2]=$line[3];
-	 $line[3]=$line[4];
-	 $line[5]=$line[6];
-      }
-      $field_values["title"]=$line[2];
-      $field_values["author"]=$line[3];
-      // check whether there is an abstract
-      if ((substr($line[5],0,4)!="PMID"))
-         $field_values["abstract"]=$line[5];
-      // check wether the journal is in journaltable, if not, add it
-      $r=$db->Execute("SELECT id FROM $journaltable WHERE typeshort='$journal'");
-      if ($r && $r->fields("id"))
-         $field_values["journal"]=$r->fields("id");
       else {
-         $tid=$db->GenID("$journaltable"."_id_seq");
-	 if ($tid) {
-	    $r=$db->Execute("INSERT INTO $journaltable (id,type,typeshort,sortkey) VALUES ($tid,'$journal','$journal',0)");
-	    if ($r)
-	       $field_values["journal"]=$tid;
-	 }
+         echo "<h3>Failed to import the Pubmed data</h3>\n";
+         set_magic_quotes_runtime(0);
+         return true;
       }
    }
-   else {
-      echo "<h3>Failed to import the Pubmed data</h3>\n";
+
+   // do a final check to see if we can commit these data
+   if (!($field_values['title'] && $field_values['author'])) {
+      echo "<h3>Please enter a Pubmed ID or provide at least the authors and title of this paper</h3>\n";
       set_magic_quotes_runtime(0);
-      return true;
+      return false;
    }
+
    // some stuff goes wrong when this remains on
    set_magic_quotes_runtime(0);
    return true;
@@ -185,7 +197,6 @@ function plugin_show($db,$tableinfo,$id,$USER,$system_settings,$backbutton=true)
       ${$column}=$r->fields[$column];
       $column=strtok(",");
    }
-
    echo "&nbsp;<br>\n";
    echo "<table border=0 align='center'>\n";
    echo "<tr>\n";
@@ -264,7 +275,11 @@ function plugin_show($db,$tableinfo,$id,$USER,$system_settings,$backbutton=true)
       $addget="&".$system_settings["pdfget"];
    echo "cmd=Retrieve&db=PubMed&list_uids=$pmid&dopt=Abstract$addget'>This article at Pubmed</a><br>\n";
    echo "<a href='http://www.ncbi.nlm.nih.gov/entrez/query.fcgi?";
-   echo "cmd=Link&db=PubMed&dbFrom=PubMed&from_uid=$pmid$addget'>Related articles at Pubmed</a></td></tr>\n";
+   echo "cmd=Link&db=PubMed&dbFrom=PubMed&from_uid=$pmid$addget'>Related articles at Pubmed</a><br>\n";
+   if ($supmat) {
+      echo "<a href='{$supmat}'>Supplemental material</a><br>\n";
+   }
+   echo "</td></tr>\n";;
    show_reports($db,$tableinfo,$id);
 
 ?>   
@@ -310,7 +325,7 @@ function plugin_getvalues($db,&$allfields)
 function plugin_display_add($db,$tableid,$nowfield)
 {
    if ($nowfield[name]=="pmid") {
-      echo "<br>Find the Pubmed ID for this article at <a target='_BLANK' href='http://www.ncbi.nlm.nih.gov/entrez/query.fcgi?db=PubMed'>PubMed</a>";
+      echo "<br>Find the Pubmed ID for this article at <a target='_BLANK' href='http://www.ncbi.nlm.nih.gov/entrez/query.fcgi?db=PubMed'>PubMed</a>. Enter the Pubmed ID <b>OR</b> enter title, authors, journal, Year, Volume, First page and Last Page.";
    }
 }
 
