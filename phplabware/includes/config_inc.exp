@@ -14,8 +14,8 @@
 
 
 // Database type. Everything support by adodb is allowed here
-// examples: "mysql" "oracle" "postgres"
-$db_type = "postgres";
+// examples: "mysql" "oracle" "postgres7"
+$db_type = "postgres7";
 
 // Host on which the database server runs
 $db_host = "localhost";
