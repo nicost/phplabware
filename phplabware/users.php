@@ -319,8 +319,6 @@ function show_user_form ($type) {
       }
       $d->close();
       echo "</select>\n</td></tr>\n";
-      
-      
    }
    
    if ($USER['permissions'] & $SUPER) {
