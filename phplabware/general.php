@@ -66,7 +66,7 @@ navbar($USER["permissions"]);
    $fields_table=comma_array_SQL($db,$table_desname,columnname,"WHERE display_table='Y'");
 //
 
-# check wether user may see this table
+// check wether user may see this table
 if (!may_see_table($db,$USER,$tableid)) {
    echo "<h3 align='center'>These data are not for you.  Sorry;(</h3>\n";
    printfooter();
