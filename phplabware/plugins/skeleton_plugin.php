@@ -29,6 +29,12 @@ function plugin_check_data($db,&$fieldvalues,$table_desc,$modify=false)
 {
 }
 
+////
+// !Overrides the standard 'show record'function
+function plugin_show($db,$fields,$id,$USER,$system_settings,$tableid,$real_tablename,$table_desname)
+{
+}
+
 
 ////
 // !Extends the search query
