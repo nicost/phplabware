@@ -275,7 +275,10 @@ function display_record($db,$Allfields,$id,$tableinfo,$backbutton=true)
          // most datatypes are handled in getvalues
          else {
             echo "<th>$nowfield[label]</th>\n";
-            echo "<td colspan=2>$nowfield[text]</td>\n";
+	    if ($nowfield['link'])
+               echo "<td colspan=2>{$nowfield['link']}</td>\n";
+            else       
+               echo "<td colspan=2>$nowfield[text]</td>\n";
          }
          $count++;
       }
