@@ -220,6 +220,7 @@ if ($version) {
       }
 
       // ghostscript
+      $gs=trim($gs);
       if (isset($gs) && @is_readable($gs)) {
          $system_settings["gs"]=$gs;
       }
