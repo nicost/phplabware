@@ -210,32 +210,8 @@ function navbar($permissions) {
    $links_per_row=6;
    
    if ($permissions & $ACTIVE) {
-      // first display the linkbar if activated
-      $r=$db->Execute("select display from tableoftables where tablename ='linkbar'");
-      $linkdis=$r->fields[0];
-      if ($linkdis=="1") {
-         $linkr=$db->Execute("select label,linkurl,target from linkbar where display ='Y' ORDER by sortkey");
-         if ($linkr) {
-            echo "<table bgcolor='#DDDDDD' border=0 width=100%><LINK='ff00000' VLINK='ff00000'>";
-            echo "<tr align='center'>\n";
-            while (!$linkr->EOF) {
-               if (($count%$links_per_row)==0)
-                  echo "</tr><tr bgcolor='ffeeff' align='center'>";
-               $Tlinkname=$linkr->fields[0];
-               $urlname=$linkr->fields[1];
-               if ($linkr->fields[2]=="S")
-                  $targetstr="target='_TOP'";
-               else 
-                  $targetstr="target='_BLANK'";
-               echo "<td style='width: 20%' align='center'><a href=\"$urlname\" $targetstr>$Tlinkname</a></td>";
-               $count++;
-               $linkr->MoveNext(); 
-            }
-            echo"</font></tr></table>";
-         } 
-      }
 				
-      echo "<table border=0 width=100%>\n";
+      echo "<table border=0 width=100% cellspacing='0' cellpadding='0'>\n";
       echo "<tr bgcolor='eeeeff' align='center'>\n";
       $records=$db->Execute("select tablename,Custom from tableoftables where display='Y' and permission='Users' ORDER by sortkey");
       $count=0;
@@ -259,7 +235,7 @@ function navbar($permissions) {
    }
    echo "</tr></table>";
 
-   echo "<table border=0 width=100%>\n";
+   echo "<table border=0 width=100% cellspacing='0' cellpadding='0'>\n";
    echo "<tr bgcolor='eeeeff' align='center'>\n";
    if ($permissions & $ADMIN) {
       ?>      
@@ -288,7 +264,7 @@ function navbar($permissions) {
 ////
 // !Prints initial part of webpage
 function printheader($title,$head=false) {
-   global $version;
+   global $db,$version;
 
    header("Cache-Control: private, no-cache, musti-revalidate");
    header("Expires: Mon, 26 Jul 1997 05:00:00 GMT");
@@ -305,11 +281,36 @@ function printheader($title,$head=false) {
 
 <BODY BGCOLOR="#ffffff">
 <a name="top"></a>
-<table border=0 width=100%>
-   <tr class='header' bgcolor="333388" align=right>
+<table border=0 width=100% rules="none" border="0" cellspacing="0" cellpadding="0">
+   <tr class='header' bgcolor="333388">
+<?php
+   // first display the linkbar if activated
+   $r=$db->Execute("select display from tableoftables where tablename ='linkbar'");
+   if ($r->fields[0]=="1") {
+      $linkr=$db->Execute("select label,linkurl,target from linkbar where display ='Y' ORDER by sortkey");
+      if ($linkr) {
+         while (!$linkr->EOF) {
+         /*   if (($count%$links_per_row)==0)
+                  echo "</tr><tr bgcolor='ffeeff' align='center'>";
+         */
+               $Tlinkname=$linkr->fields[0];
+               $urlname=$linkr->fields[1];
+               if ($linkr->fields[2]=="S")
+                  $targetstr="target='_TOP'";
+               else 
+                  $targetstr="target='_BLANK'";
+               echo "<td style='width: 20%' align='center'><a href=\"$urlname\" $targetstr><font size=+2 color='#ffffff'>$Tlinkname</font></a></td>";
+               $count++;
+               $linkr->MoveNext(); 
+            }
+         } 
+      }
+?>
       <td align=right>
+         <a href="http://phplabware.sourceforge.net">
          <font size=+2 color="#ffffff"><i>PhpLabWare  
              <?php if ($version) echo "version $version"; ?></i></font>
+         </a>
       </td>
    </tr>
 </table>
