@@ -48,60 +48,54 @@ function date_entry($id)// Get the date the entry was made
 	}
 //////////////////////////////////////////////////////////////////////////////	
 ///Displays all information within a table in the headers for easy searching
-function display_tablehead($db,$DBNAME,$DB_DESNAME,$Allfields,$list)  
+function display_tablehead($db,$DBNAME,$real_tablename,$DB_DESNAME,$Allfields,$list)  
 {
 	global $nr_records,$max_menu_length,$USER,$LAYOUT,$db_type;
    // row with search form
    echo "<tr align='center'>\n";
    echo "<input type='hidden' name='searchj' value=''>\n";
 
-	foreach($Allfields as $nowfield) 
-	{   		
-	if ($nowfield[datatype]== "link")
-		{echo "<td style='width: 10%'>link</td>\n";}		
-	if ($nowfield[datatype]== "text")
-		{	
+   foreach($Allfields as $nowfield)  {
+   		
+      if ($nowfield[datatype]== "link")
+		{echo "<td style='width: 10%'>&nbsp;</td>\n";}		
+      if ($nowfield[datatype]== "text") {
 	   // show title we may see, when too many, revert to text box
-		if ($list && ($nr_records < $max_menu_length) ) 
-			{	
+         if ($list && ($nr_records < $max_menu_length) )  {
   	      $r=$db->Execute("SELECT $nowfield[name] FROM $DBNAME WHERE id IN ($list)");
-	        $text=$r->GetMenu("$nowfield[name]","",true,false,0,"style='width: 80%' $jscript");
-	 	   echo "<td style='width: 10%'>$text</td>\n";
-	    	}
-	    else
+              $text=$r->GetMenu("$nowfield[name]","",true,false,0,"style='width: 80%' $jscript");
+              echo "<td style='width: 10%'>$text</td>\n";
+         }
+	 else
 	    	echo  " <td style='width: 10%'><input type='text' name='$nowfield[name]' value='$nowfield[name]' size=8></td>\n";
-		}
-	if ($nowfield[datatype]== "textlong")
-		{echo "<td style='width: 10%'>&nbsp</td>\n";}
-	if ($nowfield[datatype]== "pulldown")
-		{	
- 	   echo "<td style='width: 10%'>";
-  	  if ($USER["permissions"] & $LAYOUT) 
-  	  	{
-   	 	echo "<a href='$PHP_SELF?tablename=$DBNAME&edit_type=$nowfield[ass_t]&<?=SID?>";
-    		echo "'>Edit $nowfield[name]</a><br>\n";
-			}	 		 			
-		$r=$db->Execute("SELECT $nowfield[name] FROM $DBNAME WHERE id IN ($list)");
-		$list2=make_SQL_ids($r,false,"$nowfield[name]");
-		if ($list2) 
-		   {
-		   if ($nowfield[name]=="authors")
-		   	{
-		   	if ($db_type=="mysql") // mysql does not use the ansi SQL || operator
-		   		{$r=$db->Execute("SELECT CONCAT(type, ' ', typeshort),id from $nowfield[ass_t] WHERE id IN ($list2) ORDER by typeshort");}
-		   	else
-		   		{$r=$db->Execute("SELECT type || ' ' || typeshort,id from $nowfield[ass_t] WHERE id IN ($list) ORDER by typeshort");}
-				}
-			else 
-    			{$r=$db->Execute("SELECT typeshort,id from $nowfield[ass_t] WHERE id IN ($list2) ORDER by typeshort");}
+      }
+      if ($nowfield[datatype]== "textlong")
+		{echo "<td style='width: 10%'>&nbsp;</td>\n";}
+      if ($nowfield[datatype]== "pulldown") {
+         echo "<td style='width: 10%'>";
+         if ($USER["permissions"] & $LAYOUT)  {
+            echo "<a href='$PHP_SELF?tablename=$DBNAME&edit_type=$nowfield[ass_t]&<?=SID?>";
+            echo "'>Edit $nowfield[name]</a><br>\n";
+         }	 		 			
+         $r=$db->Execute("SELECT $nowfield[name] FROM $real_tablename WHERE id IN ($list)");
+         $list2=make_SQL_ids($r,false,"$nowfield[name]");
+         if ($list2) { 
+            if ($nowfield[name]=="authors") {
+               if ($db_type=="mysql") // mysql does not use the ansi SQL || operator
+                  $r=$db->Execute("SELECT CONCAT(type, ' ', typeshort),id from $nowfield[ass_t] WHERE id IN ($list2) ORDER by typeshort");
+               else
+                  $r=$db->Execute("SELECT type || ' ' || typeshort,id from $nowfield[ass_t] WHERE id IN ($list) ORDER by typeshort");
+            }
+            else 
+               $r=$db->Execute("SELECT typeshort,id from $nowfield[ass_t] WHERE id IN ($list2) ORDER by typeshort");
     		
-			$text=$r->GetMenu2("$nowfield[name]","",true,false,0,"style='width: 80%' $jscript");   
+            $text=$r->GetMenu2("$nowfield[name]","",true,false,0,"style='width: 80%' $jscript");   
     	    echo "$text</td>\n";
-   		}  
-		}
-	if ($nowfield[datatype] == "file")
-		{echo "<td style='width: 10%'>File Display &nbsp;</td>";}
-	}	
+         }  
+      }
+      if ($nowfield[datatype] == "file")
+         echo "<td style='width: 10%'>&nbsp;</td>";
+   }	 
    echo "<td><input type=\"submit\" name=\"search\" value=\"Search\">&nbsp;";
    echo "<input type=\"submit\" name=\"search\" value=\"Show All\"></td>";
    echo "</tr>\n";
