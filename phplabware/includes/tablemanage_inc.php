@@ -161,6 +161,13 @@ function add_table ($db,$tablename,$tablelabel,$sortkey) {
 		date int)");
       if ($r) {
          $string= "Succesfully Added Table $tablename";
+         $db->Execute("CREATE INDEX $real_tablename"."_id_index ON $real_tablename (id)");
+         $db->Execute("CREATE INDEX $real_tablename"."_title_index ON $real_tablename (title)");
+         $db->Execute("CREATE INDEX $real_tablename"."_title_index ON $real_tablename (title(10))");
+         $db->Execute("CREATE INDEX $real_tablename"."_access_index ON $real_tablename (access)");
+         $db->Execute("CREATE INDEX $real_tablename"."_access_index ON $real_tablename (access(9))");
+         $db->Execute("CREATE INDEX $real_tablename"."_ownerid_index ON $real_tablename (ownerid)");
+         $db->Execute("CREATE INDEX $real_tablename"."_date_index ON $real_tablename (date)");
          // check if shortname has been taken, if so, add id
          $r=$db->Execute("SELECT id FROM tableoftables WHERE shortname='$shortname'");
          if ($r->fields["id"])
