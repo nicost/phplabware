@@ -32,8 +32,9 @@ globalize_vars($post_vars, $HTTP_POST_VARS);
 $host=getenv("HTTP_HOST");
 if (! ($host=="localhost" ||$host=="127.0.0.1") ) {
    printheader("Phplabware setup.  Localhost only");
-   echo "<table align='center' border=0><caption>This script can only be reached from the localhost. </table>\n";
+   echo "<table align='center' border=0><caption><h3>This script can only be reached from the localhost.</h3></caption></table>\n";
    printfooter();
+   exit();
 }
 
 // we want associative arrays from the database
