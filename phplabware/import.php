@@ -363,7 +363,8 @@ if ($HTTP_POST_VARS['assign']=='Import Data') {
                      $query.="$to_fields[$i]='$fields[$i]',";
                   }
                }
-               while ($rseq && !$rseq->EOF) {
+               // for sequences, insert next available number:
+              while ($rseq && !$rseq->EOF) {
                   $rmax=$db->Execute("SELECT max(".$rseq->fields[0].") FROM $table");
                   $vmax=$rmax->fields[0]+1;
                   $query.=$rseq->fields[0]."='$vmax',";
@@ -378,7 +379,7 @@ if ($HTTP_POST_VARS['assign']=='Import Data') {
                   $query.=" lastmoddate='$lastmoddate', lastmodby='$lastmodby' WHERE $to_fields[$pkey]='$fields[$pkey]'";
                   if ($r=$db->Execute($query)) {
                       $modified++;
-                      for ($i=0; $nrfields;$i++) {
+                      for ($i=0; $i<$nrfields;$i++) {
                          if ($to_datatypes[$i]=='file') {
                             $fileids=explode(',',$fields[$i]);
                             foreach ($fileids as $fileid)
@@ -390,7 +391,7 @@ if ($HTTP_POST_VARS['assign']=='Import Data') {
             }
 
             // if there is no primary key set, we simply INSERT a new record
-            //if ( !(isset($pkey) || isset($recordid)) ) {
+            //if ( !(isset($pkey) || isset($recordid)) ) 
 	    elseif ($pkeypolicy!='onlyupdate') {
 $db->debug=true;
                $query_start="INSERT INTO $table (";
