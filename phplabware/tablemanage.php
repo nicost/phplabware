@@ -12,7 +12,7 @@ globalize_vars($post_vars, $HTTP_POST_VARS);
 $permissions=$USER["permissions"];
 printheader($httptitle);
 
-if (!($permissions & $ADMIN))
+if (!($permissions & $SUPER))
 	{
 	navbar($USER["permissions"]);
 	echo "<h3 align='center'><b>Sorry, this page is not for you</B></h3>";
@@ -31,7 +31,8 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
 	 $newdis=$HTTP_POST_VARS["newlink_display"];
 	 $newtarget=$HTTP_POST_VARS["newlink_target"];
 	 $newsort=$HTTP_POST_VARS["newlink_sortkey"];
-     $r=$db->Execute("Insert into linkbar(label,linkurl,sortkey,display,target) values('$newlabel','$newurl','$newsort','$newdis','$newtarget')");
+	 $linkbarid=$db->GenID("linkbar_id_seq");
+     $r=$db->Execute("Insert into linkbar(id,label,linkurl,sortkey,display,target) values('$linkbarid','$newlabel','$newurl','$newsort','$newdis','$newtarget')");
      }
      if (substr($key, 0, 7) == "modlink") {
      $modarray = explode("_", $key);
