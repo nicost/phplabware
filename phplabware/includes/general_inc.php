@@ -680,7 +680,8 @@ function add_table ($db,$tablename,$sortkey)
   	   if ($r)
   	   	{
   	   	$string= "Succesfully Added Table $tablename";
-  	       $r=$db->Execute("INSERT INTO tableoftables (sortkey,tablename,shortname,Display,Permission) Values('$sortkey','$tablename','$shortname','Y','Users')");
+               $id=$db->GenID("tableoftables"."_id_seq",10);
+  	       $r=$db->Execute("INSERT INTO tableoftables (id,sortkey,tablename,shortname,Display,Permission) Values($id,'$sortkey','$tablename','$shortname','Y','Users')");
  			$r=$db->Execute("CREATE TABLE $desc (id int UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,sortkey int,label text, display_table char(1), display_record char(1), required char(1), type text, datatype text, associated_table text, associated_sql text)");   
 
   		   $fieldstring="label, sortkey, display_table, display_record, required, type, datatype, associated_table, associated_sql"; 
