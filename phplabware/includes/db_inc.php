@@ -1003,6 +1003,7 @@ function datetoSQL ($searchterm,$column,$and) {
 }
 
 
+/*
 ////
 // !Helper function for search
 // Interprets fields the right way
@@ -1175,6 +1176,175 @@ function search ($db,$tableinfo,$fields,&$fieldvalues,$whereclause=false,$wcappe
       $query[0]=plugin_search($query[0],$columnvalues,$query[1]);
    return $query[0];
 }
+*/
+
+////
+// !Helper function for search
+// Interprets fields the right way
+function searchhelp ($db,$tableinfo,$column,&$columnvalues,$query,$wcappend,$and) {
+   if ($column=='ownerid') {
+      $query[5]=true;
+      $query[2].= "$and ownerid={$columnvalues[$column]} ";
+   }
+   else {
+      $query[5]=true;
+      // since all tables now have desc. tables,we can check for int/floats
+      // should probably do this more upstream for performance gain
+      $rc=$db->Execute("SELECT type,datatype,associated_table,key_table,associated_column,associated_local_key FROM ".$tableinfo->desname." WHERE columnname='$column'");
+      if ($rc->fields[1]=='file' && $rc->fields[2]) {
+         $rw=$db->Execute("SELECT id FROM words WHERE word LIKE '".strtolower($columnvalues[$column])."%'");
+         if ($rw && $rw->fields[0]) {
+            $query[1].="LEFT JOIN {$rc->fields[2]} ON {$tableinfo->realname}.id={$rc->fields[2]}.recordid ";
+            $query[2].="{$rc->fields[2]}.wordid='{$rw->fields[0]}' ";
+         }
+	 else $query[2].="$and id=0 ";
+      }
+      elseif ($rc->fields[1]=='table') {
+         $rtableoftables=$db->Execute("SELECT real_tablename,table_desc_name,id FROM tableoftables WHERE id={$rc->fields['associated_table']}");
+         $rtdesc=$db->Execute("SELECT columnname,datatype,type FROM {$rtableoftables->fields[1]} WHERE id='{$rc->fields['associated_column']}'");
+         $tablecolumnvalues[$rtdesc->fields[0]]=$columnvalues[$column];
+         $asstableinfo=new tableinfo($db,false,$rtableoftables->fields[2]);
+         $table_where=searchhelp($db,$asstableinfo,$rtdesc->fields[0],&$tablecolumnvalues,false,$wcappend,false);
+         $rtable=$db->Execute("SELECT id FROM {$rtableoftables->fields[0]} WHERE {$table_where[0]}");
+         if ($rtable && $rtable->fields[0]) {
+             while (!$rtable->EOF) {
+                $rhtemp[]=$rtable->fields[0];
+                $rtable->MoveNext();
+             }
+             $ids=join (',',$rhtemp);
+             if ($rc->fields['associated_local_key']) {
+                $rasslk=$db->Execute("SELECT columnname FROM {$tableinfo->desname} WHERE id={$rc->fields['associated_local_key']}");
+                $query[2].="$and {$rasslk->fields[0]} IN ($ids) ";
+             }
+             else
+                $query[2].="$and $column IN ($ids) ";
+         }
+         // no search results so give an impossible clause
+         else
+            $query[2].="$and $column='-1' ";
+      }
+      // there are some (old) cases where pulldowns are of type text...
+      elseif ($rc->fields[1]=='pulldown') {
+         $columnvalues[$column]=(int)$columnvalues[$column];
+         if ($columnvalues["$column"]==-1)
+            $query[2].="$and ($column='' OR $column IS NULL) ";
+         else
+            $query[2].="$and $column='$columnvalues[$column]' ";
+      }
+      elseif ($rc->fields[1]=='mpulldown') {
+         // emulate a logical AND between values selected in a mpulldown
+         unset ($id_list);
+         // keep the code to deal with single selects and multiple selects
+         if (is_array($columnvalues)) {
+            unset($id_list);
+            $j=0;
+            // read in values from types tables and arrange in groups
+            foreach($columnvalues[$column] as $typeid) {
+               $rl=$db->Execute("SELECT recordid FROM {$rc->fields[3]} WHERE typeid=$typeid");
+               while ($rl && !$rl->EOF) {
+                  $id_list[$j].=$rl->fields[0].',';
+                  $rl->MoveNext();
+               }
+               $id_list[$j]=substr($id_list[$j],0,-1);
+               // if nothing is found we'll pass an impossible id value
+               if (strlen($id_list[$j]) <1)
+                  $id_list[$j]='-1';
+               $j++;
+            }
+         }
+         else {  // for 'single' selects
+            $rmp=$db->Execute("SELECT recordid FROM {$rc->fields[3]} WHERE typeid='{$columnvalues[$column]}'");
+            if ($rmp) {
+               $id_list=$rmp->fields[0];
+               $rmp->MoveNext();
+               while (!$rmp->EOF) {
+                  $id_list.=",{$rmp->fields[0]}";
+                  $rmp->MoveNext();
+               }
+            }
+         }
+         // pass the multiple lists to the main query
+         if (is_array($id_list)) {
+            foreach ($id_list as $list) {
+               if (!$listfound) {
+                  $query[2].="$and id IN ($list) ";
+                  $listfound=true;
+               }
+               else
+                  $query[2].="AND id IN ($list) ";
+            }
+            // we should not be able to get here:
+            if (!$listfound)
+               $query[2].="$and id IN (-1) ";
+         }
+         elseif ($id_list) // for 'single' selects
+            $query[2].="$and id IN ($id_list) ";
+         else // nothing found, make sure we do not crash the search statement
+            $query[2].="$and id IN (-1) ";
+            
+      }
+      elseif ($rc->fields[1]=='date') {
+         $query[2].= datetoSQL($columnvalues[$column],$column,$and);
+      }
+      elseif (substr($rc->fields[0],0,3)=='int') {
+         $query[2].=numerictoSQL ($columnvalues[$column],$column,'int',$and); 
+      }
+      elseif (substr($rc->fields[0],0,5)=='float') {
+         $query[2].=numerictoSQL ($columnvalues[$column],$column,'float',$and); 
+      }
+      else {
+         $columnvalues[$column]=trim($columnvalues[$column]);
+         $columnvalue=$columnvalues[$column];
+         $columnvalue=str_replace('*','%',$columnvalue);
+         if ($wcappend)
+            $columnvalue="%$columnvalue%";
+         //else
+         //   $columnvalue="% $columnvalue %";
+         $query[2].="$and UPPER($column) LIKE UPPER('$columnvalue') ";
+      }
+   }
+   return $query;
+}
+
+////
+// !Returns an SQL search statement
+// The whereclause should NOT start with WHERE
+// The whereclause should contain the output of may_read_SQL and
+// can also be used for sorting
+function search ($db,$tableinfo,$fields,&$fieldvalues,$whereclause=false,$wcappend=true) {
+//echo "where: $whereclause.<br>";
+   $columnvalues=$fieldvalues;
+   // SELECT part
+   $query[0]="SELECT DISTINCT $fields "; //FROM ".$tableinfo->realname." WHERE ";
+   // FROM part
+   $query[1]='FROM '.$tableinfo->realname.' ';
+   // WHERE part
+   $query[2]='WHERE ';
+   // flag telling whether WHERE field already contains a statement
+   $query[5]=false;
+   $column=strtok($fields,',');
+   while ($column && !$columnvalues[$column])
+      $column=strtok (',');
+   if ($column && $columnvalues[$column]) {
+      $query[5]=true;
+      $query=searchhelp ($db,$tableinfo,$column,$columnvalues,$query,$wcappend,false);
+   }
+   $column=strtok (',');
+   while ($column) { 
+      if ($column && $columnvalues[$column]) {
+         $query=searchhelp ($db,$tableinfo,$column,$columnvalues,$query,$wcappend,"AND");
+      }
+      $column=strtok (',');
+   }
+   if ($whereclause)
+      if ($query[5])
+         $query[2] .= "AND $whereclause";
+      else
+         $query[2] .= $whereclause;
+   if (function_exists('plugin_search'))
+      $query[0]=plugin_search($query[0],$columnvalues,$query[1]);
+   return $query[0].$query[1].$query[2];
+}
 
 
 ////
@@ -1323,9 +1493,10 @@ function current_page($curr_page, $sname, $num_p_r, $numrows) {
 
 ////
 // !Assembles the search SQL statement and remembers it in HTTP_SESSION_VARS
-function make_search_SQL($db,$tableinfo,$fields,$USER,$search,$searchsort="title",$whereclause=false) {
+function make_search_SQL($db,$tableinfo,$fields,$USER,$search,$searchsort='title',$whereclause=false) {
    global $HTTP_POST_VARS, $HTTP_SESSION_VARS;
 
+   // apparently searchsort can be passed as an empty string.  that is bad
    if (!$searchsort)
       $searchsort='title';
    $fieldvarsname=$tableinfo->short.'_fieldvars';
