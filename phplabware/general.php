@@ -354,7 +354,7 @@ else {
       }
       if ($nowfield[datatype]== "link")
          echo "<td style='width: 10%'>&nbsp;</td>\n";
-      elseif ($nowfield[datatype]== "text") {
+      elseif ($nowfield[datatype]=="text" || $nowfield["datatype"]=="int" || $nowfield["datatype"]=="float") {
          // show titles we may see, when too many, revert to text box
          if ($list && ($count < $max_menu_length) )  {
   	     $rlist=$db->CacheExecute(2,"SELECT $nowfield[name] FROM $real_tablename WHERE $list");

@@ -309,8 +309,14 @@ $db->debug=true;
       }
 
       else {
-         $r=$db->Execute("INSERT INTO $desc ($fieldstring) Values($fieldid,'$colname','$label','$sort','$Tdis','$Rdis','$req','$modifiable','text','$datatype','','')");
-         $rsss=$db->Execute("ALTER table $real_tablename add column $colname text");
+         if ($datatype=="int")
+            $sqltype="int";
+         elseif ($datatype=="float")
+            $sqltype="float";
+         else
+             $sqltype="text";
+         $r=$db->Execute("INSERT INTO $desc ($fieldstring) Values($fieldid,'$colname','$label','$sort','$Tdis','$Rdis','$req','$modifiable','$sqltype','$datatype','','')");
+         $rsss=$db->Execute("ALTER table $real_tablename add column $colname $sqltype");
  	 if (($r)&&$rsss&&(!($colname==""))) {
             $string="Added column <i>$colname</i> into table: <i>$tablename2</i>";
             return $fieldid;

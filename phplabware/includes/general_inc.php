@@ -304,12 +304,16 @@ function display_add($db,$tableid,$real_tablename,$tabledesc,$Allfields,$id,$nam
             echo "<input type='hidden' name='$nowfield[name]' value='$nowfield[values]'>\n";
             echo "<td>$nowfield[text]</td></tr>\n";
          }
-         elseif ($nowfield[datatype]=="text") {
+         elseif ($nowfield[datatype]=="text" || $nowfield[datatype]=="int" || $nowfield[datatype]=="float") {
             echo "<tr><th>$nowfield[label]:"; 
             if ($nowfield[required]=="Y") {
                echo "<sup style='color:red'>&nbsp;*</sup>";
             }
             echo "</th>\n";
+            if ($nowfiel[datatype]=="text")
+               $size=60;
+            else
+               $size=10;
      	    echo "<td><input type='text' name='$nowfield[name]' value='$nowfield[values]' size=60> </td>\n</tr>";
          }
          elseif ($nowfield[datatype]=="textlong") {
@@ -523,33 +527,24 @@ return $out;
 // returns false if something can not be fixed     
 function check_g_data ($db,&$field_values, $DB_DESNAME) {
 
-   $allreq=array();
-   $rs = $db->Execute("select columnname from $DB_DESNAME where required ='Y' and (datatype != 'file')");
+   $rs = $db->Execute("select columnname,datatype from $DB_DESNAME where required ='Y' and (datatype != 'file')");
    while (!$rs->EOF) {
       $fieldA=$rs->fields[0];
-      array_push($allreq, $fieldA);
-      $rs->MoveNext();
-   }
-   foreach ($allreq as $checkme) {
-      if (!$field_values["$checkme"]) {
+      if (!$field_values["$fieldA"]) {
          echo "<h3 color='red'>Please enter all starred fields.</center></h3>";
 	 return false;
       }
+      $rs->MoveNext();
    }
-   // When a new author was entered
-   $firstname=$field_values["firstname"];$lastname=$field_values["lastname"];
-   if ($firstname || $lastname) {
-      // check if this entry exists already
-      $authortable=get_cell($db,$DB_DESNAME,associated_table,label,authors);
-      $r=$db->Execute("SELECT id FROM $authortable WHERE type='$firstname' AND typeshort='$lastname'");
-      if ($r && !$r->EOF) {
-         $field_values["authors"]=$r->fields["id"];
-	 return true;
-      }
-      $id=$db->GenID("pr_type2_id_seq");
-      $db->Execute("INSERT INTO $authortable (id,type,typeshort) VALUES ('$id','".
-           $field_values["firstname"]."','".$field_values["lastname"]."')");
-      $field_values["authors"]=$id;
+   // make sures ints and floats are correct
+   $rs = $db->Execute("select columnname,datatype from $DB_DESNAME where datatype IN ('int','float')");
+   while ($rs && !$rs->EOF) {
+      $fieldA=$rs->fields[0];
+      if ($rs->fields[1]=="int")
+         $field_values["$fieldA"]=(int)$field_values["$fieldA"];
+      elseif ($rs->fields[1]=="float")
+         $field_values["$fieldA"]=(float)$field_values["$fieldA"];
+      $rs->MoveNext();
    }
    return true;
 }
