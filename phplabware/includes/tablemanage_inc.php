@@ -264,11 +264,12 @@ function add_columnecg($db,$tablename2,$colname2,$label,$datatype,$Rdis,$Tdis,$r
       if ($r->fields["id"])
          $filecolumnfound=true;
    }
+   $colname=strtolower($colname);
    if ($colname=="")
       $string="Please enter a columnname";
    elseif ($label=="")
       $string="Please enter a Label";
-   elseif (strpos($SQL_reserved,strtolower($colname))) 
+   elseif (strpos($SQL_reserved,$colname)) 
       $string="Column name <i>$colname</i> is a reserved SQL word.  Please pick another column name";
    elseif ($filecolumnfound)
       $string="Only one column can be of Datatype <i>file</i>.";
@@ -300,7 +301,6 @@ function add_columnecg($db,$tablename2,$colname2,$label,$datatype,$Rdis,$Tdis,$r
 	    $string="Problems creating this column.";
       }
       else {
-$db->debug=true;
          $r=$db->Execute("INSERT INTO $desc ($fieldstring) Values($fieldid,'$colname','$label','$sort','$Tdis','$Rdis','$req','text','$datatype','','')");
          $rsss=$db->Execute("ALTER table $real_tablename add column $colname text");
  	 if (($r)&&$rsss&&(!($colname==""))) 
