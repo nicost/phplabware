@@ -28,7 +28,7 @@ globalize_vars($post_vars, $HTTP_POST_VARS);
 
 // this needs to be done before headers are sent in printheader
 while((list($key, $val) = each($HTTP_POST_VARS))) {
-   if (substr($key, 0, 9) == "expreport") { 
+   if (substr($key, 0, 9) == 'expreport') { 
       $modarray = explode("_", $key);
       export_report($db,$modarray[1]);
       exit;
@@ -36,13 +36,13 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
 }
 reset($HTTP_POST_VARS);
 
-$permissions=$USER["permissions"];
-if ($addcol_datatype=="table") 
+$permissions=$USER['permissions'];
+if ($addcol_datatype=='table') 
    $jsfile="includes/js/tablemanage.js";
 printheader($httptitle,false,$jsfile);
 
 if (!($permissions & $SUPER)) {
-	navbar($USER["permissions"]);
+	navbar($USER['permissions']);
 	echo "<h3 align='center'><b>Sorry, this page is not for you</B></h3>";
 	printfooter($db,$USER);
 	exit;
@@ -53,16 +53,16 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
       add_table($db,$newtable_name,$newtable_label,$newtable_sortkey,$newtable_plugincode);
       break;
    }
-   elseif (substr($key, 0, 8) == "modtable") {
+   elseif (substr($key, 0, 8) == 'modtable') {
       $modarray = explode("_", $key);
-      $id=$HTTP_POST_VARS["table_id"][$modarray[1]];
+      $id=$HTTP_POST_VARS['table_id'][$modarray[1]];
       mod_table($db,$id,$modarray[1]);
       break;
    }
-   elseif (substr($key, 0, 8) == "deltable") {  
+   elseif (substr($key, 0, 8) == 'deltable') {  
       $modarray = explode("_", $key);      
-      $id=$HTTP_POST_VARS["table_id"][$modarray[1]]; 
-      $tablename=$HTTP_POST_VARS["table_name"][$modarray[1]];      
+      $id=$HTTP_POST_VARS['table_id'][$modarray[1]]; 
+      $tablename=$HTTP_POST_VARS['table_name'][$modarray[1]];      
       del_table($db,$tablename,$id,$USER);   
       break;
    }
@@ -200,21 +200,21 @@ if ($editfield)	{
    $rownr=0;
    // print all entries
    while (!($r->EOF) && $r) {
-      $label = $r->fields["label"];
-      $columnname = $r->fields["columnname"];
+      $label = $r->fields['label'];
+      $columnname = $r->fields['columnname'];
       $id = $r->fields["id"];
-      $display_table = $r->fields["display_table"];
-      $display_record = $r->fields["display_record"];
-      $display_required= $r->fields["required"];
-      $datatype = $r->fields["datatype"];
-      $thumbsize=$r->fields["thumb_x_size"];
-      $modifiable = $r->fields["modifiable"];
-      $link_first = $r->fields["link_first"];
-      $sort = $r->fields["sortkey"];
+      $display_table = $r->fields['display_table'];
+      $display_record = $r->fields['display_record'];
+      $display_required= $r->fields['required'];
+      $datatype = $r->fields['datatype'];
+      $thumbsize=$r->fields['thumb_x_size'];
+      $modifiable = $r->fields['modifiable'];
+      $link_first = $r->fields['link_first'];
+      $sort = $r->fields['sortkey'];
       unset ($ass_table);
       unset($ass_column);
-      if ($r->fields["associated_table"]) {
-         $ass_table=get_cell($db,"tableoftables","tablename","id",$r->fields["associated_table"]);
+      if ($r->fields['associated_table']) {
+         $ass_table=get_cell($db,'tableoftables','tablename','id',$r->fields['associated_table']);
          $ass_desc_table=get_cell($db,"tableoftables","table_desc_name","id",$r->fields["associated_table"]);
          $ass_column=get_cell($db,$ass_desc_table,"label","id",$r->fields["associated_column"]);
       }

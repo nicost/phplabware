@@ -46,7 +46,7 @@ class tableinfo {
 }
 
 
-if (!function_exists("array_key_exists")) {
+if (!function_exists('array_key_exists')) {
    function array_key_exists($find,$array){
       while ((list($key,$value)=each($array)) && !$test) {
          if ($key==$find)

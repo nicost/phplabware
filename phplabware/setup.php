@@ -22,7 +22,7 @@ if (!file_exists("includes/config_inc.php")) {
    exit();
 }
 include ('includes/config_inc.php');
-include ("includes/defines_inc.php");
+include ('includes/defines_inc.php');
 include ('adodb/adodb.inc.php');
 $adodb_version=(float)substr($ADODB_vers,1);
 $adodb_version_required=3.50;
@@ -36,8 +36,8 @@ globalize_vars($post_vars, $HTTP_POST_VARS);
 
 if ($set_local) {
    // only allow connections from localhost
-   $host=getenv("HTTP_HOST");
-   if (! ($host=="localhost" ||$host=="127.0.0.1") ) {
+   $host=getenv('HTTP_HOST');
+   if (! ($host=='localhost' ||$host=='127.0.0.1') ) {
       printheader("Phplabware setup.  Localhost only");
       echo "<table align='center' border=0><caption><h3>This script can only be reached from the localhost.</h3></caption></table>\n";
       printfooter();
