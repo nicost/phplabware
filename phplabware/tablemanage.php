@@ -2,6 +2,7 @@
 require("include.php");
 require("includes/db_inc.php");
 require("includes/general_inc.php");
+require("includes/tablemanage_inc.php");
 include ('includes/defines_inc.php');
 
 $editfield=$HTTP_GET_VARS["editfield"];
@@ -65,7 +66,7 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
       $modarray = explode("_", $key);      
       $id=$HTTP_POST_VARS["table_id"][$modarray[1]]; 
       $tablename=$HTTP_POST_VARS["table_name"][$modarray[1]];      
-  	del_table($db,$tablename,$id);   
+  	del_table($db,$tablename,$id,$USER);   
       }
    if (substr($key, 0, 9) == "addcolumn") {  
    	$tablename=$HTTP_POST_VARS["table_name"];
@@ -138,7 +139,7 @@ if ($editfield)
 	echo "</select>";
 	echo "<td align='center'><input type='submit' name='addcolumn' value='Add'></td></tr>\n";
 
-	$query = "SELECT id,sortkey,label,display_table,display_record,required,datatype FROM $currdesc order by sortkey";
+	$query = "SELECT id,sortkey,label,display_table,display_record,required,datatype FROM $currdesc order by sortkey,label";
 	$r=$db->Execute($query);
 	$rownr=0;
 	// print all entries
@@ -187,7 +188,7 @@ if ($editfield)
       	echo "<input type='hidden' name='column_datatype[]' value='$label'>\n";echo "<td>$datatype</td>\n";
 	  	$modstring = "<input type='submit' name='modcolumn"."_$rownr' value='Modify'>";
    	   $delstring = "<input type='submit' name='delcolumn"."_$rownr' value='Remove' ";
-   	   $delstring .= "Onclick=\"if(confirm('Are you sure that the column $label should be removed?')){return true;}return false;\">";  
+   	   $delstring .= "Onclick=\"if(confirm('Are you absolutely sure that the column $label should be removed? (No undo possible!)')){return true;}return false;\">";  
    	   echo "<td align='center'>$modstring";
    	   $candel=1;
    	   foreach($nodel as $checkme){if ($label==$checkme){$candel=0;}}
@@ -269,7 +270,7 @@ while (!($r->EOF) && $r) {
       echo "<td>Pre-Built</td>\n";
    $modstring = "<input type='submit' name='modtable"."_$rownr' value='Modify'>";
    $delstring = "<input type='submit' name='deltable"."_$rownr' value='Remove' ";
-   $delstring .= "Onclick=\"if(confirm('Are you sure that the table $name should be removed?')){return true;}return false;\">";  
+   $delstring .= "Onclick=\"if(confirm('Are you absolutely sure the table $name should be removed? (No Undo possible!)')){return true;}return false;\">";  
    if ($Custom=="") {
       echo "<td align='center'>$modstring $delstring</td>\n";
       echo "<td><a href='$PHP_SELF?editfield=$name&'>Edit Fields</td></a>";
