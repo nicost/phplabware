@@ -351,10 +351,11 @@ if ($HTTP_POST_VARS["dataupload"]=="Continue") {
 
          echo "<tr><th>Skip first line?</th>\n";
          echo "<td><input type='radio' name='skipfirstline' value='yes'> Yes</input></td>\n";
-         echo "<td><input type='radio' name='skipfirstline' value='no' checked> no</input></td></tr></table>\n";
+         echo "<td><input type='radio' name='skipfirstline' value='no' checked> no</input></td></tr>\n";
 
-         echo "<br><br>\n<table align='center>\n";
-         echo "<tr><td align='center'><input type='submit' name='assign' value='Import Data'></td></tr>\n";
+        // echo "<br><br>\n<table align='center>\n";
+	 
+         echo "<tr><td colspan=5 align='center'><input type='submit' name='assign' value='Import Data'></input></td></tr>\n";
          echo "</table>\n</form>";
 
       }
