@@ -101,7 +101,7 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
    if (substr($key, 0, 3) == "chg") {
       $chgarray = explode("_", $key);
       if ($val=="Change") {
-         $Fieldscomma=comma_array_SQL_where($db,$table_desname,"columnname","display_table","Y");
+         $Fieldscomma=comma_array_SQL_where($db,$tableinfo->desname,"columnname","display_table","Y");
          $Fieldsarray=explode(",",$Fieldscomma);
          reset($HTTP_POST_VARS);
          while((list($key, $val) = each($HTTP_POST_VARS))) {	
