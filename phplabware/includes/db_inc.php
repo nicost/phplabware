@@ -672,7 +672,7 @@ function searchhelp ($db,$table,$column,$columnvalues,$query,$wcappend,$and) {
       // cheap way to map whether we are dealing with an int column
       // this will fail when users tries to find numbers in a text field
       $test=(int)$columnvalues[$column];
-      if ($test) 
+      if ($test && ($test==$columnvalues[$column])) 
          $query[0].="$and $column='$columnvalues[$column]' ";
       else {
          $columnvalues[$column]=trim($columnvalues[$column]);
