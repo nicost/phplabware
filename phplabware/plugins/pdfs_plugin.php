@@ -118,9 +118,9 @@ function plugin_check_data($db,&$field_values,$table_desc,$modify=false)
          $lpage1=strtok("-");
          $lpage=substr_replace($fpage,$lpage1,strlen($fpage)-strlen($lpage1));
       }
-      //echo "$jstart,$jend,$journal,$date,$year,$volume,$fpage,$lpage1,$lpage.<br>";
-      $field_values["fpage"]=$fpage;
-      $field_values["lpage"]=$lpage;
+      // echo "$jstart,$jend,$journal,$date,$year,$volume,$fpage,$lpage1,$lpage.<br>";
+      $field_values["fpage"]=(int)$fpage;
+      $field_values["lpage"]=(int)$lpage;
       // there can be a line 2 with 'Comment in:' put in notes and delete
       // ugly shuffle to get everything right again
       if (substr($line[2],0,11)=="Comment in:") {
