@@ -392,9 +392,11 @@ function navbar($permissions) {
 
       echo "<table border=0 width=100% cellspacing='0' cellpadding='0'>\n";
       echo "<tr bgcolor='eeeeff' align='center'>";
+      if ($permissions) {
          ?>
       <td align='center'><a href="users.php?type=me&<?=SID?>">settings</a></td>
-<?php
+<?php 
+      }
       if ($permissions & $ADMIN) {
          ?>      
       <td align='center'><a href="users.php?<?=SID?>">users</a></td>
