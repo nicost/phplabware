@@ -168,7 +168,7 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
          }
          if(check_g_data ($db,$change_values,$tableinfo,true)) {
             $modfields=comma_array_SQL_where($db,$tableinfo->desname,"columnname","modifiable","Y");
-            modify($db,$tableinfo->realname,$modifields,$change_values,$chgarray[1],$USER,$tableinfo->id); 
+            modify($db,$tableinfo->realname,$modfields,$change_values,$chgarray[1],$USER,$tableinfo->id); 
          }
          break;
       }
