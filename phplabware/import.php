@@ -67,6 +67,8 @@ function mymktime($datestring) {
       $month=strtok(' ');
       $year=strtok(' ');
    }
+echo "$month,$day,$year.<br>";
+print_r($system_settings);
    return mktime(0,0,0,$month,$day,$year);
 }
 
@@ -161,6 +163,9 @@ function check_input ($tableinfo, &$fields, $to_fields, $field_types, $field_dat
             $fields[$i]=substr($fields[$i],1,-1);
          if ($field_datatypes[$i]=='pulldown') {
             // see if we have this value already, otherwise make a new entry in the type table....
+             // &nbsp; is used as a place holder in output of phplabware.  Unset the value if found
+             if ($fields[$i]=="&nbsp;")
+                unset ($fields[$i]);
              $Allfields=getvalues($db,$tableinfo,$to_fields[$i]);
              $rtemp=$db->Execute("SELECT id FROM {$Allfields[0]['ass_t']} WHERE typeshort='{$fields[$i]}'");
              if ($rtemp && $rtemp->fields[0]) {
@@ -224,11 +229,6 @@ if ($HTTP_POST_VARS['assign']=='Import Data') {
    ini_set('max_execution_time','0');
    // get description table name
    $tableinfo=new tableinfo($db,false,$tableid);
-   //$r=$db->Execute("SELECT table_desc_name,real_tablename,tablename,custom FROM tableoftables WHERE id='$tableid'");
-   //$desc=$r->fields[0];
-   //$table=$r->fields[1];
-   //$table_label=$r->fields[2];
-   //$table_custom=$r->fields[3];
    $desc=$tableinfo->desname;
    $table=$tableinfo->realname;
    $table_label=$tableinfo->name;
@@ -241,7 +241,7 @@ if ($HTTP_POST_VARS['assign']=='Import Data') {
       $table_link="$table_custom?".SID;
    else
       $table_link="general.php?tablename=$table_label"."&".SID;
-$db->debug=true;
+
    // fill the tmp table with file related data
    if ($localfile) {
        $dumpdir='phplabwaredump';
