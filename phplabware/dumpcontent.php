@@ -147,8 +147,9 @@ while ($r->fields['id'] && !$r->EOF) {
                fwrite ($ff,++$filenr."\t".$files[$i]['name']."\t".$files[$i]['mime']."\t".$files[$i]['size']."\t".$files[$i]['type']."\n");
                fwrite ($fp,$filenr.',');
                $path=file_path($db,$files[$i]['id']);
-               $cpstr="cp $path {$filedir}{$filenr}_{$files[$i]['name']}";
-              `$cpstr`;
+              // $cpstr="cp $path {$filedir}{$filenr}_{$files[$i]['name']}";
+              //`$cpstr`;
+              copy ($path,"{$filedir}{$filenr}_{$files[$i]['name']}");
             }
             fwrite ($fp,$post_seperator);
          }
