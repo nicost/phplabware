@@ -6,7 +6,6 @@ unset ($rb);
 $rb=$db->Execute("SELECT real_tablename FROM tableoftables");
 while (!($rb->EOF)) {
    if($rb->fields['real_tablename']) {
-echo "{$rb->fields['real_tablename']}...<br>";
       unset ($rc);
       $rc=$db->Execute("SELECT id,access FROM {$rb->fields['real_tablename']}");
       while ($rc && !$rc->EOF) {
