@@ -321,15 +321,17 @@ function may_read_SQL_subselect ($db,$table,$USER,$clause=false) {
 // !returns an comma-separated list of quoted values from a SQL search
 // helper function for may_read_SQL
 function make_SQL_ids ($r,$ids,$field="id") {
-   $id=$r->fields[$field];
-   if (!$id)
+   if (!r || $r->EOF)
       return false;
+   $id=$r->fields[$field];
    $ids .="'$id'";
    $r->MoveNext();
+   $column_count=1;
    while (!$r->EOF) {
       $id=$r->fields[$field];
       $ids .=",'$id'";
       $r->MoveNext();
+      $column_count+=1;
    }
    return ($ids);
 }
@@ -432,17 +434,37 @@ function may_write ($db,$table,$id,$USER) {
 }
 
 ////
+// !returns an comma-separated list of quoted values from a SQL search
+// derived from make_SQL_ids but can be called from anywhere 
+function make_SQL_csf ($r,$ids,$field="id",&$column_count) {
+   if (!r || $r->EOF)
+      return false;
+   $id=$r->fields[$field];
+   $ids .="'$id'";
+   $r->MoveNext();
+   $column_count=1;
+   while (!$r->EOF) {
+      $id=$r->fields[$field];
+      $ids .=",'$id'";
+      $r->MoveNext();
+      $column_count+=1;
+   }
+   return ($ids);
+}
+
+////
 // !Helper function for search
 // Interprets fields the right way
-function searchhelp ($db,$table,$column,$columnvalues,$query,$wcappend) {
+function searchhelp ($db,$table,$column,$columnvalues,$query,$wcappend,$and) {
    if ($column=="ownerid") {
+      $query[1]=true;
       $r=$db->Execute("SELECT id FROM $table WHERE ownerid=$columnvalues[$column]");
       $list=make_SQL_ids($r,false);
       if ($list) 
-         $query[1] = "id IN ($list) ";
+         $query[0].= "$and id IN ($list) ";
    }
    else {
-      $query[2]=true;
+      $query[1]=true;
       if (is_string($columnvalues[$column])) {
          $columnvalues[$column]=trim($columnvalues[$column]);
          $columnvalue=$columnvalues[$column];
@@ -451,10 +473,10 @@ function searchhelp ($db,$table,$column,$columnvalues,$query,$wcappend) {
             $columnvalue="%$columnvalue%";
          else
             $columnvalue="% $columnvalue %";
-         $query[0].="$column LIKE '$columnvalue' ";
+         $query[0].="$and $column LIKE '$columnvalue' ";
       }
       else
-         $query[0].="$column='$columnvalues[$column]' ";
+         $query[0].="$and $column='$columnvalues[$column]' ";
    }
    return $query;
 }
@@ -473,22 +495,17 @@ function search ($table,$fields,$fieldvalues,$whereclause=false,$wcappend=true) 
    while ($column && !$columnvalues[$column])
       $column=strtok (",");
    if ($column && $columnvalues[$column]) {
-      $query=searchhelp ($db,$table,$column,$columnvalues,$query,$wcappend);
+      $query=searchhelp ($db,$table,$column,$columnvalues,$query,$wcappend,false);
    }
    $column=strtok (",");
    while ($column) { 
       if ($column && $columnvalues[$column]) {
-         $query=searchhelp ($db,$table,$column,$columnvalues,$query,$wcappend);
+         $query=searchhelp ($db,$table,$column,$columnvalues,$query,$wcappend,"AND");
       }
       $column=strtok (",");
    }
-   if ($query[1])
-      if ($query[2])
-         $query[0] .= "AND $query[1] ";
-      else
-         $query[0] .= "$query[1] ";
    if ($whereclause)
-      if ($query[2] ||$query[1])
+      if ($query[1])
          $query[0] .= "AND $whereclause";
       else
          $query[0] .= $whereclause;
