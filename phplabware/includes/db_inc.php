@@ -124,28 +124,30 @@ function delete ($db, $table, $id, $USER) {
 // filetitle in HTTP_POST_VARS will be inseret in the title field of table files
 function upload_files ($db,$table,$id,$USER,$system_settings) {
    global $HTTP_POST_FILES,$HTTP_POST_VARS;
-   if (!$db && $table && $id)
+  if (!$db && $table && $id)
       return false;
    if (!may_write($db,$table,$id,$USER))
       return false;
    if (!$filedir=$system_settings["filedir"])
       return false;
-print_r($HTTP_POST_FILES["file"]); 
+print_r($HTTP_POST_FILES); 
 echo "<br>\n";
-//print_r($HTTP_POST_VARS); 
    for ($i=0;$i<sizeof($HTTP_POST_FILES);$i++) {
+echo "$i.<br>";
       if (!$fileid=$db->GenID("files_id_seq"))
          return false;
-      $originalname=$HTTP_POST_FILES["file"][$i]["name"];
-      $mime=$HTTP_POST_FILES["file"][$i]["type"];
-      $size=$HTTP_POST_FILES["file"][$i]["size"];
+      $originalname=$HTTP_POST_FILES["file"]["name"][$i];
+echo "$originalname.<br>";
+      $mime=$HTTP_POST_FILES["file"]["type"][$i];
+      $size=$HTTP_POST_FILES["file"]["size"][$i];
       $title=$HTTP_POST_VARS["filetitle"][$i];
       // this works asof php 4.02
-      if (move_uploaded_file($HTTP_POST_FILES["file"][$i]["tmp_name"],"$filedir/$fileid"."$originalname")) {
-         $query="INSERT INTO files VALUES (id=$fileid,filename='$originalname',mime='$mime',size='$size',title='$title')";
+      if (move_uploaded_file($HTTP_POST_FILES["file"]["tmp_name"][$i],"$filedir/$fileid"."$originalname")) {
+$db->debug=true;
+         $query="INSERT INTO files (id,filename,mime,size,title) VALUES ($fileid,'$originalname','$mime','$size','$title')";
 	 $db->Execute($query);
 	 // couple to original entry
-	 $query="INSERT INTO $tables"."xfiles VALUES($tables"."id=$id,filesid=$fileid";
+	 $query="INSERT INTO $table"."xfiles ($table"."id,filesid) VALUES ($id,$fileid)";
 	 $db->Execute($query);
       }
    }
