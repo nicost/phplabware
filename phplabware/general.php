@@ -19,15 +19,15 @@ require("includes/db_inc.php");
 require("includes/general_inc.php");
 
 // register variables
-$DBNAME=$HTTP_GET_VARS["dbname"];
+$getvars="dbname,showid,edit_type,add";
+globalize_vars($get_vars, $HTTP_GET_VARS);
+$post_vars = "add,submit,search,searchj";
+globalize_vars($post_vars, $HTTP_POST_VARS);
+
+if ($searchj)  $search="Search";
+$DBNAME=$dbname;
 $DB_DESNAME=$DBNAME; $DB_DESNAME.="_desc";
 $httptitle .=$DBNAME;
-$showid=$HTTP_GET_VARS["showid"];
-$edit_type=$HTTP_GET_VARS["edit_type"];
-$add=$HTTP_GET_VARS["add"];
-$post_vars = "add,submit,search,searchj";
-globalize_vars($post_vars, $HTTP_POST_VARS,$DBNAME,$DB_DESNAME,$system_settings);
-if ($searchj)  $search="Search";
 
 // read all fields in from the description file
 $fields=comma_array_SQL($db,$DB_DESNAME,label);
@@ -42,7 +42,7 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
    if (substr($key, 0, 3) == "mod") {
       $modarray = explode("_", $key);
       $r=$db->Execute("SELECT $fields FROM $DBNAME WHERE id=$modarray[1]"); 
-      add_pr_form($db,$fields,$r->fields,$modarray[1],$USER,$PHP_SELF,$system_settings,$DB_DESNAME);
+      add_g_form($db,$fields,$r->fields,$modarray[1],$USER,$PHP_SELF,$system_settings,$DB_DESNAME);
       printfooter();
       exit();
    }
@@ -55,14 +55,14 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
          echo "<h3 align='center'>Deleted file <i>$filename</i>.</h3>\n";
       else
          echo "<h3 align='center'>Failed to delete file <i>$filename</i>.</h3>\n";
-      add_pr_form ($db,$fields,$HTTP_POST_VARS,$id,$USER,$PHP_SELF,$system_settings,$DB_DESNAME);
+      add_g_form ($db,$fields,$HTTP_POST_VARS,$id,$USER,$PHP_SELF,$system_settings,$DB_DESNAME);
       printfooter();
       exit();
    }
    // show the record
    if (substr($key, 0, 4) == "view") {
       $modarray = explode("_", $key);
-      show_pr($db,$fields,$modarray[1],$USER,$system_settings,$DBNAME,$DB_DESNAME);
+      show_g($db,$fields,$modarray[1],$USER,$system_settings,$DBNAME,$DB_DESNAME);
       printfooter();
       exit();
    }
@@ -108,7 +108,7 @@ if ($edit_type && ($USER["permissions"] & $LAYOUT)) {
 
 // provide a means to hyperlink directly to a record
 if ($showid) {
-   show_pr($db,$fields,$showid,$USER,$system_settings,$DBNAME,$DB_DESNAME);
+   show_g($db,$fields,$showid,$USER,$system_settings,$DBNAME,$DB_DESNAME);
    printfooter();
    exit();
 }
@@ -118,14 +118,14 @@ if ($createnew){create_new_table($db,$DBNAME);}
 
 // when the 'Add' button has been chosen: 
 if ($add)
-	{add_pr_form($db,$fields,$field_values,0,$USER,$PHP_SELF,$system_settings,$DB_DESNAME);}
+	{add_g_form($db,$fields,$field_values,0,$USER,$PHP_SELF,$system_settings,$DB_DESNAME);}
 else { 
     // first handle addition of a new record
    if ($submit == "Add Record") 
    	{
-      if (!(check_pr_data($db, $HTTP_POST_VARS) && $id=add($db,$DBNAME,$fields,$HTTP_POST_VARS,$USER) ) )
+      if (!(check_g_data($db, $HTTP_POST_VARS) && $id=add($db,$DBNAME,$fields,$HTTP_POST_VARS,$USER) ) )
       	{
-         add_pr_form($db,$fields,$HTTP_POST_VARS,0,$USER,$PHP_SELF,$system_settings,$DB_DESNAME);
+         add_g_form($db,$fields,$HTTP_POST_VARS,0,$USER,$PHP_SELF,$system_settings,$DB_DESNAME);
          printfooter ();
          exit;
       }
@@ -141,8 +141,8 @@ else {
    }
    // then look whether it should be modified
    elseif ($submit=="Modify Record") {
-      if (! (check_pr_data($db,$HTTP_POST_VARS) && modify($db,$DBNAME,$fields,$HTTP_POST_VARS,$HTTP_POST_VARS["id"],$USER)) ) {
-         add_pr_form ($db,$fields,$HTTP_POST_VARS,$HTTP_POST_VARS["id"],$USER,$PHP_SELF,$system_settings,$DB_DESNAME);
+      if (! (check_g_data($db,$HTTP_POST_VARS) && modify($db,$DBNAME,$fields,$HTTP_POST_VARS,$HTTP_POST_VARS["id"],$USER)) ) {
+         add_g_form ($db,$fields,$HTTP_POST_VARS,$HTTP_POST_VARS["id"],$USER,$PHP_SELF,$system_settings,$DB_DESNAME);
          printfooter ();
          exit;
       }
