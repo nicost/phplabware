@@ -116,6 +116,7 @@ while ($rfiles && !($rfiles->EOF)) {
          }
       }
    }
+   echo 'Indexed file: '.$rfiles->fields['filename'].'.<br>';
    $rfiles->MoveNext();
 }
 
