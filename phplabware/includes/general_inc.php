@@ -67,12 +67,9 @@ function date_entry($id,$real_tablename) {
 ///////////////////////////////////////////////////////////
 //// 
 // !Displays information in table in edit mode
-//function display_table_change($db,$tableid,$DB_DESNAME,$Fieldscomma,$pr_query,$num_p_r,$pr_curr_page,$page_array,$r=false) {
 function display_table_change($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr_curr_page,$page_array,$r=false) {
    global $nr_records,$max_menu_length,$USER,$LAYOUT,$HTTP_SESSION_VARS;
 
-   //$tablename=get_cell($db,"tableoftables","tablename","id",$tableid);
-   //$real_tablename=get_cell($db,"tableoftables","real_tablename","id",$tableid);
    $first_record=($pr_curr_page - 1) * $num_p_r;
    $current_record=$first_record;
    $last_record=$pr_curr_page * $num_p_r;
@@ -107,30 +104,32 @@ function display_table_change($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr
          elseif ($nowfield[datatype]=="text") {
      	    echo "<td><input type='text' name='$nowfield[name]_$id' value='$nowfield[values]' size=15 $js>$thestar</td>\n";
          }
-         elseif ($nowfield[datatype]=="int") {
+         elseif ($nowfield['datatype']=='int' || $nowfield['datatype']=='sequence' || $nowfield['datatype']=='float') {
      	    echo "<td><input type='text' name='$nowfield[name]_$id' value='$nowfield[values]' size=8 $js>$thestar</td>\n";
          }
+/*
          elseif ($nowfield[datatype]=="float") {
      	    echo "<td><input type='text' name='$nowfield[name]_$id' value='$nowfield[values]' size=8 $js>$thestar</td>\n";
          }
-         elseif ($nowfield[datatype]=="textlong") {
+*/
+         elseif ($nowfield['datatype']=='textlong') {
      	    echo "<td><input type='text' name='$nowfield[name]_$id' value='$nowfield[values]' size=15>$thestar</td>\n"; 
          }
-         elseif ($nowfield[datatype]=="link") {
+         elseif ($nowfield['datatype']=='link') {
             echo "<td><input type='text' name='$nowfield[name]_$id' value='$nowfield[values]' size=15>$thestar</td>\n";
          }
-         elseif ($nowfield[datatype]=="pulldown") {
+         elseif ($nowfield['datatype']=='pulldown') {
             // get previous value	
             $rp=$db->Execute("SELECT typeshort,id FROM $nowfield[ass_t] ORDER BY sortkey");
             $text=$rp->GetMenu2("$nowfield[name]_$id",$nowfield[values],true,false,0,$js);
             echo "\n<td>$text $thestar</td>\n";
          }
-         elseif ($nowfield[datatype]=="table") {
+         elseif ($nowfield['datatype']=='table') {
             // only display primary key here
-            if (!$nowfield["ass_local_key"]) { 
+            if (!$nowfield['ass_local_key']) { 
                $text=false;
                // get previous value	
-               if ($nowfield[ass_column_name] && $nowfield[ass_table_name]) { 
+               if ($nowfield['ass_column_name'] && $nowfield['ass_table_name']) { 
                   $rt=$db->Execute("SELECT $nowfield[ass_column_name],id FROM $nowfield[ass_table_name]");
                   $text=$rt->GetMenu2("$nowfield[name]_$id",$nowfield[values],true,false,0,$js);
                }
@@ -425,7 +424,8 @@ function display_add($db,$tableinfo,$Allfields,$id,$namein,$system_settings) {
             // only display primary key here
             if (!$nowfield['ass_local_key']) { 
                // get previous value	
-               $r=$db->Execute("SELECT $nowfield[ass_column_name],id FROM $nowfield[ass_table_name]");
+               $r=$db->Execute("SELECT $nowfield[ass_column_name],id FROM $nowfield[ass_table_name] ORDER BY {$nowfield['ass_column_name']}");
+               
                $text=$r->GetMenu2("$nowfield[name]",$nowfield[values],true,false);
                echo "<tr><th>$nowfield[label]:";
                if ($nowfield[required]=="Y")
@@ -650,7 +650,6 @@ function add_g_form ($db,$tableinfo,$field_values,$id,$USER,$PHP_SELF,$system_se
       return false; 
    if ($id) {
 	$Allfields=getvalues($db,$tableinfo,$tableinfo->fields,id,$id);
-	//print_r($Allfields);
 	$namein=get_cell($db,$tableinfo->desname,"title","id",$id);		
 	display_add($db,$tableinfo,$Allfields,$id,$namein,$system_settings);
    }    
