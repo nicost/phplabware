@@ -310,7 +310,7 @@ function display_add($db,$tableid,$real_tablename,$tabledesc,$Allfields,$id,$nam
 	
 		}	
 echo "<td colspan=4>";
-show_access($db,$tableid,$id,$USER,$system_settings,$real_tablename);
+show_access($db,$tableid,$id,$USER,$system_settings);
 echo "</td></tr>\n"; echo "<tr>";
 if ($id) $value="Modify Record"; 
 else $value="Add Record";
