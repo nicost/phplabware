@@ -207,7 +207,7 @@ if ($version) {
       else {
          unset($system_settings["word2html"]);
          unset($system_settings["wvHtml_version"]);
-	 if (isset($word2html))
+	 if (isset($word2html) && $word2html)
 	    echo "<h3 align='center'>wvHtml was not found at '$word2html'.</h3>";
       }
       if ($baseURL)
