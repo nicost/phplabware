@@ -632,13 +632,13 @@ function show_table_column_page ($db,$table_name,$addcol_name,$addcol_label) {
    $tableinfo=new tableinfo($db);
    $rs=$db->Execute("SELECT id,associated_table,associated_column,associated_local_key,label FROM {$tableinfo->desname} WHERE associated_table LIKE '%'");
    if ($rs && !$rs->EOF) {
-      echo "<tr><td colspan=3><b>Or:</b> group with an already existing Primary Key:</td></tr>\n";
-      echo "<tr><td colspan=3><input type='radio' name='ass_to'> None (Fill in above, and make it a primary key)</input></td></tr>\n";
+      echo "<tr><td colspan=3>Grouping:</td></tr>\n";
+      echo "<tr><td colspan=3><input type='radio' name='ass_to'> Make this a primary key</input></td></tr>\n";
       while (!$rs->EOF) {
          if ($rs->fields['associated_table'] && !$rs->fields['associated_local_key']) {
             $ass_tableinfo=new tableinfo($db,false,$rs->fields['associated_table']);
             $ass_column=get_cell($db,$ass_tableinfo->desname,'label','id',$rs->fields['associated_column']);
-            echo "<tr><td colspan=3><input type='radio' name='ass_to' value='{$rs->fields[0]}-{$rs->fields[1]}-{$rs->fields[2]}'> Local column: <i>{$rs->fields['label']}</i> (Foreign table: <i>{$ass_tableinfo->name}</i>, column: <i>$ass_column</i>),</input></td></tr>\n";
+            echo "<tr><td colspan=3><input type='radio' name='ass_to' value='{$rs->fields[0]}'> Associate with: Local column: <i>{$rs->fields['label']}</i> (Foreign table: <i>{$ass_tableinfo->name}</i>, column: <i>$ass_column</i>),</input></td></tr>\n";
          }
          $rs->MoveNext();
       }
@@ -657,12 +657,10 @@ function add_associated_table($db,$table,$column,$table_ass,$column_ass) {
 
    $r=$db->Execute("SELECT table_desc_name FROM tableoftables WHERE tablename='$table'");
    $table_desc=$r->fields["table_desc_name"];
-   if ($HTTP_POST_VARS['ass_to']) {
-      $ass_to_values=split("-",$HTTP_POST_VARS['ass_to']);
-      $r=$db->Execute("UPDATE $table_desc SET associated_table='{$ass_to_values[1]}', associated_column='{$ass_to_values[2]}', associated_local_key='{$ass_to_values[0]}' WHERE columnname='$column'");
-   }
-   else { 
-      $r=$db->Execute("UPDATE $table_desc SET associated_table='$table_ass', associated_column='$column_ass' WHERE columnname='$column'");
+   $r=$db->Execute("UPDATE $table_desc SET associated_table='$table_ass', associated_column='$column_ass' WHERE columnname='$column'");
+   $ass_to=(int)$HTTP_POST_VARS['ass_to'];
+   if ($ass_to) {
+      $r=$db->Execute("UPDATE $table_desc SET associated_local_key='$ass_to' WHERE columnname='$column'");
    }
 }
 
