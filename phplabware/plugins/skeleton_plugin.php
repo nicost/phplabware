@@ -70,6 +70,12 @@ function plugin_getvalues($db,&$allfields,$id,$tableid)
 {
 }
 
+////
+// !Extends function display_add
+// This function let's you change values before they are display in the display_add function
+function plugin_display_add ($db,$tableid,&$nowfield)
+{
+}
 
 ////
 // !Extends function display_add
