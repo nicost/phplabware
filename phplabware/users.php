@@ -57,11 +57,29 @@ function check_input () {
 
 
 ////
+// !Generates a comma-separated list of tables holding data
+// tablenames are read from tableoftables
+function tablestring ($db) {
+   $r=$db->Execute("SELECT id,tablename FROM tableoftables WHERE tablename <> 'settings' AND permission <> 'System' ORDER BY id");
+   while (!$r->EOF) {
+      $string.=$r->fields["tablename"];
+      if ($r->fields["id"] >=10000)
+         $string.="_".$r->fields["id"];
+      $string.=",";
+      $r->Movenext();
+   }
+   // chop of last comma
+   return substr ($string,0,-1);  
+}
+
+
+////
 // !Deletes users after some checks
 function delete_user ($db, $id) {
    global $USER;
 
-   include ('includes/defines_inc.php');
+   include ("includes/defines_inc.php");
+   $tables=tablestring($db);
    $original_permissions=get_cell ($db,"users","permissions","id",$id);
    $original_login=get_cell($db,"users","login","id",$id);
    if (!$original_login)
@@ -506,7 +524,7 @@ else {
          $delstring="<input type=\"submit\" name=\"del_".$id."\" value=\"Remove\" ";
          $delstring.="Onclick=\"if(confirm('Do you really want to delete user: ";
          $delstring.= $r->fields["firstname"]." ".$r->fields["lastname"]. 
-               ", and all his/her database entries?')){return true;}return false;\">";
+               ", and all his/her database entries? (NO UNDO POSSIBLE!)')){return true;}return false;\">";
          echo "<td align=\"center\">$modstring</td>\n";
          echo "<td align=\"center\">$delstring</td>\n";
       }
