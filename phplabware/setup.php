@@ -93,7 +93,7 @@ CREATE TABLE settings
 	settings text, 
 	created datetime)");
    if (!$result) $test=false;
-   $result=$db->Execute("INSERT INTO settings VALUES (1,$version_code,".$db->DBDate(time()).")");
+   $result=$db->Execute("INSERT INTO settings VALUES (1,$version_code,'',".$db->DBDate(time()).")");
    if (!$result) $test=false;
    $result=$db->Execute("CREATE TABLE users 
 	(id int PRIMARY KEY, 
