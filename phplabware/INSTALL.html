@@ -11,7 +11,7 @@
 <table border=0 width=100%>
    <tr bgcolor="333388" align=right>
       <td align=right>
-         <font size=+2 color="#ffffff"><i>PhpLabWare  
+         <font color="#ffffff"><i>PhpLabWare  
              </i></font>
       </td>
    </tr>
@@ -22,16 +22,28 @@
 <td align='right'><a href='setup.php'>setup.php</a></td></tr>
 </table>
 
+<h3 align='center'>Requirements</h3>
+<ul>
+	<li><a href="http://www.apache.org">Apache Webserver </a>(1.3.19 or higher).</li>
+	<li><a href="http://php.net">php </a>(4.04 or higher).</li>
+	<li>SQL server: <a href="http://postgresql.org">PostgreSQL </a>(7.0 or higher), or <a href="http://www.mysql.com">MySQL</a> (3.23 or higher)</li>
+</ul>
+<p>Linux distributions will include these.  On MacOSX, download php and MySQL or Postgres from: <a href="http://www.entropy.ch/software/macosx"> Marc Ilianage's page</a>. Who knows, it might even work on Windows (but we never tried..). Make sure your webserver, php, and SQL server are well-configured. Make sure you have a valid user account on your SQL server that can create databases.</p> 
+<br>
 <h3 align='center'>Installation Instructions</h3>
 
 <ul>
-	<li>Place the phplabware folder in a web-accessible folder on a well-configures server able to serve php scripts and with a SQL server.</li>
-	<li>Edit the includes/config_inc.exp and save it as 'includes/config_inc.php'. </li>
-	<li>Create the database with the name you entered during the previous step (in postgres for instance: createdb phplabware, in mysql; mysql mysql, CREATE DATABASE phplabware;).  Consult the documentation to your database server for details.</li>
+	<li>Unpack and decompress the phplabware folder: <i>tar -zxvf phplabware_x.xxx.tar.gz</i> (where x.xxx indicates the version number).</li>
+	<li>Place the phplabware folder in a web-accessible folder.</li>
+	<li>Edit the file <i>includes/config_inc.exp</i> and save it as <i>includes/config_inc.php</i>. </li>
+	<li>Create the database with the name you entered during the previous step <br>(in postgres for instance: createdb -U postgresuser phplabware, <br>in mysql; mysql -u mysqluser -p mysql, CREATE DATABASE phplabware;). <br>Consult the documentation to your database server for details.</li>
 	<li>Point your browser to the script <a href='setup.php'>'setup.php'</a>.  For security reasons this can only be done from the localhost.</li>
 	<li>Enter a password for the 'sysadmin' and submit the form.</li>
 	<li>login as user 'sysadmin' with the password you just entered.</li>
-	<li>For security reasons you might want to make sure that 'includes/config_inc.php' can only be read by your webdaemon.</li>
+	<li>Check the form with system settings.  Most defaults should be fine.  You can change these later too.</li>
+	<li>To convert uploaded MSWord documents into html you can use the library <a href="wvware.sf.net">wvHtml</a>.  There are problems with version 0.71 of wvHtml.  Use version 0.70 or 0.72 instead.</li>  
+	<li>For security reasons you might want to make sure that 'includes/config_inc.php' can only be read by your webdaemon, and that all files in directory phplabware are owned by root, readable by the webdaemon and not writeable by anyone but root.  Make sure, however, that the webdaemon can write to directory <i>files</i>.</li>
+	<li>You can customize the welcome page by adding image files to the directory <i>frontims</i>.</li>
 </ul>
 
 
