@@ -88,7 +88,7 @@ function plugin_display_show ($db,$Allfields,$id)
 
 
    echo "<input type='hidden' name='subm' value=''>\n";
-   echo "<td colspan=7 align='center'><input type='button' name='sub' value='Re-order' onClick='document.order_form.subm.value=\"Add Record\"; document.order_form.submit(); window.opener.document.g_form.search.value=\"Search\"; window.opener.document.g_form.submit(); window.opener.focus(); self.close(); '>\n";
+   echo "<td colspan=7 align='center'><input type='button' name='sub' value='Re-order' onClick='document.order_form.subm.value=\"Add Record\"; document.order_form.submit(); window.opener.document.g_form.search.value=\"Search\"; window.opener.document.g_form.submit(); window.opener.focus(); '>\n";
    //echo "<td colspan=7 align='center'><input type='button' name='sub' value='Re-order' onClick='document.order_form.subm.value=\"Add Record\"; document.order_form.submit(); window.opener.document.g_form.search.value=\"Search\"; setTimeout(\"window.opener.document.g_form.submit(); window.opener.focus(); window.close();\",300); '>\n";
 
    echo "&nbsp;&nbsp;<input type='button' name='sub' value='Cancel' onClick='window.opener.focus(); window.close();'></td>\n";

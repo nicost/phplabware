@@ -676,7 +676,7 @@ function display_add($db,$tableinfo,$Allfields,$id,$namein,$system_settings) {
    if ($HTTP_SESSION_VARS['javascript_enabled']) {
       echo "<input type='hidden' name='subm' value=''>\n";
       //echo "<input type='button' name='sub' value='$value' onclick='document.subform.subm.value=\"$value\"; document.subform.submit(); window.opener.document.g_form.search.value=\"Search\"; setTimeout(\"window.opener.document.g_form.submit(); window.opener.focus(); self.close()\",300);'>\n";
-      echo "<input type='button' name='sub' value='$value' onclick='document.subform.subm.value=\"$value\"; document.subform.submit(); window.opener.document.g_form.search.value=\"Search\"; window.opener.document.g_form.submit(); window.opener.focus(); self.close();'>\n";
+      echo "<input type='button' name='sub' value='$value' onclick='document.subform.subm.value=\"$value\"; document.subform.submit(); window.opener.document.g_form.search.value=\"Search\"; window.opener.document.g_form.submit(); window.opener.focus(); '>\n";
       echo "<input type='button' name='Close' onclick='self.close(); window.opener.focus();' value='Cancel'>\n";
    }
    else {
