@@ -110,10 +110,10 @@ function searchfield ($db,$tableinfo,$nowfield,$HTTP_POST_VARS,$jscript) {
          echo "<td style='width:10%'>&nbsp;</td>\n";
     }
     elseif ($nowfield['datatype']=='int' || $nowfield['datatype']=='float' || $nowfield['datatype']=='sequence' || $nowfield['datatype']=='date') {
-  	    echo  " <td style='width: 10%'><input type='text' name='$nowfield[name]' value='".${$nowfield[name]}."'size=8 align='middle'></td>\n";
+  	    echo  " <td style='width: 10%'><input type='text' name='$nowfield[name]' value='".${$nowfield[name]}."'size=5 align='middle'></td>\n";
     }
     elseif ($nowfield['datatype']== 'text' || $nowfield['datatype']=='file')
-       echo  " <td style='width: 25%'><input type='text' name='$nowfield[name]' value='".${$nowfield[name]}."'size=8></td>\n";
+       echo  " <td style='width: 25%'><input type='text' name='$nowfield[name]' value='".${$nowfield[name]}."'size=7></td>\n";
     elseif ($nowfield['datatype']== 'textlong')
        echo  " <td style='width: 10%'><input type='text' name='$nowfield[name]' value='".${$nowfield[name]}."'size=8></td>\n";
     elseif ($nowfield['datatype']== 'pulldown' || $nowfield['datatype']=='mpulldown') {
@@ -246,7 +246,7 @@ function display_table_change($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr
      	    echo "<td><textarea name='$nowfield[name]_$id' cols=45 rows=3 $js>$thestar{$nowfield['values']}</textarea></td>\n"; 
          }
          elseif ($nowfield['datatype']=='link') {
-            echo "<td><input type='text' name='$nowfield[name]_$id' value='$nowfield[values]' size=15>$thestar</td>\n";
+            echo "<td><input type='text' name='$nowfield[name]_$id' value='$nowfield[values]' size=15 $js>$thestar</td>\n";
          }
          elseif ($nowfield['datatype']=='pulldown') {
             // get previous value	
