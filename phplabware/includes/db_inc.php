@@ -331,8 +331,12 @@ function modify ($db,$table,$fields,$fieldvalues,$id,$USER,$tableid) {
    if ($test) {
       $query.=" WHERE id='$id'";
       $result=$db->Execute($query);
-      if ($result)
+      if ($result) {
+         if (function_exists('plugin_modify')) {
+            plugin_modify($db,$tableid,$id);
+         }
          return true;
+      }
    }
 }
 
@@ -581,6 +585,10 @@ function delete_file ($db,$fileid,$USER) {
    $tableid=get_cell($db,'files','tablesfk','id',$fileid);
    $tabledesc=get_cell($db,'tableoftables','table_desc_name','id',$tableid);
    $ftableid=get_cell($db,'files','ftableid','id',$fileid);
+   // bail out when file was not found
+   if (!$ftableid) {
+      return false;
+   }
    $columnid=get_cell($db,'files','ftablecolumnid','id',$fileid);
    $associated_table=get_cell($db,$tabledesc,'associated_table','id',$columnid);
    $filename=get_cell($db,'files','filename','id',$fileid);
