@@ -13,6 +13,8 @@
   *  option) any later version.                                              *
   \**************************************************************************/ 
 
+// set php parameters here
+set_magic_quotes_runtime(0); // seems to interfere with system settings
 
 // essential includes
 include ('includes/config_inc.php');
