@@ -328,14 +328,13 @@ $db->debug=true;
 // !modifies a general column entry
 function mod_columnECG($db,$id,$sort,$tablename,$colname,$label,$datatype,$Rdis,$Tdis,$req,$modifiable) {
    global $string;
-
    // find the id of the table and therewith the tablename
    $r=$db->Execute("SELECT id FROM tableoftables WHERE tablename='$tablename'");
    $tableid=$r->fields["id"];
    // escape bad stuffin label
    $label=strtr($label,",'","  ");
-   $tablename=$tablename."_".$tableid;
-   $desc=$tablename."_desc";
+   $real_tablename=get_cell($db,"tableoftables","real_tablename","id",$tableid);
+   $desc=$real_tablename."_desc";
    $r=$db->Execute("UPDATE $desc SET sortkey='$sort',display_table='$Tdis', display_record='$Rdis',required='$req',label='$label',modifiable='$modifiable' where id='$id'");   	
    if ($r) { 
       $string="Succesfully Changed Column $colname in $tablename";
