@@ -15,6 +15,19 @@
   \**************************************************************************/
 
 ////
+// !Formats record(s) into xml
+function make_xml ($db,$data,$tableinfo) {
+   $xml.="<{$tableinfo->label} record>\n";
+   foreach ($data as $column) {
+      $xml.="<{$column['name']}>\n";
+      $xml.="{$column['text']}\n";
+      $xml.="</{$column['name']}>\n";
+   }
+   $xml.="</{$tableinfo->label} record>\n";
+   return $xml;
+}
+
+////
 // !Takes a template and data and generates a report
 function make_report ($db,$template,$data,$tableinfo,$counter=false) {
    foreach ($data as $column) {
