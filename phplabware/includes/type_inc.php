@@ -120,7 +120,7 @@ function show_type ($db,$table,$name, $tablename=false) {
       $dbstring.="tablename=$tablename&";
    echo "<form method='post' id='typeform' enctype='multipart/form-data' ";
    echo "action='$dbstring".SID."'>\n"; 
-   echo "<input type='submit' name='submit' value='Close' onclick='opener.focus();\nself.close()'>\n";
+   echo "<input type='submit' name='submit' value='Close' onclick='self.close();window.opener.focus();'>\n";
    echo "</form>\n";
    echo "</td></tr>\n";
 
