@@ -188,9 +188,9 @@ if ($version) {
             $wvresult=exec("$word2html -v");
          $wvresult=explode(" ",$wvresult);
          if ($wvresult)
-            $system_setting["wvHtml_version"]=$wvresult[1];
+            $system_settings["wvHtml_version"]=$wvresult[1];
          else
-            $system_setting["wvHtml_version"]=0.6;
+            $system_settings["wvHtml_version"]=0.6;
       }      
       else {
          unset($system_settings["word2html"]);
