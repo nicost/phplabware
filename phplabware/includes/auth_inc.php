@@ -77,9 +77,7 @@ if ($use_sessions) {
                $get_string=getenv("QUERY_STRING");
                $url=url_get_string($url);
                echo "<html>\n<head>\n";
-?>
-<meta http-equiv='refresh' content=0;URL="<?php echo $url ?>?<?=SID?>">
-<?php
+               echo "<meta http-equiv='refresh' content=0;URL='$url'>";
                //echo "<meta http-equiv='refresh' content=0;URL='$url'>\n";
                echo "</head>\n</html>";
                exit();
