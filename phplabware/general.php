@@ -255,13 +255,12 @@ else {
    // get current page
    ${$pagename}=current_page(${$pagename},$tableshort);
  
-   // get a list with all records we may see
+   // get a list with all records we may see, create temp table tempb
    $listb=may_read_SQL($db,$real_tablename,$tableid,$USER,"tempb");
 
    // prepare the search statement and remember it
    $fields_table="id,".$fields_table;
    
-
    ${$queryname}=make_search_SQL($db,$real_tablename,$tableshort,$tableid,$fields_table,$USER,$search,$sortstring,$listb["sql"]);
    $r=$db->Execute(${$queryname});
 
