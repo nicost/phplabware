@@ -480,18 +480,17 @@ else {
 
    // get current page
    $pr_curr_page=current_page($pr_curr_page,"pr");
+
+   // and a list with all records we may see
+   $listb=may_read_SQL($db,"protocols",$tableid,$USER,"tempb");
  
    // prepare the search statement and remember it
-   $pr_query=make_search_SQL($db,"protocols","pr",$tableid,$fields,$USER,$search,$sortstring);
-
+   $pr_query=make_search_SQL($db,"protocols","pr",$tableid,$fields,$USER,$search,$sortstring,$listb["sql"]);
    // get total number of hits
-   $r=$db->CacheExecute(1,$pr_query);
-   $numrows=$r->RecordCount();
-   // loop through all entries for next/previous buttons
-   $r=$db->CachePageExecute(1,$pr_query,$num_p_r,$pr_curr_page);
-   while (!($r->EOF) && $r) {
-      $r->MoveNext();
-   }
+   $r_master=$db->Execute($pr_query);
+   $numrows=$r_master->RecordCount();
+
+   first_last_page ($r_master,$pr_curr_page,$num_p_r,$numrows);
 
    // print form
 ?>
@@ -506,7 +505,7 @@ else {
       echo "<td align='center'><a href='$PHP_SELF?add=Add Protocol$sid'>Add Protocol</a></td>\n";
    echo "</table>\n";
 
-   next_previous_buttons($r,true,$num_p_r,$numrows,$pr_curr_page);
+   next_previous_buttons($r_master,true,$num_p_r,$numrows,$pr_curr_page);
 
    // print header of table
    echo "<table border='1' align='center'>\n";
@@ -519,10 +518,9 @@ else {
    echo "<input type='hidden' name='searchj' value=''>\n";
    //$jscript="onChange='alert(\"You clicked wrong\")'";
    // get a list with ids we may see
-   $r=$db->CacheExecute(1,$pr_query);
-   $lista=make_SQL_csf ($r,false,"id",$nr_records);
-   // and a list with all records we may see
-   $listb=may_read_SQL($db,"protocols",$tableid,$USER);
+   // $r=$db->CacheExecute(1,$pr_query);
+
+   $lista=make_SQL_csf ($r_master,false,"id",$nr_records);
    // show title we may see, when too many, revert to text box
    if ($title) $list=$listb; else $list=$lista;
    if ($list && ($nr_records < $max_menu_length) ) {
@@ -651,7 +649,7 @@ else {
    }
 
    echo "</table>\n";
-   next_previous_buttons($r);
+   next_previous_buttons($r_master);
    echo "</form>\n";
 
 }
