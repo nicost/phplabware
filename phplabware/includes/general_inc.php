@@ -142,18 +142,23 @@ function searchfield ($db,$tableinfo,$nowfield,$HTTP_POST_VARS,$jscript) {
 ////////////////////////////////////////////////////////
 ////
 //! Generated comma separated list of columns based on view prefs
-function viewlist($db,$tableinfo,$viewid) {
+// viewmode: 1=tableview, 2=recordview
+// returnas: 1=comma-separated list, 2=array
+function viewlist($db,$tableinfo,$viewid,$viewmode=1,$returnas=1) {
    global $USER;
-   $r=$db->Execute("SELECT columnid FROM tableviews WHERE viewnameid=$viewid AND viewmode=1");
+   $r=$db->Execute("SELECT columnid FROM tableviews WHERE viewnameid=$viewid AND viewmode=$viewmode");
    while ($r && !$r->EOF) {
       $rb=$db->Execute("SELECT columnname,sortkey FROM {$tableinfo->desname} WHERE id={$r->fields[0]}");
       $list[$rb->fields[1]]=$rb->fields[0];
       $r->MoveNext();
    }
-   $r=$db->Execute("SELECT columnid FROM tableviews WHERE viewnameid=$viewid");
+   //$r=$db->Execute("SELECT columnid FROM tableviews WHERE viewnameid=$viewid");
    ksort($list);
    reset($list);
-   return implode (",",$list);
+   if ($returnas==1)
+      return implode (",",$list);
+   else
+      return $list;
 }
 
       
@@ -432,6 +437,7 @@ function display_record($db,$Allfields,$id,$tableinfo,$backbutton=true,$previous
    $count=0;
    echo "<tr>\n";
    // if viewid is defined we will over-ride display record with values from the view settings
+   $viewlist= viewlist($db,$tableinfo,$viewid,2,2);
    foreach ($Allfields as $nowfield) {
       //Only show the entry when display_record is set
       if ($nowfield[display_record]=='Y') {
