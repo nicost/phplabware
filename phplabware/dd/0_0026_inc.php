@@ -18,9 +18,9 @@
 
 
 // Change table of tables to be the new display format
-$db->Execute("ALTER TABLE tableoftables ADD Display CHAR(1)");
-$db->Execute("ALTER TABLE tableoftables ADD Permission text");
-$db->Execute("ALTER TABLE tableoftables ADD Custom text");
+$db->Execute("ALTER TABLE tableoftables ADD display CHAR(1)");
+$db->Execute("ALTER TABLE tableoftables ADD permission text");
+$db->Execute("ALTER TABLE tableoftables ADD custom text");
 $db->Execute("UPDATE tableoftables SET Custom='antibodies.php'  where tablename = 'antibodies'");
 $db->Execute("UPDATE tableoftables SET Custom='pdfs.php'  where tablename = 'pdfs'");
 $db->Execute("UPDATE tableoftables SET Custom='protocols.php'  where tablename = 'protocols'");
@@ -28,8 +28,8 @@ $db->Execute("UPDATE tableoftables SET Custom='pdbs.php'  where tablename = 'pdb
 //$db->Execute("ALTER TABLE tableoftables modify id int UNSIGNED NOT NULL AUTO_INCREMENT");
 
 // Import existing tables into the updated navbar display funtion.
-$db->Execute("UPDATE tableoftables SET Permission='Users'  where sortkey > 1");
-$db->Execute("UPDATE tableoftables SET Display='Y'  where sortkey > 1");
+$db->Execute("UPDATE tableoftables SET permission='Users'  where sortkey > 1");
+$db->Execute("UPDATE tableoftables SET display='Y'  where sortkey > 1");
 
 // Create the linkbar table and associated entries
 $db->Execute("Create table linkbar (
