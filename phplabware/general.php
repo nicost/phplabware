@@ -261,17 +261,24 @@ else {
    // prepare the search statement and remember it
    $fields_table="id,".$fields_table;
   //$fields_table="id ";
+
+
    ${$queryname}=make_search_SQL($db,$real_tablename,$tableshort,$tableid,$fields_table,$USER,$search,$sortstring,$listb);
    $r=$db->Execute(${$queryname});
 
-   if ($r) {
-      $numrows=$r->RecordCount();
-      // loop through all entries for next/previous buttons
-      $rp=$db->PageExecute(${$queryname},$num_p_r,${$pagename});
-      while (!($rp->EOF) && $rp) {
-         $rp->MoveNext();
-      }
-   }
+   // set variables needed for paging
+   $numrows=$r->RecordCount();
+   if (${$pagename} < 2)
+      $rp->AtFirstPage=true;
+   else
+      $rp->AtFirstPage=false;
+   if ( ( (${$pagename}) * $num_p_r) >= $numrows)
+      $rp->AtLastPage=true;
+   else
+      $rp->AtLastPage=false;
+   // protect against pushing the reload button while at the last page
+   if ( ((${$pagename}-1) * $num_p_r) >=$numrows)
+      ${$pagename} -=1; 
 
    // get variables for links 
    $sid=SID;
@@ -345,8 +352,8 @@ else {
       elseif ($nowfield[datatype]== "text") {
          // show titles we may see, when too many, revert to text box
          if ($list && ($count < $max_menu_length) )  {
-  	     $r=$db->CacheExecute(2,"SELECT $nowfield[name] FROM $real_tablename WHERE id IN ($list)");
-             $text=$r->GetMenu("$nowfield[name]",$HTTP_POST_VARS[$nowfield[name]],true,false,0,"style='width: 80%' $jscript");
+  	     $rlist=$db->CacheExecute(2,"SELECT $nowfield[name] FROM $real_tablename WHERE id IN ($list)");
+             $text=$rlist->GetMenu("$nowfield[name]",$HTTP_POST_VARS[$nowfield[name]],true,false,0,"style='width: 80%' $jscript");
              echo "<td style='width: 10%'>$text</td>\n";
          }
 	 else 
@@ -360,13 +367,12 @@ else {
             echo "<a href='$PHP_SELF?tablename=$tablename&edit_type=$nowfield[ass_t]&".SID;
             echo "'>Edit $nowfield[label]</a><br>\n";
          }	 		 			
-         $r=$db->Execute("SELECT $nowfield[name] FROM $real_tablename WHERE id IN ($list)");
-         $list2=make_SQL_ids($r,false,"$nowfield[name]");
+         $rpull=$db->Execute("SELECT $nowfield[name] FROM $real_tablename WHERE id IN ($list)");
+         $list2=make_SQL_ids($rpull,false,"$nowfield[name]");
          if ($list2) { 
-            $r=$db->Execute("SELECT typeshort,id from $nowfield[ass_t] WHERE id IN ($list2) ORDER by typeshort");
-    		
-            if ($r)
-	       $text=$r->GetMenu2("$nowfield[name]",$HTTP_POST_VARS[$nowfield[name]],true,false,0,"style='width: 80%' $jscript");   
+            $rpull=$db->Execute("SELECT typeshort,id from $nowfield[ass_t] WHERE id IN ($list2) ORDER by typeshort");
+            if ($rpull)
+	       $text=$rpull->GetMenu2("$nowfield[name]",$HTTP_POST_VARS[$nowfield[name]],true,false,0,"style='width: 80%' $jscript");   
 	    else
 	       $text="&nbsp;";
     	    echo "$text</td>\n";
@@ -377,11 +383,11 @@ else {
          if ($nowfield["ass_local_key"])
             $text="&nbsp;"; 
          else {
-            $r=$db->Execute("SELECT $nowfield[name] FROM $real_tablename WHERE id IN ($list)");
-            $list2=make_SQL_ids($r,false,"$nowfield[name]");
+            $rtable=$db->Execute("SELECT $nowfield[name] FROM $real_tablename WHERE id IN ($list)");
+            $list2=make_SQL_ids($rtable,false,"$nowfield[name]");
             if ($list2) {
-               $r=$db->Execute("SELECT $nowfield[ass_column_name],id FROM $nowfield[ass_table_name] WHERE id IN ($list2)");
-               $text=$r->GetMenu2($nowfield["name"],$HTTP_POST_VARS[$nowfield[name]],true,false,0,"style='width: 80%' $jscript");
+               $rtable=$db->Execute("SELECT $nowfield[ass_column_name],id FROM $nowfield[ass_table_name] WHERE id IN ($list2)");
+               $text=$rtable->GetMenu2($nowfield["name"],$HTTP_POST_VARS[$nowfield[name]],true,false,0,"style='width: 80%' $jscript");
             }
             else
                $text="&nbsp;";
@@ -410,9 +416,9 @@ else {
    echo "</tr>\n\n";
 
    if ($md=="edit")
-      display_table_change($db,$tableid,$table_desname,$Fieldscomma,${$queryname},$num_p_r,${$pagename},$rp);
+      display_table_change($db,$tableid,$table_desname,$Fieldscomma,${$queryname},$num_p_r,${$pagename},$rp,$r);
    else
-      display_table_info($db,$tableid,$table_desname,$Fieldscomma,${$queryname},$num_p_r,${$pagename},$rp);
+      display_table_info($db,$tableid,$table_desname,$Fieldscomma,${$queryname},$num_p_r,${$pagename},$rp,$r);
    printfooter($db,$USER);
 }
 ?>

@@ -64,19 +64,20 @@ function date_entry($id,$DBNAME) {
 ///////////////////////////////////////////////////////////
 //// 
 // !Displays information in table in edit mode
-function display_table_change($db,$tableid,$DB_DESNAME,$Fieldscomma,$pr_query,$num_p_r,$pr_curr_page,$r=false) {
+function display_table_change($db,$tableid,$DB_DESNAME,$Fieldscomma,$pr_query,$num_p_r,$pr_curr_page,$page_array,$r=false) {
    global $nr_records,$max_menu_length,$USER,$LAYOUT;
+
    $tablename=get_cell($db,"tableoftables","tablename","id",$tableid);
-
    $real_tablename=get_cell($db,"tableoftables","real_tablename","id",$tableid);
+   $first_record=($pr_curr_page - 1) * $num_p_r;
+   $current_record=$first_record;
+   $last_record=$pr_curr_page * $num_p_r;
    if (!$r)
-      $r=$db->CachePageExecute(2,$pr_query,$num_p_r,$pr_curr_page);
-   else
-      $r->MoveFirst();
+      $r=$db->Execute($pr_query);
+   $r->Move($first_record);
    $rownr=1;
-
    // print all entries
-   while (!($r->EOF) && $r)  {
+   while (!($r->EOF) && $r && $current_record < $last_record)  {
       // Get required ID and title
       $id=$r->fields["id"];
       $title=$r->fields["title"];		
@@ -142,6 +143,7 @@ function display_table_change($db,$tableid,$DB_DESNAME,$Fieldscomma,$pr_query,$n
       echo "</td>\n";
       echo "</tr>\n";
       $r->MoveNext();
+      $current_record++;
       $rownr+=1;
    }
    // Add Record button
@@ -152,7 +154,7 @@ function display_table_change($db,$tableid,$DB_DESNAME,$Fieldscomma,$pr_query,$n
    }
 
    echo "</table>\n";
-   next_previous_buttons($r);
+   next_previous_buttons($page_array);
    echo "</form>\n";
 }
 
@@ -160,18 +162,20 @@ function display_table_change($db,$tableid,$DB_DESNAME,$Fieldscomma,$pr_query,$n
 ///////////////////////////////////////////////////////////
 //// 
 // !Displays all information within the table
-function display_table_info($db,$tableid,$DB_DESNAME,$Fieldscomma,$pr_query,$num_p_r,$pr_curr_page,$r=false) {
+function display_table_info($db,$tableid,$DB_DESNAME,$Fieldscomma,$pr_query,$num_p_r,$pr_curr_page,$page_array,$r=false) {
    global $nr_records,$max_menu_length,$USER,$LAYOUT;
-   $tablename=get_cell($db,"tableoftables","tablename","id",$tableid);
 
+   $tablename=get_cell($db,"tableoftables","tablename","id",$tableid);
    $real_tablename=get_cell($db,"tableoftables","real_tablename","id",$tableid);
+   $first_record=($pr_curr_page - 1) * $num_p_r;
+   $current_record=$first_record;
+   $last_record=$pr_curr_page * $num_p_r;
    if (!$r)
-      $r=$db->CachePageExecute(2,$pr_query,$num_p_r,$pr_curr_page);
-   else
-      $r->MoveFirst();
+      $r=$db->Execute($pr_query);
+   $r->Move($first_record);
    $rownr=1;
    // print all entries
-   while (!($r->EOF) && $r)  {
+   while (!($r->EOF) && $r && $current_record < $last_record)  {
       // Get required ID and title
       $id=$r->fields["id"];
       $title=$r->fields["title"];		
@@ -195,6 +199,7 @@ function display_table_info($db,$tableid,$DB_DESNAME,$Fieldscomma,$pr_query,$num
       echo "</td>\n";
       echo "</tr>\n";
       $r->MoveNext();
+      $current_record++;
       $rownr+=1;
    }
    // Add Record button
@@ -205,7 +210,7 @@ function display_table_info($db,$tableid,$DB_DESNAME,$Fieldscomma,$pr_query,$num
    }
 
    echo "</table>\n";
-   next_previous_buttons($r);
+   next_previous_buttons($page_array);
    echo "</form>\n";
 }
 
