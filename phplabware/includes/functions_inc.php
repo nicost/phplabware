@@ -299,7 +299,7 @@ function printheader($title,$head=false) {
                   $targetstr="target='_TOP'";
                else 
                   $targetstr="target='_BLANK'";
-               echo "<td style='width: 20%' align='center'><a href=\"$urlname\" $targetstr><font size=+2 color='#ffffff'>$Tlinkname</font></a></td>";
+               echo "<td style='width: 20%' align='center'><a href=\"$urlname\" $targetstr><font color='#ffffff'>$Tlinkname</font></a></td>";
                $count++;
                $linkr->MoveNext(); 
             }
@@ -308,7 +308,7 @@ function printheader($title,$head=false) {
 ?>
       <td align=right>
          <a href="http://phplabware.sourceforge.net">
-         <font size=+2 color="#ffffff"><i>PhpLabWare  
+         <font size=+1 color="#ffffff"><i>PhpLabWare  
              <?php if ($version) echo "version $version"; ?></i></font>
          </a>
       </td>
