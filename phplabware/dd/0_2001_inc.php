@@ -13,7 +13,6 @@ $fields="
 ";
 while (!($ra->EOF)) {
    if($ra->fields['real_tablename']) {
-echo "{$ra->fields['real_tablename']}...<br>";
       $sqlArray=$dict->AddColumnSQL($ra->fields['real_tablename'],$fields);
       $dict->ExecuteSQLArray($sqlArray);
       $sqlArray=$dict->CreateIndexSQL('gr_index',$ra->fields['real_tablename'],'gr');
