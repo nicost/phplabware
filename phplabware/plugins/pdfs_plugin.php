@@ -421,26 +421,43 @@ Location: ') {
              */
             if ($website=read_web_page($host,$getstring,$header,$body,false,5)) { 
                // find the sciencedirect link in the page we just downloaded
-               $line=strtok($body,"\n");
+//echo "header: $header.<br>";
+               // the link is sometimes in the header:
+               $line=strtok($header,"\n");
                while ($line) {
                   if ($sdirect=strstr($line,'http://www.sciencedirect.com')) {
 //echo "FOUND SCIENCE DIRECT LINK<br>";
-                     $sdirect=substr($sdirect,28,-2);
+                     $sdirect=substr($sdirect,28);
                      unset($line);
                   } else {
                      $line=strtok("\n");
                   }
                }
-//echo "Sdirect: $sdirect.<br>";
+               // if not in the header, look in the body
+               if (!$sdirect) {
+                  $line=strtok($body,"\n");
+                  while ($line) {
+                     if ($sdirect=strstr($line,'http://www.sciencedirect.com')) {
+//echo "FOUND SCIENCE DIRECT LINK<br>";
+                        $sdirect=substr($sdirect,28,-2);
+                        unset($line);
+                     } else {
+                        $line=strtok("\n");
+                     }
+                  }
+               }
+//echo "<br>Sdirect: $sdirect.<br>";
                if ($sdirect) {
                   $sdirect=str_replace("&amp;",'&',$sdirect);
+                  $sdirect=str_replace("\n",'',$sdirect);
                   // Now follow a 'Moved Permanently in the header
                   $host='www.sciencedirect.com';
+//echo "<br>Sdirect: http://$host/$sdirect.<br>";
                   unset($header);
                   if (read_web_page($host,$sdirect,$header,$dummy,true,5)) { 
-//echo "$host.<br>";
-//echo "$out.<br>";
-//echo $header;
+//echo "host $host.<br>";
+//echo "out $out.<br>";
+//echo "header: ".$header;
                      $line=strtok($header,"\n");
                      while ($line) {
 //echo "$line.<br>\n";
@@ -478,7 +495,6 @@ Location: ') {
                           $pdfgetstring=substr($pdfgetstring,0,-1);
                        }
 //echo "PDFLINK2: $pdfgetstring.<br>";
-
                        // if we have it we can do the real download
                         if (do_pdf_download($pdfhost,$pdfgetstring,'file')) {
                            return true;
@@ -488,6 +504,7 @@ Location: ') {
                }
             }
          break; // end of linkinghub.elsevier.com
+
 
          case 'www.pubmedcentral.gov' :
             /**
