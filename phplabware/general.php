@@ -54,7 +54,18 @@ if ($jsnewwindow && $showid && $tableinfo->name) {
       plugin_show($db,$tableinfo,$showid,$USER,$system_settings,false);
    }   
    else {
-      show_g($db,$tableinfo,$showid,$USER,$system_settings,false);
+      // find the next and previous ids, so that we can show prev/next buttons
+      $listb=may_read_SQL($db,$tableinfo,$USER,'tempb');
+      $r=$db->Execute($HTTP_SESSION_VARS[$tableinfo->queryname]);
+      while ($r && $r->fields['id']!=$showid && !$r->eof) {
+         $previousid=$r->fields['id'];
+         $r->MoveNext();
+      }
+      if ($r->fields['id']==$showid && !$r->eof) {
+         $r->MoveNext();
+         $nextid=$r->fields['id'];
+      }
+      show_g($db,$tableinfo,$showid,$USER,$system_settings,false,$previousid,$nextid);
    }   
    //show_report_templates_menu($db,$tableinfo,$showid);
    printfooter();
@@ -173,7 +184,7 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
       printfooter();
       exit();
    }
-   if (substr($key, 0, 6) == "mdtype" && ($USER["permissions"] & $LAYOUT)) {
+   if (substr($key, 0, 6) == 'mdtype' && ($USER['permissions'] & $LAYOUT)) {
       printheader($httptitle,"","includes/js/tablemanage.js");
       $modarray = explode("_", $key);
       include("includes/type_inc.php");
@@ -182,10 +193,10 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
       printfooter();
       exit();
    }
-   if (substr($key, 0, 6) == "dltype" && ($USER["permissions"] & $LAYOUT)) {
+   if (substr($key, 0, 6) == 'dltype' && ($USER['permissions'] & $LAYOUT)) {
       printheader($httptitle,"","includes/js/tablemanage.js");
       $modarray = explode("_", $key);
-      include("includes/type_inc.php");
+      include('includes/type_inc.php');
       del_type($db,$edit_type,$modarray[1],$tableinfo);
       show_type($db,$edit_type,"",$tableinfo->name);
       printfooter();
@@ -193,9 +204,9 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
    }
 }
 
-if ($edit_type && ($USER["permissions"] & $LAYOUT)) {
+if ($edit_type && ($USER['permissions'] & $LAYOUT)) {
    printheader($httptitle);
-   include("includes/type_inc.php");
+   include('includes/type_inc.php');
    $assoc_name=get_cell($db,$tableinfo->desname,label,associated_table,$edit_type);
    show_type($db,$edit_type,$assoc_name,$tableinfo->name);
    printfooter();
@@ -203,12 +214,12 @@ if ($edit_type && ($USER["permissions"] & $LAYOUT)) {
 }
 
 printheader($httptitle);
-navbar($USER["permissions"]);
+navbar($USER['permissions']);
 
 // provide a means to hyperlink directly to a record
 if ($showid && !$jsnewwindow) {
 
-   if (function_exists("plugin_show"))
+   if (function_exists('plugin_show'))
       plugin_show($db,$tableinfo,$showid,$USER,$system_settings,false);
    else {
       show_g($db,$tableinfo,$showid,$USER,$system_settings,true);
@@ -223,7 +234,7 @@ if ($add) {
 }
 else { 
     // first handle addition of a new record
-   if ($submit == "Add Record") {
+   if ($submit == 'Add Record') {
       if (!(check_g_data($db, $HTTP_POST_VARS, $tableinfo) && 
             $id=add($db,$tableinfo->realname,$tableinfo->fields,$HTTP_POST_VARS,$USER,$tableinfo->id) ) ) {
          add_g_form($db,$tableinfo,$HTTP_POST_VARS,0,$USER,$PHP_SELF,$system_settings);
@@ -287,9 +298,9 @@ else {
          // upload files and images
          $rc=$db->Execute("SELECT id,columnname,datatype,thumb_x_size FROM $tableinfo->desname WHERE datatype='file' OR datatype='image'");
          while (!$rc->EOF) {
-            if ($HTTP_POST_FILES[$rc->fields["columnname"]]["name"][0]) {
+            if ($HTTP_POST_FILES[$rc->fields['columnname']]['name'][0]) {
                // delete all existing files
-               delete_column_file ($db,$tableinfo->id,$rc->fields["id"],$HTTP_POST_VARS["id"],$USER);
+               delete_column_file ($db,$tableinfo->id,$rc->fields['id'],$HTTP_POST_VARS['id'],$USER);
                // store the file uploaded by the user
                $fileid=upload_files($db,$tableinfo->id,$HTTP_POST_VARS['id'],$rc->fields['id'],$rc->fields['columnname'],$USER,$system_settings);
                if ($rc->fields['datatype']=='file') {
@@ -300,7 +311,7 @@ else {
                elseif ($rc->fields['datatype']=='image'){
                   // make thumbnails and do image specific stuff
                   if ($fileid)
-                     process_image($db,$fileid,$rc->fields["thumb_x_size"]);
+                     process_image($db,$fileid,$rc->fields['thumb_x_size']);
                }
             }
             $rc->MoveNext(); 
@@ -309,29 +320,29 @@ else {
          unset ($HTTP_POST_VARS);
       }
    } 
-   elseif ($submit=="Cancel")
+   elseif ($submit=='Cancel')
       // to not interfere with search form 
       unset ($HTTP_POST_VARS);
    // or deleted
    elseif ($HTTP_POST_VARS) {
       reset ($HTTP_POST_VARS);
       while((list($key, $val) = each($HTTP_POST_VARS))) {
-         if (substr($key, 0, 3) == "del") {
-            $delarray = explode("_", $key);
+         if (substr($key, 0, 3) == 'del') {
+            $delarray = explode('_', $key);
             delete ($db,$tableinfo->id,$delarray[1], $USER);
          }
       }
    } 
 
-   if ($search=="Show All") {
-      $num_p_r=$HTTP_POST_VARS["num_p_r"];
+   if ($search=='Show All') {
+      $num_p_r=$HTTP_POST_VARS['num_p_r'];
       unset ($HTTP_POST_VARS);
       ${$pagename}=1;
       unset ($HTTP_SESSION_VARS[$queryname]);
       unset ($serialsortdirarray);
       session_unregister($queryname);
    }
-   $column=strtok($tableinfo->fields,",");
+   $column=strtok($tableinfo->fields,',');
    while ($column) {
       ${$column}=$HTTP_POST_VARS[$column];
       $column=strtok(",");

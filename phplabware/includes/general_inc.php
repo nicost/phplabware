@@ -326,7 +326,7 @@ function display_table_info($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr_c
 ///////////////////////////////////////////////////////////
 ////
 // !Display a record in a nice format
-function display_record($db,$Allfields,$id,$tableinfo,$backbutton=true) 
+function display_record($db,$Allfields,$id,$tableinfo,$backbutton=true,$previousid=false,$nextid=false) 
 {
    global $PHP_SELF, $md,$USER;
 
@@ -385,16 +385,21 @@ function display_record($db,$Allfields,$id,$tableinfo,$backbutton=true)
    } 
    echo "<form method='post' action='$PHP_SELF?tablename=".$tableinfo->name."&".SID."'>\n";
    echo "<input type='hidden' name='md' value='$md'>\n";
+   // next and previous buttons
+   if ($previousid)
+      $previousbutton="<input type=\"button\" name=\"view_".$previousid."\" value=\"Previous\" onClick='MyWindow=window.open(\"general.php?tablename={$tableinfo->name}&showid=$previousid&jsnewwindow=true\",\"view\",\"scrollbar=yes,resizable=yes,width=600,height=400\")'>\n";
+   if ($nextid)
+      $nextbutton="<input type=\"button\" name=\"view_".$nextid."\" value=\"Next\" onClick='MyWindow=window.open(\"general.php?tablename={$tableinfo->name}&showid=$nextid&jsnewwindow=true\",\"view\",\"scrollbar=yes,resizable=yes,width=600,height=400\")'>\n";
    // provide a modify button 
    if (may_write($db,$tableinfo->id,$id,$USER)) {
          $modifybutton= "<input type=\"submit\" name=\"mod_" . $id . "\" value=\"Modify\">\n";
    }
    if ($backbutton) {
       echo "<tr>\n<td colspan=8 align='center'>";
-      echo "$modifybutton<input type='submit' name='submit' value='Back'></td>\n</tr>\n";
+      echo " $previousbutton $modifybutton<input type='submit' name='submit' value='Back'> $nextbutton</td>\n</tr>\n";
    }
    else
-      echo "<tr><td colspan=8 align='center'>&nbsp;<br>$modifybutton<button onclick='self.close();window.opener.focus();' name='Close' value='close'>Close</button></td></tr>\n";
+      echo "<tr><td colspan=8 align='center'>&nbsp;<br>$previousbutton $modifybutton<button onclick='self.close();window.opener.focus();' name='Close' value='close'>Close</button> $nextbutton</td></tr>\n";
    echo "</table>";
 }
 
@@ -863,11 +868,11 @@ function add_g_form ($db,$tableinfo,$field_values,$id,$USER,$PHP_SELF,$system_se
 
 ////
 // !Shows a page with nice information on the record
-function show_g($db,$tableinfo,$id,$USER,$system_settings,$backbutton=true)  {
+function show_g($db,$tableinfo,$id,$USER,$system_settings,$backbutton=true,$previousid=false,$nextid=false)  {
    if (!may_read($db,$tableinfo,$id,$USER))
        return false;
    $Allfields=getvalues($db,$tableinfo,$tableinfo->fields,id,$id);
-   display_record($db,$Allfields,$id,$tableinfo,$backbutton);
+   display_record($db,$Allfields,$id,$tableinfo,$backbutton,$previousid,$nextid);
 }
 	
 ////
