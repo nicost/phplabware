@@ -123,7 +123,7 @@ function del_table($db,$tablename,$id,$USER) {
 ////   
 // !creates a general table 
 // also adds the tabledescription table and the entry in tableoftables
-function add_table ($db,$tablename,$tablelabel,$sortkey) {
+function add_table ($db,$tablename,$tablelabel,$sortkey,$plugincode) {
     global $string;
     $shortname=substr($tablename,0,3);
    
@@ -173,7 +173,11 @@ function add_table ($db,$tablename,$tablelabel,$sortkey) {
          $r=$db->Execute("SELECT id FROM tableoftables WHERE shortname='$shortname'");
          if ($r->fields["id"])
             $shortname.="$id";
-  	 $r=$db->Execute("INSERT INTO tableoftables (id,sortkey,tablename,label,real_tablename,shortname,display,permission,table_desc_name) Values($id,'$sortkey','$tablename','$tablelabel','$real_tablename','$shortname','Y','Users','$desc')");
+         if ($plugincode) $plugincode="'".$plugincode."'";
+         else $plugincode="NULL";
+         $sortkey=(int)$sortkey;
+
+  	 $r=$db->Execute("INSERT INTO tableoftables (id,sortkey,tablename,label,real_tablename,shortname,display,permission,table_desc_name,plugin_code) Values($id,'$sortkey','$tablename','$tablelabel','$real_tablename','$shortname','Y','Users','$desc',$plugincode)");
 	 // let all groups see the table by default
 	 $rg=$db->Execute("SELECT id FROM groups");
 	 while ($rg && !$rg->EOF) {
@@ -228,11 +232,28 @@ function add_table ($db,$tablename,$tablelabel,$sortkey) {
 /////////////////////////////////////////////////////////////////////////
 ////
 // !modifies  the display properites of a table within navbar
-function mod_table($db,$id,$tablename,$tablesort,$tabledisplay,$label,$tablegroups) {
-   global $string;
+function mod_table($db,$id,$offset) {
+   global $HTTP_POST_VARS,$string;
 
-   $label=strtr($label,",'","  ");
-   $r=$db->Execute("UPDATE tableoftables SET sortkey='$tablesort',display='$tabledisplay',label='$label' where id='$id'");   	
+   // prepare variable to feed into SQL statement
+   if ($HTTP_POST_VARS["table_name"][$offset])
+      $tablename="'".$HTTP_POST_VARS["table_name"][$offset]."'";
+   else
+      $tablename="NULL";
+   if ($HTTP_POST_VARS["table_label"][$offset])
+      $label="'".strtr($HTTP_POST_VARS["table_label"][$offset],",'","  ")."'";
+   else
+      $label="NULL";
+   $tablesort=(int) $HTTP_POST_VARS["table_sortkey"][$offset];
+   $tabledisplay= $HTTP_POST_VARS["table_display"][$offset];
+   $tablegroups= $HTTP_POST_VARS["tablexgroups"][$offset];
+   if ($HTTP_POST_VARS["table_plugincode"][$offset])
+      $plugincode="'".$HTTP_POST_VARS["table_plugincode"][$offset]."'";
+   else
+      $plugincode="NULL";
+
+   // do the SQL update
+   $r=$db->Execute("UPDATE tableoftables SET sortkey='$tablesort',display='$tabledisplay',label=$label,plugin_code=$plugincode where id='$id'");   	
    if ($r) {
       // Set permissions for groups to see these tables
       $db->Execute("DELETE FROM groupxtable_display WHERE tableid='$id'");
