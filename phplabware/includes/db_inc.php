@@ -230,9 +230,10 @@ function add ($db,$table,$fields,$fieldvalues,$USER,$tableid) {
             if ($column=='ownerid') {
                // a plugin can overwrite the ownerid, this can be handy when you want to assign all entries in a table to a particular user
                if (function_exists('plugin_setowner'))
-                  $fieldvalues['ownerid']=plugin_setowner($db);;
+                  $fieldvalues['ownerid']=plugin_setowner($db);
                else
                   $fieldvalues['ownerid']=$USER['id'];
+            }
             // set default access rights, 
             elseif (in_array($column, array('gr','gw','er','ew')))
                $fieldvalues[$column]=get_access($fieldvalues,$column);
@@ -1390,7 +1391,7 @@ function search ($db,$tableinfo,$fields,&$fieldvalues,$whereclause=false,$wcappe
    if (function_exists('plugin_search'))
       $query[0]=plugin_search($query[0],$columnvalues,$query[1]);
    $result=$query[0].$query[1].$query[2];
-   echo "$result.<br>";
+   //echo "$result.<br>";
    return $result;
 }
 
