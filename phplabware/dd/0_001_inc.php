@@ -81,11 +81,23 @@
    $result=$db->Execute("CREATE TABLE files
 	(id int PRIMARY KEY,
 	 filename text,
+         tablesfk int,
+         ftableid int,
 	 mime text,
 	 notes text,
+         size numeric(16),
 	 title text)");
    if (!$result) $test=false;
    $db->Execute("CREATE INDEX files_id_index ON files (id)"); 
+
+   $result=$db->Execute("CREATE TABLE tables
+         (id int PRIMARY KEY,
+          sortkey int,
+          tablename text)");
+   if (!$result) $test=false;
+   $db->Execute("CREATE INDEX tables_id_index ON tables (id)"); 
+   $db->Execute("CREATE INDEX tables_tablename_index ON tables (tablename)"); 
+   $db->Execute("CREATE INDEX tables_tablename_index ON tables (tablename(10))"); 
 
    // insert sysadmin and admin group
    $pass= md5($pwd);
