@@ -73,18 +73,19 @@ if ($use_sessions) {
          $PHP_AUTH_PW=$HTTP_POST_VARS['pwd'];
       } elseif (isset($system_settings['direct_login'])) {
          $PHP_AUTH_USER=$HTTP_GET_VARS['user'];
-         // we'll only continue if this user is allowed to do URL based logins 
-         $permissions2=get_cell($db,'users','permissions2','login',$PHP_AUTH_USER); 
-         if (! ($permissions2 & $URL_LOGIN) ) {
-echo "$permissions2 $URL_LOGIN";
-            // delay to discourage brute force cracks
-            usleep(500000);
-            $PHP_AUTH_USER = false;
-            loginscreen("<h4>Your credentials were not accepted, Please try again</h4>");
-            exit();
-         }
-         
+         if ($PHP_AUTH_USER) {
+				// we'll only continue if this user is allowed to do URL based logins 
+				$permissions2=get_cell($db,'users','permissions2','login',$PHP_AUTH_USER); 
+				if (! ($permissions2 & $URL_LOGIN) ) {
+		//echo "$permissions2 $URL_LOGIN";
+				// delay to discourage brute force cracks
+				usleep(500000);
+				$PHP_AUTH_USER = false;
+				loginscreen("<h4>Your credentials were not accepted, Please try again</h4>");
+				exit();
+				}
          $PHP_AUTH_PW=$HTTP_GET_VARS['pwd'];
+         }
       }
 
       if ($PHP_AUTH_USER && $PHP_AUTH_PW) {
