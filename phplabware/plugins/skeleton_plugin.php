@@ -37,16 +37,21 @@ function plugin_add ($db,$tableid,$id)
 // You could, for instance, calculate a value of a field based on other fields
 // make sure this function returns true (or does not exist), or additions/modification
 // will fail!
+/*
 function plugin_check_data($db,&$fieldvalues,$table_desc,$modify=false) 
 {
    return true;
 }
+*/
+
+
 
 ////
-// !Overrides the standard 'show record'function
+/*// !Overrides the standard 'show record'function
 function plugin_show($db,$tableinfo,$id,$USER,$system_settings,$backbutton=true)
 {
 }
+*/
 
 
 ////
@@ -55,34 +60,43 @@ function plugin_show($db,$tableinfo,$id,$USER,$system_settings,$backbutton=true)
 // $fieldvalues is an array with the column names as key.
 // if there is an $existing_clause (boolean) you should prepend your additions
 // with ' AND' or ' OR', otherwise you should not
+/*
 function plugin_search($query,$fieldvalues,$existing_clause) 
 {
    return $query;
 }
-
+*/
 
 ////
 // !Extends function getvalues
 // $allfields is a 2-D array containing the field names of the table in the first dimension
 // and name,columnid,label,datatype,display_table,display_record,ass_t,ass_column,
 // ass_local_key,required,modifiable,text,values in the 2nd D
+/*
 function plugin_getvalues($db,&$allfields,$id,$tableid) 
 {
 }
+*/
+
 
 ////
 // !Extends function display_add
 // This function let's you change values before they are display in the display_add function
+/*
 function plugin_display_add ($db,$tableid,&$nowfield)
 {
 }
+*/
+
 
 ////
 // !Extends function display_add
 // This lets you add information to every specific item
+/*
 function plugin_display_add ($db,$tableid,$nowfield)
 {
 }
+*/
 
 
 ?>
