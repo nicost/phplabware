@@ -44,6 +44,8 @@ function check_pb_data ($db,&$field_values) {
        $test1=false;
        $test2=true;
        $llength=71;
+       // protect quotes in imported data
+       set_magic_quotes_runtime(1);
        while ($fh && $test2 && !feof($fh)) {
           $line=chop(fgets($fh,1024));
           $lid=strtok($line," ");
@@ -74,6 +76,7 @@ function check_pb_data ($db,&$field_values) {
    }
    if (!$field_values["title"])
       $field_values["title"]=$compnd;
+   set_magic_quotes_runtime(0);
    return true;
 }
 
@@ -228,7 +231,7 @@ function show_pb ($db,$fields,$id,$USER,$system_settings) {
    echo "'>".$system_settings["baseURL"].getenv("SCRIPT_NAME")."?showid=$id</a> (This page)<br>\n";
    if ($pdbid) {
       $Pdblink="<a href='http://www.rcsb.org/pdb/cgi/explore.cgi?pdbId=$pdbid'>$pdbid</a>(Entry at PDB database)\n";
-      $Webmollink="<a href='http://'>$pdbid</a>(View Molecule with WebMol)\n";
+      $Webmollink="<a href='webmol.php?pdbid=$pdbid'>$pdbid</a>(View Molecule with WebMol)\n";
    }
    echo "$Pdblink<br>$Webmollink</td></tr>\n";
 
@@ -479,7 +482,7 @@ else {
       $pdbid=$r->fields["pdbid"];
       if ($pdbid) {
          $Pdblink="<a href='http://www.rcsb.org/pdb/cgi/explore.cgi?pdbId=$pdbid'>$pdbid</a>\n";
-         $Webmollink="<a href='http://'>$pdbid</a>\n";
+         $Webmollink="<a href='webmol.php?pdbid=$pdbid'>$pdbid</a>\n";
       }
       else
          $Webmolllink=$Pdblink="&nbsp;";
