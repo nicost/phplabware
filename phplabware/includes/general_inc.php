@@ -353,20 +353,20 @@ function getvalues($db,$DBNAME,$DB_DESNAME,$fields,$qfield=false,$field=false) {
    while ($column) {
       if(!(!$id && $column=="id")) {
          ${$column}[values]= $r->fields[$column];
-         $rb=$db->CacheExecute(2,"SELECT label,datatype,display_table,display_record,associated_table,associated_sql,associated_local_key,required FROM $DB_DESNAME WHERE columnname='$column'");
+         $rb=$db->CacheExecute(2,"SELECT label,datatype,display_table,display_record,associated_table,associated_column,associated_local_key,required FROM $DB_DESNAME WHERE columnname='$column'");
          ${$column}["name"]=$column;
          ${$column}["label"]=$rb->fields["label"];
          ${$column}["datatype"]=$rb->fields["datatype"];
          ${$column}["display_table"]=$rb->fields["display_table"];
          ${$column}["display_record"]=$rb->fields["display_record"];
          ${$column}["ass_t"]=$rb->fields["associated_table"];
-         ${$column}["ass_column"]=$rb->fields["associated_sql"];
+         ${$column}["ass_column"]=$rb->fields["associated_column"];
          ${$column}["ass_local_key"]=$rb->fields["associated_local_key"];
          ${$column}["required"]=$rb->fields["required"];
          if ($rb->fields["datatype"]=="table") {
             ${$column}["ass_table_desc_name"]=get_cell($db,"tableoftables","table_desc_name","id",$rb->fields["associated_table"]);
             ${$column}["ass_table_name"]=get_cell($db,"tableoftables","real_tablename","id",$rb->fields["associated_table"]);
-            ${$column}["ass_column_name"]=get_cell($db,${$column}["ass_table_desc_name"],"columnname","id",$rb->fields["associated_sql"]);
+            ${$column}["ass_column_name"]=get_cell($db,${$column}["ass_table_desc_name"],"columnname","id",$rb->fields["associated_column"]);
             if ($rb->fields["associated_local_key"]) 
                ${$column}["ass_local_column_name"]=get_cell($db,$DB_DESNAME,"columnname","id",$rb->fields["associated_local_key"]);
          }

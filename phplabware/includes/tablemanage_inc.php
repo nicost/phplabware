@@ -184,12 +184,15 @@ function add_table ($db,$tablename,$tablelabel,$sortkey) {
 		type text, 
 		datatype text, 
 		associated_table text, 
-		associated_sql text,
+		associated_column text,
 		associated_local_key text,
 		thumb_x_size int,
-		thumb_y_size int)");   
+		thumb_y_size int,
+		link_first text,
+		link_last text,
+		modifiable char(1))");   
 
-         $fieldstring="id,label,columnname,sortkey,display_table,display_record, required, type, datatype, associated_table, associated_sql"; 
+         $fieldstring="id,label,columnname,sortkey,display_table,display_record, required, type, datatype, associated_table, associated_column"; 
          $descid=$db->GenId("$desc"."_id");  
   	 $db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'id','id','100','N','N','N','int(11)','text','','')");
          $descid=$db->GenId("$desc"."_id");  
@@ -254,7 +257,7 @@ function add_columnecg($db,$tablename2,$colname2,$label,$datatype,$Rdis,$Tdis,$r
    $colname = preg_replace ($search,$replace, $colname2);
    $real_tablename=get_cell($db,"tableoftables","real_tablename","id",$id);
 
-   $fieldstring="id,columnname,label,sortkey,display_table,display_record,required,type,datatype,associated_table,associated_sql"; 
+   $fieldstring="id,columnname,label,sortkey,display_table,display_record,required,type,datatype,associated_table,associated_column"; 
    $desc=$real_tablename . "_desc";
    $fieldid=$db->GenId($desc."_id");
    $label=strtr($label,",'","  ");
@@ -423,10 +426,10 @@ function add_associated_table($db,$table,$column,$table_ass,$column_ass) {
    $r=$db->Execute("SELECT id FROM $table_desc WHERE associated_table='$table_ass' AND associated_local_key IS NULL");
    if ($r && !$r->EOF) {
       $prim_column=$r->fields["id"];
-      $r=$db->Execute("UPDATE $table_desc SET associated_table='$table_ass', associated_sql='$column_ass', associated_local_key='$prim_column' WHERE columnname='$column'");
+      $r=$db->Execute("UPDATE $table_desc SET associated_table='$table_ass', associated_column='$column_ass', associated_local_key='$prim_column' WHERE columnname='$column'");
    }
    else { 
-      $r=$db->Execute("UPDATE $table_desc SET associated_table='$table_ass', associated_sql='$column_ass' WHERE columnname='$column'");
+      $r=$db->Execute("UPDATE $table_desc SET associated_table='$table_ass', associated_column='$column_ass' WHERE columnname='$column'");
    }
 }
 
