@@ -472,6 +472,8 @@ else {
    
    // get a list with ids we may see
    $lista=make_SQL_csf ($r_master,false,"id",$nr_records);
+   if (!$lista)
+      $lista="-1";
    $lista=" id IN ($lista) ";
 
    // show title we may see, when too many, revert to text box
