@@ -15,7 +15,6 @@ for ($i=0;$i<$hownew;$i++)
 $newtableshortname=substr($newtablename,0,3).$newtableid;
 $newtable_realname=$newtablename."_".$newtableid;
 $newtable_desc_name=$newtable_realname."_desc";
-$db->debug=true;
 $r=$db->Execute("INSERT INTO tableoftables (id,sortkey,tablename,shortname,display,permission,custom,real_tablename,table_desc_name,label,plugin_code) VALUES ('$newtableid','0','$newtablename','$newtableshortname','Y','Users',NULL,'$newtable_realname','$newtable_desc_name','$newtablelabel','plugins/ordering_plugin.php')");
 $rg=$db->Execute ("SELECT id FROM groups");
 while (!$rg->EOF) {
@@ -46,39 +45,39 @@ if ($r) {
       modifiable char(1) )");
    if ($rb) {
       $newid=$db->GenID("$newtable_desc_name"."_id");
-      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'110','access','access','N','N','N','varchar(9)','text','','','','','','','','','')");
+      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'110','access','access','N','N','N','varchar(9)','text','','','','',NULL,NULL,'','','')");
       $newid=$db->GenID("$newtable_desc_name"."_id");
-      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'10009','Submitted by','ownerid','N','Y','N','int','user','','','','','','','','','')");
+      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'10009','Submitted by','ownerid','N','Y','N','int','user','','','','',NULL,NULL,'','','')");
       $newid=$db->GenID("$newtable_desc_name"."_id");
-      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'130','magic','magic','N','N','N','int','text','','','','','','','','','')");
+      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'130','magic','magic','N','N','N','int','text','','','','',NULL,NULL,'','','')");
       $newid=$db->GenID("$newtable_desc_name"."_id");
-      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'1','title','title','Y','Y','Y','text','text','','','','','','','','','Y')");
+      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'1','title','title','Y','Y','Y','text','text','','','','',NULL,NULL,'','','Y')");
       $newid=$db->GenID("$newtable_desc_name"."_id");
-      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'10029','Last modified on','lastmoddate','N','N','N','int','date','','','','','','','','','')");
+      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'10029','Last modified on','lastmoddate','N','N','N','int','date','','','','',NULL,NULL,'','','')");
       $newid=$db->GenID("$newtable_desc_name"."_id");
-      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'10039','Last modified by','lastmodby','N','N','N','int','user','','','','','','','','','')");
+      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'10039','Last modified by','lastmodby','N','N','N','int','user','','','','',NULL,NULL,'','','')");
       $newid=$db->GenID("$newtable_desc_name"."_id");
-      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'10019','Date entered','date','N','Y','N','int','date','','','','','','','','','')");
+      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'10019','Date entered','date','N','Y','N','int','date','','','','',NULL,NULL,'','','')");
       $newid=$db->GenID("$newtable_desc_name"."_id");
-      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'8','Company','Company','Y','Y','N','text','text','','','','','','','','','Y')");
+      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'8','Company','Company','Y','Y','N','text','text','','','','',NULL,NULL,'','','Y')");
       $newid=$db->GenID("$newtable_desc_name"."_id");
-      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'4','date_requested','date_requested','Y','Y','N','text','text','','','','','','','','','Y')");
+      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'4','date_requested','date_requested','Y','Y','N','text','text','','','','',NULL,NULL,'','','Y')");
       $newid=$db->GenID("$newtable_desc_name"."_id");
-      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'6','date_ordered','date_ordered','Y','Y','N','text','text','','','','','','','','','Y')");
+      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'6','date_ordered','date_ordered','Y','Y','N','text','text','','','','',NULL,NULL,'','','Y')");
       $newid=$db->GenID("$newtable_desc_name"."_id");
-      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'13','reorder','reorder','N','Y','N','text','link','','','','','','','','','Y')");
+      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'13','reorder','reorder','N','Y','N','text','link','','','','',NULL,NULL,'','','Y')");
       $newid=$db->GenID("$newtable_desc_name"."_id");
-      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'3','ordered_by','ordered_by','Y','Y','N','text','text','','','','','','','','','Y')");
+      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'3','ordered_by','ordered_by','Y','Y','N','text','text','','','','',NULL,NULL,'','','Y')");
       $newid=$db->GenID("$newtable_desc_name"."_id");
-      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'9','catalog number','catnum','Y','Y','N','text','text','','','','','','','','','Y')");
+      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'9','catalog number','catnum','Y','Y','N','text','text','','','','',NULL,NULL,'','','Y')");
       $newid=$db->GenID("$newtable_desc_name"."_id");
-      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'15','Notes','notes','Y','Y','N','text','textlong','','','','','','','','','Y')");
+      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'15','Notes','notes','Y','Y','N','text','textlong','','','','',NULL,NULL,'','','Y')");
       $newid=$db->GenID("$newtable_desc_name"."_id");
-      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'10','Quantity','quantity','Y','Y','N','text','text','','','','','','','','','Y')");
+      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'10','Quantity','quantity','Y','Y','N','text','text','','','','',NULL,NULL,'','','Y')");
       $newid=$db->GenID("$newtable_desc_name"."_id");
-      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'11','price','price','Y','Y','N','text','text','','','','','','','','','Y')");
+      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'11','price','price','Y','Y','N','text','text','','','','',NULL,NULL,'','','Y')");
       $newid=$db->GenID("$newtable_desc_name"."_id");
-      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'2','urgency','urgency','Y','Y','N','text','pulldown','Ordering_10010ass_20','urgency from Ordering_10010ass_20 where ','','','','','','','Y')");
+      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'2','urgency','urgency','Y','Y','N','text','pulldown','Ordering_10010ass_20','urgency from Ordering_10010ass_20 where ','','',NULL,NULL,'','','Y')");
       $ass_table=$newtable_realname."ass";
       $id_ass=$db->GenId($ass_table,20);
       $ass_table.="_$id_ass";
@@ -89,7 +88,7 @@ if ($r) {
          typeshort text)");
       $db->Execute("UPDATE $newtable_desc_name SET associated_table='$ass_table' WHERE id=$newid");
       $newid=$db->GenID("$newtable_desc_name"."_id");
-      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'12','email_me','confirmme','N','Y','N','int','pulldown','Ordering_10010ass_22','','','','','','','','Y')");
+      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'12','email_me','confirmme','N','Y','N','int','pulldown','Ordering_10010ass_22','','','',NULL,NULL,'','','Y')");
       $ass_table=$newtable_realname."ass";
       $id_ass=$db->GenId($ass_table,20);
       $ass_table.="_$id_ass";
@@ -100,11 +99,11 @@ if ($r) {
          typeshort text)");
       $db->Execute("UPDATE $newtable_desc_name SET associated_table='$ass_table' WHERE id=$newid");
       $newid=$db->GenID("$newtable_desc_name"."_id");
-      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'9999','confirmed','confirmed','N','N','N','text','text','','','','','','','','','Y')");
+      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'9999','confirmed','confirmed','N','N','N','text','text','','','','',NULL,NULL,'','','Y')");
       $newid=$db->GenID("$newtable_desc_name"."_id");
-      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'7','Date recieved','date_rec','Y','Y','N','text','text','','','','','','','','','Y')");
+      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'7','Date recieved','date_rec','Y','Y','N','text','text','','','','',NULL,NULL,'','','Y')");
       $newid=$db->GenID("$newtable_desc_name"."_id");
-      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'5','Has been Ordered','isordered','Y','Y','N','int','pulldown','Ordering_10010ass_23','','','','','','','','Y')");
+      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'5','Has been Ordered','isordered','Y','Y','N','int','pulldown','Ordering_10010ass_23','','','',NULL,NULL,'','','Y')");
       $ass_table=$newtable_realname."ass";
       $id_ass=$db->GenId($ass_table,20);
       $ass_table.="_$id_ass";
@@ -115,13 +114,13 @@ if ($r) {
          typeshort text)");
       $db->Execute("UPDATE $newtable_desc_name SET associated_table='$ass_table' WHERE id=$newid");
       $newid=$db->GenID("$newtable_desc_name"."_id");
-      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'111','group read','gr','N','N','N','smallint','int','','','','','','','','','Y')");
+      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'111','group read','gr','N','N','N','smallint','int','','','','',NULL,NULL,'','','Y')");
       $newid=$db->GenID("$newtable_desc_name"."_id");
-      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'112','group write','gw','N','N','N','smallint','int','','','','','','','','','Y')");
+      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'112','group write','gw','N','N','N','smallint','int','','','','',NULL,NULL,'','','Y')");
       $newid=$db->GenID("$newtable_desc_name"."_id");
-      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'113','everyone read','er','N','N','N','smallint','int','','','','','','','','','Y')");
+      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'113','everyone read','er','N','N','N','smallint','int','','','','',NULL,NULL,'','','Y')");
       $newid=$db->GenID("$newtable_desc_name"."_id");
-      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'114','everyone write','ew','N','N','N','smallint','int','','','','','','','','','Y')");
+      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'114','everyone write','ew','N','N','N','smallint','int','','','','',NULL,NULL,'','','Y')");
 
 for ($i=0;$i<sizeof($lid);$i++) {
    // find local associated column
@@ -158,7 +157,6 @@ for ($i=0;$i<sizeof($lid);$i++) {
          ew smallint  ) ");
 
    }
-$db->debug=false;
 }
 }
 ?>
