@@ -177,8 +177,8 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
    if (substr($key, 0, 3) == 'chg') {
       $chgarray = explode('_', $key);
       if ($val=='Change') {
-         //$Fieldscomma=comma_array_SQL_where($db,$tableinfo->desname,'columnname','display_table','Y');
-         $Fieldsarray=explode(',',$Fieldscomma);
+         // The extra fields are needed to keep the access permissions right
+         $Fieldsarray=explode(',',$Fieldscomma.',grr,grw,evr,evw');
          reset($HTTP_POST_VARS);
          while((list($key, $val) = each($HTTP_POST_VARS))) {	
             $testarray=explode('_',$key);
@@ -454,21 +454,24 @@ else {
 
    // get variables for links 
    $sid=SID;
-   if ($sid) $sid='&'.$sid;
-   if ($tableinfo->name) $sid.="&tablename=$tableinfo->name";
+   $actionLink='tablename='.$tableinfo->name;
+   if ($sid) {
+      $actionLink.='&amp;'.$sid;
+   }
+   //if ($tableinfo->name) $sid.="&tablename=$tableinfo->name";
 
    // print form;
    // $headers = getallheaders();
 
    $dbstring=$PHP_SELF."?"."tablename=$tableinfo->name&";
    $formname='g_form';
-   echo "<form name='$formname' method='post' id='generalform' enctype='multipart/form-data' action='$PHP_SELF?$sid'>\n";
+   echo "<form name='$formname' method='post' id='generalform' enctype='multipart/form-data' action='$PHP_SELF?$actionLink'>\n";
    echo "<input type='hidden' name='md' value='$md'>\n";
 
    echo "<table border=0 width='50%' align='center'>\n<tr>\n";
    
    // variable md contains edit/view mode setting.  Propagated as post var to remember state.  md can only be changed as a get variable
-   $modetext="<a href='$PHP_SELF?tablename=$tableinfo->name&md=";
+   $modetext="<a href='$PHP_SELF?tablename=$tableinfo->name&amp;md=";
  
    $may_write=may_write($db,$tableinfo->id,false,$USER);
    if ($md=='edit') {
@@ -484,17 +487,14 @@ else {
    }
    // write the first line shown in table view 
    if ($may_write)
-      echo "<td align='center'><a href='$PHP_SELF?&add=Add&tablename=$tableinfo->name&".SID."' target='_blank'>Add Record</a></td>\n"; 
+      echo "<td align='center'><a href='$PHP_SELF?add=Add&amp;tablename=$tableinfo->name&amp;".SID."' target='_blank'>Add Record</a></td>\n"; 
    else
        echo "<td>&nbsp;</td>\n";
    echo "<td align='center'>$tabletext <B>$tableinfo->label</B> $modetext</td>";
    echo "<td align='center'>".viewmenu($db,$tableinfo,$viewid,false)."</td>\n";
-   echo "<td align='center'><a href=import.php?tableid={$tableinfo->id}>Import Data</a></td>\n";
+   echo "<td align='center'><a href='import.php?tableid={$tableinfo->id}'>Import Data</a></td>\n";
    echo "</tr>\n</table>\n";
    next_previous_buttons($rp,true,$num_p_r,$numrows,${$pagename},$db,$tableinfo);
-
-   // print header of table
-   echo "<table border='1' align='center'>\n";
 
    // get a list with ids we may see, $listb has all the ids we may see
    //$r=$db->CacheExecute(2,${$queryname});
@@ -515,9 +515,12 @@ else {
    // javascript to automatically execute search when pulling down 
    $jscript="onChange='document.g_form.searchj.value=\"Search\"; document.g_form.submit()'";
 
+   echo "<input type='hidden' name='searchj' value=''>\n";
+   // print header of table
+   echo "<table border='1' align='center'>\n";
+
    // row with search form
    echo "<tr align='center'>\n";
-   echo "<input type='hidden' name='searchj' value=''>\n";
 
    foreach($Allfields as $nowfield)  {
       if ($HTTP_POST_VARS[$nowfield['name']]) {

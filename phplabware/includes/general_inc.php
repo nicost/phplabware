@@ -14,9 +14,11 @@
   *  option) any later version.                                              *
   \**************************************************************************/
 
-//// 
-// !Displays information on the record's owner
-// needs to be called within a table
+/**
+ *  Displays information on the record's owner
+ *
+ * needs to be called within a table
+ */
 function user_entry($id,$real_tablename) {
    global $db;
    $ownerid=get_cell($db,$real_tablename,'ownerid','id',$id);
@@ -34,10 +36,12 @@ function user_entry($id,$real_tablename) {
 
 
 
-///////////////////////////////////////////////////////////
-//// 
-// !Prints name and date
-// Needs to be called within a table
+/**
+ * * 
+ *  Prints name and date
+ *
+ * Needs to be called within a table
+ */
 function date_entry($id,$real_tablename) {
    global $db,$system_settings;
 
@@ -63,11 +67,13 @@ function date_entry($id,$real_tablename) {
 }
 
 
-////
-// !Displays searchbar in table view
-// For data of type table, recursive calls are used
-// The ugly stuff with HTTP_POST_VARS could be done better
-// it would also be nicer if a string was returned instead of writing directly
+/**
+ *  Displays searchbar in table view
+ *
+ * For data of type table, recursive calls are used
+ * The ugly stuff with HTTP_POST_VARS could be done better
+ * it would also be nicer if a string was returned instead of writing directly
+ */
 function searchfield ($db,$tableinfo,$nowfield,$HTTP_POST_VARS,$jscript) {
    global $USER;
    $LAYOUT=16;
@@ -104,7 +110,7 @@ function searchfield ($db,$tableinfo,$nowfield,$HTTP_POST_VARS,$jscript) {
          echo "<td style='width:10%'>&nbsp;</td>\n";
     }
     elseif ($nowfield['datatype']=='int' || $nowfield['datatype']=='float' || $nowfield['datatype']=='sequence' || $nowfield['datatype']=='date') {
-  	    echo  " <td style='width: 10%'><input type='text' name='$nowfield[name]' value='".${$nowfield[name]}."'size=8 align='center'></td>\n";
+  	    echo  " <td style='width: 10%'><input type='text' name='$nowfield[name]' value='".${$nowfield[name]}."'size=8 align='middle'></td>\n";
     }
     elseif ($nowfield['datatype']== 'text' || $nowfield['datatype']=='file')
        echo  " <td style='width: 25%'><input type='text' name='$nowfield[name]' value='".${$nowfield[name]}."'size=8></td>\n";
@@ -113,7 +119,7 @@ function searchfield ($db,$tableinfo,$nowfield,$HTTP_POST_VARS,$jscript) {
     elseif ($nowfield['datatype']== 'pulldown' || $nowfield['datatype']=='mpulldown') {
       echo "<td style='width: 10%'>";
       if ($USER['permissions'] & $LAYOUT)  {
-          $jscript2=" onclick='MyWindow=window.open (\"general.php?tablename=".$tableinfo->name."&edit_type=$nowfield[ass_t]&jsnewwindow=true&formname=$formname&selectname=$nowfield[name]".SID."\",\"type\",\"scrollbars,resizable,toolbar,status,menubar,width=600,height=400\");MyWindow.focus()'";
+          $jscript2=" onclick='MyWindow=window.open (\"general.php?tablename=".$tableinfo->name."&amp;edit_type=$nowfield[ass_t]&amp;jsnewwindow=true&amp;formname=$formname&amp;selectname=$nowfield[name]".SID."\",\"type\",\"scrollbars,resizable,toolbar,status,menubar,width=600,height=400\");MyWindow.focus()'";
           echo "<input type='button' name='edit_button' value='Edit $nowfield[label]' $jscript2><br>\n";
       }	 		 			
       $rpull=$db->Execute("SELECT typeshort,id from $nowfield[ass_t] ORDER by sortkey,typeshort");
@@ -139,9 +145,11 @@ function searchfield ($db,$tableinfo,$nowfield,$HTTP_POST_VARS,$jscript) {
        echo "<td style='width: 10%'>&nbsp;</td>";
 }
 
-////////////////////////////////////////////////////////
-////
-//! Generated comma separated list of columns based on view prefs
+/**
+ * *
+ *  Generated comma separated list of columns based on view prefs
+ *
+ */
 function viewlist($db,$tableinfo,$viewid) {
    global $USER;
    $r=$db->Execute("SELECT columnid FROM tableviews WHERE viewnameid=$viewid AND viewmode=1");
@@ -157,9 +165,11 @@ function viewlist($db,$tableinfo,$viewid) {
 }
 
       
-////////////////////////////////////////////////////////
-////
-//! Generated menu with user-defined views
+/**
+ * *
+ *  Generated menu with user-defined views
+ *
+ */
 function viewmenu($db, $tableinfo,$viewid,$useronly=1,$jscript='OnChange="document.g_form.submit()"') {
    global $USER, $db_type;
    
@@ -181,9 +191,11 @@ function viewmenu($db, $tableinfo,$viewid,$useronly=1,$jscript='OnChange="docume
 }
 
 
-///////////////////////////////////////////////////////////
-//// 
-// !Displays information in table in edit mode
+/**
+ * * 
+ *  Displays information in table in edit mode
+ *
+ */
 function display_table_change($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr_curr_page,$page_array,$r=false) {
    global $nr_records,$max_menu_length,$USER,$LAYOUT,$HTTP_SESSION_VARS;
 
@@ -194,7 +206,7 @@ function display_table_change($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr
       $r=$db->Execute($pr_query);
    $r->Move($first_record);
    if ($HTTP_SESSION_VARS['javascript_enabled']) {
-      echo "<script language='JavaScript'><!--window.name='mainwin';--></script>\n";
+      echo "<script type='text/javascript' language='JavaScript'><!--window.name='mainwin';--></script>\n";
    }
    // print all entries
    while (!($r->EOF) && $r && $current_record < $last_record)  {
@@ -205,9 +217,11 @@ function display_table_change($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr
       $may_write=may_write($db,$tableinfo->id,$id,$USER);
 
       // print start of row of selected record
-      if ($current_record % 2) echo "<tr class='row_even' align='center'>\n";
-         else echo "<tr class='row_odd' align='center'>\n";
-      echo "<input type='hidden' name='chgj_".$id."' value=''>\n";
+      if ($current_record % 2) {
+         echo "<tr class='row_even' align='center'>\n";
+      } else {
+         echo "<tr class='row_odd' align='center'>\n";
+      }
       $js="onChange='document.g_form.chgj_".$id.".value=\"Change\";document.g_form.submit()'";
       foreach($Allfields as $nowfield) {
          if ($nowfield['required']=='Y')
@@ -215,17 +229,17 @@ function display_table_change($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr
          else
             $thestar=false;
          if ( ($nowfield['modifiable']!='Y') || !$may_write) {
-            echo "<input type='hidden' name='$nowfield[name]_$id' value='$nowfield[values]'>\n";
-            echo "<td>$nowfield[text]</td>\n";
+            echo "<td><input type='hidden' name='{$nowfield['name']}_$id' value=\"{$nowfield['values']}\">\n";
+            echo "{$nowfield['text']}</td>\n";
          }
          elseif ($nowfield['datatype']=='text') {
-     	    echo "<td><input type='text' name='$nowfield[name]_$id' value='$nowfield[values]' size=15 $js>$thestar</td>\n";
+     	    echo "<td><input type='text' name='{$nowfield['name']}_$id' value='{$nowfield['values']}' size=15 $js>$thestar</td>\n";
          }
          elseif ($nowfield['datatype']=='date') {
-     	    echo "<td><input type='text' name='$nowfield[name]_$id' value='$nowfield[text]' size=12 $js>$thestar</td>\n";
+     	    echo "<td><input type='text' name='{$nowfield['name']}_$id' value='{$nowfield['text']}' size=12 $js>$thestar</td>\n";
          }
          elseif ($nowfield['datatype']=='int' || $nowfield['datatype']=='sequence' || $nowfield['datatype']=='float') {
-     	    echo "<td><input type='text' name='$nowfield[name]_$id' value='$nowfield[values]' size=8 $js>$thestar</td>\n";
+     	    echo "<td><input type='text' name='{$nowfield['name']}_$id' value='{$nowfield['values']}' size=8 $js>$thestar</td>\n";
          }
          elseif ($nowfield['datatype']=='textlong') {
      	    echo "<td><textarea name='$nowfield[name]_$id' cols=45 rows=3>$thestar{$nowfield['values']}</textarea></td>\n"; 
@@ -235,8 +249,8 @@ function display_table_change($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr
          }
          elseif ($nowfield['datatype']=='pulldown') {
             // get previous value	
-            $rp=$db->Execute("SELECT typeshort,id FROM $nowfield[ass_t] ORDER BY sortkey,typeshort");
-            $text=$rp->GetMenu2("$nowfield[name]_$id",$nowfield[values],true,false,0,$js);
+            $rp=$db->Execute("SELECT typeshort,id FROM {$nowfield['ass_t']} ORDER BY sortkey,typeshort");
+            $text=$rp->GetMenu2("$nowfield[name]_$id",$nowfield['values'],true,false,0,$js);
             echo "\n<td>$text $thestar</td>\n";
          }
          elseif ($nowfield['datatype']=='mpulldown') {
@@ -270,18 +284,28 @@ function display_table_change($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr
                echo "<td>$text $thestar</td>\n";
             }
             else
-               echo "<td>$nowfield[text] $thestar</td>\n";
+               echo "<td>{$nowfield['text']} $thestar</td>\n";
          }
 	 elseif ($nowfield['datatype']=='textlarge') {
-	    echo "<td colspan=6><textarea name='$nowfield[name]_$id' rows='5' cols='100%'>$nowfield[values]</textarea>$thestar</td>\n";
+	    echo "<td colspan=6><textarea name='{$nowfield['name']}_$id' rows='5' cols='100%'>{$nowfield['values']}</textarea>$thestar</td>\n";
 	 }
          else
-            echo "<td>$nowfield[text]</td>\n";
+            echo "<td>{$nowfield['text']}</td>\n";
       }
 
+      // View, Change and Delete buttons
       echo "<td align='center'>&nbsp;\n";  
+      // Hidden variables should go here
+      // This one is used by Javascript
+      echo "<input type='hidden' name='chgj_".$id."' value=''>\n";
+      // Access rights
+      $ra=$db->Execute("SELECT gr,gw,er,ew FROM {$tableinfo->realname} WHERE id={$r->fields['id']}");
+      echo "<input type='hidden' name='grr_$id' value='{$ra->fields['gr']}'>\n";
+      echo "<input type='hidden' name='evr_$id' value='{$ra->fields['er']}'>\n";
+      echo "<input type='hidden' name='grw_$id' value='{$ra->fields['gw']}'>\n";
+      echo "<input type='hidden' name='evw_$id' value='{$ra->fields['er']}'>\n";
       if ($HTTP_SESSION_VARS['javascript_enabled']) {
-         $jscript=" onclick='MyWindow=window.open (\"general.php?tablename=".$tableinfo->name."&showid=$id&jsnewwindow=true\",\"view\",\"scrollbars,resizable,toolbar,status,menubar,width=700,height=500\");MyWindow.focus()'";
+         $jscript=" onclick='MyWindow=window.open (\"general.php?tablename=".$tableinfo->name."&amp;showid=$id&amp;jsnewwindow=true\",\"view\",\"scrollbars,resizable,toolbar,status,menubar,width=700,height=500\");MyWindow.focus()'";
          echo "<input type=\"button\" name=\"view_" . $id . "\" value=\"View\" $jscript>\n";
       }
       else
@@ -302,7 +326,7 @@ function display_table_change($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr
    if (may_write($db,$tableinfo->id,false,$USER)) {
       echo "<tr><td colspan=20 align='center'>";
       if ($HTTP_SESSION_VARS['javascript_enabled']) {
-         $jscript=" onclick='MyWindow=window.open (\"general.php?tablename=".$tableinfo->name."&showid=$id&jsnewwindow=true\",\"view\",\"scrollbars,resizable,toolbar,status,menubar,width=700,height=500\");MyWindow.focus()'";
+         $jscript=" onclick='MyWindow=window.open (\"general.php?tablename=".$tableinfo->name."&amp;showid=$id&amp;jsnewwindow=true\",\"view\",\"scrollbars,resizable,toolbar,status,menubar,width=700,height=500\");MyWindow.focus()'";
          echo "<input type=\"submit\" name=\"add\" value=\"Add Record\" $jscript>";
       }
       else {
@@ -317,9 +341,11 @@ function display_table_change($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr
 }
 
 
-///////////////////////////////////////////////////////////
-//// 
-// !Displays all information within the table
+/**
+ * * 
+ *  Displays all information within the table
+ *
+ */
 function display_table_info($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr_curr_page,$page_array,$r=false,$viewid=false) {
    global $nr_records,$USER,$LAYOUT,$HTTP_SESSION_VARS;
 
@@ -370,7 +396,7 @@ function display_table_info($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr_c
       echo "<td align='center'>&nbsp;\n";  
       if ($HTTP_SESSION_VARS['javascript_enabled']) {
          //$jscript=" onclick='MyWindow=window.open (\"general.php?tablename=".$tableinfo->name."&showid=$id&jsnewwindow=true\",\"view\",\"status,menubar,scrollbar,resizable,width=600,height=400\");MyWindow.focus()'";
-         $jscript=" onclick='MyWindow=window.open (\"general.php?tablename=".$tableinfo->name."&showid=$id&jsnewwindow=true&viewid=$viewid\",\"view\",\"status,menubar,toolbar,scrollbars,resizable,titlebar,width=700,height=500\");MyWindow.focus()'";
+         $jscript=" onclick='MyWindow=window.open (\"general.php?tablename=".$tableinfo->name."&amp;showid=$id&amp;jsnewwindow=true&amp;viewid=$viewid\",\"view\",\"status,menubar,toolbar,scrollbars,resizable,titlebar,width=700,height=500\");MyWindow.focus()'";
          echo "<input type=\"button\" name=\"view_" . $id . "\" value=\"View\" $jscript>\n";
       }
       else
@@ -378,7 +404,7 @@ function display_table_info($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr_c
       if (may_write($db,$tableinfo->id,$id,$USER)) {
 // this works, but how do you go back from the modify window to this one???
          if ($HTTP_SESSION_VARS['javascript_enabled']) {
-            $jscript="onclick='MyWindow=window.open (\"general.php?tablename=".$tableinfo->name."&jsnewwindow=true&modify=true&mod_".$id."=Modify\",\"modify\",\"scrollbars,resizable,status,menubar,toolbar,width=700,height=500\");MyWindow.focus()'";
+            $jscript="onclick='MyWindow=window.open (\"general.php?tablename=".$tableinfo->name."&amp;jsnewwindow=true&amp;modify=true&amp;mod_".$id."=Modify\",\"modify\",\"scrollbars,resizable,status,menubar,toolbar,width=700,height=500\");MyWindow.focus()'";
             echo "<input type=\"button\" name=\"mod_" . $id . "\" value=\"Modify\" $jscript>\n";
          }
          else
@@ -398,7 +424,7 @@ function display_table_info($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr_c
    if (may_write($db,$tableinfo->id,false,$USER)) {
       echo "<tr><td colspan=20 align='center'>";
       if ($HTTP_SESSION_VARS['javascript_enabled']) {
-         $jscript=" onclick='MyWindow=window.open (\"general.php?tablename=".$tableinfo->name."&add=Add&jsnewwindow=true\",\"view\",\"scrollbars,resizable,toolbar,status,menubar,width=700,height=500\");MyWindow.focus()'";
+         $jscript=" onclick='MyWindow=window.open (\"general.php?tablename=".$tableinfo->name."&amp;add=Add&amp;jsnewwindow=true\",\"view\",\"scrollbars,resizable,toolbar,status,menubar,width=700,height=500\");MyWindow.focus()'";
          echo "<input type=\"button\" name=\"add\" value=\"Add Record\" $jscript>";
       }
       else {
@@ -412,22 +438,24 @@ function display_table_info($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr_c
    echo "</form>\n";
 }
 
-///////////////////////////////////////////////////////////
-////
-// !Display a record in a nice format
+/**
+ * *
+ *  Display a record in a nice format
+ *
+ */
 function display_record($db,$Allfields,$id,$tableinfo,$backbutton=true,$previousid=false,$nextid=false,$viewid=false) 
 {
    global $PHP_SELF, $md,$USER;
 
    if (!$Allfields[1]['recordid']) {
-      echo "<table border=0 align='center'>\n";
+      echo "<table border=0 align='middle'>\n";
       echo "<tr>\n<td align='center'><h3>Record not found</h3>\n</td>\n</tr>";
       echo "<tr>\n<td align='center'>\n<button onclick='self.close();window.opener.focus();' name='Close' value='close'>Close</button></td></tr>\n";
       echo "</table>\n";
       exit;
    }
    echo "&nbsp;<br>\n";
-   echo "<table border=0 align='center'>\n";
+   echo "<table border=0 align='middle'>\n";
    $count=0;
    echo "<tr>\n";
    // if viewid is defined we will over-ride display record with values from the view settings
@@ -514,9 +542,9 @@ function display_record($db,$Allfields,$id,$tableinfo,$backbutton=true,$previous
    // for organizational purpose, define buttons here:
    // next and previous buttons
    if ($previousid)
-      $previousbutton="<input type=\"button\" name=\"view_".$previousid."\" value=\"Previous\" onClick='MyWindow=window.open(\"general.php?tablename={$tableinfo->name}&showid=$previousid&jsnewwindow=true&viewid=$viewid\",\"view\",\"scrollbars,resizable,toolbar,width=600,height=400\")'>\n";
+      $previousbutton="<input type=\"button\" name=\"view_".$previousid."\" value=\"Previous\" onClick='MyWindow=window.open(\"general.php?tablename={$tableinfo->name}&amp;showid=$previousid&amp;jsnewwindow=true&amp;viewid=$viewid\",\"view\",\"scrollbars,resizable,toolbar,width=600,height=400\")'>\n";
    if ($nextid)
-      $nextbutton="<input type=\"button\" name=\"view_".$nextid."\" value=\"Next\" onClick='MyWindow=window.open(\"general.php?tablename={$tableinfo->name}&showid=$nextid&jsnewwindow=true&viewid=$viewid\",\"view\",\"scrollbars,resizable,toolbar,width=600,height=400\")'>\n";
+      $nextbutton="<input type=\"button\" name=\"view_".$nextid."\" value=\"Next\" onClick='MyWindow=window.open(\"general.php?tablename={$tableinfo->name}&amp;showid=$nextid&amp;jsnewwindow=true&amp;viewid=$viewid\",\"view\",\"scrollbars,resizable,toolbar,width=600,height=400\")'>\n";
    // closebutton
    $closebutton="<input type=\"button\" onclick='self.close();window.opener.focus();' name='Close' value='Close'>\n";
    if ($backbutton) {
@@ -530,7 +558,7 @@ function display_record($db,$Allfields,$id,$tableinfo,$backbutton=true,$previous
    $viewmenu=viewmenu($db,$tableinfo,$viewid,false);
 
    // and now display the buttons
-   echo "<table border=0 align='center' width='100%'>\n";
+   echo "<table border=0 align='middle' width='100%'>\n";
    if ($backbutton) {
       echo "<tr>\n<td align='left'>";
       echo " $previousbutton</td><td align='center'>$modifybutton $backbutton $viewmenu</td><td align='right'>$nextbutton </td>\n</tr>\n";
@@ -541,9 +569,11 @@ function display_record($db,$Allfields,$id,$tableinfo,$backbutton=true,$previous
    echo "</form>\n";
 }
 
-///////////////////////////////////////////////////////////
-////
-// !make a nice link to the record
+/**
+ * *
+ *  make a nice link to the record
+ *
+ */
 function make_link($id,$DBNAME) {
    global $PHP_SELF,$system_settings;
    echo "<tr><th>Link:</th><td colspan=7><a href='$PHP_SELF?tablename=$DBNAME&showid=$id&".SID;
@@ -552,10 +582,12 @@ function make_link($id,$DBNAME) {
 }
 
 
-///////////////////////////////////////////////////////////
-////
-// ! Make dropdown menu with available templates
-// When one is chosen, open the formatted record in a new window
+/**
+ * *
+ *   Make dropdown menu with available templates
+ *
+ * When one is chosen, open the formatted record in a new window
+ */
 function show_reports($db,$tableinfo,$recordid=false) {
    global $USER;
    $r=$db->Execute("SELECT id,label FROM reports WHERE tableid=".$tableinfo->id);
@@ -600,9 +632,11 @@ function show_reports($db,$tableinfo,$recordid=false) {
    }
 }
 
-///////////////////////////////////////////////////////////
-////
-// !display addition and modification form
+/**
+ * *
+ *  display addition and modification form
+ *
+ */
 function display_add($db,$tableinfo,$Allfields,$id,$namein,$system_settings) { 
    global $PHP_SELF,$md,$max_menu_length,$USER,$LAYOUT,$HTTP_POST_VARS,$HTTP_SESSION_VARS;
    
@@ -614,15 +648,15 @@ function display_add($db,$tableinfo,$Allfields,$id,$namein,$system_settings) {
       $magic=time();
    echo "<input type='hidden' name='magic' value='$magic'>\n";
    echo "<input type='hidden' name='md' value='$md'>\n";
-   echo "<table border=0 align='center'>\n";   
+   echo "<table border=0 align='middle'>\n";   
    if ($id) {
-      echo "<tr><td colspan=5 align='center'><h3>Modify ".$tableinfo->label." entry <i>$namein</i></h3></td></tr>\n";
+      echo "<tr><td colspan=5 align='middle'><h3>Modify ".$tableinfo->label." entry <i>$namein</i></h3></td></tr>\n";
       echo "<input type='hidden' name='id' value='$id'>\n";
    }
    else {
-      echo "<tr><td colspan=5 align='center'><h3>New ".$tableinfo->label." entry</h3></td></tr>\n";
+      echo "<tr><td colspan=5 align='middle'><h3>New ".$tableinfo->label." entry</h3></td></tr>\n";
    }
-   echo "<table border=0 align='center'>\n<tr align='center'>\n<td colspan=2></td>\n";
+   echo "<table border=0 align='middle'>\n<tr align='middle'>\n<td colspan=2></td>\n";
    
    foreach ($Allfields as $nowfield) {
       // give plugin a chance to modify data
@@ -708,7 +742,7 @@ function display_add($db,$tableinfo,$Allfields,$id,$namein,$system_settings) {
                echo"<sup style='color:red'>&nbsp;*</sup>";
             echo "</th>\n<td>";
             if ($USER['permissions'] & $LAYOUT) {
-               $jscript=" onclick='MyWindow=window.open (\"general.php?tablename=".$tableinfo->name."&edit_type=$nowfield[ass_t]&jsnewwindow=true&formname=subform&selectname=$nowfield[name]".SID."\",\"type\",\"scrollbars,resizable,toolbar,status,width=700,height=500\");MyWindow.focus()'";
+               $jscript=" onclick='MyWindow=window.open (\"general.php?tablename=".$tableinfo->name."&amp;edit_type=$nowfield[ass_t]&amp;jsnewwindow=true&amp;formname=subform&amp;selectname=$nowfield[name]".SID."\",\"type\",\"scrollbars,resizable,toolbar,status,width=700,height=500\");MyWindow.focus()'";
                echo "<input type='button' name='edit_button' value='Edit $nowfield[label]' $jscript><br>\n";
             }
             echo "$text<br>";
@@ -771,7 +805,7 @@ function display_add($db,$tableinfo,$Allfields,$id,$namein,$system_settings) {
                echo"<sup style='color:red'>&nbsp;*</sup>";
             echo "</th>\n<td>";
             if ($USER['permissions'] & $LAYOUT) {
-               $jscript=" onclick='MyWindow=window.open (\"general.php?tablename=".$tableinfo->name."&edit_type=$nowfield[ass_t]&jsnewwindow=true&formname=subform&selectname=$nowfield[name]".SID."\",\"type\",\"scrollbars,resizable,toolbar,status,width=700,height=500\");MyWindow.focus()'";
+               $jscript=" onclick='MyWindow=window.open (\"general.php?tablename=".$tableinfo->name."&edit_type=$nowfield[ass_t]&amp;jsnewwindow=true&amp;formname=subform&amp;selectname=$nowfield[name]".SID."\",\"type\",\"scrollbars,resizable,toolbar,status,width=700,height=500\");MyWindow.focus()'";
                echo "<input type='button' name='edit_button' value='Edit $nowfield[label]' $jscript><br>\n";
             }
             echo "$text<br>";
@@ -795,7 +829,7 @@ function display_add($db,$tableinfo,$Allfields,$id,$namein,$system_settings) {
    else $value="Add Record";
 
    // submit and clear buttons
-   echo "<td colspan=7 align='center'>\n";
+   echo "<td colspan=7 align='middle'>\n";
    if ($HTTP_SESSION_VARS['javascript_enabled']) {
       echo "<input type='hidden' name='subm' value=''>\n";
       //echo "<input type='button' name='sub' value='$value' onclick='document.subform.subm.value=\"$value\"; document.subform.submit(); window.opener.document.g_form.search.value=\"Search\"; setTimeout(\"window.opener.document.g_form.submit(); window.opener.focus(); self.close()\",300);'>\n";
@@ -816,11 +850,13 @@ function display_add($db,$tableinfo,$Allfields,$id,$namein,$system_settings) {
 
 }
 
-///////////////////////////////////////////////////////////////////////
-////
-// !Get all description table values out for a display
-// Returns an array with lots of information on every column
-// If qfield is set, database values for that record will be returned as well
+/**
+ * *
+ *  Get all description table values out for a display
+ *
+ * Returns an array with lots of information on every column
+ * If qfield is set, database values for that record will be returned as well
+ */
 function getvalues($db,$tableinfo,$fields,$qfield=false,$field=false) 
 {
    global $system_settings;
@@ -936,7 +972,7 @@ function getvalues($db,$tableinfo,$fields,$qfield=false,$field=false)
                   ${$column}['text']='';
                else 
                   //${$column}['text']='Click on View';
-                  ${$column}['text']="<input type=\"button\" name=\"view_$id\" value=\"View\" onclick='MyWIndow=window.open(\"general.php?tablename={$tableinfo->name}&showid=$id&jsnewwindow=true\",\"view\",\"scrollbars,resizable,width=600,height=400\")'>\n";
+                  ${$column}['text']="<input type=\"button\" name=\"view_$id\" value=\"View\" onclick='MyWIndow=window.open(\"general.php?tablename={$tableinfo->name}&amp;showid=$id&amp;jsnewwindow=true\",\"view\",\"scrollbars,resizable,width=600,height=400\")'>\n";
             }
             // datatypes file and image
             elseif ($rb->fields['datatype']=='file' || $rb->fields['datatype']=='image') {
@@ -987,21 +1023,25 @@ function getvalues($db,$tableinfo,$fields,$qfield=false,$field=false)
 }
 
 
-//////////////////////////////////////////////////////////////////////
-////  general functions
+/**
+ * *  general functions
+ */
 /****************************FUNCTIONS***************************/
-////
-// !Checks input data to addition
-// returns false if something can not be fixed     
+/**
+ *  Checks input data to addition
+ *
+ * returns false if something can not be fixed     
+ */
 function check_g_data ($db,&$field_values,$tableinfo,$modify=false) {
    global $max_menu_length, $system_settings;
+
 
    // make sure all the required fields are there 
    $rs = $db->Execute("SELECT columnname,datatype,label FROM {$tableinfo->desname} where required='Y' and (datatype != 'file')");
    while (!$rs->EOF) {
       $fieldA=$rs->fields[0];
       if (!$field_values["$fieldA"]) {
-         echo "<h3 color='red' align='center'>Please enter all fields marked with a <sup style='color:red'>&nbsp;*</sup>. Currently, a value for field: <i>{$rs->fields[2]}</i> is missing.</h3>";
+         echo "<h3 color='red' align='middle'>Please enter all fields marked with a <sup style='color:red'>&nbsp;*</sup>. Currently, a value for field: <i>{$rs->fields[2]}</i> is missing.</h3>";
 	 return false;
       }
       $rs->MoveNext();
@@ -1046,7 +1086,7 @@ function check_g_data ($db,&$field_values,$tableinfo,$modify=false) {
                   $rmax=$db->Execute("SELECT max({$rs->fields[0]}) FROM {$tableinfo->realname}");
                   if ($rmax->fields[0])
                      $nextmax=$rmax->fields[0]+1;
-                  echo "<h3 color='red' align='center'>The number <i>{$field_values[$fieldA]}</i> has already been used in field <i>{$rs->fields[2]}</i>. ";
+                  echo "<h3 color='red' align='middle'>The number <i>{$field_values[$fieldA]}</i> has already been used in field <i>{$rs->fields[2]}</i>. ";
                   if ($nextmax) {
                      echo "Try <i>$nextmax</i> instead.";
                      $field_values[$fieldA]=$nextmax;
@@ -1071,11 +1111,13 @@ function check_g_data ($db,&$field_values,$tableinfo,$modify=false) {
 }
 
 
-////
-// !Prints a form with addition stuff
-// $fields is a comma-delimited string with column names
-// $field_values is hash with column names as keys
-// $id=0 for a new entry, otherwise it is the id
+/**
+ *  Prints a form with addition stuff
+ *
+ * $fields is a comma-delimited string with column names
+ * $field_values is hash with column names as keys
+ * $id=0 for a new entry, otherwise it is the id
+ */
 function add_g_form ($db,$tableinfo,$field_values,$id,$USER,$PHP_SELF,$system_settings) {
    if (!may_write($db,$tableinfo->id,$id,$USER)) 
       return false; 
@@ -1090,8 +1132,10 @@ function add_g_form ($db,$tableinfo,$field_values,$id,$USER,$PHP_SELF,$system_se
    }
 }
 
-////
-// !Shows a page with nice information on the record
+/**
+ *  Shows a page with nice information on the record
+ *
+ */
 function show_g($db,$tableinfo,$id,$USER,$system_settings,$backbutton=true,$previousid=false,$nextid=false,$viewid=false)  {
    if (!may_read($db,$tableinfo,$id,$USER))
        return false;
@@ -1099,11 +1143,13 @@ function show_g($db,$tableinfo,$id,$USER,$system_settings,$backbutton=true,$prev
    display_record($db,$Allfields,$id,$tableinfo,$backbutton,$previousid,$nextid,$viewid);
 }
 	
-////
-// !Tries to convert a MsWord file into html 
-// It calls wvHtml.  
-// When succesfull, the file is added to the database
-// Returns id of uploaded file
+/**
+ *  Tries to convert a MsWord file into html 
+ *
+ * It calls wvHtml.  
+ * When succesfull, the file is added to the database
+ * Returns id of uploaded file
+ */
 function process_file($db,$fileid,$system_settings) {
    global $HTTP_POST_FILES,$HTTP_POST_VARS;
    $mimetype=get_cell($db,'files','mime','id',$fileid);
@@ -1156,13 +1202,15 @@ function process_file($db,$fileid,$system_settings) {
 }
 
 
-////
-// !Indexes the content of the given file
-// The file is converted to a text file (pdfs with ghost script,
-// word files were already converted to html,html characters are stripped),
-// all words are lowercased, it is checked whether an entry in the table words
-// already exists, if not, it is added.  A relation to the word is made in 
-// the table associated with the given column
+/**
+ *  Indexes the content of the given file
+ *
+ * The file is converted to a text file (pdfs with ghost script,
+ * word files were already converted to html,html characters are stripped),
+ * all words are lowercased, it is checked whether an entry in the table words
+ * already exists, if not, it is added.  A relation to the word is made in 
+ * the table associated with the given column
+ */
 function indexfile ($db,$tableinfo,$indextable,$recordid,$fileid,$htmlfileid) 
 {
    return false;
@@ -1182,10 +1230,12 @@ function indexfile ($db,$tableinfo,$indextable,$recordid,$fileid,$htmlfileid)
    }
 }
 
-////
-// !Searches (nested) for a match with $value 
-// returns the id of the record in the associated value by searching recursively
-// that can be used in a SQL search
+/**
+ *  Searches (nested) for a match with $value 
+ *
+ * returns the id of the record in the associated value by searching recursively
+ * that can be used in a SQL search
+ */
 function find_nested_match($db,$tableinfo,$field,$value,$first=true) {
    $info=getvalues($db,$tableinfo,$field);
 
