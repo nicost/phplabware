@@ -63,13 +63,13 @@ function sortstring(&$sortdirarray,$sortup,$sortdown) {
 ////
 // !Displays header of 'general' table
 function tableheader ($sortdirarray,$columnname, $columnlabel) {
-   echo "<th><table><td align='left'>";
+   echo "<th><table align='center' width='100%'><td align='left'>";
    if ($sortdirarray[$columnname]=="asc")
       $sortupicon="icons/sortup_active.png";
    else
       $sortupicon="icons/sortup.png";
    echo "<input type='image' name='sortup_$columnname' value='$columnlabel' src='$sortupicon' alt='Sort Up'>";
-   echo "</td><th>$columnlabel</th><td align='right'>";
+   echo "</td><th align='center'>$columnlabel</th><td align='right'>";
    if ($sortdirarray[$columnname]=="desc")
       $sortdownicon="icons/sortdown_active.png";
    else
@@ -530,8 +530,8 @@ function may_read_SQL_JOIN ($db,$table,$USER) {
 // Generates a left join for mysql, subselect for postgres
 function may_read_SQL ($db,$table,$tableid,$USER) {
    global $db_type;
-
-   if ($db_type=="mysql")
+//$db->debug=true;
+   if ($db_type=="mysql" || $db_type="postgres")
       return may_read_SQL_JOIN ($db,$table,$USER);
    else
       return may_read_SQL_subselect ($db,$table,$tableid,$USER);
