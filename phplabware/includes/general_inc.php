@@ -51,30 +51,32 @@ function date_entry($id,$DBNAME)// Get the date the entry was made
    	}   
 	}
 //////////////////////////////////////////////////////////////////////////////	
-///Displays all information within a table in the headers for easy searching
-function display_tablehead($db,$DBNAME,$real_tablename,$DB_DESNAME,$Allfields,$list)  
-{
-	global $nr_records,$max_menu_length,$USER,$LAYOUT,$db_type;
+////
+// !Displays all information within a table in the headers for easy searching
+function display_tablehead($db,$DBNAME,$real_tablename,$DB_DESNAME,$Allfields,$list) { 
+   global $PHP_SELF,$nr_records,$max_menu_length,$USER,$LAYOUT,$db_type;
+
+   // javascript to automatically execute search when pulling down 
+   $jscript="onChange='document.g_form.searchj.value=\"Search\"; document.g_form.submit()'";
    // row with search form
    echo "<tr align='center'>\n";
    echo "<input type='hidden' name='searchj' value=''>\n";
 
    foreach($Allfields as $nowfield)  {
-   		
       if ($nowfield[datatype]== "link")
-		{echo "<td style='width: 10%'>&nbsp;</td>\n";}		
+         echo "<td style='width: 10%'>&nbsp;</td>\n";
       if ($nowfield[datatype]== "text") {
-	   // show title we may see, when too many, revert to text box
+         // show titles we may see, when too many, revert to text box
          if ($list && ($nr_records < $max_menu_length) )  {
-  	      $r=$db->Execute("SELECT $nowfield[name] FROM $real_tablename WHERE id IN ($list)");
-              $text=$r->GetMenu("$nowfield[name]","",true,false,0,"style='width: 80%' $jscript");
-              echo "<td style='width: 10%'>$text</td>\n";
+  	     $r=$db->Execute("SELECT $nowfield[name] FROM $real_tablename WHERE id IN ($list)");
+             $text=$r->GetMenu("$nowfield[name]","",true,false,0,"style='width: 80%' $jscript");
+             echo "<td style='width: 10%'>$text</td>\n";
          }
 	 else
-	    	echo  " <td style='width: 10%'><input type='text' name='$nowfield[name]' value='$nowfield[name]' size=8></td>\n";
+    	    echo  " <td style='width: 10%'><input type='text' name='$nowfield[name]' size=8></td>\n";
       }
       if ($nowfield[datatype]== "textlong")
-		{echo "<td style='width: 10%'>&nbsp;</td>\n";}
+         echo "<td style='width: 10%'>&nbsp;</td>\n";
       if ($nowfield[datatype]== "pulldown") {
          echo "<td style='width: 10%'>";
          if ($USER["permissions"] & $LAYOUT)  {
@@ -108,62 +110,71 @@ function display_tablehead($db,$DBNAME,$real_tablename,$DB_DESNAME,$Allfields,$l
 ///////////////////////////////////////////////////////////
 //// 
 // !Displays all information within the table
-function display_table_info($db,$tablename,$real_tablename,$DB_DESNAME,$Fieldscomma,$pr_query,$num_p_r,$pr_curr_page)
-{
-	global $nr_records,$max_menu_length,$USER,$LAYOUT;
-	$r=$db->PageExecute($pr_query,$num_p_r,$pr_curr_page);
-	$rownr=1;
-	// print all entries
-	while (!($r->EOF) && $r) 
-       {
-       // Get required ID and title
-       $id=$r->fields["id"];
-       $title=$r->fields["title"];		
-       $Allfields=getvalues($db,$real_tablename,$DB_DESNAME,$Fieldscomma,id,$id);
-       // print start of row of selected group
-       if ($rownr % 2)echo "<tr class='row_odd' align='center'>\n";
-       else echo "<tr class='row_even' align='center'>\n";
+function display_table_info($db,$tablename,$real_tablename,$DB_DESNAME,$Fieldscomma,$pr_query,$num_p_r,$pr_curr_page) {
+   global $nr_records,$max_menu_length,$USER,$LAYOUT;
+
+   $r=$db->PageExecute($pr_query,$num_p_r,$pr_curr_page);
+   $rownr=1;
+   // print all entries
+   while (!($r->EOF) && $r)  {
+      // Get required ID and title
+      $id=$r->fields["id"];
+      $title=$r->fields["title"];		
+      $Allfields=getvalues($db,$real_tablename,$DB_DESNAME,$Fieldscomma,id,$id);
+      // print start of row of selected group
+      if ($rownr % 2)echo "<tr class='row_odd' align='center'>\n";
+         else echo "<tr class='row_even' align='center'>\n";
   
-       foreach($Allfields as $nowfield)  	// read in all entries into variables
-   		{
-		   if ($nowfield[datatype] =="text") {echo "<td>$nowfield[values]</td>\n";} 
-  		 if ($nowfield[datatype] =="link") 
-  		 	{
-  		 	if ($nowfield[values]){echo "<td><a href='$nowfield[values]' target='_blank'>link</a></td>\n";}
-				else {echo "<td></td>\n";}
-  		 	} 
-		   if ($nowfield[datatype] =="pulldown")
-		   	{$text=get_cell($db,$nowfield[ass_t],"typeshort","id",$nowfield[values]); echo "<td>$text</td>";}
-			if ($nowfield[datatype] == "textlong")
-			   {
-				  if ($nowfield[values]=="")echo "<td>no</td>\n";
- 			 	else echo "<td>yes</td>\n"; 
-			   }
-			if ($nowfield[datatype] == "file")
-				{   	
-                $files=get_files($db,$tablename,$id,3);
-      		  echo "<td>";
-  		      if ($files) 
-         	   for ($i=0;$i<sizeof($files);$i++)
-	    		echo $files[$i]["link"];
-   		     else
-                echo "&nbsp;";echo "</td>\n";
-				}
-			}	
-      echo "<td align='center'>&nbsp;\n";  echo "<input type=\"submit\" name=\"view_" . $id . "\" value=\"View\">\n";
-      if (may_write($db,$real_tablename,$id,$USER)) 
-      	{
+      foreach($Allfields as $nowfield) { 	// read in all entries into variables
+         if ($nowfield[datatype] =="text") {
+            if ($nowfield[values])
+               echo "<td>$nowfield[values]</td>\n"; 
+            else
+               echo "<td>&nbsp;</td>\n";
+         }
+         if ($nowfield[datatype] =="link") {
+            if ($nowfield[values])
+               echo "<td><a href='$nowfield[values]' target='_blank'>link</a></td>\n";
+            else 
+               echo "<td>&nbsp;</td>\n";
+         } 
+         if ($nowfield[datatype] =="pulldown") {
+            $text=get_cell($db,$nowfield[ass_t],"typeshort","id",$nowfield[values]); 
+            if (!$text)
+               $text="&nbsp;";
+            echo "<td>$text</td>";
+         }
+         if ($nowfield[datatype] == "textlong") {
+            if ($nowfield[values]=="")
+               echo "<td>no</td>\n";
+            else 
+               echo "<td>yes</td>\n"; 
+         }
+         if ($nowfield[datatype] == "file") {
+            $files=get_files($db,$tablename,$id,3);
+            echo "<td>";
+            if ($files) 
+               for ($i=0;$i<sizeof($files);$i++)
+                  echo $files[$i]["link"];
+            else
+               echo "&nbsp;";
+            echo "</td>\n";
+         }
+      }	
+      echo "<td align='center'>&nbsp;\n";  
+      echo "<input type=\"submit\" name=\"view_" . $id . "\" value=\"View\">\n";
+      if (may_write($db,$real_tablename,$id,$USER)) {
          echo "<input type=\"submit\" name=\"mod_" . $id . "\" value=\"Modify\">\n";
          $delstring = "<input type=\"submit\" name=\"del_" . $id . "\" value=\"Remove\" ";
          $delstring .= "Onclick=\"if(confirm('Are you want to remove $title";
          $delstring .= "?')){return true;}return false;\">";                                           
          echo "$delstring\n";
-      	}
+      }
       echo "</td>\n";
       echo "</tr>\n";
       $r->MoveNext();
       $rownr+=1;
-   	}
+   }
    // Add Record button
    if (may_write($db,$real_tablename,false,$USER)) {
       echo "<tr><td colspan=10 align='center'>";
@@ -189,45 +200,42 @@ function display_record($db,$Allfields,$id,$DBNAME,$real_tablename) {
          if ($nowfield[datatype]=="text"){
             echo "<tr>\n";
             echo "<th>$nowfield[name]</th>\n";
-            echo "<td colspan=2>$nowfield[values]</td></tr>\n";
+            if ($nowfield[values])
+               echo "<td colspan=2>$nowfield[values]</td></tr>\n";
+            else
+               echo "<td colspan=2>&nbsp;</td></tr>\n";
          }
 	 if ($nowfield[datatype]=="link") {
-            echo "<tr>\n";
-            echo "<th>$nowfield[name]</th>\n";
+            echo "<tr>\n<th>$nowfield[name]</th>\n";
             echo "<td colspan=2><a href='$nowfield[values]' target='_blank'>$nowfield[values]</a></td></tr>\n";
          }
          if ($nowfield[datatype]=="pulldown") {
-         // get author value	
             $text=get_cell($db,$nowfield[ass_t],"type","id",$nowfield[values]);
-            echo "<th>$nowfield[name]:</th>\n<td>$text<br>";
-	    echo "</tr><br>";
+            echo "<tr>\n<th>$nowfield[name]:</th>\n<td>$text</td></tr>\n";
          }
-			if ($nowfield[datatype]=="textlong")
-				{
-				$textlarge=nl2br(htmlentities($nowfield[values]));
-				echo "<th>$nowfield[name]</th><td colspan=6>$textlarge</td>\n";echo "</tr>\n";
-				}
-			if ($nowfield[datatype]=="file")
-				{
-				$files=get_files($db,$DBNAME,$id);
-   			 if ($files) 
-   			 	{
-       	 		echo "<tr><th>Files:</th>\n<td colspan=5>";
-      		 	 for ($i=0;$i<sizeof($files);$i++) 
-      		  		{
-         			   echo $files[$i]["link"]."&nbsp;&nbsp;(".$files[$i]["type"];
-         	  	 	echo " file)<br>\n";
-			      	}
- 				   echo "<td></tr>\n";
-				   }				
-				}
-			}
-		}
-		user_entry($id,$real_tablename);
-		date_entry($id,$real_tablename);
-		make_link($id,$DBNAME);
-		echo "</table>";
-	}
+         if ($nowfield[datatype]=="textlong") {
+            $textlarge=nl2br(htmlentities($nowfield[values]));
+            echo "<th>$nowfield[name]</th><td colspan=6>$textlarge</td>\n";
+            echo "</tr>\n";
+         }
+         if ($nowfield[datatype]=="file") {
+            $files=get_files($db,$DBNAME,$id);
+            if ($files) { 
+               echo "<tr><th>Files:</th>\n<td colspan=5>";
+               for ($i=0;$i<sizeof($files);$i++)  {
+                  echo $files[$i]["link"]."&nbsp;&nbsp;(".$files[$i]["type"];
+                  echo " file)<br>\n";
+               }
+               echo "<td></tr>\n";
+            }				
+         }
+      }
+   }
+   user_entry($id,$real_tablename);
+   date_entry($id,$real_tablename);
+   make_link($id,$DBNAME);
+   echo "</table>";
+}
 
 ///////////////////////////////////////////////////////////
 ////
@@ -243,7 +251,7 @@ function make_link($id,$DBNAME) {
 // !display addition and modification form
 function display_add($db,$tablename,$real_tablename,$tabledesc,$Allfields,$id,$namein)  
 	{
-	global $db, $DBNAME, $DB_DESNAME, $db_type, $USER;	
+	global $PHP_SELF, $db_type, $USER;	
 
     $dbstring=$PHP_SELF;$dbstring.="?";$dbstring.="tablename=$tablename&";
     echo "<form method='post' id='protocolform' enctype='multipart/form-data' action='$dbstring";
