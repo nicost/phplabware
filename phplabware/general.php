@@ -54,6 +54,7 @@ if ($jsnewwindow && $showid && $tableinfo->name) {
       plugin_show($db,$tableinfo,$showid,$USER,$system_settings,false);
    else
       show_g($db,$tableinfo,$showid,$USER,$system_settings,false);
+   //show_report_templates_menu($db,$tableinfo,$showid);
    printfooter();
    exit();
 }
