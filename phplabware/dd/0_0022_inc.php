@@ -22,7 +22,7 @@ $query="CREATE TABLE protocols (
 	access char(9),
 	ownerid int,
         magic int,
-	name text,
+	title text,
 	type1 int,
 	type2 int,
 	notes text,
@@ -34,8 +34,8 @@ $db->Execute("CREATE INDEX protocols_id_index ON protocols (id)");
 $db->Execute("CREATE INDEX protocols_ownerid_index ON protocols (ownerid)");
 $db->Execute("CREATE INDEX protocols_date_index ON protocols (date)");
 $db->Execute("CREATE INDEX protocols_magic_index ON protocolss (magic)");
-$db->Execute("CREATE INDEX protocols_name_index ON protocols (name)");
-$db->Execute("CREATE INDEX protocols_name_index ON protocols (name(10))");
+$db->Execute("CREATE INDEX protocols_name_index ON protocols (title)");
+$db->Execute("CREATE INDEX protocols_name_index ON protocols (title(10))");
 $query="CREATE TABLE pr_type1 
 	(id int PRIMARY KEY,
 	 sortkey int,
@@ -73,7 +73,10 @@ $fid=$db->GenID("filetypes_id_seq");
 $query="INSERT INTO filetypes VALUES ($fid,100,'HTML','html')";
 if (!$db->Execute($query)) $test=false;
 $fid=$db->GenID("filetypes_id_seq");
-$query="INSERT INTO filetypes VALUES ($fid,200,'MSWord','doc')";
+$query="INSERT INTO filetypes VALUES ($fid,200,'MSWord','msword')";
+if (!$db->Execute($query)) $test=false;
+$fid=$db->GenID("filetypes_id_seq");
+$query="INSERT INTO filetypes VALUES ($fid,300,'PDF','pdf')";
 if (!$db->Execute($query)) $test=false;
 
 ?>
