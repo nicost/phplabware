@@ -525,26 +525,27 @@ function check_g_data ($db,&$field_values, $DB_DESNAME) {
 
    $allreq=array();
    $rs = $db->Execute("select columnname from $DB_DESNAME where required ='Y' and (datatype != 'file')");
-	while (!$rs->EOF) 
-		{
-		$fieldA=$rs->fields[0];
-		array_push($allreq, $fieldA);
-		$rs->MoveNext();
-		}
-   foreach ($allreq as $checkme)
-   		{
-   		if (!$field_values["$checkme"]) 
-   			{echo "<center><b>Please enter all starred fields.</center></b>";return false;}
-		}
-   if (!$field_values["title"]) {
-      echo "<h3>Please enter a title for Record.</h3>";return false;}
+   while (!$rs->EOF) {
+      $fieldA=$rs->fields[0];
+      array_push($allreq, $fieldA);
+      $rs->MoveNext();
+   }
+   foreach ($allreq as $checkme) {
+      if (!$field_values["$checkme"]) {
+         echo "<h3 color='red'>Please enter all starred fields.</center></h3>";
+	 return false;
+      }
+   }
    // When a new author was entered
    $firstname=$field_values["firstname"];$lastname=$field_values["lastname"];
    if ($firstname || $lastname) {
       // check if this entry exists already
-	  $authortable=get_cell($db,$DB_DESNAME,associated_table,label,authors);
+      $authortable=get_cell($db,$DB_DESNAME,associated_table,label,authors);
       $r=$db->Execute("SELECT id FROM $authortable WHERE type='$firstname' AND typeshort='$lastname'");
-      if ($r && !$r->EOF) {$field_values["authors"]=$r->fields["id"];return true;}
+      if ($r && !$r->EOF) {
+         $field_values["authors"]=$r->fields["id"];
+	 return true;
+      }
       $id=$db->GenID("pr_type2_id_seq");
       $db->Execute("INSERT INTO $authortable (id,type,typeshort) VALUES ('$id','".
            $field_values["firstname"]."','".$field_values["lastname"]."')");
@@ -552,6 +553,7 @@ function check_g_data ($db,&$field_values, $DB_DESNAME) {
    }
    return true;
 }
+
 
 ////
 // !Prints a form with addition stuff
