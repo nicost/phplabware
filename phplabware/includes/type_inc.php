@@ -68,9 +68,9 @@ function show_type ($db,$table,$name) {
       $rownr+=1;
    }
 
-   // Dismiss button
+   // Back button
    echo "<tr><td colspan=4 align='center'>\n";
-   echo "<input type='submit' name='submit' value='Dismiss'>\n";
+   echo "<input type='submit' name='submit' value='Back'>\n";
    echo "</td></tr>\n";
 
    echo "</table>\n";
