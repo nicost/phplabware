@@ -100,6 +100,12 @@ function display_table_change($db,$tableid,$DB_DESNAME,$Fieldscomma,$pr_query,$n
          elseif ($nowfield[datatype]=="text") {
      	    echo "<td><input type='text' name='$nowfield[name]_$id' value='$nowfield[values]' size=15 $js>$thestar</td>\n";
          }
+         elseif ($nowfield[datatype]=="int") {
+     	    echo "<td><input type='text' name='$nowfield[name]_$id' value='$nowfield[values]' size=8 $js>$thestar</td>\n";
+         }
+         elseif ($nowfield[datatype]=="float") {
+     	    echo "<td><input type='text' name='$nowfield[name]_$id' value='$nowfield[values]' size=8 $js>$thestar</td>\n";
+         }
          elseif ($nowfield[datatype]=="textlong") {
      	    echo "<td><input type='text' name='$nowfield[name]_$id' value='$nowfield[values]' size=15>$thestar</td>\n"; 
          }
@@ -472,7 +478,7 @@ function getvalues($db,$DBNAME,$DB_DESNAME,$tableid,$fields,$qfield=false,$field
                ${$column}["text"]="<a href='".$rb->fields["link_first"].${$column}["text"].$rb->fields["link_last"]."'>".${$column}["text"]."</a>\n";
             }
  
-            if (!${$column}["text"])
+            if (! isset(${$column}["text"]))
                ${$column}["text"]="&nbsp;";
          }
       }
@@ -543,10 +549,12 @@ function check_g_data ($db,&$field_values, $DB_DESNAME) {
    $rs = $db->Execute("select columnname,datatype from $DB_DESNAME where datatype IN ('int','float')");
    while ($rs && !$rs->EOF) {
       $fieldA=$rs->fields[0];
-      if ($rs->fields[1]=="int")
-         $field_values["$fieldA"]=(int)$field_values["$fieldA"];
-      elseif ($rs->fields[1]=="float")
-         $field_values["$fieldA"]=(float)$field_values["$fieldA"];
+      if (isset($field_values["$fieldA"]) && (strlen($field_values[$fieldA]) >0)) {
+         if ($rs->fields[1]=="int")
+            $field_values["$fieldA"]=(int)$field_values["$fieldA"];
+         elseif ($rs->fields[1]=="float")
+            $field_values["$fieldA"]=(float)$field_values["$fieldA"];
+      }
       $rs->MoveNext();
    }
    return true;

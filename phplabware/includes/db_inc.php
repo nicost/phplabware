@@ -173,7 +173,10 @@ function modify ($db,$table,$fields,$fieldvalues,$id,$USER,$tableid) {
             $fieldvalues["lastmodby"]=$USER["id"];
          if ($column=="lastmoddate")
             $fieldvalues["lastmoddate"]=time();
-         $query.="$column='$fieldvalues[$column]',";
+         if (isset($fieldvalues[$column]) && (strlen($fieldvalues[$column])>0))
+            $query.="$column='$fieldvalues[$column]',";
+         else
+            $query.="$column=NULL,";
       }
       $column=strtok(",");
    }
