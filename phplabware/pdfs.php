@@ -513,14 +513,12 @@ else {
       echo "'>Edit Categories</a><br>\n";
    }
    // print category drop-down menu
-   if ($type1) $list=$listb; else $list=$lista;
-   // print category drop-down menu
-   if ($type1) $list=$listb; else $list=$lista;
+   if ($type2) $list=$listb; else $list=$lista;
    $r=$db->Execute("SELECT type2 FROM pdfs WHERE id IN ($list)");
-   $list2=make_SQL_ids($r,false,"type1");
+   $list2=make_SQL_ids($r,false,"type2");
    if ($list2) {
       $r=$db->Execute("SELECT typeshort,id FROM pd_type2 WHERE id IN ($list2)");
-      $text=$r->GetMenu2("type1",$type1,true,false,0,"style='width: 80%' $jscript");
+      $text=$r->GetMenu2("type2",$type2,true,false,0,"style='width: 80%' $jscript");
       echo "$text</td>\n";
    }
    else
