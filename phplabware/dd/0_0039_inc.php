@@ -7,6 +7,7 @@ $newtableid=$db->GenID("tableoftables_gen_id_seq");
 $newtablename=pdbs;
 $newtablelabel="pdbs ";
 for ($i=0;$i<$hownew;$i++) {$newtablelabel.="new";}
+unset($hownew);
 while (get_cell($db,"tableoftables","id","tablename",$newtablename)) {
    $newtablename.="n";
    $hownew++;
@@ -89,6 +90,7 @@ if ($r) {
    }
 
    // copy data from 'old' pdbs table to the new one
+   unset($counter);
    set_magic_quotes_runtime(1);
    $tablesfk=get_cell($db,"tableoftables","id","real_tablename","pdbs");
    $rcb=$db->Execute("SELECT * FROM pdbs");
@@ -105,10 +107,11 @@ if ($r) {
       }
       $rcb->MoveNext();
    }
-   echo "Inserted $counter records.<br>";
+   if ($counter)
+      echo "(pdbs:) Inserted $counter records.<br>";
 
    if ($failed)
-      echo "Failed copying contents of table protocols.<br>";
+      echo "Failed copying contents of table pdbs.<br>";
    else {
       //echo "Succes!<br>";
       // delete the old tables

@@ -7,6 +7,7 @@ $newtableid=$db->GenID("tableoftables_gen_id_seq");
 $newtablename=ab;
 $newtablelabel="ab new";
 for ($i=0;$i<$hownew;$i++) {$newtablelabel.="new";}
+unset($hownew);
 while (get_cell($db,"tableoftables","id","tablename",$newtablename)) {
    $newtablename.="n";
    $hownew++;
@@ -159,6 +160,7 @@ if ($r) {
 
 
    // copy data from 'old' protocol table to the new one
+   unset($counter);
    set_magic_quotes_runtime(1);
    $tablesfk=get_cell($db,"tableoftables","id","real_tablename","antibodies");
    $rcb=$db->Execute("SELECT * FROM antibodies");
@@ -175,7 +177,8 @@ if ($r) {
       }
       $rcb->MoveNext();
    }
-   echo "Inserted $counter records.<br>";
+   if ($counter)
+      echo "(antibodies:) Inserted $counter records.<br>";
    // Now copy supporting table (type1=author, type2=categories
    for ($i=1;$i<=5;$i++) {
       $tablestring="ass_table_t".$i;

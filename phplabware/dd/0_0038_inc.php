@@ -7,6 +7,7 @@ $newtableid=$db->GenID("tableoftables_gen_id_seq");
 $newtablename=protocols_new;
 $newtablelabel="protocols new";
 for ($i=0;$i<$hownew;$i++) {$newtablelabel.="new";}
+unset($hownew);
 while (get_cell($db,"tableoftables","id","tablename",$newtablename)) {
    $newtablename.="new";
    $hownew++;
@@ -106,6 +107,7 @@ if ($r) {
 
 
    // copy data from 'old' protocol table to the new one
+   unset($counter);
    set_magic_quotes_runtime(1);
    $tablesfk=get_cell($db,"tableoftables","id","real_tablename","protocols");
    $rcb=$db->Execute("SELECT * FROM protocols");
@@ -122,7 +124,8 @@ if ($r) {
       }
       $rcb->MoveNext();
    }
-   echo "Inserted $counter records.<br>";
+   if ($counter)
+      echo "(protocols:) Inserted $counter records.<br>";
    // Now copy supporting table (type1=author, type2=categories
    $rcj=$db->Execute("SELECT * FROM pr_type1 ORDER BY id");
    while ($rcj && !$rcj->EOF) {

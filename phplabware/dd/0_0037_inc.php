@@ -7,6 +7,7 @@ $newtableid=$db->GenID("tableoftables_gen_id_seq");
 $newtablename=pdfs_new;
 $newtablelabel="pdfs new";
 for ($i=0;$i<$hownew;$i++) {$newtablelabel.="new";}
+unset($hownew);
 while (get_cell($db,"tableoftables","id","tablename",$newtablename)) {
    $newtablename.="new";
    $hownew++;
@@ -143,7 +144,8 @@ if ($r) {
       }
       $rcb->MoveNext();
    }
-   echo "Inserted $counter records.<br>";
+   if ($counter)
+      echo "(pdfs:) Inserted $counter records.<br>";
    // Now copy supporting table (type1=journal, type2=categories
    $rcj=$db->Execute("SELECT * FROM pd_type1 ORDER By id");
    while ($rcj && !$rcj->EOF) {
