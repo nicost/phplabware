@@ -82,6 +82,8 @@ function check_input ($fields, $field_types, $nrfields)
          if ($field_types[$i]=='int'){
             $fields[$i]=(int)$fields[$i];
          }
+         elseif($field_types[$i]=='id')
+            $fields[$i]=(int)$fields[$i];
          elseif($field_types[$i]=='float')
             $fields[$i]=(float)$fields[$i];
          else
@@ -226,32 +228,32 @@ if ($HTTP_POST_VARS['assign']=='Import Data') {
                $r=$db->Execute("SELECT id FROM $table WHERE $to_fields[$pkey]='$fields[$pkey]'");
                $recordid=$r->fields[0];
             }
-               if (isset($recordid) && ($pkeypolicy=='overwrite' || $pkeypolicy=='onlyupdate')) {
-                  $query="UPDATE $table SET ";
-                  // import data from file into SQL statement
-                  for ($i=0; $i<$nrfields;$i++) {
-                     if ($to_fields[$i]) {
-                        $worthit=true;
-                        $query.="$to_fields[$i]='$fields[$i]',";
-                     }
-                  }
-                  while ($rseq && !$rseq->EOF) {
-                     $rmax=$db->Execute("SELECT max(".$rseq->fields[0].") FROM $table");
-                     $vmax=$rmax->fields[0]+1;
-                     $query.=$rseq->fields[0]."='$vmax',";
-                     $rseq->MoveNext();
-                  }
-                  $rseq->MoveFirst();
-                  if ($worthit) {
-                     // strip last comma
-                     // $query.=" WHERE $to_fields[$pkey]='$fields[$pkey]'";
-                     // only the first record that matched will be modified
-                     // when doing an update we leave access and owner untouched
-                     $query.=" lastmoddate='$lastmoddate', lastmodby='$lastmodby' WHERE $to_fields[$pkey]='$fields[$pkey]'";
-                     if ($r=$db->Execute($query))
-                         $modified++;
+            if (isset($recordid) && ($pkeypolicy=='overwrite' || $pkeypolicy=='onlyupdate')) {
+               $query="UPDATE $table SET ";
+               // import data from file into SQL statement
+               for ($i=0; $i<$nrfields;$i++) {
+                  if ($to_fields[$i]) {
+                     $worthit=true;
+                     $query.="$to_fields[$i]='$fields[$i]',";
                   }
                }
+               while ($rseq && !$rseq->EOF) {
+                  $rmax=$db->Execute("SELECT max(".$rseq->fields[0].") FROM $table");
+                  $vmax=$rmax->fields[0]+1;
+                  $query.=$rseq->fields[0]."='$vmax',";
+                  $rseq->MoveNext();
+               }
+               $rseq->MoveFirst();
+               if ($worthit) {
+                  // strip last comma
+                  // $query.=" WHERE $to_fields[$pkey]='$fields[$pkey]'";
+                  // only the first record that matched will be modified
+                  // when doing an update we leave access and owner untouched
+                  $query.=" lastmoddate='$lastmoddate', lastmodby='$lastmodby' WHERE $to_fields[$pkey]='$fields[$pkey]'";
+                  if ($r=$db->Execute($query))
+                      $modified++;
+               }
+            }
 
             // if there is no primary key set, we simply INSERT a new record
             //if ( !(isset($pkey) || isset($recordid)) ) {
@@ -293,8 +295,10 @@ if ($HTTP_POST_VARS['assign']=='Import Data') {
                         $duplicateid++;
                      $query="$query_start access,date,lastmoddate,lastmodby,ownerid) $query_end '$access','$lastmoddate','$lastmoddate','$lastmodby','$ownerid')";
                   }
+$db->debug=true;
                   if ($r=$db->Execute($query))
                       $inserted++;
+$db->debug=false;
                } 
             }
          }
