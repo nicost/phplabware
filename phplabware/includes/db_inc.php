@@ -759,7 +759,7 @@ function searchhelp ($db,$tableinfo,$column,&$columnvalues,$query,$wcappend,$and
          $rw=$db->Execute("SELECT id FROM words WHERE word LIKE '$columnvalues[$column]'");
          if ($rw && $rw->fields[0]) {
             $rh=$db->Execute("SELECT recordid FROM ".$rc->fields[2]." WHERE wordid='".$rw->fields[0]."'");
-             if ($rh && $rh->fields[0]) {
+            if ($rh && $rh->fields[0]) {
                 while (!$rh->EOF) {
                    $rhtemp[]=$rh->fields[0];
                    $rh->MoveNext();
@@ -767,7 +767,10 @@ function searchhelp ($db,$tableinfo,$column,&$columnvalues,$query,$wcappend,$and
                 $ids=join (",",$rhtemp);
                 $query[0].="$and id IN ($ids) ";
              }
+	     // if we come up ampty handed, the SQL search should too:
+	     else $query[0].="$and id=0 ";
          }
+	 else $query[0].="$and id=0 ";
       }
       // there are some (old) cases where pulldowns are of type text...
       elseif ($rc->fields[1]=="pulldown") {
