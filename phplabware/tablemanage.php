@@ -66,7 +66,7 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
       del_table($db,$tablename,$id,$USER);   
       break;
    }
-   elseif ($key=="table_column_select") {
+   elseif ($key=='table_column_select') {
       add_associated_table($db,$table_name,$addcol_name,$HTTP_POST_VARS['table_select'],$HTTP_POST_VARS['table_column_select']);
       break;
    }
@@ -93,23 +93,23 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
       mod_columnECG($db,$sort,$modarray[1]);
       break;
    }   	
-   elseif (substr($key, 0, 9) == "delcolumn") { 
+   elseif (substr($key, 0, 9) == 'delcolumn') { 
       $modarray = explode("_", $key);
-      $tablename=$HTTP_POST_VARS["table_name"];
-      $id=$HTTP_POST_VARS["column_id"][$modarray[1]]; 
-      $colname=$HTTP_POST_VARS["column_name"][$modarray[1]];
-      $datatype=$HTTP_POST_VARS["column_datatype"][$modarray[1]];
+      $tablename=$HTTP_POST_VARS['table_name'];
+      $id=$HTTP_POST_VARS['column_id'][$modarray[1]]; 
+      $colname=$HTTP_POST_VARS['column_name'][$modarray[1]];
+      $datatype=$HTTP_POST_VARS['column_datatype'][$modarray[1]];
       rm_columnecg($db,$tablename,$id,$colname,$datatype);
       break;
    }
-   elseif (substr($key, 0, 11) == "alinkcolumn") { 
+   elseif (substr($key, 0, 11) == 'alinkcolumn') { 
       $modarray = explode("_", $key);
-      $tablename=$HTTP_POST_VARS["table_name"];
-      $id=$HTTP_POST_VARS["column_id"][$modarray[1]]; 
-      $colname=$HTTP_POST_VARS["column_name"][$modarray[1]];
-      $collabel=$HTTP_POST_VARS["column_label"][$modarray[1]];
-      $datatype=$HTTP_POST_VARS["column_datatype"][$modarray[1]];
-      $table_desc=get_cell($db,"tableoftables","table_desc_name","tablename",$tablename);
+      $tablename=$HTTP_POST_VARS['table_name'];
+      $id=$HTTP_POST_VARS['column_id'][$modarray[1]]; 
+      $colname=$HTTP_POST_VARS['column_name'][$modarray[1]];
+      $collabel=$HTTP_POST_VARS['column_label'][$modarray[1]];
+      $datatype=$HTTP_POST_VARS['column_datatype'][$modarray[1]];
+      $table_desc=get_cell($db,'tableoftables','table_desc_name','tablename',$tablename);
       $link_a=get_cell($db,$table_desc,"link_first","id",$id);
       $link_b=get_cell($db,$table_desc,"link_last","id",$id);
       navbar($USER["permissions"]);
