@@ -477,7 +477,7 @@ function getvalues($db,$DBNAME,$DB_DESNAME,$tableid,$fields,$qfield=false,$field
                ${$column}["text"]="<a href='".$rb->fields["link_first"].${$column}["text"].$rb->fields["link_last"]."'>".${$column}["text"]."</a>\n";
             }
  
-            if (! isset(${$column}["text"]))
+            if (! isset(${$column}["text"]) || strlen(${$column}["text"])<1 )
                ${$column}["text"]="&nbsp;";
          }
       }

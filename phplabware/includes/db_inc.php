@@ -118,8 +118,13 @@ function add ($db,$table,$fields,$fieldvalues,$USER,$tableid) {
                $date=(time());
                $values.=",$date";
             }
-            else
-	       $values.=",'$fieldvalues[$column]'";
+            else {
+               if (isset($fieldvalues[$column]) && 
+                        strlen($fieldvalues[$column])>0)
+	          $values.=",'$fieldvalues[$column]'";
+               else
+                  $values.=",NULL";
+            }
          }
 	 $column=strtok(",");
       }
@@ -135,7 +140,6 @@ function add ($db,$table,$fields,$fieldvalues,$USER,$tableid) {
          return $id;
       else {
          echo "<h3>Database error.  Contact your system administrator.</h3>\n";
-         $db->Execute($query);
       }
    }
 }
