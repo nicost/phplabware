@@ -372,9 +372,9 @@ function getvalues($db,$DBNAME,$DB_DESNAME,$fields,$qfield,$field) {
 	$column=strtok($fields,",");
 	$Allfields=array();
 	while ($column) 
-	   	{
-	  	 if(!(!$id && $column=="id"))
-	 	  	{  			  	
+   	{
+  	 if(!(!$id && $column=="id"))
+ 	  	{  			  	
   	  		${$column}[values]= $r->fields[$column];
 	 	   	${$column}[datatype]=simple_SQL($db,$DB_DESNAME,"datatype","label","$column");
 				${$column}[display_table]=simple_SQL($db,$DB_DESNAME,"display_table","label","$column");
@@ -408,7 +408,6 @@ function display_midbar($labelcomma)
 function comma_array_SQL_where($db,$tablein,$column,$searchfield,$searchval)
 	{
 	$tempa=array();
-	$db->debug=true;
 	$rs = $db->Execute("select $column from $tablein where $searchfield='$searchval'");
 
 	if ($rs)
@@ -498,7 +497,6 @@ function check_g_data ($db,&$field_values, $DB_DESNAME) {
 // $id=0 for a new entry, otherwise it is the id
 function add_g_form ($db,$fields,$field_values,$id,$USER,$PHP_SELF,$system_settings,$DBNAME,$DB_DESNAME) 
 	{
-	$db->debug=true;
 	if (!may_write($db,$DBNAME,$id,$USER)) return false; 
 	if ($id)
 		{
@@ -635,28 +633,30 @@ function create_new_table($db){
 function del_table($db,$tablename,$id) {
    global $HTTP_POST_VARS, $string;
 
-   $modarray = explode("_", $key);
-   $table=$modarray[1]."_".$modarray[2];
-   $real_tablename=$id."_$tablename";
+   $real_tablename=$tablename."_".$id;
    $desc=$real_tablename."_desc";
+   echo "$desc, $real_tablename.<br>";
    $r=$db->Execute("select associated_table from $desc");
    $tempTAB=array();
-	if ($r)
-	   {while (!$r->EOF){$fieldA=$r->fields[0];array_push($tempTAB, $fieldA);$r->MoveNext();}
- 	   foreach ($tempTAB as $DDD)
- 	   	{
- 	   		$DD2=$DDD; $DD2.="_id_seq";
- 	   		$r=$db->Execute("Drop table if exists $DDD");
- 	   		$r=$db->Execute("Drop table if exists $DD2");
-			}
- 	   }
-	$DD3=$table; $DD3.="_id_seq";
-	$r=$db->Execute("Drop table if exists $real_tablename");
-	$r=$db->Execute("Drop table if exists $desc");
-	$r=$db->Execute("Drop table if exists $DD3");
-	$r=$db->Execute("Delete from tableoftables WHERE id=$id");
-	if ($r){$string="Table $tablename has been deleted";}
-	return $string;
+   if ($r) {
+      while (!$r->EOF) {
+         if ($r->fields["associated_table"]) {
+            $db->Execute("DROP TABLE ".$r->fields["associated_table"]);
+            $db->Execute("DROP TABLE ".$r->fields["associated_table"]."_id_seq");
+         }
+         $r->MoveNext();
+      }
+   }
+   $r=$db->Execute("DROP TABLE $real_tablename");
+   $r=$db->Execute("DROP TABLE $real_tablename_id");
+   $r=$db->Execute("DROP SEQUENCE $real_tablename_id");
+   $r=$db->Execute("DROP TABLE $desc");
+   $r=$db->Execute("DROP TABLE $desc"."_id");
+   $r=$db->Execute("DROP SEQUENCE $desc"."_id");
+   $r=$db->Execute("Delete from tableoftables WHERE id=$id");
+   if ($r) 
+      $string="Table $tablename has been deleted";
+   return $string;
 }
 
 /////////////////////////////////////////////////////////////////////////
@@ -674,33 +674,68 @@ function add_table ($db,$tablename,$sortkey) {
          $isbad=true; 
    }
    if ($tablename=="")
-      $string="please enter a title for the table!";
+      $string="Please enter a title for the table!";
    if ($isbad)
-      {$string="A table with the name $tablename already exists!";}
+      $string="A table with the name $tablename already exists!";
+   if (preg_match("/\W/",$tablename)) {
+      $string="Please use only letters (no numbers, spaces and the like) in the tablename.";
+      $isbad=true;
+   }
+   if (preg_match("/^[0-9]/",$tablename)) {
+      $string="Tablenames should not start with a number. Sorry ;(";
+      $isbad=true;
+   }
    if (!$isbad && $tablename) {
-           $id=$db->GenID("tableoftables"."_id_seq");
-	   $real_tablename=$id."_$tablename";
-           $desc=$real_tablename . "_desc";
-  	   $r=$db->Execute("CREATE TABLE $real_tablename (id int UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY, title text, access varchar(9), ownerid int(11), magic int(11), lastmodby int(11), lastmoddate int(11),date int(11))");
-  	   if ($r)
-  	   	{
-  	   	$string= "Succesfully Added Table $tablename";
-  	       $r=$db->Execute("INSERT INTO tableoftables (id,sortkey,tablename,shortname,Display,Permission) Values($id,'$sortkey','$tablename','$shortname','Y','Users')");
- 		$r=$db->Execute("CREATE TABLE $desc (id int UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,sortkey int,label text, display_table char(1), display_record char(1), required char(1), type text, datatype text, associated_table text, associated_sql text)");   
+      $id=$db->GenID("tableoftables"."_id_seq");
+      $real_tablename=$tablename."_".$id;
+      $desc=$real_tablename . "_desc";
+      $r=$db->Execute("CREATE TABLE $real_tablename (
+		id int PRIMARY KEY, 
+		title text, 
+		access varchar(9), 
+		ownerid int, 
+		magic int, 
+		lastmodby int, 
+		lastmoddate int, 
+		date int)");
+      if ($r) {
+         $string= "Succesfully Added Table $tablename";
+  	 $r=$db->Execute("INSERT INTO tableoftables (id,sortkey,tablename,shortname,Display,Permission) Values($id,'$sortkey','$tablename','$shortname','Y','Users')");
+         $r=$db->Execute("CREATE TABLE $desc (
+		id int PRIMARY KEY,
+		sortkey int,
+		label text, 
+		display_table char(1), 
+		display_record char(1), 
+		required char(1), 
+		type text, 
+		datatype text, 
+		associated_table text, 
+		associated_sql text)");   
 
-  	   $fieldstring="label, sortkey, display_table, display_record, required, type, datatype, associated_table, associated_sql"; 
-  	   $db->Execute("INSERT INTO $desc ($fieldstring) Values('id','100','N','N','N','int(11)','text','','')");
- 			$db->Execute("INSERT INTO $desc ($fieldstring) Values('access','110','N','N','N','varchar(9)','text','','')");
- 			$db->Execute("INSERT INTO $desc ($fieldstring) Values('ownerid','120','N','N','N','int(11)','text','','')");
- 			$db->Execute("INSERT INTO $desc ($fieldstring) Values('magic','130,'N','N','N','int(11)','text','','')");
- 			$db->Execute("INSERT INTO $desc ($fieldstring) Values('title','140','Y','Y','Y','text','text','','')");
- 			$db->Execute("INSERT INTO $desc ($fieldstring) Values('lastmoddate','150','N','N','N','int(11)','text','','')");
- 			$db->Execute("INSERT INTO $desc ($fieldstring) Values('lastmodby','160','N','N','N','int(11)','text','','')");
-	 		$db->Execute("INSERT INTO $desc ($fieldstring) Values('date','170','N','N','N','int(11)','text','','')");
-  		   }  
-  	   else {$string="Please enter all fields";}
-  	  return false;
-		}
+         $fieldstring="id,label,sortkey,display_table,display_record, required, type, datatype, associated_table, associated_sql"; 
+         $descid=$db->GenId("$desc"."_id");  
+  	 $db->Execute("INSERT INTO $desc ($fieldstring) Values($descid'id','100','N','N','N','int(11)','text','','')");
+         $descid=$db->GenId("$desc"."_id");  
+         $db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'access','110','N','N','N','varchar(9)','text','','')");
+         $descid=$db->GenId("$desc"."_id");  
+         $db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'ownerid','120','N','N','N','int(11)','text','','')");
+         $descid=$db->GenId("$desc"."_id");  
+         $db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'magic','130,'N','N','N','int(11)','text','','')");
+         $descid=$db->GenId("$desc"."_id");  
+         $db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'title','140','Y','Y','Y','text','text','','')");
+         $descid=$db->GenId("$desc"."_id");  
+         $db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'lastmoddate','150','N','N','N','int(11)','text','','')");
+         $descid=$db->GenId("$desc"."_id");  
+         $db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'lastmodby','160','N','N','N','int(11)','text','','')");
+         $descid=$db->GenId("$desc"."_id");  
+         $db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'date','170','N','N','N','int(11)','text','','')");
+      }  
+      else {
+         $string="Poblems adding this table.  Sorry ;(";
+      }
+   return false;
+   }
 }
 
 /////////////////////////////////////////////////////////////////////////
@@ -719,72 +754,73 @@ function mod_table($db,$id,$tablename,$tablesort,$tabledisplay)
 //// 
 // !adds a general column entry
 function add_columnecg($db,$tablename2,$colname2,$datatype,$Rdis,$Tdis,$req,$sort)
-	{
-	global $string;
-	// find the id of the table and therewith the tablename
-	$r=$db->Execute("SELECT id FROM tableoftables WHERE tablename='$tablename2'");
-	$id=$r->fields["id"];
-	$search=array("' '","','","';'","'\"'");
-	$replace=array("_","_","","");
-	$colname = preg_replace ($search,$replace, $colname2);
-	$tablename = preg_replace ($search,$replace, $tablename2); 
-	$real_tablename=$id."_$tablename";
+   {
+   global $string;
+   // find the id of the table and therewith the tablename
+   $r=$db->Execute("SELECT id FROM tableoftables WHERE tablename='$tablename2'");
+   $id=$r->fields["id"];
+   $search=array("' '","','","';'","'\"'");
+   $replace=array("_","_","","");
+   $colname = preg_replace ($search,$replace, $colname2);
+   $real_tablename=$tablename2."_".$id;
 
-	$fieldstring="label,sortkey, display_table, display_record,required, type, datatype, associated_table, associated_sql"; 
-	$desc=$real_tablename . "_desc";
-	if ($colname=="")
-	   $string="Please enter a columnname";
-	else {
-	   if ($datatype=="pulldown")
-			{ 
-			// create an associated table, not overwriting old ones, using a max number
-			$ALLTABLES=$db->MetaTables();  
-			$tablestr=$real_tablename;$tablestr.="ass";
-			$tables=array();
-			$tables=preg_grep("/$tablestr/",$ALLTABLES); 
-			$tables2=array_values($tables);
-			$numhave=array_count_values($tables2);
-			$allnums=array();	
-			array_push($allnums,"0");
-			foreach($tables2 as $currvalues)
-				{
-				$DDD=explode("_",$currvalues);
-				$nownumber=$DDD[1];
-				array_push($allnums,$nownumber);
-				}		
-			$maxnum=max($allnums);$newnum=$maxnum+1;
-			$tablestr.="_$newnum";	
-			$db->debug=true;
-			$r=$db->Execute("INSERT INTO $desc ($fieldstring) Values('$colname','$sort','$Tdis','$Rdis','$req','text','$datatype','$tablestr','$colname from $tablestr where ')");
-			$rs=$db->Execute("CREATE TABLE $tablestr (id int PRIMARY KEY, sortkey int, type text, typeshort text)");
-			$rsss=$db->Execute("ALTER table $real_tablename add column $colname text");
-			if (($r)&&($rs)&&($rsss)&&(!($colname==""))) {$string="Added column $colname into table <i>$tablename</i>";}
-			else 
-			   $string="Problems creating this column.";
-		}				
-		else
-			{  
-			$r=$db->Execute("INSERT INTO $desc ($fieldstring) Values('$colname','$sort','$Tdis','$Rdis','$req','text','$datatype','','')");
-			$rsss=$db->Execute("ALTER table $real_tablename add column $colname text");
-			if (($r)&&$rsss&&(!($colname==""))) {$string="Added column $colname into table: <i>$tablename</i>";}
-			else {$string="Please enter all values";}	
-			}
-		}
-		$db->debug=false;
-	}
+   $fieldstring="id,label,sortkey, display_table, display_record,required, type, datatype, associated_table, associated_sql"; 
+   $desc=$real_tablename . "_desc";
+   $fieldid=$db->GenId($desc."_id");
+   if ($colname=="")
+      $string="Please enter a columnname";
+   else {
+$db->debug=true;
+      if ($datatype=="pulldown") {
+         // create an associated table, not overwriting old ones, using a max number
+         $ALLTABLES=$db->MetaTables();  
+         $tablestr=$real_tablename;$tablestr.="ass";
+	 $tables=array();
+	 $tables=preg_grep("/$tablestr/",$ALLTABLES); 
+	 $tables2=array_values($tables);
+	 $numhave=array_count_values($tables2);
+	 $allnums=array();	
+	 array_push($allnums,"0");
+	 foreach($tables2 as $currvalues)
+			{
+	    $DDD=explode("_",$currvalues);
+	    $nownumber=$DDD[1];
+	    array_push($allnums,$nownumber);
+	 }		
+	 $maxnum=max($allnums);$newnum=$maxnum+1;
+	 $tablestr.="_$newnum";	
+	 $r=$db->Execute("INSERT INTO $desc ($fieldstring) Values($fieldid,'$colname','$sort','$Tdis','$Rdis','$req','text','$datatype','$tablestr','$colname from $tablestr where ')");
+	 $rs=$db->Execute("CREATE TABLE $tablestr (id int PRIMARY KEY, sortkey int, type text, typeshort text)");
+	 $rsss=$db->Execute("ALTER table $real_tablename add column $colname text");
+	 if (($r)&&($rs)&&($rsss)&&(!($colname==""))) 
+            $string="Added column <i>$colname</i> into table <i>$tablename2</i>";
+	 else 
+	    $string="Problems creating this column.";
+      }
+      else {
+         $r=$db->Execute("INSERT INTO $desc ($fieldstring) Values($fieldid,'$colname','$sort','$Tdis','$Rdis','$req','text','$datatype','','')");
+         $rsss=$db->Execute("ALTER table $real_tablename add column $colname text");
+ 	 if (($r)&&$rsss&&(!($colname==""))) 
+            $string="Added column <i>$colname</i> into table: <i>$tablename2</i>";
+         else 
+            $string="Please enter all values";
+      }
+   }
+}
 
 /////////////////////////////////////////////////////////////////////////
 //// 
 // !modifies a general column entry
-function mod_columnECG($db,$id,$sort,$tablename,$colname,$datatype,$Rdis,$Tdis,$req)
-	{
-	global $string;
-	$desc=$tablename;$desc.="_desc";
-    $r=$db->Execute("UPDATE $desc SET sortkey='$sort',display_table='$Tdis', display_record='$Rdis',required='$req' where id='$id'");   	
-    if ($r) {$string="Succesfully Changed Column $colname in $tablename";}
-    else {$string="Please enter all fields";}
-    return false;	
-	}
+function mod_columnECG($db,$id,$sort,$tablename,$colname,$datatype,$Rdis,$Tdis,$req) {
+   global $string;
+   $desc=$tablename;$desc.="_desc";
+   $r=$db->Execute("UPDATE $desc SET sortkey='$sort',display_table='$Tdis', display_record='$Rdis',required='$req' where id='$id'");   	
+   if ($r) 
+      $string="Succesfully Changed Column $colname in $tablename";
+   else 
+      $string="Please enter all fields";
+   return false;	
+}
 
 /////////////////////////////////////////////////////////////////////////
 //// 
@@ -792,26 +828,24 @@ function mod_columnECG($db,$id,$sort,$tablename,$colname,$datatype,$Rdis,$Tdis,$
 function rm_columnecg($db,$tablename,$id,$colname,$datatype) {
 	global $string;
 	// find the id of the table and therewith the tablename
-	$r=$db->Execute("SELECT id FROM tableoftables WHERE tablename='$tablename2'");
-	$id=$r->fields["id"];
-	$real_tablename=$id."_$tablename";
+	$r=$db->Execute("SELECT id FROM tableoftables WHERE tablename='$tablename'");
+	$fieldid=$r->fields["id"];
+	$real_tablename=$tablename."_".$fieldid;
 	$desc=$real_tablename."_desc";
-	$r=$db->Execute("Alter table $real_tablename drop column $colname");
+$db->debug=true;
+	$r=$db->Execute("ALTER TABLE $real_tablename DROP COLUMN $colname");
 	$rv=$db->Execute("select associated_table from $desc where id ='$id'");
     $tempTAB=array();
 	if ($rv) {
 	   while (!$rv->EOF) {
-	      $fieldA=$rv->fields[0];
-	      array_push($tempTAB, $fieldA);
+              if ($rv->fields[0])
+                 $db->Execute("DROP TABLE ".$rv->fields[0]);
 	      $rv->MoveNext();
-	   }
-	   foreach ($tempTAB as $DDD) {
-	      $rb=$db->Execute("Drop table if exists $DDD");
 	   }
         }
         $rrr=$db->Execute("DELETE FROM $desc WHERE id='$id'");
 	if (($r)&&($rrr)) 
-	     $string="Succesfully deleted Column <i>$colname</i> from Table <i>$tablename</i>.";
+	     $string="Deleted Column <i>$colname</i> from Table <i>$tablename</i>.";
 }
 
 
