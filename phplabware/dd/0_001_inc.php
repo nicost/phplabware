@@ -108,8 +108,11 @@
    $result=$db->Execute("INSERT INTO groups VALUES
 	($idg, 'admins', 'Only for real important people')");
    if (!$result) $test=false;
+   // default to the new menu style for all users
+   $user_settings["menustyle"]=1;
+   $user_settings=serialize($user_settings);
    $result=$db->Execute("INSERT INTO users VALUES 
-	($id, '','sysadmin','sysadmin', $idg, '$pass','', 127, '', '', '')");
+	($id, '','sysadmin','sysadmin', $idg, '$pass','', 127, '$user_settings', '', '')");
    if (!$result) $test=false;
    // insert guest and guest group
    $pass= md5("guest");
@@ -120,7 +123,7 @@
 	($idg, 'guests', 'Only for our guests')");
    if (!$result) $test=false;
    $result=$db->Execute("INSERT INTO users VALUES 
-	($id, '','guest','guest', $idg, '$pass','', 3, '','','')");
+	($id, '','guest','guest', $idg, '$pass','', 3, '$user_settings','','')");
    if (!$result) $test=false;
    $idg=$db->GenID("groups_id_seq");
    $result=$db->Execute("INSERT INTO groups VALUES
