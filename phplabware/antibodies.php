@@ -486,6 +486,8 @@ else {
    
    echo "<input type='hidden' name='searchj' value=''>\n";
    $lista=make_SQL_csf ($r,false,"id",$nr_records);
+   if (!$lista) 
+      $lista="-1";
    $lista=" id IN ($lista) ";
    // show title we may see, when too many, revert to text box
    if ($name) $list=$listb["sql"]; else $list=$lista;
