@@ -16,10 +16,31 @@
 
 ////
 // !Takes a template and data and generates a report
-function make_report ($template,$data) {
+function make_report ($db,$template,$data,$tableinfo,$counter=false) {
    foreach ($data as $column) {
-      if ($column["name"])
-         $template=str_replace("$".$column["name"],$column["text"],$template);
+      if ($column['name']) {
+         if ($column['datatype']=='textlong') {
+            $textlarge=nl2br(htmlentities($column['values']));
+            $template=str_replace("$".$column['name'],$textlarge,$template);
+         }
+         // we'll need to squeeze in images and files too
+
+         elseif ($column['datatype']=='file' || $column['datatype']=='image') {
+            $files=get_files($db,$tableinfo->name,$column['recordid'],$column['columnid'],0,'big');
+            unset ($ftext);
+            for ($i=0;$i<sizeof($files);$i++) {
+               $ftext.=$files[$i]['link'];
+            }
+            $template=str_replace("$".$column['name'],$ftext,$template);
+         }
+         elseif ($column['link'])
+            $template=str_replace("$".$column['name'],$column['link'],$template);
+         else   
+            $template=str_replace("$".$column["name"],$column["text"],$template);
+      }
    }
+   // Replace $counter with current sequence number
+   if ($counter)
+      $template=str_replace('$counter',$counter,$template);
    return $template;
 }
