@@ -457,7 +457,7 @@ echo "${$queryname}.<br>";
    }
    // write the first line shown in table view 
    if ($may_write)
-      echo "<td align='center'><a href='$PHP_SELF?&add=Add&tablename=$tableinfo->name&".SID."'>Add Record</a></td>\n"; 
+      echo "<td align='center'><a href='$PHP_SELF?&add=Add&tablename=$tableinfo->name&".SID."' target='_blank'>Add Record</a></td>\n"; 
    else
        echo "<td>&nbsp;</td>\n";
    echo "<td align='center'>$tabletext <B>$tableinfo->label</B> $modetext</td>";
