@@ -1580,7 +1580,16 @@ function current_page($curr_page, $sname, $num_p_r, $numrows) {
 ////
 // !Assembles the search SQL statement and remembers it in HTTP_SESSION_VARS
 function make_search_SQL($db,$tableinfo,$fields,$USER,$search,$searchsort,$whereclause=false) {
-   global $HTTP_POST_VARS, $HTTP_SESSION_VARS;
+   global $HTTP_GET_VARS, $HTTP_POST_VARS, $HTTP_SESSION_VARS;
+
+   // if any of the search columns has been passed as Get variable, copy them to the POST vars array 
+   $column=strtok($fields,',');
+   while ($column) {
+      if (isset($HTTP_GET_VARS[$column]) &&  !isset($HTTP_POST_VARS[$column])) {
+         $HTTP_POST_VARS[$column]=$HTTP_GET_VARS[$column];
+      }
+      $column=strtok(',');
+   }
 
    // apparently searchsort can be passed as an empty string.  that is bad
    if (!$searchsort)

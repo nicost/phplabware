@@ -66,7 +66,7 @@ if ($plugin_code)
    @include($plugin_code);
 
 // register variables
-$get_vars='tablename,md,showid,edit_type,add,jsnewwindow,modify';
+$get_vars='tablename,md,showid,edit_type,add,jsnewwindow,modify,search';
 globalize_vars($get_vars, $HTTP_GET_VARS);
 $post_vars = 'add,md,edit_type,showid,submit,search,searchj,serialsortdirarray';
 globalize_vars($post_vars, $HTTP_POST_VARS);
