@@ -25,7 +25,8 @@ require("include.php");
 $post_vars = "email,id,firstname,lastname,login,me,modify,perms,pwd,pwdcheck,user_group,";
 $post_vars .= "create,user_add,";
 
-$type=$HTTP_GET_VARS["type"];
+if (!$type)
+   $type=$HTTP_GET_VARS["type"];
 globalize_vars ($post_vars, $HTTP_POST_VARS);
 
 
