@@ -411,7 +411,7 @@ else {
    if ($tableinfo->name) $sid.="&tablename=$tableinfo->name";
 
    // print form;
-   $headers = getallheaders();
+   // $headers = getallheaders();
 
    $dbstring=$PHP_SELF."?"."tablename=$tableinfo->name&";
    $formname='g_form';
