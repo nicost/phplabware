@@ -392,6 +392,27 @@ else {
       }
       if ($nowfield[datatype]== "link")
          echo "<td style='width: 10%'>&nbsp;</td>\n";
+      // datatype of column date is text (historical oversight...)
+      elseif ($nowfield[name]=="date") 
+         echo "<td style='width: 10%'>&nbsp;</td>\n";
+      // datatype of column ownerid is text (historical oversight...)
+      elseif ($nowfield[name]=="ownerid") {
+         if ($list) {
+            $rowners=$db->Execute("SELECT ownerid FROM $tableinfo->realname WHERE $list");
+            while ($rowners && !$rowners->EOF) {
+               $ownerids[]=$rowners->fields[0];
+               $rowners->MoveNext();
+            }
+            $ownerlist=implode(",",$ownerids);
+         }
+         if ($ownerlist) {   
+            $rowners2=$db->Execute("SELECT lastname,id FROM users WHERE id IN ($ownerlist)");
+             $text=$rowners2->GetMenu2("$nowfield[name]",${$nowfield[name]},true,false,0,"style='width: 80%' $jscript");
+            echo "<td style='width:10%'>$text</td>\n";
+         }   
+         else
+            echo "<td style='width:10%'>test</td>\n";
+      }
       elseif ($nowfield["datatype"]=="int" || $nowfield["datatype"]=="float" || $nowfield["datatype"]=="sequence") {
          // show titles we may see, when too many, revert to text box
          if ($list && ($count < $max_menu_length) )  {
@@ -437,8 +458,8 @@ else {
       }
       elseif ($nowfield["datatype"] == "file")
          echo "<td style='width: 10%'>&nbsp;</td>";
-      elseif ($nowfield[datatype] == "table")
-         echo "<td style='width: 10%'>&nbsp;</td>";
+      //elseif ($nowfield[datatype] == "table")
+      //   echo "<td style='width: 10%'>&nbsp;</td>";
    }	 
    echo "<td style='width: 5%'><input type=\"submit\" name=\"search\" value=\"Search\">&nbsp;";
    echo "<input type=\"submit\" name=\"search\" value=\"Show All\"></td>";
