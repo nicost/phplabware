@@ -285,21 +285,21 @@ function add_columnecg($db,$tablename2,$colname2,$label,$datatype,$Rdis,$Tdis,$r
    $id=$r->fields["id"];
    $real_tablename=$r->fields["real_tablename"];
    $desc=$r->fields["table_desc_name"];
-//   $real_tablename=get_cell($db,"tableoftables","real_tablename","id",$id);
-//   $desc=get_cell($db,"tableoftables","table_desc_name","id",$id);
    $search=array("' '","','","';'","'\"'");
    $replace=array("_","_","","");
-   $colname = preg_replace ($search,$replace, $colname2);
+   $colname=preg_replace ($search,$replace, $colname2);
 
    $fieldstring="id,columnname,label,sortkey,display_table,display_record,required,modifiable,type,datatype,associated_table,associated_column"; 
    $fieldid=$db->GenId($desc."_id");
    $label=strtr($label,",'","  ");
+/*
    // avoid having more than one column of type 'file'
    if ($datatype=="file") {
       $r=$db->Execute("SELECT id FROM $desc WHERE datatype='file'");
       if ($r->fields["id"])
          $filecolumnfound=true;
    }
+*/
    $colname=strtolower($colname);
    // check whether this name exists, the query should fail
    $rb=$db->Execute("SELECT $colname FROM $real_tablename");
@@ -311,8 +311,8 @@ function add_columnecg($db,$tablename2,$colname2,$label,$datatype,$Rdis,$Tdis,$r
       $string="Please enter a Label";
    elseif (strpos($SQL_reserved,",$colname,")) 
       $string="Column name <i>$colname</i> is a reserved SQL word.  Please pick another column name";
-   elseif ($filecolumnfound)
-      $string="Only one column can be of Datatype <i>file</i>.";
+//   elseif ($filecolumnfound)
+//      $string="Only one column can be of Datatype <i>file</i>.";
    else {
       if ($datatype=="pulldown") {
          // create an associated table, not overwriting old ones, using a max number

@@ -302,6 +302,7 @@ function display_add($db,$tableid,$real_tablename,$tabledesc,$Allfields,$id,$nam
    global $PHP_SELF, $db_type, $md, $USER;
 
    $tablename=get_cell($db,"tableoftables","tablename","id",$tableid);
+   $tablelabel=get_cell($db,"tableoftables","label","id",$tableid);
    $dbstring=$PHP_SELF;$dbstring.="?";$dbstring.="tablename=$tablename&";
    echo "<form method='post' id='protocolform' enctype='multipart/form-data' action='$dbstring";
 	?><?=SID?>'><?php
@@ -312,11 +313,11 @@ function display_add($db,$tableid,$real_tablename,$tabledesc,$Allfields,$id,$nam
    echo "<input type='hidden' name='md' value='$md'>\n";
    echo "<table border=0 align='center'>\n";   
    if ($id) {
-      echo "<tr><td colspan=5 align='center'><h3>Modify $tablename entry <i>$namein</i></h3></td></tr>\n";
+      echo "<tr><td colspan=5 align='center'><h3>Modify $tablelabel entry <i>$namein</i></h3></td></tr>\n";
       echo "<input type='hidden' name='id' value='$id'>\n";
    }
    else {
-      echo "<tr><td colspan=5 align='center'><h3>New $tablename entry</h3></td></tr>\n";
+      echo "<tr><td colspan=5 align='center'><h3>New $tablelabel entry</h3></td></tr>\n";
    }
    echo "<table border=0 align='center'>\n<tr align='center'>\n<td colspan=2></td>\n";
    foreach ($Allfields as $nowfield) {
@@ -396,7 +397,7 @@ function display_add($db,$tableid,$real_tablename,$tabledesc,$Allfields,$id,$nam
 	       echo "<td><input type='submit' name='def_".$files[$i]["id"]."' value='Delete' Onclick=\"if(confirm('Are you sure the file ".$files[$i]["name"]." should be removed?')){return true;}return false;\"></td></tr>\n";
 	    }
 	    echo "<tr><th>Replace file(s) with</th>\n";
-	    echo "<td>&nbsp;</td><td><input type='file' name='file[]' value='$filename'></td>\n";
+	    echo "<td>&nbsp;</td><td><input type='file' name='".$nowfield[name]."[]' value='$filename'></td>\n";
 	    echo "</tr></table><br>\n\n";
 	 }
       }

@@ -229,16 +229,11 @@ function delete ($db, $tableid, $id, $USER, $filesonly=false) {
 // files should be called file[] in HTTP_POST_FILES
 // filetitle in HTTP_POST_VARS will be inserted in the title field of table files
 // returns id of last uploaded file upon succes, false otherwise
-function upload_files ($db,$tableid,$id,$columnid,$USER,$system_settings) {
+function upload_files ($db,$tableid,$id,$columnid,$columnname,$USER,$system_settings) {
    global $HTTP_POST_FILES,$HTTP_POST_VARS,$system_settings;
 
    $table=get_cell($db,"tableoftables","tablename","id",$tableid);
    $real_tablename=get_cell($db,"tableoftables","real_tablename","id",$tableid);
-
-   if (!is_array($columnid)) {
-      $carray[0]=$columnid;
-      $columnid=$carray;
-   }
 
    if (!($db && $table && $id)) {
       echo "Error in code: $db, $table, or $id is not defined.<br>";
@@ -248,19 +243,19 @@ function upload_files ($db,$tableid,$id,$columnid,$USER,$system_settings) {
       echo "You do not have permission to write to table $table.<br>";
       return false;
    }
-   if (isset($HTTP_POST_FILES["file"]["name"][0]) && !$filedir=$system_settings["filedir"]) {
+   if (isset($HTTP_POST_FILES["$columnname"]["name"][0]) && !$filedir=$system_settings["filedir"]) {
       echo "<h3><i>Filedir</i> was not set.  The file was not uploaded. Please contact your system administrator</h3>";
       return false;
    }
-   for ($i=0;$i<sizeof($HTTP_POST_FILES["file"]["name"]);$i++) {
+   for ($i=0;$i<sizeof($HTTP_POST_FILES["$columnname"]["name"]);$i++) {
       if (!$fileid=$db->GenID("files_id_seq"))
          return false;
-      $originalname=$HTTP_POST_FILES["file"]["name"][$i];
-      $mime=$HTTP_POST_FILES["file"]["type"][$i];
+      $originalname=$HTTP_POST_FILES["$columnname"]["name"][$i];
+      $mime=$HTTP_POST_FILES["$columnname"]["type"][$i];
       // work around php bug??  
       $mime=strtok ($mime,";");
       $filestype=substr(strrchr($mime,"/"),1);
-      $size=$HTTP_POST_FILES["file"]["size"][$i];
+      $size=$HTTP_POST_FILES["$columnname"]["size"][$i];
       $title=$HTTP_POST_VARS["filetitle"][$i];
       if (!$title)
          $title="NULL"; 
@@ -268,8 +263,8 @@ function upload_files ($db,$tableid,$id,$columnid,$USER,$system_settings) {
          $title="'$title'";
       $type=$HTTP_POST_VARS["filetype"][$i];
       // this works asof php 4.02
-      if (move_uploaded_file($HTTP_POST_FILES["file"]["tmp_name"][$i],"$filedir/$fileid"."_"."$originalname")) {
-         $query="INSERT INTO files (id,filename,mime,size,title,tablesfk,ftableid,ftablecolumnid,type) VALUES ($fileid,'$originalname','$mime','$size',$title,'$tableid',$id,'$columnid[$i]','$filestype')";
+      if (move_uploaded_file($HTTP_POST_FILES["$columnname"]["tmp_name"][$i],"$filedir/$fileid"."_"."$originalname")) {
+         $query="INSERT INTO files (id,filename,mime,size,title,tablesfk,ftableid,ftablecolumnid,type) VALUES ($fileid,'$originalname','$mime','$size',$title,'$tableid',$id,'$columnid','$filestype')";
 	 $db->Execute($query);
       }
    }
@@ -324,6 +319,18 @@ function file_path ($db,$fileid) {
    return $system_settings["filedir"]."/$fileid"."_$filename";
 }
 
+
+////
+// !Deletes all file associated with this record,column and table
+function delete_column_file($db,$tableid,$columnid,$recordid,$USER) {
+
+   $r=$db->Execute("SELECT id FROM files 
+                    WHERE tablesfk=$tableid AND ftableid=$recordid AND ftablecolumnid=$columnid");
+   while ($r && !$r->EOF) {
+      delete_file ($db,$r->fields("id"),$USER); 
+      $r->MoveNext();
+   }
+}
 
 
 ////

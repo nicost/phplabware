@@ -214,14 +214,13 @@ else {
       else {  
          // $id ==-1 when the record was already uploaded
          if ($id>0) {
-            $rb=$db->Execute("SELECT id FROM $table_desname WHERE datatype='file'");
+            $rb=$db->Execute("SELECT id,columnname FROM $table_desname WHERE datatype='file'");
             while (!$rb->EOF) {
-               $columnids[]=$rb->fields["id"];
+       	       $fileid=upload_files($db,$tableid,$id,$rb->fields["id"],$rb->fields["columnname"],$USER,$system_settings);
+               // insert stuff to deal with word/html files
+               process_file($db,$fileid,$system_settings); 
                $rb->MoveNext(); 
             }
-       	    $fileid=upload_files($db,$tableid,$id,$columnids,$USER,$system_settings);
-            // insert stuff to deal with word/html files
-            process_file($db,$fileid,$system_settings); 
             // call plugin code to do something with newly added data
             if (function_exists("plugin_add"))
                plugin_add($db,$tableid,$id);
@@ -240,16 +239,15 @@ else {
          exit;
       }
       else { 
-         if ($HTTP_POST_FILES["file"]["name"][0]) {
-            // delete all existing file
-            delete ($db,$tableid,$HTTP_POST_VARS["id"],$USER,true);
-            $rb=$db->Execute("SELECT id FROM $table_desname WHERE datatype='file' ORDER BY sortkey");
-            while (!$rb->EOF) {
-               $columnids[]=$rb->fields["id"];
-               $rb->MoveNext(); 
+         $rc=$db->Execute("SELECT id,columnname FROM $table_desname WHERE datatype='file'");
+         while (!$rc->EOF) {
+            if ($HTTP_POST_FILES[$rc->fields["columnname"]]["name"][0]) {
+               // delete all existing files
+               delete_column_file ($db,$tableid,$rc->fields["id"],$HTTP_POST_VARS["id"],$USER);
+               $fileid=upload_files($db,$tableid,$HTTP_POST_VARS["id"],$rc->fields["id"],$rc->fields["columnname"],$USER,$system_settings);
+               process_file($db,$fileid,$system_settings);
             }
-            $fileid=upload_files($db,$tableid,$HTTP_POST_VARS["id"],$columnids,$USER,$system_settings);
-            process_file($db,$fileid,$system_settings);
+            $rc->MoveNext(); 
          }
          // to not interfere with search form 
          unset ($HTTP_POST_VARS);
