@@ -112,6 +112,7 @@ function del_table($db,$tablename,$id,$USER) {
    $r=$db->Execute("DROP TABLE $desc");
    $r=$db->Execute("DROP TABLE $desc"."_id");
    $r=$db->Execute("DROP SEQUENCE $desc"."_id");
+   $r=$db->Execute("DELETE FROM groupxtabledisplay WHERE tableid=$id");
    $r=$db->Execute("Delete from tableoftables WHERE id=$id");
    if ($r) 
       $string="Table $tablename has been deleted";
@@ -220,7 +221,8 @@ function mod_table($db,$id,$tablename,$tablesort,$tabledisplay,$tablegroups) {
       $db->Execute("DELETE FROM groupxtable_display WHERE tableid='$id'");
       if ($tablegroups) {
          foreach ($tablegroups AS $groupid)
-	    $db->Execute("INSERT into groupxtable_display VALUES ('$groupid','$id')");
+            if ($groupid)
+	       $db->Execute("INSERT into groupxtable_display VALUES ('$groupid','$id')");
       }
       $string="Succesfully Changed Record $tablename";
    }
