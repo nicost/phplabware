@@ -31,4 +31,5 @@ if (!@$db->PConnect($db_host, $db_user, $db_pwd, $db_name)) {
 $version=get_cell($db,"settings","version","id",1);
 $settings=unserialize(get_cell($db,"settings","settings","id",1));
 
+$title="PhpLabware: ";
 ?>
