@@ -29,9 +29,15 @@ function make_xml ($db,$data,$tableinfo) {
 
 ////
 // !Takes a template and data and generates a report
+// $value are translated into the text value
+// %value are translated into the actual value
+// &value are translated into the sum of all values seen so far
 function make_report ($db,$template,$data,$tableinfo,$counter=false) {
+   global $sums;
    foreach ($data as $column) {
       if ($column['name']) {
+         $sums[$column['name']]+=$column['values'];
+         $template=str_replace("&".$column['name'],$sums[$column['name']],$template);
          // give a chance to replace with value only
          $template=str_replace("%".$column['name'],$column['values'],$template);
          if ($column['datatype']=='textlong') {

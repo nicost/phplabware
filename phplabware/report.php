@@ -103,16 +103,24 @@ if ($HTTP_GET_VARS['tableview']) {
       $counter=1;
       while ($r && !$r->EOF) {
          $Allfields=getvalues($db,$tableinfo,$fields_table,'id',$r->fields['id']);
-         if ($reportid>0)
+         if ($reportid>0) {
             echo make_report($db,$template,$Allfields,$tableinfo,$counter);
+         }
          else
             echo make_xml ($db,$Allfields,$tableinfo);
          //echo $report;
          $r->MoveNext();
          $counter++;
       }
-     if ($reportid>0)
+     if ($reportid>0) {
+        foreach ($Allfields as $column) {
+           if ($column['name']) {
+              //$sums is defined as global in function make_reports.  It sums whatever it finds while looping through the records it displays. All occurences of '&fieldname' in the footer will be replaced with the sum of the rows.
+              $footer=str_replace("&".$column['name'],$sums[$column['name']],$footer);
+           }
+         }
          echo $footer;
+      }
       else
          echo '</'."phplabware_base>\n>";
    }
