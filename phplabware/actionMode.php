@@ -13,15 +13,19 @@
 /**
  * The following POST variables are required:
  * tableid,recordid,field,newvalue
+ * The following are optional:
+ * datatype
  */
 
 // main includes
 require ('./include.php');
 require('./includes/db_inc.php');
 
+//print_r($HTTP_POST_VARS);
+
 $tableinfo=new tableinfo($db,false,$_POST['tableid']);
 
-// don't have these fields changes:
+// don't have these fields changed:
 $forbidden_fields=array ('id','ownerid');
 if (in_array($_POST['field'],$forbidden_fields)) {
    return false;
@@ -32,7 +36,19 @@ if ($_POST['datatype']=='date') {
 
 //$db->debug=true;
 if (may_see_table($db,$USER,$tableinfo->id) && may_write($db,$tableinfo->id,$_post['recordid'],$USER)) {
-   $db->Execute("UPDATE {$tableinfo->realname} SET {$_POST['field']}='{$_POST['newvalue']}' WHERE id={$_POST['recordid']}");
+   if ($_POST['datatype']=='mpulldown') {
+      // $newvalue is a comma separated list with ids of the selected items
+      // remove the last (extra) comma)
+      $_POST['newvalue']=substr($_POST['newvalue'],0,-1);
+      $valueArray=explode(',',$_POST['newvalue']);
+      // figure out name of keytable
+      $keytable=get_cell($db,$tableinfo->desname,'key_table','columnname',$_POST['field']);
+      if ($keytable) {
+         update_mpulldown($db,$keytable,$_POST['recordid'],$valueArray);
+      } 
+   } else {
+          $db->Execute("UPDATE {$tableinfo->realname} SET {$_POST['field']}='{$_POST['newvalue']}' WHERE id={$_POST['recordid']}");
+   }
 }
 
 ?>

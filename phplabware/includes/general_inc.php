@@ -255,6 +255,7 @@ function display_table_change($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr
             echo "\n<td>$text $thestar</td>\n";
          }
          elseif ($nowfield['datatype']=='mpulldown') {
+            $js="onchange='submit_changes($tableinfo->id,$id,\"{$nowfield['name']}\",\"{$nowfield['datatype']}\",this)'";
             // get previous values
             unset ($rp);
             $rp=$db->Execute("SELECT typeshort,id FROM {$nowfield['ass_t']} ORDER BY sortkey,typeshort");

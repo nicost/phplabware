@@ -24,7 +24,22 @@ function submit_changes ($tableid,$recordid,$field,$datatype,$newvalue) {
    newForm += "<input type='hidden' name='recordid' value='" + $recordid + "'>\n";
    newForm += "<input type='hidden' name='field' value='" + $field + "'>\n";
    newForm += "<input type='hidden' name='datatype' value='" + $datatype + "'>\n";
-   newForm += "<input type='hidden' name='newvalue' value='" + $newvalue + "'>\n";
+   // for mpulldowns, we have to figure out which values are selected
+   // for all others the value can be passed directly
+   if ($datatype=="mpulldown") {
+      // in this case $newvalue contains a pointer to the select object
+      var valueString="";
+      for (var i=0; i<$newvalue.length; i++ ) {
+         if ($newvalue.options[i].selected) {
+            if ($newvalue.options[i].value != "undefined" ) {
+                valueString += $newvalue.options[i].value + ",";
+            }
+         }
+      }
+      newForm += "<input type='hidden' name='newvalue' value='" + valueString + "'>\n";
+   } else {
+      newForm += "<input type='hidden' name='newvalue' value='" + $newvalue + "'>\n";
+   }
 
    //newForm += "<input type='submit' name='Submit' value='Submit'>\n";
    newForm += "</form>\n</body>\n</html>\n";
