@@ -301,7 +301,7 @@ function display_table_info($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr_c
             echo "<td align='left' cellpadding='5%'>{$nowfield['text']}</td>\n"; 
          else
             echo "<td>{$nowfield['text']}</td>\n"; 
-         // write file ids to a file so that we do not need to check them again when downloading thumbnails
+         // write file ids to user settings so that we do not need to check them again when downloading thumbnails
          if (($nowfield['datatype']=='image' || $nowfield['datatype']=='file') && isset($nowfield['fileids'])) {
             foreach ($nowfield['fileids'] as $fileid)
                $USER['settings']['fileids'][]=$fileid;
@@ -701,7 +701,9 @@ function display_add($db,$tableinfo,$Allfields,$id,$namein,$system_settings) {
 function getvalues($db,$tableinfo,$fields,$qfield=false,$field=false) {
    global $system_settings;
    if ($qfield) {
+//$db->debug=true;
       $r=$db->Execute("SELECT $fields FROM $tableinfo->realname WHERE $qfield=$field"); 
+//$db->debug=false;
       $rid=$db->Execute("SELECT id FROM $tableinfo->realname WHERE $qfield=$field");
       $id=$rid->fields['id'];
    }
@@ -741,19 +743,25 @@ function getvalues($db,$tableinfo,$fields,$qfield=false,$field=false) {
                if (${$column}['values']) {
                   $asstableinfo=new tableinfo($db,${$column}['ass_table_name']);
                   $tmpvalue=getvalues($db,$asstableinfo,${$column}['ass_column_name'],'id',${$column}['values']);
+//print_r($tmpvalue);
+//print_r(${$column}['values']);
                   if (is_array($tmpvalue[0])) {
                      $text=$tmpvalue[0]['text'];
                      $values=$tmpvalue[0]['values'];
                      $datatype=$tmpvalue[0]['datatype'];
+                     $fileids=$tmpvalue[0]['fileids'];
                   }
-                  else
+                  else {
                      $text=$tmpvalue[0];
+                     $values=$text;
+                  }
                   ${$column}['link']="<a target=_ href=\"general.php?tablename={$asstableinfo->name}&showid=".${$column}['values']."\">$text</a>\n";
                }
                if (!$text)
                   $text="&nbsp;";
                ${$column}['text']=$text;
                ${$column}['values']=$values;
+               ${$column}['fileids']=$fileids;
                if ($datatype)
                   ${$column}['datatype']=$datatype;
             }
