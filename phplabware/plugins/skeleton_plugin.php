@@ -25,8 +25,11 @@ the terms of the GNU General Public License as published by the Free Software Fo
 // Any changes you make in the values of $fieldvalues will result in 
 // changes in the database. 
 // You could, for instance, calculate a value of a field based on other fields
+// make sure this function returns true (or does not exist), or additions/modification
+// will fail!
 function plugin_check_data($db,&$fieldvalues,$table_desc,$modify=false) 
 {
+   return true;
 }
 
 ////
