@@ -202,7 +202,7 @@ function get_files ($db,$table,$id,$format=1) {
 	    $text=$filesname;
          $text.="<br>\n";
          $icon="icons/$filestype.jpg";
-         if (is_readable($icon))
+         if (@is_readable($icon))
             $text="<img src='$icon'>";
          $files[$i]["link"]="<a href='showfile.php?id=$filesid&name=$filesname&$sid'>$text</a>\n";
          $r->MoveNext();
