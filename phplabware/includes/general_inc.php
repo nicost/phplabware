@@ -634,7 +634,8 @@ function display_add($db,$tableinfo,$Allfields,$id,$namein,$system_settings) {
                $size=60;
             else
                $size=10;
-     	    echo "<td><input type='text' name='$nowfield[name]' value='$nowfield[text]' $size>";
+     	    //echo "<td><input type='text' name='$nowfield[name]' value='$nowfield[text]' $size>";
+     	    echo "<td><input type='text' name='{$nowfield['name']}' value='{$nowfield['values']}' $size>";
          }
 	 elseif ($nowfield['datatype']=='sequence') {
 	    if (!$nowfield['text']) {
