@@ -1,4 +1,3 @@
-
 <?php
 
 // cron.php - Maintance tasks. To be called from cron.
@@ -12,7 +11,6 @@
   *  Free Software Foundation; either version 2 of the License, or (at your  *
   *  option) any later version.                                              *
   \**************************************************************************/                                                                             
-$starttime=microtime();
 
 include ("includes/defines_inc.php");
 include ("includes/functions_inc.php");
@@ -23,7 +21,6 @@ include ("includes/db_inc.php");
 // !Writes the index files needed for full text searches of files
 function doindexfile ($db,$filetext,$fileid,$indextable,$recordid,$pagenr)
 {
-//echo "In indexfile.<br>";
    if (!$pagenr)
       $pagenr=1;
    $thetext=split("[ ,.:;\"\n]",$filetext);
@@ -43,13 +40,21 @@ function doindexfile ($db,$filetext,$fileid,$indextable,$recordid,$pagenr)
 
 
 // main body
+
+// text/html files are indexed directly, pdf files are first converted
+// with ghostscript
+// words are entered in table 'words'
+// links between files/records are kept in specifc tables
+
+// we keep track of the time it takes to do the indexing
+$starttime=microtime();
+
 $host=getenv("HTTP_HOST");
 if (! ($host=="localhost" ||$host=="127.0.0.1") ) {
    echo "This script should only be called by the CRON daemon.";
    exit ();
 }
 
-//$db->debug=true;
 // find unindexed files with mime types we can work with
 $rfiles=$db->Execute("SELECT id,filename,tablesfk,ftableid,mime,ftablecolumnid FROM files WHERE indexed=NULL AND (mime LIKE '%text%' OR mime LIKE '%pdf%')");
 
@@ -70,14 +75,12 @@ while ($rfiles && !($rfiles->EOF)) {
                fclose($fp);
             }
             $filetext=strtolower($filetext);
-//echo "$filetext.<br>";
             if (doindexfile ($db,$filetext,$rfiles->fields[id],$rindextable->fields[associated_table],$rfiles->fields[ftableid],1)) {
-//$db->debug=true;
                $db->Execute ("UPDATE files SET indexed=1 WHERE id=".$rfiles->fields[id]);
                $textfilecounter++;
             }
          }
-         // for pdf files we use ghostscript.  This code was taken from docmgr
+         // for pdf files we use ghostscript.  Part of this code was taken from docmgr
          elseif (strstr($rfiles->fields[mime],"pdf")) {
             //first we have to figure out how many pages
             //are in the file.  this is a rough method.
@@ -85,7 +88,11 @@ while ($rfiles && !($rfiles->EOF)) {
             //the file and sees how many pages there are
 
             $filepath=file_path($db,$rfiles->fields[id]);
-            $numpages = `gs -dNODISPLAY "$filepath" -c quit`;
+            $gs=$system_settins[gs];
+            if (!@is_readable($gs))
+               echo "Could not read ghostscipt binary (gs) at '$gs'.<br>";
+               // we don't need to quit since the rest will simply fail
+            $numpages = `$gs -dNODISPLAY "$filepath" -c quit`;
             $pos1 = strpos($numpages,"through");
             $numpages = substr($numpages,$pos1);
             $pos2 = strpos($numpages,".");
@@ -93,7 +100,7 @@ while ($rfiles && !($rfiles->EOF)) {
 
             for ($page=1;$page<=$numpages;$page++) {
                //gs the page and return as a string
-               $tempstring=`gs -q -dNODISPLAY -dNOBIND -dWRITESYSTEMDICT -dSIMPLE -dFirstPage=$page -dLastPage=$page -c save -f ps2ascii.ps "$filepath" -c quit`; 
+               $tempstring=`$gs -q -dNODISPLAY -dNOBIND -dWRITESYSTEMDICT -dSIMPLE -dFirstPage=$page -dLastPage=$page -c save -f ps2ascii.ps "$filepath" -c quit`; 
               //strip out all the trash from the string
               //$tempstring = string_clean($tempstring,$preventIndex,$keepIndex);
                $filetext=strtolower($tempstring);
@@ -107,6 +114,7 @@ while ($rfiles && !($rfiles->EOF)) {
    $rfiles->MoveNext();
 }
 
+// The rest just serves to report some statistics..
 if (!$textfilecounter)
    $textfilecounter=0;
 if (!$pdffilecounter)
@@ -121,3 +129,15 @@ $ptime=sprintf("%0f",$pt);
 
 echo "Indexed $textfilecounter text files and $pdffilecounter pdf files in $ptime seconds";
 
+// load plugin php code if it has been defined 
+if ($HTTP_GET_VARS[tablename]) {
+   $tableinfo=new tableinfo($db);
+   $plugin_code=get_cell($db,"tableoftables","plugin_code","id",$tableinfo->id);
+   if ($plugin_code) {
+      @include($plugin_code);
+      // and execute the cron plugin
+      if (function_exists("plugin_cron"))
+         plugin_cron($db,$tableinfo);
+   }
+}
+?>
