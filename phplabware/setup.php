@@ -25,7 +25,7 @@ include ('includes/config_inc.php');
 include ("includes/defines_inc.php");
 include ('adodb/adodb.inc.php');
 
-$post_vars="access,action,authmethod,baseURL,homeURL,checkpwd,dateformat,filedir,pwd,secure_server_new,submit,tmpdir,word2html";
+$post_vars="access,action,authmethod,baseURL,homeURL,checkpwd,dateformat,filedir,pwd,protocols_file,pdfs_file,secure_server_new,submit,tmpdir,word2html";
 globalize_vars($post_vars, $HTTP_POST_VARS);
 
 if ($set_local) {
@@ -156,6 +156,32 @@ if ($version) {
       if ($baseURL)
          $system_settings["baseURL"]=$baseURL;
       $system_settings["homeURL"]=$homeURL;
+      if ($protocols_file) {
+         if (!is_readable($protocols_file)) {
+	    $fid=fopen($protocols_file,w);
+	    if ($fid)
+	       fclose ($fid);
+	 }
+         if (is_writeable($protocols_file))
+            $system_settings["protocols_file"]=$protocols_file;
+	 else
+	    echo "<h4 align='center'>Protocols additions file $protocols_file is not writeable</h4>";
+      }
+      else
+         unset ($system_settings["protocols_file"]);
+      if ($pdfs_file) {
+         if (!is_readable($pdfs_file)) {
+	    $fid=fopen($pdfs_file,w);
+	    if ($fid)
+	       fclose ($fid);
+	 }
+         if (is_writeable($pdfs_file))
+            $system_settings["pdfs_file"]=$pdfs_file;
+	 else
+	    echo "<h4 align='center'>Pdfs additions file $pdfs_file is not writeable</h4>";
+      }
+      else
+         unset ($system_settings["pdfs_file"]);
       if ($secure_server_new=="Yes")
          $system_settings["secure_server"]=true;
       else
@@ -184,7 +210,7 @@ if ($version) {
    if (!$system_settings["access"]) $system_settings["access"]="rw-r-----";
    echo "<td><input type='text' name='access' value='".$system_settings["access"]."'></td></tr>\n";
 
-   echo "<tr><td colspan='2' align='center'><i>Directories</i></th></tr>\n";
+   echo "<tr><td colspan='2' align='center'><i>Directories and URLs</i></th></tr>\n";
 
    echo "<tr><td>Directory <i>files</i>. The webdaemon should ";
    echo "have read and write priveleges, but the directory should not be directly ";
@@ -213,6 +239,13 @@ if ($version) {
    echo "(Try: http://".getenv("SERVER_NAME").")</td>\n";
    echo "<td><input type='text' name='homeURL' value='".$system_settings["homeURL"]."'></td></tr>\n";
 
+   echo "<tr><td colspan='2' align='center'><i>Files with new additions</i></th>\n";
+   echo "<br>Certain modules can write a file with information about the last added record.  You could show this inforation on a webpage.  If you don't use this, leave blank.</tr>\n";
+   echo "<tr><td>New addition file for protocols.</td>\n ";
+   echo "<td><input type='text' name='protocols_file' value='".$system_settings["protocols_file"]."'></td></tr>\n";
+   echo "<tr><td>New addition file for pdfs.</td>\n ";
+   echo "<td><input type='text' name='pdfs_file' value='".$system_settings["pdfs_file"]."'></td></tr>\n";
+   
    echo "<tr><td colspan='2' align='center'><i>Helper Applications</i></th></tr>\n";
    echo "<tr><td>wvHtml:</td>\n";
    if (!$system_settings["word2html"]) { 
