@@ -252,6 +252,7 @@ function mod_table($db,$id,$tablename,$tablesort,$tabledisplay,$label,$tablegrou
 // !adds a general column entry
 function add_columnecg($db,$tablename2,$colname2,$label,$datatype,$Rdis,$Tdis,$req,$modifiable,$sort) {
    global $string;
+$db->debug=true;
 
    $SQL_reserved=",absolute,action,add,allocate,alter,are,assertion,at,between,bit,bit_length,both,cascade,cascaded,case,cast,catalog,char_length,charachter_length,cluster,coalsce,collate,collation,column,connect,connection,constraint,constraints,convert,corresponding,cross,current_date,current_time,current_timestamp,current_user,date,day,deallocate,deferrrable,deferred,describe,descriptor,diagnostics,disconnect,domain,drop,else,end-exec,except,exception,execute,external,extract,false,first,full,get,global,hour,identity,immediate,initially,inner,input,insensitive,intersect,interval,isolation,join,last,leading,left,level,local,lower,match,minute,month,names,national,natural,nchar,next,no,nullif,octet_length,only,outer,output,overlaps,pad,partial,position,prepare,preserve,prior,read,relative,restrict,revoke,right,rows,scroll,second,session,session_user,size,space,sqlstate,substring,system_user,temporary,then,time,timepstamp,timezone_hour,timezone_minute,trailing,transaction,translate,translation,trim,true,unknown,uppper,usage,using,value,varchar,varying,when,write,year,zone,";
 
@@ -353,8 +354,9 @@ function rm_columnecg($db,$tablename,$id,$colname,$datatype) {
    // find the id of the table and therewith the tablename
    $r=$db->Execute("SELECT id FROM tableoftables WHERE tablename='$tablename'");
    $tableid=$r->fields["id"];
-   $real_tablename=$tablename."_".$tableid;
-   $desc=$real_tablename."_desc";
+   $real_tablename=get_cell($db,"tableoftables","real_tablename","id",$tableid);
+   $desc=get_cell($db,"tableoftables","table_desc_name","id",$tableid);
+   //$desc=$real_tablename."_desc";
    // if there are files associated, these have to be deleted as well
    $r=$db->Execute ("SELECT datatype FROM $desc WHERE id='$id'");
    if ($r->fields["datatype"]=="files") {
@@ -375,7 +377,8 @@ function rm_columnecg($db,$tablename,$id,$colname,$datatype) {
    }
    $r=$db->Execute("ALTER TABLE $real_tablename DROP COLUMN $colname");
    $rrr=$db->Execute("DELETE FROM $desc WHERE id='$id'");
-   if (($r)&&($rrr)) 
+   // Postgres does know how to drop a column, so only check the second query
+   if ($rrr) 
       $string="Deleted Column <i>$colname</i> from Table <i>$tablename</i>.";
 }
 
