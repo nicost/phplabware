@@ -72,12 +72,12 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
    	$colname=$HTTP_POST_VARS["addcol_name"];
    	$datatype=$HTTP_POST_VARS["addcol_datatype"];
    	$Rdis=$HTTP_POST_VARS["addcol_drecord"];
-	   $Tdis=$HTTP_POST_VARS["addcol_dtable"];
-	   $req=$HTTP_POST_VARS["addcol_required"];
-	   $sort=$HTTP_POST_VARS["addcol_sort"];
+        $Tdis=$HTTP_POST_VARS["addcol_dtable"];
+        $req=$HTTP_POST_VARS["addcol_required"];
+        $sort=$HTTP_POST_VARS["addcol_sort"];
    	add_columnECG($db,$tablename,$colname,$datatype,$Rdis,$Tdis,$req,$sort);
-   	}   	
-  if (substr($key, 0, 9) == "modcolumn") {  
+   }   	
+   if (substr($key, 0, 9) == "modcolumn") {  
   	 $modarray = explode("_", $key);
    	$tablename=$HTTP_POST_VARS["table_name"];
 	   $id=$HTTP_POST_VARS["column_id"][$modarray[1]]; 
@@ -90,13 +90,13 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
    	mod_columnECG($db,$id,$sort,$tablename,$colname,$datatype,$Rdis,$Tdis,$req);
    	}   	
   if (substr($key, 0, 9) == "delcolumn") { 
-		$modarray = explode("_", $key);
-		$tablename=$HTTP_POST_VARS["table_name"];
-	   $id=$HTTP_POST_VARS["column_id"][$modarray[1]]; 
-   	$colname=$HTTP_POST_VARS["column_name"][$modarray[1]];
-   	$datatype=$HTTP_POST_VARS["column_datatype"][$modarray[1]];
-	    rm_columnecg($db,$tablename,$id,$colname,$datatype);
-		}
+      $modarray = explode("_", $key);
+      $tablename=$HTTP_POST_VARS["table_name"];
+      $id=$HTTP_POST_VARS["column_id"][$modarray[1]]; 
+      $colname=$HTTP_POST_VARS["column_name"][$modarray[1]];
+      $datatype=$HTTP_POST_VARS["column_datatype"][$modarray[1]];
+      rm_columnecg($db,$tablename,$id,$colname,$datatype);
+   }
    }
 if ($editfield)
 	{
@@ -105,7 +105,7 @@ if ($editfield)
 	navbar($USER["permissions"]);
 	$r=$db->Execute("SELECT id FROM tableoftables WHERE tablename='$editfield'");
 	$id=$r->fields[0];
-	$currdesc=$id."_".$editfield."_desc";
+	$currdesc=$editfield."_".$id."_desc";
 	echo "<h3 align='center'>$string</h3>";
 	echo "<h3 align='center'>Edit columns of $editfield</h3><br>";
 	echo "<table align='center'>\n";
