@@ -494,15 +494,14 @@ function display_add($db,$tableinfo,$Allfields,$id,$namein,$system_settings) {
 // If qfield is set, database values for that record will be returned as well
 function getvalues($db,$tableinfo,$fields,$qfield=false,$field=false) {
    global $system_settings;
-
    if ($qfield) {
       $r=$db->Execute("SELECT $fields FROM $tableinfo->realname WHERE $qfield=$field"); 
       $rid=$db->Execute("SELECT id FROM $tableinfo->realname WHERE $qfield=$field");
       $id=$rid->fields["id"];
    }
-   $column=strtok($fields,",");
+   $columns=split(",",$fields);
    $Allfields=array();
-   while ($column) {
+   foreach ($columns as $column) {
       if($column!="id") {
          if ($r)
             ${$column}["values"]= $r->fields[$column];
@@ -527,11 +526,14 @@ function getvalues($db,$tableinfo,$fields,$qfield=false,$field=false) {
             if ($rb->fields['datatype']=='table') {
                if ($rb->fields['associated_local_key']) {
                   ${$column}['ass_local_column_name']=get_cell($db,$tableinfo->desname,"columnname","id",$rb->fields["associated_local_key"]);
-                  ${$column}["values"]=get_cell($db,$tableinfo->realname,${$column}["ass_local_column_name"],"id",$id); 
+                  ${$column}['values']=get_cell($db,$tableinfo->realname,${$column}["ass_local_column_name"],"id",$id); 
                }
                $text=false;
-               if (${$column}["values"])
-                  $text=get_cell($db,${$column}["ass_table_name"],${$column}["ass_column_name"],"id",${$column}["values"]); 
+               if (${$column}['values']) {
+                  $asstableinfo=new tableinfo($db,${$column}['ass_table_name']);
+                  $tmpvalue=getvalues($db,$asstableinfo,${$column}['ass_column_name'],'id',${$column}['values']);
+                  $text="<a target=_ href=\"general.php?tablename={$asstableinfo->name}&showid=".${$column}['values']."\">{$tmpvalue[0]['text']}</a>\n";
+               }
                if (!$text)
                   $text="&nbsp;";
                ${$column}["text"]=$text;
@@ -582,8 +584,7 @@ function getvalues($db,$tableinfo,$fields,$qfield=false,$field=false) {
          }
       }
       array_push ($Allfields, ${$column});
-      $column=strtok(",");
-   }		
+   }
    if (function_exists("plugin_getvalues"))
       plugin_getvalues($db,$Allfields,$id,$tableinfo->id);
    return $Allfields;
