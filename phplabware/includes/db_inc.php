@@ -390,7 +390,9 @@ function may_read_SQL_subselect ($db,$table,$tableid,$USER,$clause=false) {
          $query .= "WHERE $clause";
    }
    else {
-      $usergroup=get_cell($db,"users","groupid","id",$USER["id"]);
+      //$usergroup=get_cell($db,"users","groupid","id",$USER["id"]);
+      $usergroup=$USER["usergroup"];
+      $grouplist=$USER["group_list"];
       $userid=$USER["id"];
       $query .= " WHERE ";
       if ($clause) 
@@ -398,7 +400,8 @@ function may_read_SQL_subselect ($db,$table,$tableid,$USER,$clause=false) {
       // owner
       $query .= "( (ownerid=$userid AND SUBSTRING (access FROM 1 FOR 1)='r') ";
       // group
-      $query .= "OR ($usergroup=CAST( (SELECT groupid FROM users WHERE users.id=$table.ownerid) AS int) AND SUBSTRING (access FROM 4 FOR 1)='r') ";
+      $query .= "OR (CAST( (SELECT groupid FROM users WHERE users.id=$table.ownerid) AS int) IN($grouplist) AND SUBSTRING (access FROM 4 FOR 1)='r') ";
+      //$query .= "OR ($usergroup=CAST( (SELECT groupid FROM users WHERE users.id=$table.ownerid) AS int) AND SUBSTRING (access FROM 4 FOR 1)='r') ";
       // world
       $query .= "OR (SUBSTRING (access FROM 7 FOR 1)='r')";
       // and also
