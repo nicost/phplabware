@@ -280,7 +280,8 @@ function modify ($db,$table,$fields,$fieldvalues,$id,$USER,$tableid) {
 
    if ($test) {
       $query.=" WHERE id='$id'";
-      if ($db->Execute($query))
+      $result=$db->Execute($query);
+      if ($result)
          return true;
    }
 }
