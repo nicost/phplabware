@@ -6,8 +6,8 @@
   /***************************************************************************
   * Copyright (c) 2001 by Nico Stuurman                                      *
   * ------------------------------------------------------------------------ *
-  * Creates tables antibodies,ab_type1-5,antibodiesxfiles and inserts        *
-  * initial values.                                                          *
+  * Creates tables antibodies,ab_type1-5, and inserts initial values         *
+  *                                                                          *
   *                                                                          *
   *                                                                          *
   *  This program is free software; you can redistribute it and/or modify it *
@@ -56,13 +56,14 @@ if (!$db->Execute($query)) $test=false;
 $query="INSERT INTO ab_type1 VALUES (3,30,'other','-')";
 if (!$db->Execute($query)) $test=false;
 $query="CREATE TABLE ab_type2 
-	(id int PRIMARY KEY, 
+	(id int PRIMARY KEY,
+         sortkey int, 
  	 type text,
 	 typeshort text)";
 if (!$db->Execute($query)) $test=false;
-$query="INSERT INTO ab_type2 VALUES (1,'monoclonal','mono')";
+$query="INSERT INTO ab_type2 VALUES (1,10,'monoclonal','mono')";
 if (!$db->Execute($query)) $test=false;
-$query="INSERT INTO ab_type2 VALUES (2,'polyclonal','poly')";
+$query="INSERT INTO ab_type2 VALUES (2,20,'polyclonal','poly')";
 if (!$db->Execute($query)) $test=false;
 $query="CREATE TABLE ab_type3 
 	(id int PRIMARY KEY,
