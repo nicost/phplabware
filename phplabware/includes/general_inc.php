@@ -107,11 +107,6 @@ function display_table_change($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr
          elseif ($nowfield['datatype']=='int' || $nowfield['datatype']=='sequence' || $nowfield['datatype']=='float') {
      	    echo "<td><input type='text' name='$nowfield[name]_$id' value='$nowfield[values]' size=8 $js>$thestar</td>\n";
          }
-/*
-         elseif ($nowfield[datatype]=="float") {
-     	    echo "<td><input type='text' name='$nowfield[name]_$id' value='$nowfield[values]' size=8 $js>$thestar</td>\n";
-         }
-*/
          elseif ($nowfield['datatype']=='textlong') {
      	    echo "<td><input type='text' name='$nowfield[name]_$id' value='$nowfield[values]' size=15>$thestar</td>\n"; 
          }
@@ -133,8 +128,12 @@ function display_table_change($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr
                   $rcount=$db->Execute("SELECT COUNT(id) FROM {$nowfield['ass_table_name']}");
                   if ($rcount && ($rcount->fields[0] < $max_menu_length)) 
                      $text=GetValuesMenu($db,"{$nowfield['name']}_$id",$nowfield['values'],$nowfield['ass_table_name'],$nowfield['ass_column_name'],false,$js);
-                  else
-                     $text="<i>CODE IN PROGRESS</i>";
+                  else {
+//print_r ($nowfield);
+//echo ".<br>\n";
+                     $text="<input type='hidden' name='max_{$nowfield['name']}_$id' value='true'>\n";
+                     $text.="<input type='text' name='{$nowfield['name']}_$id' value='{$nowfield['text']}'>\n<br>";
+                  }
                }
                echo "<td>$text $thestar</td>\n";
             }
@@ -778,6 +777,7 @@ function indexfile ($db,$tableinfo,$indextable,$recordid,$fileid,$htmlfileid)
 // that can be used in a SQL search
 function find_nested_match($db,$tableinfo,$field,$value,$first=true) {
    $info=getvalues($db,$tableinfo,$field);
+
    if ($info[0]['datatype']=='table') {
       $ass_tableinfo=new tableinfo($db,$info[0]['ass_table_name']);
       $value=find_nested_match($db,$ass_tableinfo,$info[0]['ass_column_name'],$value,false);
