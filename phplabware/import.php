@@ -52,23 +52,21 @@ function move ($fromfile, $tofile) {
 function mymktime($datestring) {
    global $system_settings;
 
-   if ($system_settings['date_format']=='n/d/Y') {
+   if ($system_settings['dateformat']==1) {
       $month=strtok($datestring,'/');
       $day=strtok('/');
       $year=strtok('/');
    }
-   elseif ($system_settings['date_format']=='M d Y') {
+   elseif ($system_settings['dateformat']==2) {
       $month=strtok($datestring,' ');
       $day=strtok(' ');
       $year=strtok(' ');
    }
-   elseif ($system_settings['date_format']=='d M Y') {
+   elseif ($system_settings['dateformat']>=3) {
       $day=strtok($datestring,' ');
       $month=strtok(' ');
       $year=strtok(' ');
    }
-echo "$month,$day,$year.<br>";
-print_r($system_settings);
    return mktime(0,0,0,$month,$day,$year);
 }
 
@@ -166,20 +164,20 @@ function check_input ($tableinfo, &$fields, $to_fields, $field_types, $field_dat
              // &nbsp; is used as a place holder in output of phplabware.  Unset the value if found
              if ($fields[$i]=="&nbsp;")
                 unset ($fields[$i]);
-             $Allfields=getvalues($db,$tableinfo,$to_fields[$i]);
-             $rtemp=$db->Execute("SELECT id FROM {$Allfields[0]['ass_t']} WHERE typeshort='{$fields[$i]}'");
-             if ($rtemp && $rtemp->fields[0]) {
-                $fields[$i]=$rtemp->fields[0];
-             }
-             else { // insert this new value in the type table:
-$db->debug=true;
-                $typeid=$db->GenId($Allfields[0]['ass_t'].'_id_seq');
-                unset($rtemp);
-                $rtemp=$db->Execute("INSERT INTO {$Allfields[0]['ass_t']} (id,type,typeshort,sortkey) VALUES ($typeid,'{$fields[$i]}','{$fields[$i]}','0')");
+             else {
+                $Allfields=getvalues($db,$tableinfo,$to_fields[$i]);
+                $rtemp=$db->Execute("SELECT id FROM {$Allfields[0]['ass_t']} WHERE typeshort='{$fields[$i]}'");
                 if ($rtemp && $rtemp->fields[0]) {
                    $fields[$i]=$rtemp->fields[0];
                 }
-$db->debug=false;
+                else { // insert this new value in the type table:
+                   $typeid=$db->GenId($Allfields[0]['ass_t'].'_id_seq');
+                   unset($rtemp);
+                   $rtemp=$db->Execute("INSERT INTO {$Allfields[0]['ass_t']} (id,type,typeshort,sortkey) VALUES ($typeid,'{$fields[$i]}','{$fields[$i]}','0')");
+                   if ($rtemp && $rtemp->fields[0]) {
+                      $fields[$i]=$rtemp->fields[0];
+                   }
+                }
              }
          }
          // for mpulldowns we have a problem since we do not have the new id yet
@@ -290,6 +288,10 @@ if ($HTTP_POST_VARS['assign']=='Import Data') {
          // since we can have int(11) etc...
          if ($to_datatypes[$i]=='file'){
             // this has type int, but its value changed, so set to_type to text
+            $to_types[$i]='text';
+         }
+         elseif ($to_datatypes[$i]=='date'){
+            // this has type int (wrong!), set to_type to text
             $to_types[$i]='text';
          }
          elseif (substr($to_types[$i],0,3)=='int'){
