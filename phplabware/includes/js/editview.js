@@ -1,7 +1,7 @@
 // Support function for editview.
 // Opens a new window under the existing one, fill in a form with changes, sends the form to the server, and closes the window
 
-   var newWindow;
+var newWindow;
 
 function submit_changes ($tableid,$recordid,$field,$newvalue) {
    // Open new window under existing one, make sure it does not yes exist
@@ -31,5 +31,27 @@ function submit_changes ($tableid,$recordid,$field,$newvalue) {
 
    newWindow.document.editMode.submit();
 
+}
+
+// simple functions to check input
+
+function isAnInt (inputValue) {
+   if (parseInt(inputValue)) {
+      return true;
+   }
+   else {
+      alert("Please use a valid number (fractions not allowed) in this field");
+      return false;
+   }
+}
+
+function isAFloat (inputValue) {
+   if (parseFloat(inputValue)) {
+      return true;
+   }
+   else {
+      alert("Please use a valid number (fractions allowed) in this field");
+      return false;
+   }
 }
 
