@@ -4,9 +4,8 @@
 
 
 $newtableid=$db->GenID("tableoftables_gen_id_seq");
-$newtablename=pdfs_new;
-$newtablelabel="pdfs new";
-for ($i=0;$i<$hownew;$i++) {$newtablelabel.="new";}
+$newtablename=pdfsw;
+$newtablelabel="pdfs";
 unset($hownew);
 while (get_cell($db,"tableoftables","id","tablename",$newtablename)) {
    $newtablename.="new";

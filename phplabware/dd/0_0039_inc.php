@@ -6,7 +6,6 @@
 $newtableid=$db->GenID("tableoftables_gen_id_seq");
 $newtablename=pdbs;
 $newtablelabel="pdbs ";
-for ($i=0;$i<$hownew;$i++) {$newtablelabel.="new";}
 unset($hownew);
 while (get_cell($db,"tableoftables","id","tablename",$newtablename)) {
    $newtablename.="n";

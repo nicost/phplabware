@@ -4,12 +4,11 @@
 
 
 $newtableid=$db->GenID("tableoftables_gen_id_seq");
-$newtablename=protocols_new;
-$newtablelabel="protocols new";
-for ($i=0;$i<$hownew;$i++) {$newtablelabel.="new";}
+$newtablename=protocols;
+$newtablelabel="protocols";
 unset($hownew);
 while (get_cell($db,"tableoftables","id","tablename",$newtablename)) {
-   $newtablename.="new";
+   $newtablename.="n";
    $hownew++;
 }
 for ($i=0;$i<$hownew;$i++) 

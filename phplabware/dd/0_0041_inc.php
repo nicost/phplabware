@@ -5,8 +5,7 @@
 
 $newtableid=$db->GenID("tableoftables_gen_id_seq");
 $newtablename=ab;
-$newtablelabel="ab new";
-for ($i=0;$i<$hownew;$i++) {$newtablelabel.="new";}
+$newtablelabel="antibodies";
 unset($hownew);
 while (get_cell($db,"tableoftables","id","tablename",$newtablename)) {
    $newtablename.="n";
