@@ -21,10 +21,20 @@ require("includes/general_inc.php");
 // register variables
 $get_vars="tablename,showid,edit_type,add";
 globalize_vars($get_vars, $HTTP_GET_VARS);
-$post_vars = "add,submit,search,searchj";
+$post_vars = "add,submit,search,searchj,serialsortdirarray";
 globalize_vars($post_vars, $HTTP_POST_VARS);
 
+foreach($HTTP_POST_VARS as $key =>$value) {
+   list($testkey,$testvalue)=explode("_",$key);
+   if ($testkey=="sortup")
+      $sortup=$testvalue;
+   if ($testkey=="sortdown")
+      $sortdown=$testvalue;
+}   
 if ($searchj)  $search="Search";
+elseif ($sortup) $search="Search";
+elseif ($sortdown) $search="Search";
+
 $httptitle .=$tablename;
 
 /*****************************BODY*******************************/
@@ -47,9 +57,8 @@ if (!$edit_type) {
    $queryname=$tableshort."_query";
    $pagename=$tableshort."_curr_page";
    // read all fields in from the description file
-//$fields_label=comma_array_SQL($db,$table_desname,label);
+   // $fields_label=comma_array_SQL($db,$table_desname,label);
    $fields=comma_array_SQL($db,$table_desname,columnname);
-//echo "$fields_label.<br>$fields.<br>";
 }
 
 # check wether user may see this table
@@ -202,12 +211,44 @@ else {
       unset ($HTTP_POST_VARS);
       ${$pagename}=1;
       unset ($HTTP_SESSION_VARS[$queryname]);
+      unset ($serialsortdirarray);
       session_unregister($queryname);
    }
    $column=strtok($fields,",");
    while ($column) {
       ${$column}=$HTTP_POST_VARS[$column];
       $column=strtok(",");
+   }
+ 
+   // sort stuff
+   $sortdirarray=unserialize(stripslashes($serialsortdirarray));
+   if ($sortup && $sortup<>" ") {
+      if (is_array($sortdirarray) && array_key_exists($sortup,$sortdirarray)) {
+         if ($sortdirarray[$sortup]=="asc")
+            unset($sortdirarray[$sortup]);
+         else
+            $sortdirarray[$sortup]="asc";
+      }
+      elseif (!is_array($sortdirarray) || !array_key_exists($sortup,$sortdirarray))
+         $sortdirarray[$sortup]="asc";
+   } 
+   if ($sortdown && $sortdown <>" ") {
+      if (is_array($sortdirarray) && array_key_exists($sortdown,$sortdirarray)) {
+         if ($sortdirarray[$sortdown]=="desc")
+            unset($sortdirarray[$sortdown]);
+         else
+            $sortdirarray[$sortdown]="desc";
+      }
+      elseif (!is_array($sortdirarray) || !array_key_exists($sortdown,$sortdirarray))
+         $sortdirarray[$sortdown]="desc";
+   }
+
+   if ($sortdirarray) {
+      foreach($sortdirarray as $key => $value) {
+         if ($sortstring)
+            $sortstring .= ", ";
+         $sortstring .= "$key $value";
+      }
    }
 
    // paging stuff
@@ -218,7 +259,7 @@ else {
  
    // prepare the search statement and remember it
    $fields="id,".$fields;
-   ${$queryname}=make_search_SQL($db,$real_tablename,$tableshort,$tableid,$fields,$USER,$search);
+   ${$queryname}=make_search_SQL($db,$real_tablename,$tableshort,$tableid,$fields,$USER,$search,$sortstring);
    
    $r=$db->CacheExecute(2,${$queryname});
    $numrows=$r->RecordCount();
@@ -291,7 +332,7 @@ else {
          echo "<td style='width: 10%'>";
          if ($USER["permissions"] & $LAYOUT)  {
             echo "<a href='$PHP_SELF?tablename=$tablename&edit_type=$nowfield[ass_t]&<?=SID?>";
-            echo "'>Edit $nowfield[name]</a><br>\n";
+            echo "'>Edit $nowfield[label]</a><br>\n";
          }	 		 			
          $r=$db->Execute("SELECT $nowfield[name] FROM $real_tablename WHERE id IN ($list)");
          $list2=make_SQL_ids($r,false,"$nowfield[name]");
@@ -305,7 +346,7 @@ else {
             else 
                $r=$db->Execute("SELECT typeshort,id from $nowfield[ass_t] WHERE id IN ($list2) ORDER by typeshort");
     		
-            $text=$r->GetMenu2("$nowfield[name]","",true,false,0,"style='width: 80%' $jscript");   
+            $text=$r->GetMenu2("$nowfield[name]",$HTTP_POST_VARS[$nowfield[name]],true,false,0,"style='width: 80%' $jscript");   
     	    echo "$text</td>\n";
          }  
       }
@@ -314,10 +355,33 @@ else {
    }	 
    echo "<td><input type=\"submit\" name=\"search\" value=\"Search\">&nbsp;";
    echo "<input type=\"submit\" name=\"search\" value=\"Show All\"></td>";
-   echo "</tr>\n";
+   echo "</tr>\n\n";
 
 
-   display_midbar($Labelcomma);
+   //display_midbar($Labelcomma);
+   $labelarray=explode (",",$Labelcomma);
+   $fieldarray=explode (",",$Fieldscomma);
+   if ($sortdirarray)
+      echo "<input type='hidden' name='serialsortdirarray' value='".serialize($sortdirarray)."'>\n";
+   echo "<tr>\n";
+   foreach ($labelarray As $key => $fieldlabel) {
+      echo "<th><table><td align='left'>";
+      if ($sortdirarray[$fieldarray[$key]]=="asc")
+         $sortupicon="icons/sortup_active.png";
+      else
+         $sortupicon="icons/sortup.png";
+      echo "<input type='image' name='sortup_".$fieldarray[$key]."' value='$fieldlabel' src='$sortupicon' alt='Sort Up'>";
+      echo "</td><th>$fieldlabel</th><td align='right'>";
+      if ($sortdirarray[$fieldarray[$key]]=="desc")
+         $sortdownicon="icons/sortdown_active.png";
+      else
+         $sortdownicon="icons/sortdown.png";
+      echo "<input type='image' name='sortdown_".$fieldarray[$key]."' value='$fieldlabel' src='$sortdownicon' alt='Sort Down'>";
+      echo "</td></tr></table></th>\n";
+   }
+   echo "<th>Action</th>\n";
+   echo "</tr>\n\n";
+
    display_table_info($db,$tableid,$table_desname,$Fieldscomma,${$queryname},$num_p_r,${$pagename});
    printfooter($db,$USER);
 }
