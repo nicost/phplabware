@@ -24,12 +24,11 @@ $title = "Admin Users";
 require("include.php");
 
 // register variables
-//$get_vars = "modify,id,";
-$post_vars = "email,id,firstname,lastname,login,modify,perms,pwd,pwdcheck,user_group,";
+$post_vars = "email,id,firstname,lastname,login,me,modify,perms,pwd,pwdcheck,user_group,";
 $post_vars .= "create,user_add,";
 
-//globalize_vars ($get_vars, "HTTP_GET_VARS");
-globalize_vars ($post_vars, "HTTP_POST_VARS");
+$type=$HTTP_GET_VARS["type"];
+globalize_vars ($post_vars, $HTTP_POST_VARS);
 
 
 ////
@@ -108,18 +107,24 @@ function delete_user ($db, $id) {
 // !Interacts with the SQL database to create/modify users
 // can be called to create (type=create) or modify (type=modify) other users or oneselves (type=me) 
 function modify ($db, $type) {
-   global $HTTP_POST_VARS, $USER, $perms;
+   global $HTTP_POST_VARS, $USER, $perms, $post_vars;
 
    include ('includes/defines_inc.php');
 
    // creates variables from all values passed by http_post_vars, 
    // skips ones those are already set
-   extract ($HTTP_POST_VARS, EXTR_PREFIX_SKIP, "post_vars");
+   $var=strtok($post_vars,",");
+   ${$var}=$HTTP_POST_VARS[$var];
+   while ($var) {
+      $var=strtok(",");
+      if (!${$var})
+         ${$var}=$HTTP_POST_VARS[$var];
+   }
    if($perms)
       for ($i=0; $i<sizeof($perms); $i++)
          $permissions=$permissions | $perms[$i];
 
-   // check status of the victim to check that it is smaller than 
+   // check whether status of the victim is smaller than 
    //  the current users status
    if ($type == "modify")
       $original_permissions=get_cell ($db,"users","permissions","id",$id);
@@ -133,7 +138,7 @@ function modify ($db, $type) {
       return false;
    }
 
-   if (!($status)) $status = $G_USER; 
+   //if (!($status)) $status = $USER; 
    if ($type=="modify"  && $id) {
       $query = "UPDATE users SET login='$login', firstname='$firstname', 
                      lastname='$lastname',  
@@ -145,9 +150,9 @@ function modify ($db, $type) {
       }
       $query .= " WHERE id='$id';";
       if ($db->Execute($query))
-         echo "User <i>$firstname $lastname</i> modified.<br>\n";
+         echo "Modified settings of user <i>$firstname $lastname</i>.<br>\n";
       else
-         echo "Could not modify user: <i>$firstname $lastname</i>.<br>\n";
+         echo "Could not modify settings of user: <i>$firstname $lastname</i>.<br>\n";
    }
    elseif ($type =="create") {
          $id=$db->GenID("users_id_seq");
@@ -159,6 +164,22 @@ function modify ($db, $type) {
             echo "User <i>$firstname $lastname</i> added.<br>\n";
          else
             echo "Failed to add user: <i>$firstname $lastname</i>.<br>\n";
+   }
+   elseif ($type=="me"  && $id) {
+      $query = "UPDATE users SET firstname='$firstname', 
+                     lastname='$lastname',  
+                     email='$email'";  
+      if ($pwd) {
+          $pwd=md5($pwd);
+          $query.=", pwd='$pwd'";
+      }
+      $query .= " WHERE id='$id';";
+      echo "\n<table border=0 align='center'>\n  <tr>\n    <td align='center'>\n      ";
+      if ($db->Execute($query))
+         echo "Your settings have been modified.<br>\n";
+      else
+         echo "Failed to modify you settings.<br>\n";
+      echo "    </td>\n  </tr>\n</table>\n\n";
    }
    else 
       echo "Strange error!< Please report to your system administrator<br>\n";
@@ -175,7 +196,6 @@ function show_user_form ($type) {
    $fieldname = strtok ($userfields,",");
    while ($fieldname) {
       global ${$fieldname};
-      //echo "$fieldname: ${$fieldname}<br>";
       $fieldname=strtok(","); 
    }
 
@@ -200,16 +220,9 @@ function show_user_form ($type) {
    echo "<table align='center'>\n";
 
    echo "<tr><td>First name:</td>\n";
-   if ($type=="create" || $type=="modify")
-      echo "<td><input type='text' name='firstname' maxlength=50 size=25 value='$firstname'></td></tr>\n";
-   elseif ($type=="me")
-      echo "<td>$firstname</td></tr>\n";
+   echo "<td><input type='text' name='firstname' maxlength=50 size=25 value='$firstname'></td></tr>\n";
    echo "<tr><td>Last name:</td>\n";
-   if ($type=="create" || $type=="modify")
-      echo "<td><input type='text' name='lastname' maxlength=50 size=25 value='$lastname'><sup style='color:red'>&nbsp(required)</sup></td></tr>\n";
-   elseif ($type=="me")
-      echo "<td>$lastname</td></tr>\n";
-
+   echo "<td><input type='text' name='lastname' maxlength=50 size=25 value='$lastname'><sup style='color:red'>&nbsp(required)</sup></td></tr>\n";
    echo "<tr><td>Email Address:</td><td><input type='text' name='email' maxlength=150 size=25 value='$email'></td></tr>\n";
 
    if ($type == "create")
@@ -218,13 +231,14 @@ function show_user_form ($type) {
       echo "<tr><td>Login Name: </td><td>$login</td></tr>\n";
       echo "<input type='hidden' name='login' value='$login'>\n";
    }
-   echo "<tr><td>Password (max. 20 characters):</td><td><input type='password' name='pwd' maxlength=20 size=10 value=''>";
+   echo "<tr><td>Password (max. 20 characters):</td><td><input type='password' name='pwd' maxlength=20 size=20 value=''>";
    if ($type=="create")
       echo "<sup style='color:red'>&nbsp(required)</sup></td></tr>\n";
-   echo "<tr><td>Password reType(max. 20 characters):</td><td><input type='password' name='pwdcheck' maxlength=20 size=10 value=''>";
+   echo "<tr><td>Password reType(max. 20 characters):</td><td><input type='password' name='pwdcheck' maxlength=20 size=20 value=''>";
    if ($type=="create")
       echo "<sup style='color:red'>&nbsp(required)</sup></td></tr>\n";
-
+   if ($type=="modify" || $type=="me")
+      echo "<tr><td colspan=2 align='center'>Leave the password fields blank to retain the current password</td></tr>\n";
 
    if ($USER["permissions"] & $SUPER) {
       echo "<tr>\n<td>Group:</td>\n<td>";
@@ -272,9 +286,11 @@ function show_user_form ($type) {
    }
     
    if ($type == "modify")
-      echo "<tr><td></td><td><input type='submit' name='modify' value='Modify User'></td></tr>\n";
+      echo "<tr><td colspan=2 align='center'><input type='submit' name='modify' value='Modify User'></td></tr>\n";
    elseif ($type == "create")
-      echo "<tr><td></td><td><input type='submit' name='create' value='Create User'></td></tr>\n";
+      echo "<tr><td colspan=2 align='center'><input type='submit' name='create' value='Create User'></td></tr>\n";
+   elseif ($type == "me")
+      echo "<tr><td colspan=2 align='center'><input type='submit' name='me' value='Change Settings'></td></tr>\n";
    echo"</table>\n";
    echo "</form>\n";
 }
@@ -284,15 +300,38 @@ function show_user_form ($type) {
 
 // extend title if user is an admin
 if ($USER["permissions"] & $ADMIN):
-   $title .= " in ".get_cell($db,"groups","name","id",$USER["groupid"]);
+   $title .= " in group: ".get_cell($db,"groups","name","id",$USER["groupid"]);
 endif;
 
 // Only a groupadmin and sysadmin are allowed to view this page
-allowonly($ADMIN,$USER["permissions"]);
+allowonly($ACTIVE,$USER["permissions"]);
 
 
 printheader($title);
 navbar($USER["permissions"]);
+
+if ($type=="me") {
+   // pull existing data from database
+   $query = "SELECT $userfields FROM users WHERE id=$USER[id];";
+   $r = $db->Execute($query);
+   $fieldname = strtok ($userfields,",");
+   while ($fieldname) {
+      ${$fieldname}= $r->fields["$fieldname"];
+      $fieldname=strtok(","); 
+   }
+   show_user_form("me");
+   printfooter();
+   exit();
+}
+if ($me=="Change Settings") {
+   modify ($db, "me");
+   show_user_form("me");
+   printfooter();
+   exit();
+}
+
+// Only a groupadmin and sysadmin are allowed to view the remainder
+allowonly($ADMIN,$USER["permissions"]);
 
 // Check whether modify or delete button has been chosen
 $del=false;
@@ -333,11 +372,9 @@ elseif ($mod==true) {
    // pull existing data from database
    $query = "SELECT $userfields FROM users WHERE id=$modarray[1];";
    $r = $db->Execute($query);
-   // and translate into global variables
    $fieldname = strtok ($userfields,",");
    while ($fieldname) {
       ${$fieldname}= $r->fields["$fieldname"];
-      //echo "$fieldname: ${$fieldname}<br>";
       $fieldname=strtok(","); 
    }
    show_user_form ("modify");
