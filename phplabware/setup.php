@@ -45,10 +45,13 @@ if ($set_local) {
 // test whether the database exists
 $db=NewADOConnection($db_type);
 if (!@$db->Connect($db_host, $db_user, $db_pwd, $db_name)) {
+   printheader("PhpLabware: Database connection failed");
    echo "<h3>Connection to database <i>$db_name</i> on host <i>$db_host</i>";
    echo " failed.<br>  Please make sure that the variables in file ";
-   echo "phplabware/includes/config_inc.php are correct, and your database ";
-   echo "server is functioning.</h3>";
+   echo "<i>phplabware/includes/config_inc.php</i> are correct, your database ";
+   echo "server is functioning, and you created a database named <i>$db_name";
+   echo "</i>.</h3>";
+   printfooter();
    exit ();
 }
 
@@ -193,7 +196,7 @@ if ($version) {
 	    notes text,
 	    location text,
 	    source text,
-	    date date)";
+	    date int)";
 	 if (!$db->Execute($query)) $test=false;
          $query="CREATE TABLE ab_type1 
             (id int PRIMARY KEY, 
@@ -225,6 +228,8 @@ if ($version) {
 	 $query="INSERT INTO ab_type3 VALUES (3,30,'rabbit')";
 	 if (!$db->Execute($query)) $test=false;
 	 $query="INSERT INTO ab_type3 VALUES (4,40,'rat')";
+	 if (!$db->Execute($query)) $test=false;
+	 $query="INSERT INTO ab_type3 VALUES (5,50,'goat')";
 	 if (!$db->Execute($query)) $test=false;
          $query="CREATE TABLE ab_type4 
             (id int PRIMARY KEY,
