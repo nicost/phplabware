@@ -282,13 +282,22 @@ function navbar($permissions) {
    echo "<!--************************END OF NAVBAR**********************-->\n";
 }
 
+////
+// !adds javascript headers to argument
+function add_js ($script) {
+   $out="\n<script language='Javascript'>\n<!--\n";
+   $out.=$script;
+   $out.="\n//End Javascript -->\n</script>\n\n";
+   return $out;
+}
 
 ////
 // !Prints initial part of webpage
-function printheader($title,$head=false) {
+function printheader($title,$head=false, $jsfile=false) {
    global $client, $db,$version, $active;
 
    // let Netscape 4 users use their back button
+   // all others should not cache
    if ($client->browser != "Netscape 4") {
       header("Cache-Control: private, no-cache, must-revalidate");
       header("Expires: Mon, 26 Jul 1997 05:00:00 GMT");
@@ -299,7 +308,12 @@ function printheader($title,$head=false) {
 	"http://www.w3.org/TR/html4/loose.dtd">
 <HTML>
 <HEAD>
-<?php echo $head ?>
+<?php echo $head;
+if ($jsfile && is_readable($jsfile)) {
+   echo "\n<script language='Javascript'>\n<!--\n";
+   readfile($jsfile);
+   echo "\n// End Javascript -->\n</script>\n\n";
+} ?> 
 <TITLE><?php echo "$title" ?></TITLE>
 <LINK rel="STYLESHEET" type="text/css" href="phplabware.css">
 </HEAD>
