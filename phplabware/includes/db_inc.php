@@ -938,11 +938,17 @@ function numerictoSQL ($searchterm,$column,$type,$and) {
          $sql.="($column>=$value1 AND $column<=$value2) ";
       }
       elseif (sizeof($rangelist)==1) {
+         if ($commalist[$i]{0}=='<' || $commalist[$i]{0}=='>') {
+            $token=$commalist[$i]{0};
+            $commalist[$i]=substr($commalist[$i],1);
+         }
          $value=typevalue ($commalist[$i],$type);
          if ($i>0) {
             $sql.="OR ";
          }
-         $sql.="($column=$value) ";
+         if (!$token)
+            $token='=';
+         $sql.="($column$token$value) ";
       }
    }
    return "$and ($sql) ";
