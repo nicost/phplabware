@@ -40,7 +40,7 @@ if ($set_local) {
 }
 
 // we want associative arrays from the database
-//$ADODB_FETCH_MODE=ADODB_FETCH_ASSOC;
+$ADODB_FETCH_MODE=ADODB_FETCH_DEFAULT;
 
 // test whether the database exists
 $db=NewADOConnection($db_type);
