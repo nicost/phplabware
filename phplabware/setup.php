@@ -205,11 +205,12 @@ if ($version) {
             $system_settings["filedir"]=$filedir;
 	 else
 	    echo "<h4 align='center'>Directory $filedir is not writeable</h4>";
-      if ($thumbnaildir) 
-         if (is_writable($thumbnaildir))
+      if ($thumbnaildir) {
+         if (is_writable("$thumbnaildir/small") && is_writable("$thumbnaildir/big"))
             $system_settings["thumbnaildir"]=$thumbnaildir;
 	 else
-	    echo "<h4 align='center'>Directory $thumbnaildir is not writeable</h4>";
+	    echo "<h4 align='center'>Directory $thumbnaildir/small and/or $thumbnaildir/big is not writeable</h4>";
+      }
       if ($templatedir) 
          if (is_writable($templatedir))
             $system_settings["templatedir"]=$templatedir;
