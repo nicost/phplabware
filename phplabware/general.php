@@ -17,7 +17,7 @@
 require("include.php");
 
 // find id associated with table
-$r=$db->Execute("SELECT id,shortname,tablename,real_tablename FROM tableoftables WHERE tablename='$HTTP_GET_VARS[tablename]'");
+$r=$db->Execute("SELECT id,shortname,tablename,real_tablename,table_desc_name,label FROM tableoftables WHERE tablename='$HTTP_GET_VARS[tablename]'");
 $tableid=$r->fields["id"];
 if (!$tableid) {
    printheader($httptitle);
@@ -28,7 +28,8 @@ if (!$tableid) {
 }
 $tableshort=$r->fields["shortname"];
 $real_tablename=$r->fields["real_tablename"];
-$table_desname=$real_tablename."_desc";
+$tablelabel=$r->fields["label"];
+$table_desname=$r->fields["table_desc_name"];
 $queryname=$tableshort."_query";
 $pagename=$tableshort."_curr_page";
 
@@ -329,7 +330,7 @@ else {
       $tabletext="View Table ";
       $modetext.="edit'>(to edit mode)</a>\n";
    }
-   echo "<td align='center'>$tabletext <B>$tablename</B> $modetext<br>";
+   echo "<td align='center'>$tabletext <B>$tablelabel</B> $modetext<br>";
    if ($may_write)
       echo "<p><a href='$PHP_SELF?&add=Add&tablename=$tablename&".SID."'>Add Record</a></td>\n"; 
    echo "</tr>\n</table>\n";
