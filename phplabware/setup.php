@@ -90,11 +90,11 @@ if (!$version && $pwd) {
 
 // $version is known, so we have a working database and must now authenticate
 if ($version) {
+   $system_settings=unserialize(get_cell($db, "settings", "settings", "id", 1));
    include ("includes/auth_inc.php");
    allowonly($SUPER, $USER["permissions"]);
    printheader("Settings");
    navbar($USER["permissions"]);
-   $settings=unserialize(get_cell($db, "settings", "settings", "id", 1));
 
    // insert database updates here
    if ($version<$version_code) {
@@ -119,36 +119,36 @@ if ($version) {
    if ($action) {
       if ($access)
          if (strlen($access)==9 && strlen(count_chars($access,3))<4)
-            $settings["access"]=$access;
+            $system_settings["access"]=$access;
       if ($dateformat)
-         $settings["dateformat"]=$dateformat;
+         $system_settings["dateformat"]=$dateformat;
       if ($filedir) 
          if (is_writable($filedir))
-            $settings["filedir"]=$filedir;
+            $system_settings["filedir"]=$filedir;
 	 else
 	    echo "<h4 align='center'>Directory $filedir is not writeable</h4>";
       if ($tmpdir) 
          if (is_writeable($tmpdir))
-            $settings["tmpdir"]=$tmpdir;
+            $system_settings["tmpdir"]=$tmpdir;
 	 else {
 	    echo "<h4 align='center'>Directory $tmpdir is not writeable</h4>";
-            if (!isset ($settings["tmpdir"]))
-               $settings["tmpdir"]=session_save_path();
+            if (!isset ($system_settings["tmpdir"]))
+               $system_settings["tmpdir"]=session_save_path();
          }
       if (is_readable($word2html))
-         $settings["word2html"]=$word2html;
+         $system_settings["word2html"]=$word2html;
       else
-         unset($settings["word2html"]);
+         unset($system_settings["word2html"]);
       if ($baseURL)
-         $settings["baseURL"]=$baseURL;
+         $system_settings["baseURL"]=$baseURL;
       if ($secure_server_new=="Yes")
-         $settings["secure_server"]=true;
+         $system_settings["secure_server"]=true;
       else
-         $settings["secure_server"]=false;
+         $system_settings["secure_server"]=false;
       if ($authmethod)
-         $settings["authmethod"]=$authmethod;
-      $settings["checkpwd"]=$checkpwd;
-      $settings_ser=serialize($settings);
+         $system_settings["authmethod"]=$authmethod;
+      $system_settings["checkpwd"]=$checkpwd;
+      $settings_ser=serialize($system_settings);
       $query="UPDATE settings SET settings='$settings_ser' WHERE id=1";
       $result=$db->Execute($query);
       if ($result)
@@ -166,8 +166,8 @@ if ($version) {
 
    echo "<tr><td colspan='2' align='center'><i>Defaults</i></th></tr>\n";
    echo "<tr><td>Default access rights.  A 9 character string using the UNIX access method:</td>\n";
-   if (!$settings["access"]) $settings["access"]="rw-r-----";
-   echo "<td><input type='text' name='access' value='".$settings["access"]."'></td></tr>\n";
+   if (!$system_settings["access"]) $system_settings["access"]="rw-r-----";
+   echo "<td><input type='text' name='access' value='".$system_settings["access"]."'></td></tr>\n";
 
    echo "<tr><td colspan='2' align='center'><i>Directories</i></th></tr>\n";
 
@@ -175,35 +175,35 @@ if ($version) {
    echo "have read and write priveleges, but the directory should not be directly ";
    echo "accessible through the web.  If you changes this setting, ";
    echo "the directory will be moved to the new location.</td>";
-   if (!$settings["filedir"]) {
+   if (!$system_settings["filedir"]) {
       $dir=getenv("SCRIPT_FILENAME");
       $dir=substr($dir,0,strrpos($dir,"/")+1)."files";
-      $settings["filedir"]=$dir;
+      $system_settings["filedir"]=$dir;
    }
-   $filedir=$settings["filedir"];
+   $filedir=$system_settings["filedir"];
    echo "<td><input type='text' name='filedir' value='$filedir'></td></tr>\n";
 
    echo "<tr><td>Directory for <i>temporary</i> files. For security reasons, only the webdaemon should be able to read (and write) files here.  Usually, this is <b>not</b> the case for directory <i>/tmp</i>. </td>";
-   if (!$settings["tmpdir"]) 
-      $settings["tmpdir"]="/tmp";
-   echo "<td><input type='text' name='tmpdir' value='".$settings["tmpdir"]."'></td></tr>\n";
+   if (!$system_settings["tmpdir"]) 
+      $system_settings["tmpdir"]="/tmp";
+   echo "<td><input type='text' name='tmpdir' value='".$system_settings["tmpdir"]."'></td></tr>\n";
    
    echo "<tr><td>Server URL.</td>\n ";
-   if (!$settings["baseURL"]) {
-      $settings["baseURL"]="http://".getenv("SERVER_NAME");
+   if (!$system_settings["baseURL"]) {
+      $system_settings["baseURL"]="http://".getenv("SERVER_NAME");
    }
       
-   echo "<td><input type='text' name='baseURL' value='".$settings["baseURL"]."'></td></tr>\n";
+   echo "<td><input type='text' name='baseURL' value='".$system_settings["baseURL"]."'></td></tr>\n";
 
    echo "<tr><td colspan='2' align='center'><i>Helper Applications</i></th></tr>\n";
    echo "<tr><td>wvHtml:</td>\n";
-   if (!$settings["word2html"]) { 
+   if (!$system_settings["word2html"]) { 
       $temp=`which wvHtml`;
       $tok=strtok($temp," ");
       if (!strtok(" "))
-         $settings["word2html"]=$tok;
+         $system_settings["word2html"]=$tok;
    }
-   echo "<td><input type='text' name='word2html' value='".$settings["word2html"]."'></td></tr>\n";
+   echo "<td><input type='text' name='word2html' value='".$system_settings["word2html"]."'></td></tr>\n";
 
 
    echo "<tr><td colspan='2' align='center'><i>Localization</i></th></tr>\n";
@@ -211,7 +211,7 @@ if ($version) {
    $query="SELECT dateformat,id FROM dateformats ORDER BY sortkey";
    $r=$db->Execute($query);
    echo "\n<td align='center'>";
-   echo $r->GetMenu2("dateformat",$settings["dateformat"],false);
+   echo $r->GetMenu2("dateformat",$system_settings["dateformat"],false);
    echo "</td></tr>\n";
 
    echo "<tr><td colspan='2' align='center'><i>Login Options</i></th></tr>\n";
@@ -219,7 +219,7 @@ if ($version) {
    echo "If so, passwords will be encrypted while in transit.\n";
    echo "Do <b>not</b> enter yes if you don't have a secure server.</td>\n";
    echo "<td>";
-   if ($settings["secure_server"])
+   if ($system_settings["secure_server"])
       echo "Yes <input type='radio' name='secure_server_new' checked value='Yes'>
             &nbsp&nbsp No<input type='radio' name='secure_server_new' value='No'>
             \n";
@@ -232,12 +232,12 @@ if ($version) {
    $query="SELECT method,id FROM authmethods";
    $r=$db->Execute($query);
    echo "\n<td align='center'>";
-   echo $r->GetMenu2("authmethod",$settings["authmethod"],false);
+   echo $r->GetMenu2("authmethod",$system_settings["authmethod"],false);
    echo "</td></tr>\n";
    echo "<tr><td>(When using PAM:) Location of check_pwd. ";
    echo "Please use this only in conjunction with the sudo command</td>\n";
    echo "<td>\n";
-   $checkpwd=$settings["checkpwd"];
+   $checkpwd=$system_settings["checkpwd"];
    echo "<input type='text' name='checkpwd' value='$checkpwd'></td></tr>\n";
 
    echo "<tr><td colspan=2 align='center'><input align=center type=submit 
