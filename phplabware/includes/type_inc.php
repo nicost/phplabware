@@ -14,13 +14,17 @@
   \**************************************************************************/
 
 function show_type ($db,$table,$name) {
-   global $HTTP_POST_VARS,$PHP_SELF;
+   global $HTTP_POST_VARS,$PHP_SELF,$HTTP_GET_VARS, $DBNAME;
 
+   $dbstring=$PHP_SELF;$dbstring.="?";
+   if ($DBNAME){$dbstring.="dbname=$DBNAME&";} 
+   $dbstring.="edit_type=$table&";
+   if($HTTP_POST_VARS[type_name]) {$name=$HTTP_POST_VARS[type_name];}
    echo "<form method='post' id='typeform' enctype='multipart/form-data' ";
-   echo "action='$PHP_SELF?".SID."'>\n"; 
+   echo "action='$dbstring".SID."'>\n"; 
 
    echo "<table align='center'>\n";
-   echo "<caption><h3>Edit $name</h3></caption>\n";
+   echo "<center><h3>Edit $name</h3></center>\n";
    echo "<tr>\n";
    echo "<th>Name</th>";
    echo "<th>Shortname</th>";
@@ -29,6 +33,7 @@ function show_type ($db,$table,$name) {
    echo "</tr>\n";
 
    // Column with new record
+   echo "<input type='hidden' name='type_name' value='$name'>\n";
    echo "<tr><td><input type='text' name='newtype_type' value=''></td>\n";
    echo "<td><input type='text' name='newtype_typeshort' value=''></td>\n";
    echo "<td><input type='text' name='newtype_sortkey' value=''></td>\n";
@@ -54,6 +59,7 @@ function show_type ($db,$table,$name) {
       else
          echo "<tr class='row_even' align='center'>\n";
       echo "<input type='hidden' name='type_id[]' value='$id'>\n";
+      echo "<input type='hidden' name='type_name' value='$name'>\n";
       echo "<td><input type='text' name='type_type[]' value='$type'></td>\n";
       echo "<td><input type='text' name='type_typeshort[]' value='$typeshort'></td>\n";
       echo "<td><input type='text' name='type_sortkey[]' value='$sortkey'></td>\n";
@@ -82,20 +88,38 @@ function show_type ($db,$table,$name) {
 // !Deletes an entry in the type table
 // Currently, there can be only 1 related table ($table2)
 // When more are needed,make $table2 into an array 
+
 function del_type ($db,$table,$index,$table2) {
-   global $HTTP_POST_VARS;
+   global $HTTP_POST_VARS, $DBNAME, $HTTP_GET_VARS, $DB_DESNAME;
+
    $id=$HTTP_POST_VARS["type_id"][$index]; 
-   if ($id) {
-      $table_array=explode("_",$table);
-      $r=$db->Execute("UPDATE $table2 SET ".$table_array[1]."='' WHERE ".
+   $string="";
+   if ($DBNAME)
+   	{   
+	   $recordref=get_cell($db,$DB_DESNAME,label,associated_table,$table);
+	   if ($id) 
+	   	{
+	      $r=$db->Execute("UPDATE $table2 SET $recordref='' WHERE $recordref='$id'");
+	      if ($r) 
+	         {$r=$db->Execute("DELETE FROM $table WHERE id=$id");}
+	      if ($r){$string="<h3 align='center'>Record removed</h3>\n";}
+	   	}
+	   else  {$string="<h3 align='center'>Please enter all fields</h3>\n";}
+	   }	   
+	else 
+		{
+		 if ($id) {
+      	$table_array=explode("_",$table);
+      	$r=$db->Execute("UPDATE $table2 SET ".$table_array[1]."='' WHERE ".
                        $table_array[1]."=$id");
-      if ($r) // keep database structure intact
-         $r=$db->Execute("DELETE FROM $table WHERE id=$id");
-      if ($r)
-         echo "<h3 align='center'>Record removed</h3>\n";
-   }
-   else
-      echo "<h3 align='center'>Please enter all fields</h3>\n";
+      	if ($r) // keep database structure intact
+      	   $r=$db->Execute("DELETE FROM $table WHERE id=$id");
+      	if ($r){$string="<h3 align='center'>Record removed</h3>\n";}
+   		}
+		else {$string="<h3 align='center'>Please enter all fields</h3>\n";}
+     	}
+     
+	echo "$string";
    return false;
 }
 
@@ -109,15 +133,14 @@ function mod_type ($db,$table,$index) {
    $typeshort=$HTTP_POST_VARS["type_typeshort"][$index]; 
    $sortkey=(int) $HTTP_POST_VARS["type_sortkey"][$index];
    if ($type && $typeshort && is_int($sortkey)) {
-      $r=$db->Execute("UPDATE $table SET type='$type',typeshort='$typeshort',
-              sortkey=$sortkey WHERE id=$id"); 
+      $r=$db->Execute("UPDATE $table SET type='$type',typeshort='$typeshort',sortkey=$sortkey WHERE id=$id"); 
       if ($r) {
          echo "<h3 align='center'>Succesfully changed Record</h3>\n";
          return ($id);
       }
+	 else echo "<h3 align='center'>Please enter all fields</h3>\n";
    }
-   else
-      echo "<h3 align='center'>Please enter all fields</h3>\n";
+   
    return false;
 }
 
@@ -126,7 +149,6 @@ function mod_type ($db,$table,$index) {
 //
 function add_type ($db,$table) {
    global $HTTP_POST_VARS;
-
    $id=$db->GenId($table."_id_seq");
    $type=$HTTP_POST_VARS["newtype_type"]; 
    $typeshort=$HTTP_POST_VARS["newtype_typeshort"]; 

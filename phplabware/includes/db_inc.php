@@ -144,7 +144,7 @@ function delete ($db, $table, $id, $USER, $filesonly=false) {
 // filetitle in HTTP_POST_VARS will be inserted in the title field of table files
 // returns id of last uploaded file upon succes, false otherwise
 function upload_files ($db,$table,$id,$USER,$system_settings) {
-   global $HTTP_POST_FILES,$HTTP_POST_VARS;
+   global $HTTP_POST_FILES,$HTTP_POST_VARS,$system_settings;
    if (!$db && $table && $id)
       return false;
    if (!may_write($db,$table,$id,$USER))

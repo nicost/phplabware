@@ -128,9 +128,15 @@ function add_pb_form ($db,$fields,$field_values,$id,$USER,$PHP_SELF,$system_sett
       echo "<input type='hidden' name='author' value='$author'>\n";
    }
    else {
+ 	 echo "<tr><th></th><td>";
+?>
+<a href="#" onClick="MyWindow=window.open('http://mullinslab.ucsf.edu/labware/getpdb.php','MyWindow','toolbar=yes,location=no,directories=no,status=no,menubar=yes,scrollbars=yes,resizable=yes,width=600,height=300'); return false;">
+Click here to download pdb files</A><?php
+
+      echo "</td></tr>\n";
       echo "<tr><th>PDB file:</th>\n";
       echo "<td><input type='file' name='file[]' value='$filename'></td>\n";
-      echo "</tr>\n";
+	  
    }
 
    echo "<tr>";
@@ -252,8 +258,11 @@ function show_pb ($db,$fields,$id,$USER,$system_settings) {
 printheader($httptitle);
 navbar($USER["permissions"]);
 
+
+
 // check if something should be modified, deleted or shown
 while((list($key, $val) = each($HTTP_POST_VARS))) {
+	
    if (substr($key, 0, 3) == "mod") {
       $modarray = explode("_", $key);
       $r=$db->Execute("SELECT $fields FROM pdbs WHERE id=$modarray[1]"); 
@@ -330,7 +339,22 @@ if ($add)
 
 else {
    // first handle addition of a new PDB
-   if ($submit == "Add PDB") {
+   if ($submit == "Add PDB") 
+   	{
+   	if ($HTTP_POST_VARS[downpdb])
+   		{
+		if (!$filedir=$system_settings["filedir"]) {
+   	 		echo "<h3><i>Filedir</i> was not set.  The file was not uploaded. Please contact your system administrator</h3>";
+   	   	  return false;
+   	   	 }
+	  	  $pdbin=escapeshellcmd($val);
+	  	  $filedir=$system_settings["filedir"];
+  		  $response=system("perl files/getpdb.pl $pdbin $filedir");		
+  		  if ($response=="YES")
+  		  	echo "File uploaded<br>";
+			}
+		  	
+			   
       if (! (check_pb_data($db, $HTTP_POST_VARS) && $id=add ($db, "pdbs",$fields,$HTTP_POST_VARS,$USER) ) ){
          echo "</caption>\n</table>\n";
          add_pb_form ($db,$fields,$HTTP_POST_VARS,0,$USER,$PHP_SELF,$system_settings);
