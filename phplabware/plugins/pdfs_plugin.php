@@ -108,7 +108,7 @@ function plugin_check_data($db,&$field_values,$table_desc,$modify=false)
       // check whether there is an abstract
       if ((substr($line[5],0,4)!="PMID"))
          $field_values["abstract"]=$line[5];
-      // check wether the journal is in pd_type1, if not, add it
+      // check wether the journal is in journaltable, if not, add it
       $r=$db->Execute("SELECT id FROM $journaltable WHERE typeshort='$journal'");
       if ($r && $r->fields("id"))
          $field_values["journal"]=$r->fields("id");
@@ -132,19 +132,20 @@ function plugin_check_data($db,&$field_values,$table_desc,$modify=false)
 }
 
 
-/*
 ////
 // !Overrides the standard 'show record'function
-function plugin_show($db,$fields,$id,$USER,$system_settings,$tableid,$real_tablename,$table_desname)
+function plugin_show($db,$fields,$id,$USER,$system_settings,$tableid,$real_tablename,$table_desc)
 {
-function show_pd ($db,$tableid,$fields,$id,$USER,$system_settings) {
    global $PHP_SELF;
+   $tablename=get_cell($db,"tableoftables","tablename","id",$tableid);
+   $journaltable=get_cell($db,$table_desc,"associated_table","columnname","journal");
+   $categorytable=get_cell($db,$table_desc,"associated_table","columnname","category");
 
    if (!may_read($db,$tableid,$id,$USER))
       return false;
 
    // get values 
-   $r=$db->Execute("SELECT $fields FROM pdfs WHERE id=$id");
+   $r=$db->Execute("SELECT $fields FROM $real_tablename WHERE id=$id");
    if ($r->EOF) {
       echo "<h3>Could not find this record in the database</h3>";
       return false;
@@ -155,12 +156,13 @@ function show_pd ($db,$tableid,$fields,$id,$USER,$system_settings) {
       $column=strtok(",");
    }
 
+   echo "&nbsp;<br>\n";
    echo "<table border=0 align='center'>\n";
    echo "<tr>\n";
    echo "<th>Article: </th>\n";
    echo "<td>$title<br>\n";
-   $text=get_cell($db,"pd_type1","type","id",$type1);
-   echo "$text ($year), <b>$volume</b>:$fpage-$lpage<br>\n";
+   $text=get_cell($db,$journaltable,"type","id",$journal);
+   echo "$text ($pubyear), <b>$volume</b>:$fpage-$lpage<br>\n";
    echo "$author</td></tr>\n";
    
    if ($abstract) {
@@ -168,8 +170,8 @@ function show_pd ($db,$tableid,$fields,$id,$USER,$system_settings) {
       echo "<td>$abstract</td>\n</tr>\n";
    }
    // Category
-   if ($type2) {
-      $type2=get_cell($db,"pd_type2","type","id",$type2);
+   if ($category) {
+      $type2=get_cell($db,$categorytable,"type","id",$category);
       echo "<tr>\n<th>Category</th>\n";
       echo "<td>$type2</td>\n</tr>\n";
    }
@@ -222,9 +224,9 @@ function show_pd ($db,$tableid,$fields,$id,$USER,$system_settings) {
       echo "</tr>\n";
    }
    
-   echo "<tr><th>Links:</th><td colspan=7><a href='$PHP_SELF?showid=$id&";
+   echo "<tr><th>Links:</th><td colspan=7><a href='$PHP_SELF?tablename=$tablename&showid=$id&";
    echo SID;
-   echo "'>".$system_settings["baseURL"].getenv("SCRIPT_NAME")."?showid=$id</a> (This page)<br>\n";
+   echo "'>".$system_settings["baseURL"].getenv("SCRIPT_NAME")."?tablename=$tablename&showid=$id</a> (This page)<br>\n";
 
    echo "<a href='http://www.ncbi.nlm.nih.gov/entrez/query.fcgi?";
    if ($system_settings["pdfget"])
@@ -234,7 +236,7 @@ function show_pd ($db,$tableid,$fields,$id,$USER,$system_settings) {
    echo "cmd=Link&db=PubMed&dbFrom=PubMed&from_uid=$pmid$addget'>Related articles at Pubmed</a></td></tr>\n";
 
 ?>   
-<form method='post' id='pdfview' action='<?php echo $PHP_SELF?>?<?=SID?>'> 
+<form method='post' id='pdfview' action='<?php echo "$PHP_SELF?tablename=$tablename"?>&<?=SID?>'> 
 <?php
    echo "<tr>";
    echo "<td colspan=7 align='center'><input type='submit' name='submit' value='Back'></td>\n";
@@ -244,7 +246,6 @@ function show_pd ($db,$tableid,$fields,$id,$USER,$system_settings) {
 }
 
 }
-*/
 
 /*
 
