@@ -463,7 +463,7 @@ function test_report($db,$offset,$tablename) {
       fclose($tp);
    }
    require("includes/report_inc.php");
-   $report=make_report($template,$Allfields);
+   $report=make_report($db,$template,$Allfields,$tableinfo,1);
    return $report;
    
 }
