@@ -336,15 +336,15 @@ function add_columnecg($db,$tablename2,$colname2,$label,$datatype,$Rdis,$Tdis,$r
 	 if (($r)&&($rs)&&(!($colname==""))) 
             $string="Added column <i>$colname</i> into table <i>$tablelabel</i>";
 	 else 
-	    $string="Problems creating this column.";
+	    $string='Problems creating this column.';
       }
       else {
-         if ($datatype=="int" || $datatype=="sequence" || $datatype=="date")
-            $sqltype="int";
-         elseif ($datatype=="float")
-            $sqltype="float";
+         if ($datatype=='int' || $datatype=='sequence' || $datatype=='date' || $datatype=='table')
+            $sqltype='int';
+         elseif ($datatype=='float')
+            $sqltype='float';
          else
-             $sqltype="text";
+             $sqltype='text';
          $rsss=$db->Execute("ALTER table $real_tablename add column $colname $sqltype");
          if ($rsss)
             $r=$db->Execute("INSERT INTO $desc ($fieldstring) Values($fieldid,'$colname','$label','$sort','$Tdis','$Rdis','$req','$modifiable','$sqltype','$datatype','','')");
@@ -353,7 +353,7 @@ function add_columnecg($db,$tablename2,$colname2,$label,$datatype,$Rdis,$Tdis,$r
             return $fieldid;
          }
          else { 
-            $string="Please enter all values";
+            $string='Please enter all values';
             return false;
          }
       }
@@ -568,8 +568,9 @@ function make_column_js_array($db,$r) {
    return $result;
 }
 
+
 ////
-// ! show page with choice of tables, dynamically generate list with columns
+// ! show active link page 
 function show_active_link_page ($db,$table_name,$addcol_name,$addcol_label,$link_part_a=false,$link_part_b=false) {
    echo "<form method='post' id='active_link'>\n";
    echo "<input type='hidden' name='table_name' value='$table_name'></input>\n";
@@ -584,6 +585,7 @@ function show_active_link_page ($db,$table_name,$addcol_name,$addcol_label,$link
    echo "</tr>\n</table>\n</form>\n";
 }
 
+
 ////
 // !Stores active link data
 function add_active_link ($db,$table,$column,$link_a,$link_b) {
@@ -594,9 +596,12 @@ function add_active_link ($db,$table,$column,$link_a,$link_b) {
    }
 }
 
+
 ////
 // ! show page with choice of tables, dynamically generate list with columns
 function show_table_column_page ($db,$table_name,$addcol_name,$addcol_label) {
+   global $HTTP_GET_VARS;
+
    echo "<form method='post' id='table_type'>\n";
    echo "<input type='hidden' name='table_name' value='$table_name'></input>\n";
    echo "<input type='hidden' name='addcol_name' value='$addcol_name'></input>\n";
@@ -622,7 +627,22 @@ function show_table_column_page ($db,$table_name,$addcol_name,$addcol_label) {
    echo "<tr><td>".$r->GetMenu2("table_select","",true,false,0,$jscript)."</td>\n";
    echo "<td><select name='table_column_select'></select></td>\n";
    echo "<td><input type='submit' name='submit' value='Submit'></input></td>\n";
-   echo "</tr>\n</table>\n</form>\n";
+   echo "</tr>\n";
+   $HTTP_GET_VARS['tablename']=$table_name;
+   $tableinfo=new tableinfo($db);
+$db->debug=true;
+   $rs=$db->Execute("SELECT id,associated_table,associated_column FROM {$tableinfo->desname} WHERE associated_table LIKE '%' AND NOT (associated_local_key LIKE '')");
+   if ($rs && !$rs->EOF) {
+      echo "<tr><td colspan=3><b>Or:</b> group with an already existing Primary Key:</td></tr>\n";
+      echo "<tr><td><input type='radio' name='ass_to' value='0'></td><td colspan=2>None (Fill in above,and make it a primary key)</input></td></tr>\n";
+      while (!$rs->EOF) {
+         echo "<tr><td><input type='radio' name='ass_to' value='{$rs->fields[0]}'></td><td colspan=2>Local column: (Foreign table: column:)</td></tr>\n";
+         $rs->MoveNext();
+      }
+   }
+$db->debug=false;
+  
+   echo "</table>\n</form>\n";
 }
 
 ////
