@@ -708,7 +708,7 @@ function getvalues($db,$tableinfo,$fields,$qfield=false,$field=false) {
    $columns=split(',',$fields);
    $Allfields=array();
    foreach ($columns as $column) {
-      if($column!="id") {
+      if($column!='id') {
          if ($r)
             ${$column}['values']= $r->fields[$column];
          $rb=$db->CacheExecute(2,"SELECT id,label,datatype,display_table,display_record,associated_table,key_table,associated_column,associated_local_key,required,link_first,link_last,modifiable FROM $tableinfo->desname WHERE columnname='$column'");
@@ -744,6 +744,7 @@ function getvalues($db,$tableinfo,$fields,$qfield=false,$field=false) {
                   if (is_array($tmpvalue[0])) {
                      $text=$tmpvalue[0]['text'];
                      $values=$tmpvalue[0]['values'];
+                     $datatype=$tmpvalue[0]['datatype'];
                   }
                   else
                      $text=$tmpvalue[0];
@@ -754,6 +755,8 @@ function getvalues($db,$tableinfo,$fields,$qfield=false,$field=false) {
                ${$column}['text']=$text;
                if ($values)
                   ${$column}['values']=$values;
+               if ($datatype)
+                  ${$column}['datatype']=$datatype;
             }
             elseif ($rb->fields['datatype']=='link') {
                if (${$column}['values'])
