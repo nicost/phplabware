@@ -117,29 +117,11 @@ if ($use_sessions) {
       if ($active) {
          $BROWSER = $client->browser;
          $NAME = $USER["firstname"] . " " . $USER["lastname"];
-		$db_result->fields["lastname"];
-         $S_PAMAUTH = $HTTP_SESSION_VARS["S_PAMAUTH"];
-         if ($impose_folder) {
-            $dir = $infolder;
-            $outdir = $outfolder;
-         }
-         else {
-            $dir = $USER["indir"]; 
-            $outdir = $USER["outdir"];
-         }   
-         if ($dir)
-            $S_HOMEDIR = $people_dir . "/".$S_LOGIN."/".$dir;
-         if ($outdir)
-            $S_OUTDIR = $people_dir . "/" .$S_LOGIN."/".$outdir;
-         if ($settings = $USER["settings"] ) 
-            $S_SETTINGS = unserialize ($settings);
-         if (!$S_SETTINGS["skin"])
-            $S_SKIN = "classic";
-         else
-            $S_SKIN = $S_SETTINGS["skin"];
       }
-      else
-         echo "Inactive user.<br>";
+      else {
+         loginscreen();
+         exit();
+      }
    }
 }
 
