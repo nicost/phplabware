@@ -236,15 +236,19 @@ if ($version) {
 	     sortkey int,
 	     type text)";
 	 if (!$db->Execute($query)) $test=false;
-	 $query="INSERT INTO ab_type3 VALUES (1,10,'human')";
+	 $query="INSERT INTO ab_type3 VALUES (1,10,'unknown')";
 	 if (!$db->Execute($query)) $test=false;
-	 $query="INSERT INTO ab_type3 VALUES (2,20,'mouse')";
+	 $query="INSERT INTO ab_type3 VALUES (2,20,'human')";
 	 if (!$db->Execute($query)) $test=false;
-	 $query="INSERT INTO ab_type3 VALUES (3,30,'rabbit')";
+	 $query="INSERT INTO ab_type3 VALUES (3,30,'mouse')";
 	 if (!$db->Execute($query)) $test=false;
-	 $query="INSERT INTO ab_type3 VALUES (4,40,'rat')";
+	 $query="INSERT INTO ab_type3 VALUES (4,40,'rabbit')";
 	 if (!$db->Execute($query)) $test=false;
-	 $query="INSERT INTO ab_type3 VALUES (5,50,'goat')";
+	 $query="INSERT INTO ab_type3 VALUES (5,50,'rat')";
+	 if (!$db->Execute($query)) $test=false;
+	 $query="INSERT INTO ab_type3 VALUES (6,60,'goat')";
+	 if (!$db->Execute($query)) $test=false;
+	 $query="INSERT INTO ab_type3 VALUES (7,1000,'other')";
 	 if (!$db->Execute($query)) $test=false;
          $query="CREATE TABLE ab_type4 
             (id int PRIMARY KEY,
@@ -284,9 +288,11 @@ if ($version) {
 	 if (!$db->Execute($query)) $test=false;
 	 $query="INSERT INTO ab_type5 VALUES (6,600,'Cy5')";
 	 if (!$db->Execute($query)) $test=false;
-	 $query="INSERT INTO ab_type5 VALUES (7,700,'Alex-488')";
+	 $query="INSERT INTO ab_type5 VALUES (7,700,'Alexa-488')";
 	 if (!$db->Execute($query)) $test=false;
-	 $query="INSERT INTO ab_type5 VALUES (8,0,'None')";
+	 $query="INSERT INTO ab_type5 VALUES (8,2000,'Beads')";
+	 if (!$db->Execute($query)) $test=false;
+	 $query="INSERT INTO ab_type5 VALUES (9,0,'None')";
 	 if (!$db->Execute($query)) $test=false;
       }
       
