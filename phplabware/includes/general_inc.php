@@ -408,6 +408,7 @@ function display_midbar($labelcomma)
 function comma_array_SQL_where($db,$tablein,$column,$searchfield,$searchval)
 	{
 	$tempa=array();
+	$db->debug=true;
 	$rs = $db->Execute("select $column from $tablein where $searchfield='$searchval'");
 
 	if ($rs)
@@ -495,20 +496,24 @@ function check_g_data ($db,&$field_values, $DB_DESNAME) {
 // $fields is a comma-delimited string with column names
 // $field_values is hash with column names as keys
 // $id=0 for a new entry, otherwise it is the id
-function add_g_form ($db,$fields,$field_values,$id,$USER,$PHP_SELF,$system_settings,$DB_DESNAME) 
+function add_g_form ($db,$fields,$field_values,$id,$USER,$PHP_SELF,$system_settings,$DBNAME,$DB_DESNAME) 
 	{
-	global $db, $DBNAME, $DB_DESNAME;
+	$db->debug=true;
 	if (!may_write($db,$DBNAME,$id,$USER)) return false; 
 	if ($id)
 		{
     	if ($r->EOF) {echo "<h3>Could not find this record in the database</h3>";return false;}		
 		$Allfields=getvalues($db,$DBNAME,$DB_DESNAME,$fields,id,$id);
+		echo "$Allfields.<br>";
 		$namein=get_cell($db,$DBNAME,"title","id",$id);		
 		display_add($Allfields,$id,$namein);
 		}    
 	else 
 		{
-		$Allfields=getvalues($db,$DBNAME,$DB_DESNAME,$fields,blank,blank);display_add($Allfields,$id,"");}
+		echo "$fields.<br>";
+		$Allfields=getvalues($db,$DBNAME,$DB_DESNAME,$fields,blank,blank);display_add($Allfields,$id,"");
+		print_r ($Allfields);
+		}
 	}
 
 ////

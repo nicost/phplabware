@@ -234,7 +234,7 @@ function navbar($permissions) {
 			$scriptname=$records->fields[1];
 			$linkname="";
 			if ($scriptname=="")
-				{$linkname="general.php?dbname=$tabname&<?=SID?>";}
+				{$linkname="general.php?tablename=$tabname&<?=SID?>";}
 			else{$linkname=$scriptname;$linkname.="?<?=SID?>";}		
 			echo "<td style='width: 20%' align='center'><a href=\"$linkname\">$tabname</a></td>";
 			$count++;
