@@ -568,12 +568,15 @@ function rm_columnecg($db,$tablename,$id,$colname,$datatype) {
    $real_tablename=get_cell($db,'tableoftables','real_tablename','id',$tableid);
    $tablelabel=get_cell($db,'tableoftables','label','id',$tableid);
    $desc=get_cell($db,'tableoftables','table_desc_name','id',$tableid);
+   $columnid=get_cell($db,$desc,'id','columnname',$colname);
    // if there are files associated, these have to be deleted as well
    $r=$db->Execute ("SELECT datatype FROM $desc WHERE id='$id'");
    if ($r->fields['datatype']=='file') {
-      $r=$db->Execute("SELECT id FROM files WHERE tablesfk='$tableid'");
-      while (!$r->EOF)
-         delete_file($db,$r->fields["id"],$USER);
+      $r=$db->Execute("SELECT id FROM files WHERE tablesfk='$tableid' AND ftablecolumnid=$columnid");
+      while (!$r->EOF) {
+         delete_file($db,$r->fields['id'],$USER);
+         $r->MoveNext();
+      }
    } 
    if ($r->fields['datatype']=='pulldown' || $r->fields['datatype'=='file']) {
       $rv=$db->Execute("select associated_table from $desc where id ='$id'");
@@ -590,10 +593,12 @@ function rm_columnecg($db,$tablename,$id,$colname,$datatype) {
    $db->Execute ("DELETE FROM tableviews WHERE columnid=$id AND tableid=$tableid");
    $r=$db->Execute("ALTER TABLE $real_tablename DROP COLUMN $colname");
    $rrr=$db->Execute("DELETE FROM $desc WHERE id='$id'");
-   // Postgres does know how to drop a column, so only check the second query
+
+   // (older) Postgres does know how to drop a column, so only check the second query
    if ($rrr) 
       $string="Deleted Column <i>$colname</i> from Table <i>$tablelabel</i>.";
 }
+
 
 ////
 // !helper function for show_table_column_page
