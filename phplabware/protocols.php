@@ -250,6 +250,24 @@ function show_pr ($db,$fields,$id,$USER,$system_settings) {
    echo "</table></form>\n";
 }
 
+
+////
+// ! outputs a reference plus link to a file
+function report_protocol_addition ($db,$id,$system_settings) {
+   $r=$db->Execute("SELECT ownerid,title,type1,type2 FROM protocols WHERE id=$id");
+   $fid=fopen($system_settings["protocols_file"],w);
+   if ($fid) {
+      $link= $system_settings["baseURL"].getenv("SCRIPT_NAME")."?showid=$id";
+      $author=get_cell($db,"pr_type2","type","id",$r->fields["type2"]);
+      $author.=" ".get_cell($db,"pr_type2","typeshort","id",$r->fields["type2"]);
+      $submitter=get_person_link($db,$r->fields["ownerid"]);
+      $text="<a href='$link'><b>".$r->fields["title"]."</b></a>";
+      $text.= ". Written by $author.<br> Submitted by $submitter.";
+      fwrite($fid,$text);
+      fclose($fid);
+   }
+}
+
 ////
 // !Tries to convert a MsWord file into html 
 // It calls wvHtml.  This does not work with wvHtml version 0.7-0.72
@@ -379,7 +397,9 @@ else {
          exit;
       }
       else {  
-	 $fileid=upload_files($db,"protocols",$id,$USER,$system_settings);
+	     $fileid=upload_files($db,"protocols",$id,$USER,$system_settings);
+	     if ($system_settings["protocols_file"])
+	        report_protocol_addition ($db,$id,$system_settings);
          // insert stuff to deal with word/html files
          process_file($db,$fileid,$system_settings); 
          // to not interfere with search form 
