@@ -533,7 +533,7 @@ if ($HTTP_POST_VARS['dataupload']=='Continue') {
          $desc=get_cell($db,'tableoftables','table_desc_name','id',$tableid);
          $r=$db->Execute("SELECT label,id FROM $desc WHERE (display_record='Y' OR display_table='Y' OR columnname='id') AND datatype<>'sequence' ORDER BY sortkey");
          for($i=0;$i<$nrfields;$i++) {
-            $menu=$r->GetMenu2("fields_$i");
+            $menu=$r->GetMenu("fields_$i",$fields[$i]);
             echo "   <td align='center'>$menu</td>\n";
             $r->Move(0);
          }
@@ -553,8 +553,8 @@ if ($HTTP_POST_VARS['dataupload']=='Continue') {
          echo "<input type='radio' name='pkeypolicy' value='skip' checked> Skip when primary key matches, otherwise add the new record</input></td></tr>\n";
 
          echo "<tr><th>Skip first line?</th>\n";
-         echo "<td><input type='radio' name='skipfirstline' value='yes'> Yes</input></td>\n";
-         echo "<td><input type='radio' name='skipfirstline' value='no' checked> no</input></td></tr>\n";
+         echo "<td><input type='radio' name='skipfirstline' value='yes' checked> Yes</input></td>\n";
+         echo "<td><input type='radio' name='skipfirstline' value='no'> no</input></td></tr>\n";
 
         // echo "<br><br>\n<table align='center>\n";
 	 
@@ -594,8 +594,8 @@ if (file_exists($localfile))
    echo "<b>Or:</b><input type='checkbox' name='localfile'> use $localfile";
 echo "</td>\n";
 echo "<td align='center'> <table><tr>
-   <td><input type='radio' name='delimiter_type' value='comma' checked> comma</td>
-   <td><input type='radio' name='delimiter_type' value='tab'> tab</td>
+   <td><input type='radio' name='delimiter_type' value='comma'> comma</td>
+   <td><input type='radio' name='delimiter_type' value='tab' checked> tab</td>
    <td><input type='radio' name='delimiter_type' value='space'> space</td></tr>
    <tr><td><input type='radio' name='delimiter_type' value='semi-colon'> ;</td>
    <td colspan=2><input type='radio' name='delimiter_type' value='other'> other:
