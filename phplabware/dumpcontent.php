@@ -27,12 +27,23 @@ navbar ($USER["permissions"]);
 if (!$USER["permissions"] & $SUPER) {
    echo "<h3 align='center'>Sorry, this page is not for you.</h3>\n";
    printfooter($db, $USER);
+   exit();
 }
 
 $tablename=$HTTP_GET_VARS["tablename"];
-if (!$tablename) {
-   echo "<h3 align='center'>Usage: dumpcontent.php?tablename=mytablename.</h3>\n";
-   printfooter($db, $USER);
+$tableid=get_cell($db,"tableoftables","id","tablename",$tablename);
+if (!$tableid) {
+   echo "<h3>This script will dump the contents of a table in a tab-delimited file. The contents of that file can be imported int phplabware or any other database program.</h3>";
+   $r=$db->execute("SELECT id,tablename FROM tableoftables");
+   if ($r) {
+      echo "<table align='center'>\n";
+      echo "<tr><td><h3>Select one of the following tables:</h3></td></tr>\n";
+      while ($r && !$r->EOF) {
+         echo "<tr><td><a href='dumpcontent.php?tablename=".$r->fields[1]."'>".$r->fields[1]."</a></td></tr>\n";
+         $r->MoveNext();
+      }
+   }
+   printfooter($d, $USER);
    exit();
 }
 
@@ -56,7 +67,10 @@ if (!$fp) {
 }
 
 // 
-$fields="id,".comma_array_SQL($db,$tableinfo->desname,'columnname');
+if ($HTTP_GET_VARS['fields']) 
+   $fields=$HTTP_GET_VARS['fields'];
+else
+   $fields="id,".comma_array_SQL($db,$tableinfo->desname,'columnname');
 $headers=getvalues($db,$tableinfo,$fields);
 
 foreach ($headers as $header) {
@@ -67,14 +81,22 @@ foreach ($headers as $header) {
 }
 fwrite ($fp,"\n");
 
+$db->debug=true;
 $r=$db->Execute("SELECT $fields FROM ".$tableinfo->realname);
+$db->debug=false;
 while ($r->fields["id"] && !$r->EOF) {
    $rowvalues=getvalues($db,$tableinfo,$fields,"id",$r->fields["id"]);
    foreach ($rowvalues as $row) {
+      if (is_array($row))
+         fwrite ($fp,$pre_seperator.$row['values'].$post_seperator);
+      else
+         fwrite ($fp,$pre_seperator.$row.$post_seperator);
+/*
       if ($row['datatype']=="textlong")
          fwrite ($fp,$pre_seperator.$row['values'].$post_seperator);
       else
          fwrite ($fp,$pre_seperator.$row['text'].$post_seperator);
+*/
    }
    fwrite ($fp,"\n");
    $counter++;
