@@ -233,6 +233,22 @@ function read_web_page($host,$getstring,&$header,&$body,$headersonly=false,$time
 
 
 /**
+ * Searches a header for a 'Location: ' field and returns this when found
+ * Returns false otherwise
+ */
+function get_location ($header)
+{
+   $line=strtok($header,"\n");
+   while ($line) {
+       $keyvalue=explode(": ",$line);
+       if ($keyvalue[0]=='Location') {
+           return $keyvalue[1];
+       }
+       $line=strtok("\n");
+    }
+    return false; 
+}
+/**
  * Finds the journal link through eutils elink
  *
  * When it knows the journal, will try to download the pdf directly
@@ -296,6 +312,28 @@ Location: ') {
           * These will break anytime a website changes its organization
           */
          switch ($host) {
+         case 'www.genesdev.org':
+             $website=read_web_page($host,$getstring,$header,$body,true,5); 
+             $linktopdf=get_location($header);
+             /**
+              * Massage the link to get the right thing
+              */
+             $linktopdf=str_replace('content/full','reprint',$linktopdf);
+             $linktopdf.='.pdf';
+             if (do_pdf_download($host,$linktopdf,'file')) {
+                 return true;
+             }
+         break;
+            
+         case 'www.jbc.org':
+             $website=read_web_page($host,$getstring,$header,$body,true,5); 
+             $link=get_location($header);
+             $link.='.pdf';
+             if (do_pdf_download($host,$link,'file')) {
+                 return true;
+             }
+          break;
+
          case 'www.molbiolcell.org':
             /**
              * We could possibly just add '.pdf' to the getstring, but this
@@ -303,7 +341,6 @@ Location: ') {
              */
              $getstring=str_replace('reprint','reprintframed',$getstring); 
              $website=read_web_page($host,$getstring,$header,$body,false,5); 
-             //echo $body."<br>\n";  
              $token=strtok($body,"\n");
              while ($token && !$done) {
                 if ($link=strstr($token,'/cgi/reprint/')) {
@@ -312,11 +349,11 @@ Location: ') {
                 }
                 $token=strtok("\n");
              }
-//echo "host: $host, getstring: $getstring.<br>";
              if (do_pdf_download($host,$getstring,'file')) {
                  return true;
              }
          break;    
+
          case 'www.nature.com':
             /**
              * This should resolve most nature journals
@@ -327,17 +364,7 @@ Location: ') {
                /**
                 * if we get a redirect find the new host and location
                 */
-//echo "$header.<br>\n";
-                $line=strtok($header,"\n");
-                while ($line) {
-//echo "$line<br>";
-                   $keyvalue=explode(": ",$line);
-//print_r($keyvalue);
-                   if ($keyvalue[0]=='Location') {
-                      $linktopdf=$keyvalue[1];
-                   }
-                   $line=strtok("\n");
-                }
+                $linktopdf=get_location($header);
 //echo "LINKTOPDF: $linktopdf.<br>\n";
                 get_host_getstring($linktopdf,&$pdfhost,&$pdfgetstring); 
                 /**
