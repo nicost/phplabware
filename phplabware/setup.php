@@ -140,7 +140,6 @@ if ($version) {
          include ("dd/0_0040_inc.php");
          include ("dd/0_0041_inc.php");
       }
-      
       $query="UPDATE settings SET version='$version_code' WHERE id=1";
       if (!$db->Execute($query)) $test=false;
 
@@ -261,7 +260,7 @@ if ($version) {
 
    echo "<tr><td>Directory <i>files</i>. The webdaemon should ";
    echo "have read and write priveleges, but the directory should not be directly ";
-   echo "accessible through the web.  If you changes this setting, ";
+   echo "accessible through the web.  If you change this setting, ";
    echo "the directory will be moved to the new location.</td>";
    if (!$system_settings["filedir"]) {
       $dir=getenv("SCRIPT_FILENAME");
@@ -294,7 +293,7 @@ if ($version) {
    echo "<td><input type='text' name='homeURL' value='".$system_settings["homeURL"]."'></td></tr>\n";
 
    echo "<tr><td colspan='2' align='center'><i>Files with new additions</i>\n";
-   echo "<br>Certain modules can write a file with information about the last added record.  You could show this inforation on a webpage.  If you don't use this, leave blank.</th></tr>\n";
+   echo "<br>Certain modules can write a file with information about the last added record.  You could show this information on a webpage.  If you don't use this, leave blank.</th></tr>\n";
    echo "<tr><td>New addition file for protocols.</td>\n ";
    echo "<td><input type='text' name='protocols_file' value='".$system_settings["protocols_file"]."'></td></tr>\n";
    echo "<tr><td>New addition file for pdfs.</td>\n ";
