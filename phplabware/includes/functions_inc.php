@@ -14,8 +14,10 @@
   *  option) any later version.                                              *
   \**************************************************************************/  
 
-////
-// !class to get and store browser/OS info
+/**
+ *  class to get and store browser/OS info
+ *
+ */
 class cl_client {
    var $browser;
    var $OS;
@@ -44,8 +46,10 @@ class cl_client {
    }
 }      
 
-////
-// !returns a string with a 'nice' representation of the input number of bytes
+/**
+ *  returns a string with a 'nice' representation of the input number of bytes
+ *
+ */
 function nice_bytes ($bytes) {
    $last = $bytes[strlen($bytes)-1];
    $bytes = (float) $bytes;
@@ -83,9 +87,11 @@ function nice_bytes ($bytes) {
 }
 
 
-////
-// !function that checks if user is allowed to view page
-// This function should be called before a printheader() call
+/**
+ *  function that checks if user is allowed to view page
+ *
+ * This function should be called before a printheader() call
+ */
 function allowonly($required, $current) {
    if (! ($required & $current)) {
       printheader("Not Allowed");
@@ -98,9 +104,10 @@ function allowonly($required, $current) {
 }
 
 
-////
-// returns a link to a randomly selected image from the designated directory
-// imagedir should be relative to the running script and be web-accessible
+/**
+ * returns a link to a randomly selected image from the designated directory
+ * imagedir should be relative to the running script and be web-accessible
+ */
 function randomImage($imagedir) {
    // determine contents of imagedir and store imagefilenames in imagearray
    $dirhandle = opendir ($imagedir);
@@ -129,8 +136,10 @@ function randomImage($imagedir) {
    return "<img src='$imagedir/$filename' alt='Pretty BioPicture here'>\n";   
 }
 
-////
-// !returns get vars plus SID when needed
+/**
+ *  returns get vars plus SID when needed
+ *
+ */
 function url_get_string ($url) {
    $get_string=getenv("QUERY_STRING");
    $sid=SID;
@@ -145,8 +154,10 @@ function url_get_string ($url) {
    return $url;
 }
 
-////
-// !presents the login screen when authenticating witth sessions
+/**
+ *  presents the login screen when authenticating witth sessions
+ *
+ */
 function loginscreen ($message="<h3>Login to PhpLabWare</h3>") {
    global $HTTP_SERVER_VARS, $system_settings;
 
@@ -188,10 +199,12 @@ function loginscreen ($message="<h3>Login to PhpLabWare</h3>") {
 }
 
 
-////
-// !checks wether variables are present in ${type} and makes them available
-// variables are only set when they are not null in ${type}
-// $var_string is a comma delimited list
+/**
+ *  checks wether variables are present in ${type} and makes them available
+ *
+ * variables are only set when they are not null in ${type}
+ * $var_string is a comma delimited list
+ */
 function globalize_vars ($var_string, $type) {
 
    if ($var_string && $type) {
@@ -209,9 +222,11 @@ function globalize_vars ($var_string, $type) {
 }
 
 
-////
-// !Return the value of specified cell in the database
-// Returns false if no or multiple rows have requested value 
+/**
+ *  Return the value of specified cell in the database
+ *
+ * Returns false if no or multiple rows have requested value 
+ */
 function get_cell ($db, $table, $column, $column2, $value) {
    $query="SELECT $column FROM $table WHERE $column2='$value'";
    $result=$db->Execute($query);
@@ -230,8 +245,10 @@ function get_cell ($db, $table, $column, $column2, $value) {
    }
 }
 
-////
-// ! Returns a formatted link with name of the person identified by id
+/**
+ *   Returns a formatted link with name of the person identified by id
+ *
+ */
 function get_person_link ($db,$id) {
    $query="SELECT firstname,lastname,email FROM users WHERE id=$id";
    $r=$db->Execute($query);
@@ -246,8 +263,10 @@ function get_person_link ($db,$id) {
    return $submitter;
 }
 
-////
-// !Prints a table with usefull links 
+/**
+ *  Prints a table with usefull links 
+ *
+ */
 function navbar($permissions) {
    include ('./includes/defines_inc.php');
    global $db, $USER, $PHP_SELF, $HTTP_SESSION_VARS; 
@@ -435,8 +454,10 @@ function navbar($permissions) {
    echo "<!--************************END OF NAVBAR**********************-->\n";
 }
 
-////
-// !adds javascript headers to argument
+/**
+ *  adds javascript headers to argument
+ *
+ */
 function add_js ($script) {
    $out="\n<script language='Javascript'>\n<!--\n";
    $out.=$script;
@@ -444,8 +465,10 @@ function add_js ($script) {
    return $out;
 }
 
-////
-// !Prints initial part of webpage
+/**
+ *  Prints initial part of webpage
+ *
+ */
 function printheader($title,$head=false, $jsfile=false) {
    global $client,$db,$version,$active,$USER,$HTTP_SESSION_VARS;
 
@@ -459,8 +482,7 @@ function printheader($title,$head=false, $jsfile=false) {
    header ('Content-Type: text/html; charset=ISO-8859-1');
 
 ?>
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 TRANSITIONAL//EN"
-	"http://www.w3.org/TR/html4/loose.dtd">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <HTML>
 <HEAD>
 <?php 
@@ -543,8 +565,10 @@ if (!@is_readable($stylesheet)) {
 <?php
 }
 
-////
-// !Prints footer
+/**
+ *  Prints footer
+ *
+ */
 function printfooter($db=false,$USER=false) {
 ?>
 
