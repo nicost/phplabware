@@ -329,7 +329,7 @@ else {
 
    echo "<table border=0 width='50%' align='center'>\n<tr>\n";
    
-   // variable md containd edit/view mode setting.  Propagated as post var to remember state.  md can only be changed as a get variable
+   // variable md contains edit/view mode setting.  Propagated as post var to remember state.  md can only be changed as a get variable
    $modetext="<a href='$PHP_SELF?tablename=$tablename&md=";
  
    $may_write=may_write($db,$tableid,false,$USER);
@@ -368,7 +368,6 @@ else {
 
    //  get a list of all fields that are displayed in the table
    $Fieldscomma=comma_array_SQL_where($db,$table_desname,"columnname","display_table","Y");
-//   $Fieldscomma .= ",id ";
    $Labelcomma=comma_array_SQL_where($db,$table_desname,"label","display_table","Y");
    $Allfields=getvalues($db,$real_tablename,$table_desname,$tableid,$Fieldscomma);	
    
@@ -378,11 +377,6 @@ else {
    // row with search form
    echo "<tr align='center'>\n";
    echo "<input type='hidden' name='searchj' value=''>\n";
-
-   //$lista_array=explode(",",$lista);
-   //$counta=sizeof($lista_array);
-   //$listb_array=explode(",",$listb);
-   //$countb=sizeof($listb_array);
 
    foreach($Allfields as $nowfield)  {
       if ($HTTP_POST_VARS[$nowfield[name]]) {
@@ -415,17 +409,12 @@ else {
             echo "<a href='$PHP_SELF?tablename=$tablename&edit_type=$nowfield[ass_t]&".SID;
             echo "'>Edit $nowfield[label]</a><br>\n";
          }	 		 			
-         //$rpull=$db->Execute("SELECT $nowfield[name] FROM $real_tablename WHERE $list");
-         //$list2=make_SQL_ids($rpull,false,"$nowfield[name]");
-         //if ($list2) { 
-         //    $rpull=$db->Execute("SELECT typeshort,id from $nowfield[ass_t] WHERE id IN ($list2) ORDER by typeshort");
-             $rpull=$db->Execute("SELECT typeshort,id from $nowfield[ass_t] ORDER by sortkey,typeshort");
-            if ($rpull)
-	       $text=$rpull->GetMenu2("$nowfield[name]",${$nowfield[name]},true,false,0,"style='width: 80%' $jscript");   
-	    else
-	       $text="&nbsp;";
-    	    echo "$text</td>\n";
-         //}  
+         $rpull=$db->Execute("SELECT typeshort,id from $nowfield[ass_t] ORDER by sortkey,typeshort");
+         if ($rpull)
+	    $text=$rpull->GetMenu2("$nowfield[name]",${$nowfield[name]},true,false,0,"style='width: 80%' $jscript");   
+	 else
+	    $text="&nbsp;";
+    	 echo "$text</td>\n";
       }
       elseif ($nowfield["datatype"]== "table") {
          echo "<td style='width: 10%'>";
