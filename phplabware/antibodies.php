@@ -357,9 +357,6 @@ if ($add)
    add_ab_form ($db,$fields,$field_values,0,$USER,$PHP_SELF,$system_settings);
 
 else {
-   // print header of table
-   echo "<table border='1' align='center' width='100%'>\n";
-   echo "<caption>\n";
    // first handle addition of a new antibody
    if ($submit == "Add Antibody") {
       if (! (check_ab_data($HTTP_POST_VARS) && $id=add ($db, "antibodies",$fields,$HTTP_POST_VARS,$USER) ) ){
@@ -404,13 +401,6 @@ else {
       }
    } 
 
-
-   echo "</caption>\n";
-   // print form
-?>
-<form name='ab_form' method='post' action='<?php echo $PHP_SELF?>?<?=SID?>'>  
-<?php
-
    if ($search=="Show All") {
       $num_p_r=$HTTP_POST_VARS["num_p_r"];
       unset ($HTTP_POST_VARS);
@@ -433,6 +423,70 @@ else {
       $ab_query = "SELECT $fields FROM antibodies WHERE id IN ($whereclause) ORDER BY date DESC";
    $HTTP_SESSION_VARS["ab_query"]=$ab_query;   
    session_register("ab_query");
+   
+   // paging stuff
+   if (!$num_p_r)
+      $num_p_r=$USER["settings"]["num_p_r"];
+   if (isset($HTTP_POST_VARS["num_p_r"]))
+      $num_p_r=$HTTP_POST_VARS["num_p_r"];
+   if (!isset($num_p_r))
+      $num_p_r=10;
+   $USER["settings"]["num_p_r"]=$num_p_r;
+   if (!isset($curr_page))
+      $curr_page=$HTTP_SESSION_VARS["curr_page"];
+   if (isset($HTTP_POST_VARS["next"]))
+      $curr_page+=1;
+   if (isset($HTTP_POST_VARS["previous"]))
+      $curr_page-=1;
+   if ($curr_page<1)
+      $curr_page=1;
+   $HTTP_SESSION_VARS["curr_page"]=$curr_page; 
+   session_register("curr_page");
+
+   // print form
+?>
+<form name='ab_form' method='post' action='<?php echo $PHP_SELF?>?<?=SID?>'>  
+<?php
+
+   // loop through all entries for next/previous buttons
+   $r=$db->PageExecute($ab_query,$num_p_r,$curr_page);
+   while (!($r->EOF) && $r) {
+      $r->MoveNext();
+   }
+
+   // row with action links
+   $sid=SID;
+   if ($sid) $sid="&".$sid;
+   echo "<table border=0 width='50%' align='center'>\n<tr>\n";
+   if (may_write($db,"antibodies",false,$USER)) 
+      echo "<td align='center'><a href='$PHP_SELF?add=Add Antibody$sid'>Add Antibody</a></td>\n";
+   //echo "<td align='center'><a href='$PHP_SELF?search=Show%20All$sid'>Show All</a></td>\n</tr>\n";
+   //echo "<td align='center'><button type='submit' name='search' value='Show All'>";
+   //echo "Show All</button></td></tr>\n";
+   echo "</table>\n";
+
+   // next/previous buttons
+   echo "<table border=0 align=center width=100%>\n";
+   echo "<tr><td align='left'>";
+   if ($r && !$r->AtFirstPage())
+      echo "<input type=\"submit\" name=\"previous\" value=\"Previous\"></td>\n";
+   else
+      echo "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp&nbsp;</td>\n";
+   echo "<td align='center'>";
+   echo "<input type='text' name='num_p_r' value='$num_p_r' size=3>";
+   echo "Records per page</td>\n";
+   echo "<td align='right'>";
+   if ($r && !$r->AtLastPage())
+      echo "<input type=\"submit\" name=\"next\" value=\"Next\"></td>\n";
+   else
+      echo "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp&nbsp;</td>\n";
+   echo "</tr>\n";
+   echo "</table>\n";
+
+   // print header of table
+   echo "<table border='1' align='center' width='100%'>\n";
+   echo "<caption>\n";
+   echo "</caption>\n";
 
    // row with search form
    echo "<tr align='center'>\n";   
@@ -549,25 +603,7 @@ else {
    echo "<th>Files</th>\n";
    echo "<th>Action</th>\n";
    echo "</tr>\n";
-   
-   // paging stuff
-   if (!$num_p_r)
-      $num_p_r=$USER["settings"]["num_p_r"];
-   if (isset($HTTP_POST_VARS["num_p_r"]))
-      $num_p_r=$HTTP_POST_VARS["num_p_r"];
-   if (!isset($num_p_r))
-      $num_p_r=10;
-   $USER["settings"]["num_p_r"]=$num_p_r;
-   if (!isset($curr_page))
-      $curr_page=$HTTP_SESSION_VARS["curr_page"];
-   if (isset($HTTP_POST_VARS["next"]))
-      $curr_page+=1;
-   if (isset($HTTP_POST_VARS["previous"]))
-      $curr_page-=1;
-   if ($curr_page<1)
-      $curr_page=1;
-   $HTTP_SESSION_VARS["curr_page"]=$curr_page; 
-   session_register("curr_page");
+
 
    $r=$db->PageExecute($ab_query,$num_p_r,$curr_page);
    $rownr=1;
@@ -636,16 +672,15 @@ else {
       echo "</td></tr>";
    }
 
+   echo "</table>\n";
+
    // next/previous buttons
-   echo "<tr><td colspan=2 align='center'>";
+   echo "<table border=0 width=100%>\n<tr width=100%>\n<td align='left'>";
    if ($r && !$r->AtFirstPage())
       echo "<input type=\"submit\" name=\"previous\" value=\"Previous\"></td>\n";
    else
       echo "&nbsp;</td>\n";
-   echo "<td colspan=8 align='center'>";
-   echo "<input type='text' name='num_p_r' value='$num_p_r' size=3>";
-   echo "Records per page</td>\n";
-   echo "<td colspan=1 align='center'>";
+   echo "<td align='right'>";
    if ($r && !$r->AtLastPage())
       echo "<input type=\"submit\" name=\"next\" value=\"Next\"></td>\n";
    else
@@ -653,6 +688,7 @@ else {
    echo "</tr>\n";
 
    echo "</table>\n";
+
    echo "</form>\n";
 
 }
