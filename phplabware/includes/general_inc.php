@@ -82,7 +82,7 @@ function display_table_change($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr
       // Get required ID and title
       $id=$r->fields["id"];
       $title=$r->fields["title"];		
-      $Allfields=getvalues($db,$tableinfo->real_name,$tableinfo->desname,$tableinfo->id,$Fieldscomma,id,$id);
+      $Allfields=getvalues($db,$tableinfo->realname,$tableinfo->desname,$tableinfo->id,$Fieldscomma,id,$id);
       $may_write=may_write($db,$tableinfo->id,$id,$USER);
 
       // print start of row of selected record
@@ -143,7 +143,7 @@ function display_table_change($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr
 
       echo "<td align='center'>&nbsp;\n";  
       if ($HTTP_SESSION_VARS["javascript_enabled"]) {
-         $jscript=" onclick='MyWindow=window.open (\"general.php?tablename=$tablename&showid=$id&jsnewwindow=true\",\"view\",\"scrollbar=yes,resizable=yes,width=600,height=400\")'";
+         $jscript=" onclick='MyWindow=window.open (\"general.php?tablename=".$tableinfo->name."&showid=$id&jsnewwindow=true\",\"view\",\"scrollbar=yes,resizable=yes,width=600,height=400\")'";
          echo "<input type=\"button\" name=\"view_" . $id . "\" value=\"View\" $jscript>\n";
       }
       else
@@ -176,11 +176,9 @@ function display_table_change($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr
 ///////////////////////////////////////////////////////////
 //// 
 // !Displays all information within the table
-function display_table_info($db,$tableid,$DB_DESNAME,$Fieldscomma,$pr_query,$num_p_r,$pr_curr_page,$page_array,$r=false) {
+function display_table_info($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr_curr_page,$page_array,$r=false) {
    global $nr_records,$max_menu_length,$USER,$LAYOUT,$HTTP_SESSION_VARS;
 
-   $tablename=get_cell($db,"tableoftables","tablename","id",$tableid);
-   $real_tablename=get_cell($db,"tableoftables","real_tablename","id",$tableid);
    $first_record=($pr_curr_page - 1) * $num_p_r;
    $current_record=$first_record;
    $last_record=$pr_curr_page * $num_p_r;
@@ -192,7 +190,7 @@ function display_table_info($db,$tableid,$DB_DESNAME,$Fieldscomma,$pr_query,$num
       // Get required ID and title
       $id=$r->fields["id"];
       $title=$r->fields["title"];		
-      $Allfields=getvalues($db,$real_tablename,$DB_DESNAME,$tableid,$Fieldscomma,id,$id);
+      $Allfields=getvalues($db,$tableinfo->realname,$tableinfo->desname,$tableinfo->id,$Fieldscomma,id,$id);
       // print start of row of selected group
       if ($current_record % 2) echo "<tr class='row_odd' align='center'>\n";
          else echo "<tr class='row_even' align='center'>\n";
@@ -202,12 +200,12 @@ function display_table_info($db,$tableid,$DB_DESNAME,$Fieldscomma,$pr_query,$num
 
       echo "<td align='center'>&nbsp;\n";  
       if ($HTTP_SESSION_VARS["javascript_enabled"]) {
-         $jscript=" onclick='MyWindow=window.open (\"general.php?tablename=$tablename&showid=$id&jsnewwindow=true\",\"view\",\"scrollbar=yes,resizable=yes,width=600,height=400\")'";
+         $jscript=" onclick='MyWindow=window.open (\"general.php?tablename=".$tableinfo->name."&showid=$id&jsnewwindow=true\",\"view\",\"scrollbar=yes,resizable=yes,width=600,height=400\")'";
          echo "<input type=\"button\" name=\"view_" . $id . "\" value=\"View\" $jscript>\n";
       }
       else
          echo "<input type=\"submit\" name=\"view_" . $id . "\" value=\"View\">\n";
-      if (may_write($db,$tableid,$id,$USER)) {
+      if (may_write($db,$tableinfo->id,$id,$USER)) {
          echo "<input type=\"submit\" name=\"mod_" . $id . "\" value=\"Modify\">\n";
          $delstring = "<input type=\"submit\" name=\"del_" . $id . "\" value=\"Remove\" ";
 	 $jstitle=str_replace("'"," ",$title);
@@ -221,7 +219,7 @@ function display_table_info($db,$tableid,$DB_DESNAME,$Fieldscomma,$pr_query,$num
       $current_record++;
    }
    // Add Record button
-   if (may_write($db,$tableid,false,$USER)) {
+   if (may_write($db,$tableinfo->id,false,$USER)) {
       echo "<tr><td colspan=20 align='center'>";
       echo "<input type=\"submit\" name=\"add\" value=\"Add Record\">";
       echo "</td></tr>";
@@ -294,12 +292,12 @@ function make_link($id,$DBNAME) {
 ///////////////////////////////////////////////////////////
 ////
 // !display addition and modification form
-function display_add($db,$tableid,$real_tablename,$tabledesc,$Allfields,$id,$namein,$system_settings) { 
+function display_add($db,$tableinfo,$Allfields,$id,$namein,$system_settings) { 
    global $PHP_SELF, $db_type, $md, $USER;
 
-   $tablename=get_cell($db,"tableoftables","tablename","id",$tableid);
-   $tablelabel=get_cell($db,"tableoftables","label","id",$tableid);
-   $dbstring=$PHP_SELF;$dbstring.="?";$dbstring.="tablename=$tablename&";
+//   $tablename=get_cell($db,"tableoftables","tablename","id",$tableid);
+//   $tablelabel=get_cell($db,"tableoftables","label","id",$tableid);
+   $dbstring=$PHP_SELF;$dbstring.="?";$dbstring.="tablename=".$tableinfo->name."&";
    echo "<form method='post' id='protocolform' enctype='multipart/form-data' action='$dbstring";
 	?><?=SID?>'><?php
 
@@ -309,11 +307,11 @@ function display_add($db,$tableid,$real_tablename,$tabledesc,$Allfields,$id,$nam
    echo "<input type='hidden' name='md' value='$md'>\n";
    echo "<table border=0 align='center'>\n";   
    if ($id) {
-      echo "<tr><td colspan=5 align='center'><h3>Modify $tablelabel entry <i>$namein</i></h3></td></tr>\n";
+      echo "<tr><td colspan=5 align='center'><h3>Modify ".$tableinfo->label." entry <i>$namein</i></h3></td></tr>\n";
       echo "<input type='hidden' name='id' value='$id'>\n";
    }
    else {
-      echo "<tr><td colspan=5 align='center'><h3>New $tablelabel entry</h3></td></tr>\n";
+      echo "<tr><td colspan=5 align='center'><h3>New ".$tableinfo->label." entry</h3></td></tr>\n";
    }
    echo "<table border=0 align='center'>\n<tr align='center'>\n<td colspan=2></td>\n";
    foreach ($Allfields as $nowfield) {
@@ -341,7 +339,7 @@ function display_add($db,$tableid,$real_tablename,$tabledesc,$Allfields,$id,$nam
 	 elseif ($nowfield["datatype"]=="sequence") {
 	    if (!$nowfield["text"]) {
 	       // find the highest sequence and return that plus one
-	       $rmax=$db->Execute("SELECT MAX ($nowfield[column]) AS $nowfield[column] FROM real_tablename");
+	       $rmax=$db->Execute("SELECT MAX ($nowfield[column]) AS $nowfield[column] FROM ".$tableinfo->realname);
 	       $newseq=$rmax->fields[0]+1;
 	    }
 	    else
@@ -372,7 +370,7 @@ function display_add($db,$tableid,$real_tablename,$tabledesc,$Allfields,$id,$nam
             $text=$r->GetMenu2("$nowfield[name]",$nowfield[values],true,false);
             echo "<tr><th>$nowfield[label]:";
             if ($USER["permissions"] && $LAYOUT) {
-               echo "<a href='$PHP_SELF?tablename=$tablename&edit_type=$nowfield[ass_t]&<?=SID?>'>";
+               echo "<a href='$PHP_SELF?tablename=$tableinfo[name]&edit_type=$nowfield[ass_t]&<?=SID?>'>";
                echo "<FONT size=1 color='#00ff00'> <small>(edit)</small></font></a>";
             }
             if ($nowfield[required]=="Y")
@@ -398,7 +396,7 @@ function display_add($db,$tableid,$real_tablename,$tabledesc,$Allfields,$id,$nam
 	    echo "</th><td colspan=6><textarea name='$nowfield[name]' rows='5' cols='100%'>$nowfield[values]</textarea>";
 	 }
 	 if ($nowfield[datatype]=="file") {
-	    $files=get_files($db,$real_tablename,$id,$nowfield["id"]);
+	    $files=get_files($db,$tableinfo->realname,$id,$nowfield["id"]);
 	    echo "<tr>";
 	    echo "<th>$nowfield[label]:</th>\n";
 	    echo "</th>\n";
@@ -414,12 +412,12 @@ function display_add($db,$tableid,$real_tablename,$tabledesc,$Allfields,$id,$nam
 	 }
       }
       if (function_exists("plugin_display_add"))
-         plugin_display_add($db,$tableid,$nowfield);
+         plugin_display_add($db,$tableinfo->id,$nowfield);
       echo "</td></tr>\n";
 	
    }	
    echo "<td colspan=4>";
-   show_access($db,$tableid,$id,$USER,$system_settings);
+   show_access($db,$tableinfo->id,$id,$USER,$system_settings);
    echo "</td></tr>\n"; echo "<tr>";
    if ($id) $value="Modify Record"; 
    else $value="Add Record";
@@ -430,7 +428,7 @@ function display_add($db,$tableid,$real_tablename,$tabledesc,$Allfields,$id,$nam
    echo "</tr>\n</table>\n</form>\n";
 
    //end of table
-   $dbstring=$PHP_SELF;$dbstring.="?";$dbstring.="tablename=$tablename&";
+   $dbstring=$PHP_SELF;$dbstring.="?";$dbstring.="tablename=$tableinfo[name]&";
    echo "<form method='post' id='protocolform' enctype='multipart/form-data' action='$dbstring";
 ?><?=SID?>'><?php
 
@@ -607,29 +605,29 @@ function check_g_data ($db,&$field_values, $DB_DESNAME,$modify=false) {
 // $fields is a comma-delimited string with column names
 // $field_values is hash with column names as keys
 // $id=0 for a new entry, otherwise it is the id
-function add_g_form ($db,$fields,$field_values,$id,$USER,$PHP_SELF,$system_settings,$real_tablename, $tableid,$DB_DESNAME) {
-   if (!may_write($db,$tableid,$id,$USER)) 
+function add_g_form ($db,$tableinfo,$field_values,$id,$USER,$PHP_SELF,$system_settings) {
+   if (!may_write($db,$tableinfo->id,$id,$USER)) 
       return false; 
    if ($id) {
    echo $nowfield["id"].".<br>";
-	$Allfields=getvalues($db,$real_tablename,$DB_DESNAME,$tableid,$fields,id,$id);
-	$namein=get_cell($db,$DBNAME,"title","id",$id);		
-	display_add($db,$tableid,$real_tablename,$DB_DESNAME,$Allfields,$id,$namein,$system_settings);
+	$Allfields=getvalues($db,$tableinfo->realname,$tableinfo->desname,$tableinfo->id,$tableinfo->fields,id,$id);
+	$namein=get_cell($db,$tableinfo->desname,"title","id",$id);		
+	display_add($db,$tableinfo,$Allfields,$id,$namein,$system_settings);
    }    
    else {
-	$Allfields=getvalues($db,$DBNAME,$DB_DESNAME,$tableid,$fields);
-	display_add($db,$tableid,$real_tablename,$DB_DESNAME,$Allfields,$id,"",$system_settings);
+	$Allfields=getvalues($db,$tableinfo->realname,$tableinfo->desname,$tableinfo->id,$tableinfo->fields);
+	display_add($db,$tableinfo,$Allfields,$id,"",$system_settings);
    }
 }
 
 ////
 // !Shows a page with nice information on the record
-function show_g($db,$fields,$id,$USER,$system_settings,$tableid,$real_tablename,$DB_DESNAME,$backbutton=true)  {
-   $tablename=get_cell($db,"tableoftables","tablename","id",$tableid);
-   if (!may_read($db,$tableid,$id,$USER))
+function show_g($db,$tableinfo,$id,$USER,$system_settings,$backbutton=true)  {
+   //$tablename=get_cell($db,"tableoftables","tablename","id",$tableid);
+   if (!may_read($db,$tableinfo->id,$id,$USER))
        return false;
-   $Allfields=getvalues($db,$real_tablename,$DB_DESNAME,$tableid,$fields,id,$id);
-   display_record($db,$Allfields,$id,$tablename,$real_tablename,$backbutton);
+   $Allfields=getvalues($db,$tableinfo->realname,$tableinfo->desname,$tableinfo->id,$tableinfo->fields,id,$id);
+   display_record($db,$Allfields,$id,$tableinfo->name,$tableinfo->realname,$backbutton);
 }
 	
 ////
