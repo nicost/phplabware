@@ -1,5 +1,20 @@
 <?php
 
+// dumptable.php - Creates the php code needed to re-create the table structure
+// dumptable.php - author: Nico Stuurman<nicost@sourceforge.net>
+
+  /***************************************************************************
+  * Creates the php code needed to re-create the table structure             *
+  * Takes 'tablename' as a get variable                                      *
+  *                                                                          *
+  * Copyright (c) 2002 by Nico Stuurman                                      *
+  * ------------------------------------------------------------------------ *
+  *  This program is free software; you can redistribute it and/or modify it *
+  *  under the terms of the GNU General Public License as published by the   *
+  *  Free Software Foundation; either version 2 of the License, or (at your  *
+  *  option) any later version.                                              *
+  \**************************************************************************/                                                                                     
+
 require ("include.php");
 
 printheader($httptitle,false);
