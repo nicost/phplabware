@@ -140,9 +140,9 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
 }
 
 if ($editfield)	{
-   $noshow=array("id","access","magic","lastmoddate","lastmodby");
-   $nodel=array("title","date","ownerid","lastmodby","lastmoddate");
-   $nomodifiable=array("ownerid","date","lastmodby","lastmoddate");
+   $noshow=array('id','access','magic','lastmoddate','lastmodby','gr','gw','er','ew');
+   $nodel=array('title','date','ownerid','lastmodby','lastmoddate');
+   $nomodifiable=array('ownerid','date','lastmodby','lastmoddate');
    navbar($USER["permissions"]);
 
    $r=$db->Execute("SELECT id,table_desc_name,label FROM tableoftables WHERE tablename='$editfield'");
