@@ -126,7 +126,7 @@ function delete ($db, $table, $id, $USER) {
 ////
 // !Returns an SQL SELECT statement with ids of records the user may see
 // Since it uses subqueries it does not work with MySQL
-function may_read_SQL_postgres ($db,$table,$USER,$clause=false) {
+function may_read_SQL_subselect ($db,$table,$USER,$clause=false) {
    include ('includes/defines_inc.php');
    $query="SELECT id FROM $table ";
    if ($USER["permissions"] & $SUPER) {
@@ -170,7 +170,7 @@ function make_SQL_ids ($r,$ids) {
 
 ////
 // !Returns an array with ids of records the user may see in SQL format
-function may_read_SQL ($db,$table,$USER) {
+function may_read_SQL_JOIN ($db,$table,$USER) {
    include ('includes/defines_inc.php');
    if (!($USER["permissions"] & $SUPER)) {
       $query="SELECT id FROM $table ";
@@ -198,6 +198,16 @@ function may_read_SQL ($db,$table,$USER) {
 }
 
 
+////
+// !To deal with differences in databases
+function may_read_SQL ($db,$table,$USER) {
+   global $db_type;
+
+   if ($db_type=="mysql")
+      return may_read_SQL_JOIN ($db,$table,$USER);
+   else
+      return may_read_SQL_subselect ($db,$table,$USER);
+}
 ////
 // !determines whether or not the user may read this record
 function may_read ($db,$table,$id,$USER) {
