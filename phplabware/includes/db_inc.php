@@ -99,11 +99,10 @@ function comma_array_SQL_where($db,$tablein,$column,$searchfield,$searchval)
          $rs->MoveNext();
       }
    }
-   $out=join(",",$tempa);
-   return $out;
+   return join(",",$tempa);
 }
 
-//////////////////////////////////////////////////////
+/////////////////////////////////////////////////////
 ////
 // !SQL search (entrire column) that returns a comma delimited string
 function comma_array_SQL($db,$tablein,$column,$where=false) 
@@ -264,7 +263,7 @@ function update_mpulldown ($db,$key_table,$recordid,$valueArray) {
 // !Modifies $fields in $table with values $fieldvalues where id=$id
 // Returns true on succes, false on failure
 // Fieldvalues must be an associative array containing all the $fields to be added.
-// If a field is not present in $fieldvalues, it will not be changed.  
+// If a field is not present in $fieldvalues, it will be set to NULL.  
 // The entry 'id' in $fields will be ignored.
 // Fields lastmodby and lastmoddate will be automatically set
 function modify ($db,$table,$fields,$fieldvalues,$id,$USER,$tableid) {
@@ -273,15 +272,15 @@ function modify ($db,$table,$fields,$fieldvalues,$id,$USER,$tableid) {
    // delete all entries in trust related to this record first
    $db->Execute("DELETE FROM trust WHERE tableid='$tableid' and recordid='$id'");
    // then add back trusted users entered on the form
-   if (is_array($fieldvalues["trust_read"]))
-      foreach ($fieldvalues["trust_read"] as $userid)
+   if (is_array($fieldvalues['trust_read']))
+      foreach ($fieldvalues['trust_read'] as $userid)
          $db->Execute("INSERT INTO trust VALUES ('$tableid','$id','$userid','r')");
-   if (is_array($fieldvalues["trust_write"]))
-      foreach ($fieldvalues["trust_write"] as $userid)
+   if (is_array($fieldvalues['trust_write']))
+      foreach ($fieldvalues['trust_write'] as $userid)
          $db->Execute("INSERT INTO trust VALUES ('$tableid','$id','$userid','w')");
 
    $query="UPDATE $table SET ";
-   $column=strtok($fields,",");
+   $column=strtok($fields,',');
    while ($column) {
       if (! ($column=='id' || $column=='date' || $column=='ownerid' || is_array($fieldvalues[$column]) ) ) {
          $test=true;
@@ -289,18 +288,18 @@ function modify ($db,$table,$fields,$fieldvalues,$id,$USER,$tableid) {
          //   $fieldvalues["access"]=get_access($fieldvalues);
          if (in_array($column, array('gr','gw','er','ew')))
             $fieldvalues[$column]=get_access($fieldvalues,$column);
-         if ($column=="lastmodby")
-            $fieldvalues["lastmodby"]=$USER["id"];
-         if ($column=="lastmoddate")
-            $fieldvalues["lastmoddate"]=time();
+         if ($column=='lastmodby')
+            $fieldvalues['lastmodby']=$USER['id'];
+         if ($column=='lastmoddate')
+            $fieldvalues['lastmoddate']=time();
          if (isset($fieldvalues[$column]) && (strlen($fieldvalues[$column])>0))
             $query.="$column='$fieldvalues[$column]',";
          else
             $query.="$column=NULL,";
       }
-      $column=strtok(",");
+      $column=strtok(',');
    }
-   $query[strrpos($query,",")]=" ";
+   $query[strrpos($query,',')]=' ';
 
    if ($test) {
       $query.=" WHERE id='$id'";
