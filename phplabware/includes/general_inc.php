@@ -5,23 +5,27 @@
 //  !display functions for general types
 
 ///////////////////////////////////////////////////////////
-function user_entry($id)//get the user who made the entry
-	{
-	global $db,$DBNAME,$DB_DESNAME;
-	$ownerid=get_cell($db,$DBNAME,"ownerid","id","$id");
-	$r=$db->Execute("SELECT firstname,lastname,email FROM users WHERE id=$ownerid");
-	if ($r->fields["email"]) 
-		{
-		echo "<tr><th>Submitted by: </th><td><a href='mailto:".$r->fields["email"]."'>";
-		echo $r->fields["firstname"]." ".$r->fields["lastname"]."</a></td>\n";
-		}
-	else {echo "<tr><th>Submitted by: </th><td>".$r->fields["firstname"]." ";echo $r->fields["lastname"] ."</td>\n";}
-    echo "<td>&nbsp;</td>";
-	}
+//// 
+// !get the user who made the entry
+function user_entry($id,$DBNAME) {
+   global $db;
+   $ownerid=get_cell($db,"$DBNAME","ownerid","id","$id");
+   $r=$db->Execute("SELECT firstname,lastname,email FROM users WHERE id=$ownerid");
+   if ($r->fields["email"])  {
+      echo "<tr><th>Submitted by: </th><td><a href='mailto:".$r->fields["email"]."'>";
+      echo $r->fields["firstname"]." ".$r->fields["lastname"]."</a></td>\n";
+   }
+   else {
+      echo "<tr><th>Submitted by: </th><td>".$r->fields["firstname"]." ";
+      echo $r->fields["lastname"] ."</td>\n";
+   }
+   echo "<td>&nbsp;</td>";
+}
+
 ///////////////////////////////////////////////////////////
-function date_entry($id)// Get the date the entry was made
+function date_entry($id,$DBNAME)// Get the date the entry was made
 	{	
-	global $db,$DBNAME,$DB_DESNAME,$system_settings;
+	global $db,$system_settings;
     $date=simple_SQL($db,$DBNAME,"date","id","$id");
     $dateformat=get_cell($db,"dateformats","dateformat","id",$system_settings["dateformat"]);
     $date=date($dateformat,$date);
@@ -175,33 +179,29 @@ function display_table_info($db,$tablename,$real_tablename,$DB_DESNAME,$Fieldsco
 ///////////////////////////////////////////////////////////
 ////
 // !Display a record in a nice format
-function display_record($db,$Allfields,$id,$DBNAME) {
+function display_record($db,$Allfields,$id,$DBNAME,$real_tablename) {
    echo "<table border=0 align='center'>\n";
    echo "<tr align='center'>\n";
    echo "<td colspan=2></td>\n";
-	foreach ($Allfields as $nowfield) 
-		{
-	    //see if display_table is set
-		if ($nowfield[display_table]==Y)
-			{
-			if ($nowfield[datatype]=="text")
-				{
-				echo "<tr>\n";
-				echo "<th>$nowfield[name]</th>\n";
-				echo "<td colspan=2>$nowfield[values]</td></tr>\n";
-				}
-			if ($nowfield[datatype]=="link")
-				{
-				echo "<tr>\n";
-				echo "<th>$nowfield[name]</th>\n";
-				echo "<td colspan=2><a href='$nowfield[values]' target='_blank'>$nowfield[values]</a></td></tr>\n";
-				}
-			if ($nowfield[datatype]=="pulldown")		
-				{
-				// get author value	
-				$text=get_cell($db,$nowfield[ass_t],"type","id",$nowfield[values]);
- 	  		 echo "<th>$nowfield[name]:</th>\n<td>$text<br>";echo "</tr><br>";
-				}
+   foreach ($Allfields as $nowfield) {
+      //see if display_table is set
+      if ($nowfield[display_table]==Y) {
+         if ($nowfield[datatype]=="text"){
+            echo "<tr>\n";
+            echo "<th>$nowfield[name]</th>\n";
+            echo "<td colspan=2>$nowfield[values]</td></tr>\n";
+         }
+	 if ($nowfield[datatype]=="link") {
+            echo "<tr>\n";
+            echo "<th>$nowfield[name]</th>\n";
+            echo "<td colspan=2><a href='$nowfield[values]' target='_blank'>$nowfield[values]</a></td></tr>\n";
+         }
+         if ($nowfield[datatype]=="pulldown") {
+         // get author value	
+            $text=get_cell($db,$nowfield[ass_t],"type","id",$nowfield[values]);
+            echo "<th>$nowfield[name]:</th>\n<td>$text<br>";
+	    echo "</tr><br>";
+         }
 			if ($nowfield[datatype]=="textlong")
 				{
 				$textlarge=nl2br(htmlentities($nowfield[values]));
@@ -223,20 +223,20 @@ function display_record($db,$Allfields,$id,$DBNAME) {
 				}
 			}
 		}
-		user_entry($id);
-		date_entry($id);
-		make_link($id);
+		user_entry($id,$real_tablename);
+		date_entry($id,$real_tablename);
+		make_link($id,$DBNAME);
 		echo "</table>";
 	}
 
 ///////////////////////////////////////////////////////////
-//make a nice link to the record
-function make_link($id)
-	{
-	global $db,$DBNAME,$DB_DESNAME,$system_settings;
-    echo "<tr><th>Link:</th><td colspan=7><a href='$PHP_SELF?tablename=$DBNAME&showid=$id&<?=SID?>";
-    echo "'>".$system_settings["baseURL"].getenv("SCRIPT_NAME")."?tablename=$DBNAME&showid=$id</a></td></tr>\n";
-	}
+////
+// !make a nice link to the record
+function make_link($id,$DBNAME) {
+   global $PHP_SELF,$system_settings;
+   echo "<tr><th>Link:</th><td colspan=7><a href='$PHP_SELF?tablename=$DBNAME&showid=$id&".SID;
+   echo "'>".$system_settings["baseURL"].getenv("SCRIPT_NAME")."?tablename=$DBNAME&showid=$id</a></td></tr>\n";
+}
 
 ///////////////////////////////////////////////////////////
 ////
@@ -507,11 +507,11 @@ function add_g_form ($db,$fields,$field_values,$id,$USER,$PHP_SELF,$system_setti
 
 ////
 // !Shows a page with nice information on the record
-function show_g($db,$fields,$id,$USER,$system_settings,$tablename,$DBNAME,$DB_DESNAME)  {
-   if (!may_read($db,"$DBNAME",$id,$USER))
+function show_g($db,$fields,$id,$USER,$system_settings,$tablename,$real_tablename,$DB_DESNAME)  {
+   if (!may_read($db,$real_tablename,$id,$USER))
        return false;
-   $Allfields=getvalues($db,$DBNAME,$DB_DESNAME,$fields,id,$id);
-   display_record($db,$Allfields,$id,$tablename);
+   $Allfields=getvalues($db,$real_tablename,$DB_DESNAME,$fields,id,$id);
+   display_record($db,$Allfields,$id,$tablename,$real_tablename);
 }
 	
 ////
