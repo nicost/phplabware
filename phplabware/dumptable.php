@@ -24,7 +24,8 @@ if (!$tableid) {
 
 $table_desc=get_cell($db,"tableoftables","table_desc_name","tablename",$tablename);
 $table_label=get_cell($db,"tableoftables","label","tablename",$tablename);
-
+$table_plugin=get_cell($db,"tableoftables","plugin_code","tablename",$tablename);
+echo "$table_plugin";
 
 // open file to write output to
 $outfile=$system_settings["tmpdir"]."/dumptable.php";
@@ -50,7 +51,7 @@ for ($i=0;$i<$hownew;$i++)
 $newtableshortname=substr($newtablename,0,3).$newtableid;
 $newtable_realname=$newtablename."_".$newtableid;
 $newtable_desc_name=$newtable_realname."_desc";
-$r=$db->Execute("INSERT INTO tableoftables (id,sortkey,tablename,shortname,display,permission,custom,real_tablename,table_desc_name,label) VALUES (\'$newtableid\',\'0\',\'$newtablename\',\'$newtableshortname\',\'Y\',\'Users\',NULL,\'$newtable_realname\',\'$newtable_desc_name\',\'$newtablelabel\')");'."\n");
+$r=$db->Execute("INSERT INTO tableoftables (id,sortkey,tablename,shortname,display,permission,custom,real_tablename,table_desc_name,label,plugin_code) VALUES (\'$newtableid\',\'0\',\'$newtablename\',\'$newtableshortname\',\'Y\',\'Users\',NULL,\'$newtable_realname\',\'$newtable_desc_name\',\'$newtablelabel\',\''.$table_plugin.'\')");'."\n");
 
 fwrite ($fp, '$rg=$db->Execute ("SELECT id FROM groups");
 while (!$rg->EOF) {
@@ -156,6 +157,8 @@ fwrite($fp,"
 
 fwrite ($fp,"?>");
 fclose($fp);
+
+echo "<h3>Wrote script to $outfile.</h3>";
 
 printfooter($d, $USER);
 
