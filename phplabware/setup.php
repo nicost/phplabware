@@ -108,7 +108,7 @@ if ($version) {
 
 
       if ($test)
-          echo "<h3 align='center'>Succefully updated the database to version $version_code.</h3>\n";
+          echo "<h3 align='center'>Succesfully updated the database to version $version_code.</h3>\n";
        else 
           echo "<h3 align='center'>Failed to update the database to version $version_code.</h3>\n";
    }
