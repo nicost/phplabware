@@ -422,7 +422,22 @@ else {
    else
       $query = "SELECT $fields FROM antibodies WHERE id IN ($whereclause) ORDER BY date DESC";
    session_register("query");
-   $r=$db->Execute($query);
+
+   // paging stuff
+   session_register('num_p_r');
+   if (isset($HTTP_POST_VARS["num_p_r"]))
+      $num_p_r=$HTTP_POST_VARS["num_p_r"];
+   if (!isset($num_p_r))
+      $num_p_r=10;
+   session_register('curr_page');
+   if (isset($HTTP_POST_VARS["next"]))
+      $curr_page+=1;
+   if (isset($HTTP_POST_VARS["previous"]))
+      $curr_page-=1;
+   if ($curr_page<1)
+      $curr_page=1;
+      
+   $r=$db->PageExecute($query,$num_p_r,$curr_page);
    $rownr=1;
    // print all entries
    while ($r && !($r->EOF)) {
@@ -482,12 +497,28 @@ else {
       $rownr+=1;
    }
 
-   // print footer of table
+   // Add Antibody button
    if (may_write($db,"antibodies",false,$USER)) {
       echo "<tr><td colspan=11 align='center'>";
       echo "<input type=\"submit\" name=\"add\" value=\"Add Antibody\">";
       echo "</td></tr>";
    }
+
+   // next/prvious buttons
+   echo "<tr><td colspan=2 align='center'>";
+   if (!$r->AtFirstPage())
+      echo "<input type=\"submit\" name=\"previous\" value=\"Previous\"></td>\n";
+   else
+      echo "&nbsp;</td>\n";
+   echo "<td colspan=8 align='center'>";
+   echo "<input type='text' name='num_p_r' value='$num_p_r' size=3>";
+   echo "Records per page</td>\n";
+   echo "<td colspan=1 align='center'>";
+   if (!$r->AtLastPage())
+      echo "<input type=\"submit\" name=\"next\" value=\"Next\"></td>\n";
+   else
+      echo "&nbsp;</td>\n";
+   echo "</tr>\n";
 
    echo "</table>\n";
    echo "</form>\n";
