@@ -58,6 +58,32 @@ if (!function_exists("array_key_exists")) {
 
 //////////////////////////////////////////////////////
 ////
+// !Analogue of adodb GetMenu2, but display referenced values (using getvalues)
+function GetValuesMenu ($db,$selectname,$selected,$tablename,$columnname,$whereclause=false,$jscript=false) {
+   global $max_menu_length;
+
+   $tableinfo=new tableinfo($db,$tablename);
+   $r=$db->Execute("SELECT id FROM $tablename $whereclause");
+   while ($r && !$r->EOF) {
+      $values[]=getvalues($db,$tableinfo,$columnname,'id',$r->fields[0]);
+      $r->MoveNext();
+   }
+   $text="<select name='$selectname' $jscript>\n";
+   $text.="<option value=''></option>\n";
+   foreach ($values as $value) {
+      if ($value[0]['recordid']==$selected)
+         $selecttext='selected';
+      else
+         $selecttext=false;
+      $text.="<option $selecttext value='{$value[0]['recordid']}'>{$value[0]['text']}</option>\n";
+   }
+   $text.="</select>\n";
+   return $text;
+}
+
+
+//////////////////////////////////////////////////////
+////
 // !SQL where search that returns a comma delimited string
 function comma_array_SQL_where($db,$tablein,$column,$searchfield,$searchval)
 {
