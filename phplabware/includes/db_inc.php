@@ -1228,7 +1228,8 @@ function searchhelp ($db,$tableinfo,$column,&$columnvalues,$query,$wcappend,$and
       // check whether we already have this table as a join:
       // postgres does not like the same join twice, this also dictates that we can not use multiple foreign keys in a table
       if (!strstr($query[1],$asstableinfo->realname))
-         $query[1].= "LEFT JOIN {$asstableinfo->realname} ON {$tableinfo->realname}.$associated_local_key={$asstableinfo->realname}.$foreign_key ";
+         // although it looks like we link to another column, we really use the id of the associated table only
+         $query[1].= "LEFT JOIN {$asstableinfo->realname} ON {$tableinfo->realname}.$associated_local_key={$asstableinfo->realname}.id ";
       // for nested structure: recursively call searchhelp, this will also yield the real sort or search statement we are inetersted in and will make all nested joints
       $table_where=searchhelp($db,$asstableinfo,$rtdesc->fields[0],&$tablecolumnvalues,false,$wcappend,false);
       $query[1].=$table_where[1];
