@@ -33,4 +33,29 @@ $db->Execute("CREATE INDEX usersxgroups_groupid ON usersxgroups(groupsid)");
 // Make it possible to assign different 'powers' to different groups
 $db->Execute("ALTER TABLE groups ADD COLUMN power int");
 
+// Make a table that allows showing different tables to different groups
+$db->Execute("CREATE TABLE groupxtable_display (
+		groupid int,
+		tableid int,
+		CONSTRAINT gxtspecial PRIMARY KEY (groupid,tableid))");
+$db->Execute("CREATE INDEX groupxtable_display_groupid ON groupxtable_display(groupid)");
+$db->Execute("CREATE INDEX groupxtable_display_tableid ON groupxtable_display(tableid)");
+// Make all current tables visible to all groups
+$rg=$db->Execute("SELECT id FROM groups");
+while (!$rg->EOF) {
+  $ag[]=$rg->fields["id"];
+  $rg->MoveNext();
+}
+$rt=$db->Execute("SELECT id FROM tableoftables");
+while (!$rt->EOF) {
+  $at[]=$rt->fields["id"];
+  $rt->MoveNext();
+}
+foreach ($ag AS $groupid)
+   foreach ($at AS $tableid)
+      $db->Execute("INSERT INTO groupxtable_display VALUES ('$groupid','$tableid')");
+
+// Add some indices to tableoftables
+$db->Execute("CREATE INDEX tableoftables_id ON tableoftables(id)");
+$db->Execute("CREATE INDEX tableoftables_tablename ON tableoftables(tablename)");
 ?>
