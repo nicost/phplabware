@@ -1,7 +1,7 @@
 <?php
 
-// functions.php - sets up database connection
-// functions.php - author: Nico Stuurman <nicost@sourceforge.net>
+// init_inc.php - sets up database connection
+// init_inc.php - author: Nico Stuurman <nicost@sourceforge.net>
   /***************************************************************************
   * Copyright (c) 2001 by Nico Stuurman                                      *
   * ------------------------------------------------------------------------ *

@@ -34,11 +34,16 @@ if ($searchj)
 ////
 // !Checks input data.
 // returns false if something can not be fixed
+// This function queries ncbi and pulls data associated with a paper into the database
 function check_pd_data ($db,&$field_values) {
+   // avoid problems with spaces and the like
+   $field_values["pmid"]=trim(field_values["pmid"]);
+   // no fun without a pmid
    if (!$field_values["pmid"]) {
       echo "<h3>Please enter the Pubmed ID the PDF reprint.</h3>";
       return false;
    }
+   // this will protect quotes in the imported data
    set_magic_quotes_runtime(1);
    // data from pubmed and parse
    $pmid=$field_values["pmid"];
@@ -102,6 +107,7 @@ function check_pd_data ($db,&$field_values) {
       set_magic_quotes_runtime(0);
       return false;
    }
+   // some stuff goes wrong when this remains on
    set_magic_quotes_runtime(0);
    return true;
 }
@@ -109,6 +115,8 @@ function check_pd_data ($db,&$field_values) {
 
 ////
 // !Prints a form with pdf stuff
+// $fields is a comma-delimited list with column names
+// $field_values is a hash with column names as keys
 // $id=0 for a new entry, otherwise it is the id
 function add_pd_form ($db,$fields,$field_values,$id,$USER,$PHP_SELF,$system_settings) {
    if (!may_write($db,"pdfs",$id,$USER)) 

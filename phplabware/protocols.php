@@ -60,6 +60,8 @@ function check_pr_data ($db,&$field_values) {
 
 ////
 // !Prints a form with protocol stuff
+// $fields is a comma-delimited string with column names
+// $field_values is hash with column names as keys
 // $id=0 for a new entry, otherwise it is the id
 function add_pr_form ($db,$fields,$field_values,$id,$USER,$PHP_SELF,$system_settings) {
    if (!may_write($db,"protocols",$id,$USER))
@@ -248,6 +250,8 @@ function show_pr ($db,$fields,$id,$USER,$system_settings) {
 
 ////
 // !Tries to convert a MsWord file into html 
+// It calls wvHtml.  This does not work with wvHtml version 0.7-0.72
+// Version 0.67 is fine....
 // When succesfull, the file is added to the database
 function process_file($db,$fileid,$system_settings) {
    global $HTTP_POST_FILES,$HTTP_POST_VARS;

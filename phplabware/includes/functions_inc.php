@@ -1,7 +1,7 @@
 <?php
 
-// functions.php - Functions for all scripts
-// functions.php - author: Nico Stuurman <nicost@sourceforge.net>
+// functions_inc.php - Functions for all scripts
+// functions_inc.php - author: Nico Stuurman <nicost@sourceforge.net>
   /***************************************************************************
   * Copyright (c) 2001 by Nico Stuurman                                      *
   * ------------------------------------------------------------------------ *

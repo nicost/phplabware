@@ -29,10 +29,9 @@ globalize_vars ($post_vars, $HTTP_POST_VARS);
 $title = "Admin Groups";
 
 ////
-// Adds group to database and dir with groupname in archive dir.
+// !Adds group to database.
 // An error string is returned when problems occur 
 function add_new_group ($db,$groupname) {
-   global $archive_dir;
 
    // check if a groupname is entered
    if ($groupname) {
@@ -56,7 +55,8 @@ function add_new_group ($db,$groupname) {
 }
 
 ////
-// Change that groupname.  On error, it returns an error string
+// !Change that groupname.  
+// On error, returns an error string
 function modify_group ($db, $groupid, $new_name) {
    // Only change the name when there is a new one provided
    if (!$new_name)
@@ -79,7 +79,8 @@ function modify_group ($db, $groupid, $new_name) {
 
 
 ////
-// delete given group
+// !Delete given group
+// The group is only deleted when it has no users
 function delete_group ($db, $groupid) {
 
    // check if a groupname is entered
@@ -116,8 +117,8 @@ function delete_group ($db, $groupid) {
 
 
 ////
-// displays form which allows groupname to be changed
-// if groupid is given this is to modify, otherwise add a new group
+// !Displays form to modify or add a group
+// if groupid is given the groupname will be modified, otherwise add a new group
 function group_form ($groupid, $groupname) {
    global $PHP_SELF;
 ?>
