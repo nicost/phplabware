@@ -362,6 +362,7 @@ Location: ') {
          case 'www.jbc.org':
              $website=read_web_page($host,$getstring,$header,$body,true,5); 
              $link=get_location($header);
+             $link=str_replace('content/full','reprint',$link);
              $link.='.pdf';
              if (do_pdf_download($host,$link,'file')) {
                  return true;
