@@ -108,10 +108,10 @@ function plugin_check_data($db,&$field_values,$table_desc,$modify=false)
       }
       // parse the first line.  1: journal  date;Vol:fp-lp
       $jstart=strpos($line[1],": ");
-      $jend=strpos($line[1],"  ");
+      $jend=strpos($line[1],". ")-1;
       $journal=trim(substr($line[1],$jstart+1,$jend-$jstart));
       $dend=strpos($line[1],";");
-      $date=trim(substr($line[1],$jend+1,$dend-$jend-1));
+      $date=trim(substr($line[1],$jend+2,$dend-$jend-1));
       $year=$field_values["pubyear"]=strtok($date," ");
       $vend=strpos($line[1],":",$dend);
       // if we can not find this, it might not have vol. first/last page
