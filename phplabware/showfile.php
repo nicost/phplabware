@@ -19,10 +19,9 @@
 require("include.php");
 require("includes/db_inc.php");
 
-$get_vars = "id";
-globalize_vars ($get_vars,$HTTP_GET_VARS);
+$id=$HTTP_GET_VARS["id"];
 
-if (!id) {
+if (!$id) {
    echo "<html><h3>404. File not found.</h3></html>";
    exit;
 }
@@ -38,7 +37,9 @@ $filename=$r->fields("filename");
 $filesize=$r->fields("size");
 $mime=$r->fields("mime");
 $tablename=get_cell($db,"tableoftables","tablename","id",$tableid);
-if (!may_read($db,$tableid,$tableitemid,$USER))
+$HTTP_GET_VARS[tablename]=$tablename;
+$tableinfo=new tableinfo($db);
+if (!may_read($db,$tableinfo,$tableitemid,$USER))
       echo "<html><h3>401. Forbidden.</h3></html>";
 $filedir=$system_settings["filedir"];
 // send headers
