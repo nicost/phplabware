@@ -428,29 +428,7 @@ else {
    $pd_curr_page =current_page($pd_curr_page,"pd"); 
 
    // prepare search SQL statement
-   $pd_fieldvars=$HTTP_POST_VARS;
-   $whereclause=may_read_SQL ($db,"pdfs",$USER);
-   if ($search=="Search")
-      $pd_query=search("pdfs",$fields,$HTTP_POST_VARS," id IN ($whereclause) ORDER BY title");
-   elseif (session_is_registered ("pd_query") && isset($HTTP_SESSION_VARS["pd_query"])) {
-      $pd_query=$HTTP_SESSION_VARS["pd_query"];
-      $pd_fieldvars=$HTTP_SESSION_VARS["pd_fieldvars"];
-   }
-   else
-      $pd_query = "SELECT $fields FROM pdfs WHERE id IN ($whereclause) ORDER BY date DESC";
-   $HTTP_SESSION_VARS["pd_query"]=$pd_query;   
-   session_register("pd_query");
-   $HTTP_SESSION_VARS["pd_fieldvars"]=$pd_fieldvars;   
-   session_register("pd_fieldvars");
-
-   // globalize HTTP_POST_VARS 
-   $column=strtok($fields,",");
-   while ($column) {
-      ${$column}=$HTTP_POST_VARS[$column];
-      $column=strtok(",");
-   }
-   // extract variables from session
-   globalize_vars ($fields, $pd_fieldvars);
+   $pd_query=make_search_SQL($db,"pdfs","pd",$fields,$USER,$search);
 
    // loop through all entries for next/previous buttons
    $r=$db->PageExecute($pd_query,$num_p_r,$pd_curr_page);
