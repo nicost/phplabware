@@ -267,6 +267,13 @@ function show_user_form ($type) {
             $checked = "";
          echo "<td><input type='checkbox' name='perms[]' value='$ADMIN' $checked></td></tr>\n";
       }
+      echo "<tr><td>Layout tables:</td>\n";
+      if ($permissions & $LAYOUT)
+         $checked = "checked";
+      else
+         $checked = "";
+      echo "<td><input type='checkbox' name='perms[]' value='$LAYOUT' $checked></td></tr>\n";
+
       if ($permissions & $WRITE )
         $checked = "checked";
       else
