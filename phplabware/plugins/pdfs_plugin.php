@@ -66,10 +66,10 @@ function plugin_check_data($db,&$field_values,$table_desc,$modify=false)
    $journaltable=get_cell($db,$table_desc,"associated_table","columnname","journal");
 
    // some browsers do not send a mime type??  
-   if (is_readable($HTTP_POST_FILES["file"]["tmp_name"][0])) {
-      if (!$HTTP_POST_FILES["file"]["type"][0]) {
+   if (is_readable($HTTP_POST_FILES['file']['tmp_name'][0])) {
+      if (!$HTTP_POST_FILES['file']['type'][0]) {
          // we simply force it to be a pdf risking users making a mess
-         $HTTP_POST_FILES["file"]["type"][0]="application/pdf";
+         $HTTP_POST_FILES['file']['type'][0]='application/pdf';
       }
    }
    // avoid problems with spaces and the like
@@ -166,13 +166,13 @@ function plugin_check_data($db,&$field_values,$table_desc,$modify=false)
    }
 
    // check if there is a file (in database for modify, in _POST_FILES for add)
-   if ($modify) {
+   if ($modify && !isset($HTTP_POST_FILES['file']['tmp_name'][0])) {
       // check in database TO BE DONE!!
       $file_uploaded=false;
-   } elseif (isset($HTTP_POST_FILES['tmp_name'][0])) {
+   } elseif (isset($HTTP_POST_FILES['file']['tmp_name'][0])) {
          $file_uploaded=true;
    }
-
+$file_uploaded=false;
    // some stuff goes wrong when this remains on
    set_magic_quotes_runtime(0);
 
@@ -192,7 +192,8 @@ echo "Calling fetch_pdf with: $pmid and $journal.<br>";
  *
  */
 function fetch_pdf($pmid,$journal)
-{
+{ 
+echo "In Fetch_pdf.<br>";
    include_once('./plugins/elink/eutils_elink_class.php');
    include_once ('./plugins/elink/simple_parser_xml.inc.php');
 
@@ -204,9 +205,20 @@ function fetch_pdf($pmid,$journal)
    $search->setMaxResults(5);
    if ($search->doSearch()) {
       //print_r($search->parser->content);
-      $link=$search->parser->content['eLinkResult']['LinkSet']['IdUrlList']['IdUrlSet']['ObjUrl']['Url'];
-      echo "<br>link: $link.<br>";
-      if (isset ($link)) {
+      // we get the xml file back in a kind of funny array...
+      foreach($search->parser->content as $hit) {
+//print_r($hit);
+         if (isset($hit['eLinkResult']['LinkSet']['IdUrlList']['IdUrlSet']['ObjUrl']['Url'])) {
+            $links[]=$hit['eLinkResult']['LinkSet']['IdUrlList']['IdUrlSet']['ObjUrl']['Url'];
+          }
+      }
+       
+      //$link=$search->parser->content['eLinkResult']['LinkSet']['IdUrlList']['IdUrlSet']['ObjUrl']['Url'];
+      echo "<br>link: ";
+      print_r($links);
+      echo ".<br>";
+      //if (isset ($link)) {
+      foreach($links as $link) {
          // grep the base of the url and handle all know cases accordingly.
          // This is where we'll have to write grabbers for each journal
          preg_match("/^(http:\/\/)?([^\/]+)/i", $link, $matches);
@@ -233,6 +245,11 @@ function fetch_pdf($pmid,$journal)
                // et voila, the url to the pdf:
                $url=str_replace('full','pdf',$url);
                echo "Url is: $host$url.<br>";
+               if (isset($url)) {
+                  if (do_pdf_download($host,$url,'file')) {
+                     return true;
+                  }
+               }
             }
             break;
           }
@@ -241,6 +258,29 @@ function fetch_pdf($pmid,$journal)
    }
 
 }
+
+/**
+ * Given a host and url, downloads a pdf and stores info in HTTP_POST_FILES
+ * 
+ * @author Nico Stuurman
+ */
+function do_pdf_download ($host,$url,$fieldname) 
+{
+   global $HTTP_POST_FILES;
+   // download the pdf, probably using a netsocket so that we can use the header
+
+  // save the file in temp location
+
+  // set:
+   $HTTP_POST_FILES['file']['tmpname'][0]=$tmploc;
+   $HTTP_POST_FILES['file']['name'][0]=$filename;
+   $HTTP_POST_FILES['file']['type'][0]=$mimetype;
+   $HTTP_POST_FILES['file']['size'][0]=$filesize;
+
+}
+
+
+
 
 ////
 // !Overrides the standard 'show record'function
