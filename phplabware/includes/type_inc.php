@@ -59,7 +59,7 @@ function show_type ($db,$table,$name) {
       echo "<td><input type='text' name='type_sortkey[]' value='$sortkey'></td>\n";
       $modstring = "<input type='submit' name='mdtype_$table"."_$rownr' value='Modify'>";
       $delstring = "<input type='submit' name='dltype_$table"."_$rownr' value='Remove' ";
-      $delstring .= "Onclick=\"if(confirm('Are you sure the $name $title ";
+      $delstring .= "Onclick=\"if(confirm('Are you sure the $name \'$type\' ";
       $delstring .= "should be removed?')){return true;}return false;\">";                                           
       echo "<td align='center'>$modstring $delstring</td>\n";
       echo "</tr>\n";
@@ -80,36 +80,41 @@ function show_type ($db,$table,$name) {
 
 ////
 // !Deletes an entry in the type table
-//
+// Currently, there can be only 1 related table ($table2)
+// When more are needed,make $table2 into an array 
 function del_type ($db,$table,$index,$table2) {
    global $HTTP_POST_VARS;
-echo "$table, $index.<br>";
    $id=$HTTP_POST_VARS["type_id"][$index]; 
    if ($id) {
-      $r=$db->query("UPDATE $table SET type='$type',typeshort='$typeshort',
-               sortkey=$sortkey WHERE id=$id"); 
-       if ($r)
-         return ($id);
+      $table_array=explode("_",$table);
+      $r=$db->Execute("UPDATE $table2 SET ".$table_array[1]."='' WHERE ".
+                       $table_array[1]."=$id");
+      if ($r) // keep database structure intact
+         $r=$db->Execute("DELETE FROM $table WHERE id=$id");
+      if ($r)
+         echo "<h3 align='center'>Record removed</h3>\n";
    }
    else
       echo "<h3 align='center'>Please enter all fields</h3>\n";
    return false;
 }
+
 ////
-// !iModifies an entry in the type table
+// !Modifies an entry in the type table
 //
 function mod_type ($db,$table,$index) {
    global $HTTP_POST_VARS;
-echo "$table, $index.<br>";
    $id=$HTTP_POST_VARS["type_id"][$index]; 
    $type=$HTTP_POST_VARS["type_type"][$index]; 
    $typeshort=$HTTP_POST_VARS["type_typeshort"][$index]; 
    $sortkey=(int) $HTTP_POST_VARS["type_sortkey"][$index];
    if ($type && $typeshort && is_int($sortkey)) {
-       $r=$db->query("UPDATE $table SET type='$type',typeshort='$typeshort',
-               sortkey=$sortkey WHERE id=$id"); 
-       if ($r)
+      $r=$db->Execute("UPDATE $table SET type='$type',typeshort='$typeshort',
+              sortkey=$sortkey WHERE id=$id"); 
+      if ($r) {
+         echo "<h3 align='center'>Succesfully changed Record</h3>\n";
          return ($id);
+      }
    }
    else
       echo "<h3 align='center'>Please enter all fields</h3>\n";
