@@ -530,8 +530,7 @@ function may_read_SQL_JOIN ($db,$table,$USER) {
 // Generates a left join for mysql, subselect for postgres
 function may_read_SQL ($db,$table,$tableid,$USER) {
    global $db_type;
-//$db->debug=true;
-   if ($db_type=="mysql" || $db_type="postgres")
+   if ($db_type=="mysql")
       return may_read_SQL_JOIN ($db,$table,$USER);
    else
       return may_read_SQL_subselect ($db,$table,$tableid,$USER);
