@@ -16,17 +16,17 @@
   *  option) any later version.                                              *
   \**************************************************************************/                                                                                     
 
-$userfields ="id,login,firstname,lastname,pwd,groupid,permissions,email,indir,outdir";
+$userfields ='id,login,firstname,lastname,pwd,groupid,permissions,email,indir,outdir';
 
 // main include calls
-require("include.php");
+require('include.php');
 
 // register variables
-$post_vars = "email,id,firstname,lastname,login,me,modify,perms,pwd,pwdcheck,user_group,user_add_groups,";
-$post_vars .= "create,user_add,";
+$post_vars = 'email,id,firstname,lastname,login,me,modify,perms,pwd,pwdcheck,user_group,user_add_groups,';
+$post_vars .= 'create,user_add,';
 
 if (!$type)
-   $type=$HTTP_GET_VARS["type"];
+   $type=$HTTP_GET_VARS['type'];
 globalize_vars ($post_vars, $HTTP_POST_VARS);
 
 
@@ -43,7 +43,7 @@ function check_input () {
          echo "<h5 align='center'>The password should be at least $PWD_MINIMUM characters long.</h5>";
          return false;
       }
-      elseif ($type=="create"&& !$pwd) {
+      elseif ($type=='create' && !$pwd) {
          echo "<h5 align='center'>Please provide a password.</h5>";
          return false;
       } 
@@ -84,10 +84,10 @@ function delete_user ($db, $id) {
       return true;
 
    // check whether this is illegitimate
-   if (! (($USER["permissions"] & $SUPER) || 
-         (($USER["permissions"] & $ADMIN) && ($USER["groupid"]==$user_group) && 
-          ($USER["permissions"] > $original_permissions) ) || 
-         ($USER["id"]==$id) ) ) {
+   if (! (($USER['permissions'] & $SUPER) || 
+         (($USER['permissions'] & $ADMIN) && ($USER['groupid']==$user_group) && 
+          ($USER['permissions'] > $original_permissions) ) || 
+         ($USER['id']==$id) ) ) {
       echo "You are not allowed to do this. <br>";
       return false;
    }
@@ -146,17 +146,17 @@ function modify ($db, $type) {
       $original_permissions=get_cell ($db,"users","permissions","id",$id);
 
    // check whether this is not illegitimate
-   if (! (($USER["permissions"] & $SUPER) || 
-         (($USER["permissions"] & $ADMIN) && ($USER["groupid"]==$user_group) && 
-          ($USER["permissions"] > $original_permissions) ) || 
-         ($USER["id"]==$id) ) ) {
+   if (! (($USER['permissions'] & $SUPER) || 
+         (($USER['permissions'] & $ADMIN) && ($USER['groupid']==$user_group) && 
+          ($USER['permissions'] > $original_permissions) ) || 
+         ($USER['id']==$id) ) ) {
       echo "You are not allowed to do this. <br>";
       return false;
    }
 
    // log some info
-   $theid=$USER["id"];
-   $theip=getenv("REMOTE_ADDR");
+   $theid=$USER['id'];
+   $theip=getenv('REMOTE_ADDR');
    $thedate=time();
 
    if ($type=='modify'  && $id) {
@@ -180,10 +180,10 @@ function modify ($db, $type) {
       else
          echo "Could not modify settings of user: <i>$firstname $lastname</i>.<br>\n";
    }
-   elseif ($type =="create") {
-         $id=$db->GenID("users_id_seq");
+   elseif ($type =='create') {
+         $id=$db->GenID('users_id_seq');
          $pwd=md5($pwd);
-         $new_user_settings["menustyle"]=1;
+         $new_user_settings['menustyle']=1;
          $new_user_settings=serialize($new_user_settings);
          $query = "INSERT INTO users (id, login, pwd, groupid, firstname, lastname, permissions, email, createdbyid, createdbyip, createddate, settings) ";
          $query .= "VALUES('$id','$login','$pwd','$user_group','$firstname','$lastname', '$permissions', '$email', '$theid', '$theip', '$thedate', '$new_user_settings')"; 
@@ -197,7 +197,7 @@ function modify ($db, $type) {
          else
             echo "Failed to add user: <i>$firstname $lastname</i>.<br>\n";
    }
-   elseif ($type=="me"  && $id) {
+   elseif ($type=='me'  && $id) {
       $query = "UPDATE users SET firstname='$firstname', 
                      lastname='$lastname',  
                      email='$email',
@@ -214,10 +214,10 @@ function modify ($db, $type) {
       $result.="\n<table border=0 align='center'>\n  <tr>\n    <td align='center'>\n      ";
       if ($db->Execute($query)) {
          // modify menu view in settings
-         if ($HTTP_POST_VARS["menustyle"]==1)
-            $USER["settings"]["menustyle"]=1;
+         if ($HTTP_POST_VARS['menustyle']==1)
+            $USER['settings']['menustyle']=1;
          else
-            $USER["settings"]["menustyle"]=0;
+            $USER['settings']['menustyle']=0;
          $result.= "Your settings have been modified.<br>\n";
          // superuser can do whatever he please also with herself
          if ($USER['permissions'] & $SUPER) {
@@ -258,10 +258,10 @@ function show_user_form ($type) {
    if (!$groupid) $groupid = $USER["groupid"];
 
    // check whether this is not illegitimate
-   if (! ( ($USER["permissions"] & $SUPER) || 
-         ( ($USER["permissions"] & $ADMIN) && ($USER["groupid"] & $groupid)  
-         && ($USER["permissions"] > $status) ) || 
-            ($USER["id"] == $id) ) ) {
+   if (! ( ($USER['permissions'] & $SUPER) || 
+         ( ($USER['permissions'] & $ADMIN) && ($USER['groupid'] & $groupid)  
+         && ($USER['permissions'] > $status) ) || 
+            ($USER['id'] == $id) ) ) {
 
       echo "<h3 align='center'>You are not allowed to do this. </h3>";
       return false;
@@ -278,45 +278,45 @@ function show_user_form ($type) {
    echo "<td><input type='text' name='lastname' maxlength=50 size=25 value='$lastname'><sup style='color:red'>&nbsp(required)</sup></td></tr>\n";
    echo "<tr><td>Email Address:</td><td><input type='text' name='email' maxlength=150 size=25 value='$email'></td></tr>\n";
 
-   if ($type == "create")
+   if ($type == 'create')
       echo "<tr><td>Login Name (max. 20 characters):</td><td><input type='text' name='login' maxlength=20 size=20 value='$login'><sup style='color:red'>&nbsp(required)</sup></td></tr>\n";
    else {
       echo "<tr><td>Login Name: </td><td>$login</td></tr>\n";
       echo "<input type='hidden' name='login' value='$login'>\n";
    }
-   if ($type=="me") {
+   if ($type=='me') {
       echo "<tr><td>Menu display: </td>";
-      if ($USER["settings"]["menustyle"])
-         $dchecked="checked";
+      if ($USER['settings']['menustyle'])
+         $dchecked='checked';
       else
-         $schecked="checked";
+         $schecked='checked';
       echo "<td><input type='radio' name='menustyle' $schecked value='0'>scattered &nbsp;&nbsp;<input type='radio' name='menustyle' $dchecked value='1'>drop-down</td></tr>";
    }
    
-   if ($USER["permissions"] >= $WRITE && ($system_settings["authmethod"] <> 2
-         || ($type=="me" && $HTTP_SESSION_VARS["authmethod"]=="sql") 
-         || $type=="create") ) {
+   if ($USER['permissions'] >= $WRITE && ($system_settings['authmethod'] <> 2
+         || ($type=='me' && $HTTP_SESSION_VARS['authmethod']=='sql') 
+         || $type=='create') ) {
       echo "<tr><td>Password (max. 20 characters):</td><td><input type='password' name='pwd' maxlength=20 size=20 value=''>";
-      if ($type=="create")
+      if ($type=='create')
          echo "<sup style='color:red'>&nbsp(required)</sup></td></tr>\n";
       echo "<tr><td>Password reType(max. 20 characters):</td><td><input type='password' name='pwdcheck' maxlength=20 size=20 value=''>";
-      if ($type=="create")
+      if ($type=='create')
          echo "<sup style='color:red'>&nbsp(required)</sup></td></tr>\n";
-      if ($type=="modify" || $type=="me")
+      if ($type=='modify' || $type=='me')
          echo "<tr><td colspan=2 align='center'>Leave the password fields blank to keep the current password</td></tr>\n";
-      if ($type=="create" && $system_settings["authmethod"]==2)
+      if ($type=='create' && $system_settings['authmethod']==2)
          echo "<tr><td colspan=2 align='center'>Leave the password fields blank to force PAM-based authentification</td></tr>\n";
    }
 
-   if ($USER["permissions"] & $SUPER) {
+   if ($USER['permissions'] & $SUPER) {
       echo "<tr>\n<td>Primary group:</td>\n<td>";
-      $r = $db->Execute("SELECT name,id FROM groups");
-      echo $r->GetMenu2("user_group",$groupid,false);
+      $r = $db->Execute('SELECT name,id FROM groups');
+      echo $r->GetMenu2('user_group',$groupid,false);
       echo "</td>\n</tr>";
       echo "<tr>\n<td>Additional groups:</td>\n<td>";
       $r=$db->Execute("SELECT groupsid FROM usersxgroups WHERE usersid=$id");
       while ($r && !$r->EOF) {
-         $add_groups[]=$r->fields["groupsid"];
+         $add_groups[]=$r->fields['groupsid'];
 	 $r->MoveNext();
       }
       $r = $db->Execute("SELECT name,id FROM groups");
@@ -331,27 +331,27 @@ function show_user_form ($type) {
    // set default choice 
    if ( !($permissions) )
       $permissions = $ACTIVE | $READ | $WRITE;
-   if ( ($type=="modify" || $type=="create") && 
-        ($USER["permissions"] & $ADMIN) ) {
-      if ($USER["permissions"] & $SUPER) {
+   if ( ($type=='modify' || $type=='create') && 
+        ($USER['permissions'] & $ADMIN) ) {
+      if ($USER['permissions'] & $SUPER) {
          echo "<tr><td>Group-Admin:</td>\n";
          if ($permissions & $ADMIN)
-            $checked = "checked";
+            $checked = 'checked';
          else
-            $checked = "";
+            $checked = '';
          echo "<td><input type='checkbox' name='perms[]' value='$ADMIN' $checked></td></tr>\n";
       }
       echo "<tr><td>Layout tables:</td>\n";
       if ($permissions & $LAYOUT)
-         $checked = "checked";
+         $checked = 'checked';
       else
-         $checked = "";
+         $checked = '';
       echo "<td><input type='checkbox' name='perms[]' value='$LAYOUT' $checked></td></tr>\n";
 
       if ($permissions & $WRITE )
         $checked = "checked";
       else
-         $checked = "";
+         $checked = '';
       echo "<tr><td>Write:</td>\n<td><input type='checkbox' name='perms[]' value='$WRITE' $checked></td></tr>\n";
 
       if ($permissions & $READ)
@@ -382,22 +382,22 @@ function show_user_form ($type) {
 
 /****************************** main script ***********************************/
 
-allowonly($ACTIVE,$USER["permissions"]);
+allowonly($ACTIVE,$USER['permissions']);
 
 
-if ($type=="me") {
-   $title .= "Personal Settings";
+if ($type=='me') {
+   $title .= 'Personal Settings';
    printheader($title);
-   navbar($USER["permissions"]);
+   navbar($USER['permissions']);
    // pull existing data from database
    $query = "SELECT $userfields FROM users WHERE id=$USER[id];";
    $r = $db->Execute($query);
-   $fieldname = strtok ($userfields,",");
+   $fieldname = strtok ($userfields,',');
    while ($fieldname) {
       ${$fieldname}= $r->fields["$fieldname"];
       $fieldname=strtok(","); 
    }
-   show_user_form("me");
+   show_user_form('me');
    printfooter($db,$USER);
    exit();
 }
