@@ -250,6 +250,7 @@ function show_pd ($db,$fields,$id,$USER,$system_settings) {
    }
    // Category
    if ($type2) {
+      $type2=get_cell($db,"pd_type2","type","id",$type2);
       echo "<tr>\n<th>Category</th>\n";
       echo "<td>$type2</td>\n</tr>\n";
    }
