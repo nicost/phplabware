@@ -397,14 +397,11 @@ function rm_columnecg($db,$tablename,$id,$colname,$datatype) {
    // if there are files associated, these have to be deleted as well
    $r=$db->Execute ("SELECT datatype FROM $desc WHERE id='$id'");
    if ($r->fields["datatype"]=="file") {
-      // delete index table
-      $tablefi=$real_tablename."fi_".$id;
-      $db->Execute("DROP TABLE $tablefi");  
       $r=$db->Execute("SELECT id FROM files WHERE tablesfk='$tableid'");
       while (!$r->EOF)
          delete_file($db,$r->fields["id"],$USER);
    } 
-   elseif ($r->fields["datatype"]=="pulldown") {
+   if ($r->fields["datatype"]=="pulldown" || $r->fields["datatype"=="file"]) {
       $rv=$db->Execute("select associated_table from $desc where id ='$id'");
       // $tempTAB=array();
       if ($rv) {
