@@ -222,9 +222,8 @@ function display_table_change($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr
       } else {
          echo "<tr class='row_odd' align='center'>\n";
       }
-      // $js="onChange='document.g_form.chgj_".$id.".value=\"Change\";document.g_form.submit()'";
       foreach($Allfields as $nowfield) {
-         $js="onchange='submit_changes($tableinfo->id,$id,\"{$nowfield['name']}\",document.g_form.{$nowfield['name']}_$id.value)'";
+         $js="onchange='submit_changes($tableinfo->id,$id,\"{$nowfield['name']}\",\"{$nowfield['datatype']}\",this.value)'";
          if ($nowfield['required']=='Y')
             $thestar="<sup style='color:red'>&nbsp;*</sup>";
          else
@@ -238,12 +237,10 @@ function display_table_change($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr
          } elseif ($nowfield['datatype']=='date') {
      	    echo "<td><input type='text' name='{$nowfield['name']}_$id' value='{$nowfield['text']}' size=12 $js>$thestar</td>\n";
          } elseif ($nowfield['datatype']=='int' || $nowfield['datatype']=='sequence') {
-            $js="onchange='if (isAnInt(document.g_form.{$nowfield['name']}_$id.value)) { submit_changes($tableinfo->id,$id,\"{$nowfield['name']}\",document.g_form.{$nowfield['name']}_$id.value); } else {event.returnValue=false;}'";
-            //$js="onchange='var theField=document.g_form.{$nowfield['name']}_$id; if (isAnInt(document.g_form.{$nowfield['name']}_$id.value)) { submit_changes($tableinfo->id,$id,\"{$nowfield['name']}\",theField.value); } else {theField.reset();}'";
+            $js="onchange='if (isAnInt(this.value)) { submit_changes($tableinfo->id,$id,\"{$nowfield['name']}\",\"{$nowfield['datatype']}\",this.value); } else {this.value=\"\"; this.focus(); return false;}'";
      	    echo "<td><input type='text' name='{$nowfield['name']}_$id' value='{$nowfield['values']}' size=8 $js>$thestar</td>\n";
          } elseif ($nowfield['datatype']=='float') {
-            //$js="onchange='var theField=document.g_form.{$nowfield['name']_$id; if (isAFloat(document.g_form.{$nowfield['name']}_$id.value)) { submit_changes($tableinfo->id,$id,\"{$nowfield['name']}\",document.g_form.{$nowfield['name']}_$id.value); } else {event.returnValue=false;}'";
-            $js="onchange='var theField=document.g_form.{$nowfield['name']}_$id; if (isAFloat(theField.value)) { submit_changes($tableinfo->id,$id,\"{$nowfield['name']}\",theField.value); } else {theField.reset();}'";
+            $js="onchange='if (isAFloat(this.value)) { submit_changes($tableinfo->id,$id,\"{$nowfield['name']}\",\"{$nowfield['datatype']}\",this.value); } else {this.value=\"\"; return false;}'";
      	    echo "<td><input type='text' name='{$nowfield['name']}_$id' value='{$nowfield['values']}' size=8 $js>$thestar</td>\n";
          } elseif ($nowfield['datatype']=='textlong') {
      	    echo "<td><textarea name='$nowfield[name]_$id' cols=45 rows=3 $js>$thestar{$nowfield['values']}</textarea></td>\n"; 
@@ -291,7 +288,7 @@ function display_table_change($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr
                echo "<td>{$nowfield['text']} $thestar</td>\n";
          }
 	 elseif ($nowfield['datatype']=='textlarge') {
-	    echo "<td colspan=6><textarea name='{$nowfield['name']}_$id' rows='5' cols='100%'>{$nowfield['values']}</textarea>$thestar</td>\n";
+	    echo "<td colspan=6><textarea name='{$nowfield['name']}_$id' rows='5' cols='100%' $js>{$nowfield['values']}</textarea>$thestar</td>\n";
 	 }
          else
             echo "<td>{$nowfield['text']}</td>\n";
