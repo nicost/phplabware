@@ -44,6 +44,9 @@ $get_vars='tablename,md,showid,edit_type,add,jsnewwindow,modify';
 globalize_vars($get_vars, $HTTP_GET_VARS);
 $post_vars = 'add,md,edit_type,submit,search,searchj,serialsortdirarray';
 globalize_vars($post_vars, $HTTP_POST_VARS);
+// hack
+if (isset($HTTP_POST_VARS['subm']))
+   $submit=$HTTP_POST_VARS['subm'];
 
 $httptitle .=$tableinfo->label;
 

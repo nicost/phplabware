@@ -170,11 +170,11 @@ function display_table_change($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr
             $thestar="<sup style='color:red'>&nbsp;*</sup>";
          else
             $thestar=false;
-         if ( ($nowfield["modifiable"]=='N') || !$may_write) {
+         if ( ($nowfield['modifiable']=='N') || !$may_write) {
             echo "<input type='hidden' name='$nowfield[name]_$id' value='$nowfield[values]'>\n";
             echo "<td>$nowfield[text]</td>\n";
          }
-         elseif ($nowfield[datatype]=='text') {
+         elseif ($nowfield['datatype']=='text') {
      	    echo "<td><input type='text' name='$nowfield[name]_$id' value='$nowfield[values]' size=15 $js>$thestar</td>\n";
          }
          elseif ($nowfield['datatype']=='int' || $nowfield['datatype']=='sequence' || $nowfield['datatype']=='float') {
@@ -227,7 +227,7 @@ function display_table_change($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr
             else
                echo "<td>$nowfield[text] $thestar</td>\n";
          }
-	 elseif ($nowfield[datatype]=="textlarge") {
+	 elseif ($nowfield['datatype']=='textlarge') {
 	    echo "<td colspan=6><textarea name='$nowfield[name]_$id' rows='5' cols='100%'>$nowfield[values]</textarea>$thestar</td>\n";
 	 }
          else
@@ -236,7 +236,7 @@ function display_table_change($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr
 
       echo "<td align='center'>&nbsp;\n";  
       if ($HTTP_SESSION_VARS['javascript_enabled']) {
-         $jscript=" onclick='MyWindow=window.open (\"general.php?tablename=".$tableinfo->name."&showid=$id&jsnewwindow=true\",\"view\",\"scrollbars,resizable,toolbar,status,menubar,width=600,height=400\");MyWindow.focus()'";
+         $jscript=" onclick='MyWindow=window.open (\"general.php?tablename=".$tableinfo->name."&showid=$id&jsnewwindow=true\",\"view\",\"scrollbars,resizable,toolbar,status,menubar,width=700,height=500\");MyWindow.focus()'";
          echo "<input type=\"button\" name=\"view_" . $id . "\" value=\"View\" $jscript>\n";
       }
       else
@@ -317,13 +317,12 @@ function display_table_info($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr_c
       else
          echo "<input type=\"submit\" name=\"view_" . $id . "\" value=\"View\">\n";
       if (may_write($db,$tableinfo->id,$id,$USER)) {
-/* this works, but how do you go back from the modify window to this one???
+// this works, but how do you go back from the modify window to this one???
          if ($HTTP_SESSION_VARS['javascript_enabled']) {
-            $jscript="onclick='MyWindow=window.open (\"general.php?tablename=".$tableinfo->name."&jsnewwindow=true&modify=true&mod_".$id."=Modify\",\"modify\",\"scrollbars,resizable,status,menubar,toolbar,width=600,height=400\")'";
+            $jscript="onclick='MyWindow=window.open (\"general.php?tablename=".$tableinfo->name."&jsnewwindow=true&modify=true&mod_".$id."=Modify\",\"modify\",\"scrollbars,resizable,status,menubar,toolbar,width=700,height=500\");MyWindow.focus()'";
             echo "<input type=\"button\" name=\"mod_" . $id . "\" value=\"Modify\" $jscript>\n";
          }
          else
-*/
             echo "<input type=\"submit\" name=\"mod_" . $id . "\" value=\"Modify\">\n";
          $delstring = "<input type=\"submit\" name=\"del_" . $id . "\" value=\"Remove\" ";
 	 $jstitle=str_replace("'"," ",$title);
@@ -495,7 +494,7 @@ function display_add($db,$tableinfo,$Allfields,$id,$namein,$system_settings) {
    global $PHP_SELF,$md,$max_menu_length,$USER,$LAYOUT,$HTTP_POST_VARS,$HTTP_SESSION_VARS;
    
    $dbstring=$PHP_SELF;$dbstring.="?";$dbstring.="tablename=".$tableinfo->name."&";
-   echo "<form method='post' id='protocolform' enctype='multipart/form-data' name='form' action='$dbstring";
+   echo "<form method='post' id='protocolform' enctype='multipart/form-data' name='subform' action='$dbstring";
 	?><?=SID?>'><?php
 
    if (!$magic)
@@ -587,7 +586,7 @@ function display_add($db,$tableinfo,$Allfields,$id,$namein,$system_settings) {
                echo"<sup style='color:red'>&nbsp;*</sup>";
             echo "</th>\n<td>";
             if ($USER['permissions'] & $LAYOUT) {
-               $jscript=" onclick='MyWindow=window.open (\"general.php?tablename=".$tableinfo->name."&edit_type=$nowfield[ass_t]&jsnewwindow=true&formname=form&selectname=$nowfield[name]".SID."\",\"type\",\"scrollbars,resizable,toolbar,status,width=700,height=500\");MyWindow.focus()'";
+               $jscript=" onclick='MyWindow=window.open (\"general.php?tablename=".$tableinfo->name."&edit_type=$nowfield[ass_t]&jsnewwindow=true&formname=subform&selectname=$nowfield[name]".SID."\",\"type\",\"scrollbars,resizable,toolbar,status,width=700,height=500\");MyWindow.focus()'";
                echo "<input type='button' name='edit_button' value='Edit $nowfield[label]' $jscript><br>\n";
             }
             echo "$text<br>";
@@ -649,7 +648,7 @@ function display_add($db,$tableinfo,$Allfields,$id,$namein,$system_settings) {
                echo"<sup style='color:red'>&nbsp;*</sup>";
             echo "</th>\n<td>";
             if ($USER['permissions'] & $LAYOUT) {
-               $jscript=" onclick='MyWindow=window.open (\"general.php?tablename=".$tableinfo->name."&edit_type=$nowfield[ass_t]&jsnewwindow=true&formname=form&selectname=$nowfield[name]".SID."\",\"type\",\"scrollbars,resizable,toolbar,status,width=700,height=500\");MyWindow.focus()'";
+               $jscript=" onclick='MyWindow=window.open (\"general.php?tablename=".$tableinfo->name."&edit_type=$nowfield[ass_t]&jsnewwindow=true&formname=subform&selectname=$nowfield[name]".SID."\",\"type\",\"scrollbars,resizable,toolbar,status,width=700,height=500\");MyWindow.focus()'";
                echo "<input type='button' name='edit_button' value='Edit $nowfield[label]' $jscript><br>\n";
             }
             echo "$text<br>";
@@ -673,14 +672,17 @@ function display_add($db,$tableinfo,$Allfields,$id,$namein,$system_settings) {
    else $value="Add Record";
 
    // submit and clear buttons
-   echo "<td colspan=7 align='center'><input type='submit' name='submit' value='$value'>\n";
-   echo "&nbsp;&nbsp;";
-   /*
-   if ($HTTP_SESSION_VARS['javascript_enabled'])
-      echo "<input type='button' name='Close' onclick='self.close; window.opener.focus();'value='Cancel'>\n";
-   else
-   */
+   echo "<td colspan=7 align='center'>\n";
+   if ($HTTP_SESSION_VARS['javascript_enabled']) {
+      echo "<input type='hidden' name='subm' value=''>\n";
+      echo "<input type='button' name='sub' value='$value' onclick='document.subform.subm.value=\"$value\"; document.subform.submit(); window.opener.document.g_form.search.value=\"Search\"; setTimeout(\"window.opener.document.g_form.submit(); window.opener.focus(); self.close()\",300);'>\n";
+      echo "<input type='button' name='Close' onclick='self.close(); window.opener.focus();' value='Cancel'>\n";
+   }
+   else {
+      echo "<input type='submit' name='submit' value='$value'>\n";
+      echo "&nbsp;&nbsp;";
       echo "<input type='submit' name='submit' value='Cancel'></td>\n";
+   }
    echo "</tr>\n</table>\n</form>\n";
 
    //end of table
