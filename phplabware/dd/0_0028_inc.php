@@ -17,6 +17,6 @@
 
 
 $id=$db->GenID("tableoftables_id_seq");
-$db->Execute("INSERT INTO tableoftables (id,sortkey,tablename,shortname,Display,Permission,Custom) VALUES($id,'1000','settings','se','Y','Users','users.php?type=me&dummy=true')");
+$db->Execute("INSERT INTO tableoftables (id,sortkey,tablename,shortname,display,permission,custom) VALUES($id,'1000','settings','se','Y','Users','users.php?type=me&dummy=true')");
 
 ?>
