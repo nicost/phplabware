@@ -178,23 +178,20 @@ function sortstring($db,$tableinfo,&$sortdirarray,$sortup,$sortdown) {
 function tableheader ($sortdirarray,$nowfield) {
    $columnname=$nowfield['name'];
    $columnlabel=$nowfield['label'];
-   echo "<th><table align='center' width='100%'><td align='left'>";
-   // the sort buttons don't work for associated tables, so do not show them for associated tables
-//   if ($nowfield['datatype']!='table') {
-      if ($sortdirarray[$columnname]=='asc')
-        $sortupicon='icons/sortup_active.png';
-      else
-         $sortupicon='icons/sortup.png';
-     echo "<input type='image' name='sortup_$columnname' value='$columnlabel' src='$sortupicon' alt='Sort Up'>";
-//   }
+   echo "<th><table align='center' width='100%'><tr><td align='left'>";
+   if ($sortdirarray[$columnname]=='asc') {
+     $sortupicon='icons/sortup_active.png';
+   } else {
+      $sortupicon='icons/sortup.png';
+   }
+   echo "<input type='image' name='sortup_$columnname' value='$columnlabel' src='$sortupicon' alt='Sort Up'>";
    echo "</td><th align='center'>$columnlabel</th><td align='right'>";
-//   if ($nowfield['datatype']!='table') {
-      if ($sortdirarray[$columnname]=='desc')
-         $sortdownicon='icons/sortdown_active.png';
-      else
-         $sortdownicon='icons/sortdown.png';
-      echo "<input type='image' name='sortdown_$columnname' value='$columnlabel' src='$sortdownicon' alt='Sort Down'>";
-//   }
+   if ($sortdirarray[$columnname]=='desc') {
+      $sortdownicon='icons/sortdown_active.png';
+   } else {
+      $sortdownicon='icons/sortdown.png';
+   }
+   echo "<input type='image' name='sortdown_$columnname' value='$columnlabel' src='$sortdownicon' alt='Sort Down'>";
    echo "</td></tr></table></th>\n";
 }
 
@@ -451,11 +448,11 @@ function process_image($db,$fileid,$bigsize)
    
 }
 
-////
-// !Upload files and enters then into table files
-// files should be called file[] in HTTP_POST_FILES
-// filetitle in HTTP_POST_VARS will be inserted in the title field of table files
-// returns id of last uploaded file upon succes, false otherwise
+/**
+ *  !Upload files and enters then into table files
+ *  Filetitle in HTTP_POST_VARS will be inserted in the title field of table files
+  * Returns id of last uploaded file upon succes, false otherwise
+  */
 function upload_files ($db,$tableid,$id,$columnid,$columnname,$USER,$system_settings)
 {
    global $HTTP_POST_FILES,$HTTP_POST_VARS,$system_settings;
@@ -471,15 +468,15 @@ function upload_files ($db,$tableid,$id,$columnid,$columnname,$USER,$system_sett
       echo "You do not have permission to write to table $table.<br>";
       return false;
    }
-   if (isset($HTTP_POST_FILES["$columnname"]['name'][0]) && !$filedir=$system_settings['filedir']) {
+   if (isset($HTTP_POST_FILES[$columnname]['name'][0]) && !$filedir=$system_settings['filedir']) {
       echo "<h3><i>Filedir</i> was not set.  The file was not uploaded. Please contact your system administrator</h3>";
       return false;
    }
-   for ($i=0;$i<sizeof($HTTP_POST_FILES["$columnname"]['name']);$i++) {
-      if (!$fileid=$db->GenID("files_id_seq"))
+   for ($i=0;$i<sizeof($HTTP_POST_FILES[$columnname]['name']);$i++) {
+      if (!$fileid=$db->GenID('files_id_seq'))
          return false;
-      $originalname=$HTTP_POST_FILES["$columnname"]['name'][$i];
-      $mime=$HTTP_POST_FILES["$columnname"]['type'][$i];
+      $originalname=$HTTP_POST_FILES[$columnname]['name'][$i];
+      $mime=$HTTP_POST_FILES[$columnname]['type'][$i];
       // sometimes mime types are not set properly, let's try to fix those
       if (substr($originalname,-4,4)=='.pdf')
          $mime='application/pdf';
@@ -498,12 +495,28 @@ function upload_files ($db,$tableid,$id,$columnid,$columnname,$USER,$system_sett
          $title="'$title'";
       $type=$HTTP_POST_VARS['filetype'][$i];
       // this works asof php 4.02
+if (file_exists($HTTP_POST_FILES[$columnname]['tmp_name'][$i])) {
+}
       if (move_uploaded_file($HTTP_POST_FILES["$columnname"]['tmp_name'][$i],"$filedir/$fileid"."_"."$originalname")) {
+echo "File is OK.<br>";
          $query="INSERT INTO files (id,filename,mime,size,title,tablesfk,ftableid,ftablecolumnid,type) VALUES ($fileid,'$originalname','$mime','$size',$title,'$tableid',$id,'$columnid','$filestype')";
 	 $db->Execute($query);
+      } else {
+         /** 
+          * files that are uploaded by other phplabware code are OK
+          * Move files that are in the phplabware tmpdir also
+          */
+        $dirname=dirname($HTTP_POST_FILES[$columnname]['tmp_name'][$i]);
+        $tmpdir=$system_settings['tmpdir'];
+        if (dirname($HTTP_POST_FILES[$columnname]['tmp_name'][$i]) == $system_settings['tmpdir']) {
+           if (!rename($HTTP_POST_FILES[$columnname]['tmp_name'][$i],"$filedir/$fileid".'_'.$originalname)) {
+              $fileid=false;
+            } else {
+               $query="INSERT INTO files (id,filename,mime,size,title,tablesfk,ftableid,ftablecolumnid,type) VALUES ($fileid,'$originalname','$mime','$size',$title,'$tableid',$id,'$columnid','$filestype')";
+	       $db->Execute($query);
+            }
+         }
       }
-      else
-         $fileid=false;
    }
    return $fileid;
 }
@@ -1072,7 +1085,7 @@ function searchhelp ($db,$tableinfo,$column,&$columnvalues,$query,$wcappend,$and
          // although it looks like we link to another column, we really use the id of the associated table only
          $query[1].= "LEFT JOIN {$asstableinfo->realname} ON {$tableinfo->realname}.$associated_local_key={$asstableinfo->realname}.id ";
       // for nested structure: recursively call searchhelp, this will also yield the real sort or search statement we are inetersted in and will make all nested joints
-      $table_where=searchhelp($db,$asstableinfo,$rtdesc->fields[0],&$tablecolumnvalues,false,$wcappend,false);
+      $table_where=searchhelp($db,$asstableinfo,$rtdesc->fields[0],$tablecolumnvalues,false,$wcappend,false);
       // this can again lead to joining to the same table twice: check!
       if (! strstr($query[1],$table_where[1])) {
          $query[1].=$table_where[1];
