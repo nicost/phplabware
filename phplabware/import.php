@@ -128,7 +128,7 @@ function get_quote ($quote,$quote_type) {
 ////
 // !corrects problems in input data (Removes quotes around text, 
 // checks for ints and floats, quotes text
-function check_input ($fields, $field_types, $nrfields)
+function check_input ($tableinfo, &$fields, $field_types, $field_datatypes, $nrfields)
 {
    for ($i=0;$i<$nrfields;$i++) {
       if ($fields[$i]) {
@@ -136,6 +136,9 @@ function check_input ($fields, $field_types, $nrfields)
          if ($fields[$i]{0}==$fields[$i]{strlen($fields[$i])-1} &&
              ($fields[$i]{0}=="\"" || $fields[$i]{0}=="'") )
             $fields[$i]=substr($fields[$i],1,-1);
+         if ($field_datatypes[$i]=='pulldown') {
+            // see if we have this value already, otherwise make a new entry in the type table....
+         }
          if ($field_types[$i]=='int'){
             $fields[$i]=(int)$fields[$i];
          }
@@ -147,7 +150,7 @@ function check_input ($fields, $field_types, $nrfields)
             $fields[$i]=addslashes($fields[$i]);
       }
    }
-   return $fields;
+   //return $fields;
 }
           
 ////
@@ -180,11 +183,15 @@ if ($HTTP_POST_VARS['assign']=='Import Data') {
    // set longer time-out
    ini_set('max_execution_time','0');
    // get description table name
-   $r=$db->Execute("SELECT table_desc_name,real_tablename,tablename,custom FROM tableoftables WHERE id='$tableid'");
-   $desc=$r->fields[0];
-   $table=$r->fields[1];
-   $table_label=$r->fields[2];
-   $table_custom=$r->fields[3];
+   $tableinfo=new tableinfo($db,false,$tableid);
+   //$r=$db->Execute("SELECT table_desc_name,real_tablename,tablename,custom FROM tableoftables WHERE id='$tableid'");
+   //$desc=$r->fields[0];
+   //$table=$r->fields[1];
+   //$table_label=$r->fields[2];
+   //$table_custom=$r->fields[3];
+   $desc=$tableinfo->desc;
+   $table=$tableinfo->realname;
+   $table_label=$tableinfo->name;
 
    // Columns with datatype 'sequence' are going to be automatically updated:
    // Here we query for them 
@@ -280,7 +287,9 @@ if ($HTTP_POST_VARS['assign']=='Import Data') {
          while ($line=chop(fgets($fh,1000000))) {
             check_line($line,$quote,$delimiter);
             
-            $fields=check_input (explode($quote.$delimiter.$quote,$line),$to_types,$nrfields);
+            //$fields=check_input (explode($quote.$delimiter.$quote,$line),$to_types,$nrfields);
+            $fields=explode($quote.$delimiter.$quote,$line);
+            check_input ($tableinfo,$fields,$to_types,$to_datatypes,$nrfields);
             $worthit=false;
             unset($recordid);
             // if there is a column being used as primary key, we do an SQL
