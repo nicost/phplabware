@@ -12,7 +12,7 @@
   *  option) any later version.                                              *
   \**************************************************************************/                                                                             
 
-$version_code=0.1006;
+$version_code=0.1007;
 $localdir=exec("pwd");
 include ('includes/functions_inc.php');
 if (!file_exists("includes/config_inc.php")) {
@@ -178,6 +178,10 @@ if ($version) {
          $db->Execute("UPDATE dateformats SET dateformat='M d Y' WHERE id=2");
          $db->Execute("UPDATE dateformats SET dateformat='d M Y' WHERE id=3");
          $db->Execute("UPDATE dateformats SET dateformat='d M Y' WHERE id=4");
+      }
+      if ($version<0.1007) {
+         // Converts 'associated'columns in description tables to int
+         include ("dd/0_1007_inc.php");
       }
 
       $query="UPDATE settings SET version='$version_code' WHERE id=1";
