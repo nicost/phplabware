@@ -461,7 +461,7 @@ else {
    $r=$db->PageExecute($ab_query,$num_p_r,$curr_page);
    $rownr=1;
    // print all entries
-   while ($r && !($r->EOF)) {
+   while (!($r->EOF) && $r) {
  
       // get results of each row
       $id = $r->fields["id"];
@@ -527,7 +527,7 @@ else {
 
    // next/previous buttons
    echo "<tr><td colspan=2 align='center'>";
-   if (!$r->AtFirstPage())
+   if ($r && !$r->AtFirstPage())
       echo "<input type=\"submit\" name=\"previous\" value=\"Previous\"></td>\n";
    else
       echo "&nbsp;</td>\n";
@@ -535,7 +535,7 @@ else {
    echo "<input type='text' name='num_p_r' value='$num_p_r' size=3>";
    echo "Records per page</td>\n";
    echo "<td colspan=1 align='center'>";
-   if (!$r->AtLastPage())
+   if ($r && !$r->AtLastPage())
       echo "<input type=\"submit\" name=\"next\" value=\"Next\"></td>\n";
    else
       echo "&nbsp;</td>\n";
