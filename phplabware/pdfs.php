@@ -206,16 +206,7 @@ function report_pdf_addition ($db,$id,$system_settings,$PHP_SELF) {
    if ($fid) {
       $link= $system_settings["baseURL"].getenv("SCRIPT_NAME")."?showid=$id";
       $journal=get_cell($db,"pd_type1","type","id",$r->fields["type1"]);
-      $query="SELECT firstname,lastname,email FROM users WHERE id=".$r->fields["ownerid"];
-      $rr=$db->Execute($query);
-      if ($rr->fields["email"]) {
-         $submitter="<a href='mailto:".$rr->fields["email"]."'>";
-         $submitter.= $rr->fields["firstname"]." ".$rr->fields["lastname"]."</a> ";
-      }
-      else {
-         $submitter=$rr->fields["firstname"]." ";
-         $submitter.=$rr->fields["lastname"] ." ";
-      }
+      $submitter=get_person_link($db,$r->fields["ownerid"]);
       $text="<a href='$link'><b>".$r->fields["title"];
       $text.="</b></a> $journal (".$r->fields["year"]."), <b>".$r->fields["volume"];
       $text.="</b>:".$r->fields["fpage"]."-".$r->fields["lpage"];
@@ -658,6 +649,14 @@ else {
       $r->MoveNext();
       $rownr+=1;
    }
+   
+   // Add Pdf button
+   if (may_write($db,"pdfs",false,$USER)) {
+      echo "<tr><td colspan=9 align='center'>";
+      echo "<input type=\"submit\" name=\"add\" value=\"Add Pdf\">";
+      echo "</td></tr>";
+   }
+
 
    echo "</table>\n";
 
