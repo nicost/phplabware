@@ -47,9 +47,8 @@ function add ($db,$table,$fields,$fieldvalues,$USER) {
             if ($column=="ownerid")
                $fieldvalues["ownerid"]=$USER["id"];
             // set default access rights, 
-            elseif ($column=="access")
-               if (!$fieldvalues["access"])
-                  $fieldvalues["access"]="rw-r-----";
+            elseif ($column=="access") 
+               $fieldvalues["access"]=get_access($fieldvalues);
             // set timestamp
             if ($column=="date") {
                $date=(time());
@@ -81,8 +80,10 @@ function modify ($db,$table,$fields,$fieldvalues,$id,$USER) {
    $query=" UPDATE $table SET ";
      $column=strtok($fields,",");
    while ($column) {
-      if (! ($column=="id" || $column=="date" || $column=="ownerid" || $column=="access")) {
+      if (! ($column=="id" || $column=="date" || $column=="ownerid") ) {
          $test=true;
+         if ($column=="access")
+            $fieldvalues["access"]=get_access($fieldvalues);
          $query.="$column='$fieldvalues[$column]',";
       }
       $column=strtok(",");
@@ -175,6 +176,76 @@ function get_files ($db,$table,$id) {
    }
 }
 
+////
+// !Deletes file identified with id.
+// Checks 'mother table' whether this is allowed
+// Returns name of deleted file on succes
+function delete_file ($db,$fileid,$USER,$global_settings) {
+   $tableid=get_cell($db,"files","tablesfk","id",$fileid);
+   $ftableid=get_cell($db,"files","ftableid","id",$fileid);
+   $filename=get_cell($db,"files","filename","id",$fileid);
+   $table=get_cell($db,"tables","tablename","id",$tableid);
+   if (!may_write($db,$table,$ftableid,$USER))
+      return false;
+   if (unlink($global_settings["filedir"]."/$fileid"."_$filename")) {
+      $db->Execute("DELETE FROM files WHERE id=$fileid");
+      return $filename;
+   }
+}
+
+
+////
+// !Prints a table with access rights
+// input is string as 'rw-rw-rw-'
+// names are same as used in get_access
+function show_access ($db,$table,$id,$USER,$global_settings) {
+   if ($id) {
+      $access=get_cell($db,$table,"access","id",$id);
+      $ownerid=get_cell($db,$table,"ownerid","id",$id);
+      $groupid=get_cell($db,"users","groupid","id",$ownerid);
+      $group=get_cell($db,"groups","name","id",$groupid);
+   }
+   else {
+      $access=$global_settings["access"];
+      $group=get_cell($db,"groups","name","id",$USER["groupid"]);
+   }   
+   echo "<table border=0>\n";
+   echo "<tr><th>Access:</th><th>$group</th><th>Everyone</th></tr>\n";
+   echo "<tr><th>Read</th>\n";
+   if (substr($access,3,1)=="r") $sel="checked"; else $sel=false;
+   echo "<td><input type='checkbox' $sel name='grr' value='&nbsp;'></td>\n";
+   if (substr($access,6,1)=="r") $sel="checked"; else $sel=false;
+   echo "<td><input type='checkbox' $sel name='evr' value='&nbsp;'></td>\n";
+   echo "</tr>\n";
+   echo "<tr><th>Write</th>\n";
+   if (substr($access,4,1)=="w") $sel="checked"; else $sel=false;
+   echo "<td><input type='checkbox' $sel name='grw' value='&nbsp;'></td>\n";
+   if (substr($access,7,1)=="w") $sel="checked"; else $sel=false;
+   echo "<td><input type='checkbox' $sel name='evw' value='&nbsp;'></td>\n";
+   echo "</tr>\n";
+   echo "</table>\n";
+}
+
+
+////
+// !Returns a formatted access strings given an associative array
+// with 'grr','evr','grw','evw' as keys
+function get_access ($fieldvalues) {
+   global $system_settings;
+
+   if (!$fieldvalues)
+      return $system_settings["access"];
+   $access="rw-------";
+   if ($fieldvalues["grr"]) 
+      $access=substr_replace($access,"r",3,1);
+   if ($fieldvalues["evr"]) 
+      $access=substr_replace($access,"r",6,1);
+   if ($fieldvalues["grw"]) 
+      $access=substr_replace($access,"w",4,1);
+   if ($fieldvalues["evw"]) 
+      $access=substr_replace($access,"w",7,1);
+   return $access;
+}
 
 
 ////
@@ -288,22 +359,31 @@ function may_write ($db,$table,$id,$USER) {
    if ( ($USER["permissions"] & $WRITE) && (!$id))
       return true;
    $usergroup=get_cell($db,"users","groupid","id",$USER["id"]);
-   $r=$db->Execute("SELECT groupid FROM users LEFT JOIN $table ON 
-                    users.id=$table.ownerid WHERE antibodies.id=$id");
-   $ownergroup=$r->fields["groupid"];
+   $ownerid=get_cell($db,$table,"ownerid","id",$id);
+   $ownergroup=get_cell($db,"users","groupid","id",$ownerid);
+  // $r=$db->Execute("SELECT groupid FROM users LEFT JOIN $table ON 
+  //                  users.id=$table.ownerid WHERE $table.id=$id");
+   //$ownergroup=$r->fields["groupid"];
    if ($USER["permissions"] & $ADMIN) {
       if ($usergroup==$ownergroup)
          return true;
    }
-   if ($id) {
+   if ( ($USER["permissions"] & $WRITE) && $id) {
       $userid=$USER["id"];
+      // user write access
       if ($r=$db->Execute("SELECT * FROM $table WHERE id=$id AND
             ownerid=$userid AND SUBSTRING(access FROM 2 FOR 1)='w'")) 
          if (!$r->EOF)
             return true;
+      // group write access
       if ($r=$db->Execute("SELECT * FROM $table WHERE id=$id AND
-            ownerid=$userid AND SUBSTRING(access FROM 5 FOR 1)='w'")) 
+            SUBSTRING(access FROM 5 FOR 1)='w'")) 
          if (!$r->EOF && ($usergroup==$ownergroup) )
+            return true;
+      // world write access
+      if ($r=$db->Execute("SELECT * FROM $table WHERE id=$id AND
+            SUBSTRING(access FROM 8 FOR 1)='w'") ) 
+         if (!$r->EOF) 
             return true;
    }
 }
