@@ -17,10 +17,10 @@
 ini_set('max_execution_time','480');
 
 /// main include thingies
-require('include.php');
-require('includes/db_inc.php');
-require('includes/general_inc.php');
-require('includes/report_inc.php');
+require('./include.php');
+require('./includes/db_inc.php');
+require('./includes/general_inc.php');
+require('./includes/report_inc.php');
 
 $tableinfo=new tableinfo($db);
 

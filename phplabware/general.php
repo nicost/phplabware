@@ -14,9 +14,9 @@
   \**************************************************************************/
 
 /// main include thingies
-require('include.php');
-require('includes/db_inc.php');
-require('includes/general_inc.php');
+require('./include.php');
+require('./includes/db_inc.php');
+require('./includes/general_inc.php');
 
 $tableinfo=new tableinfo($db);
 
@@ -226,27 +226,27 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
 
 // Add/modify/delete pulldown menu items 
    if (substr($key, 0, 7) == 'addtype' && ($USER['permissions'] & $LAYOUT)) {
-      printheader($httptitle,'','includes/js/tablemanage.js');
+      printheader($httptitle,'','./includes/js/tablemanage.js');
       $modarray = explode('_', $key);
-      include('includes/type_inc.php');
+      include('./includes/type_inc.php');
       add_type($db,$edit_type);
       show_type($db,$edit_type,'',$tableinfo->name);	
       printfooter();
       exit();
    }
    if (substr($key, 0, 6) == 'mdtype' && ($USER['permissions'] & $LAYOUT)) {
-      printheader($httptitle,"","includes/js/tablemanage.js");
+      printheader($httptitle,"",'./includes/js/tablemanage.js');
       $modarray = explode("_", $key);
-      include("includes/type_inc.php");
+      include('./includes/type_inc.php');
       mod_type($db,$edit_type,$modarray[1]);
       show_type($db,$edit_type,"",$tableinfo->name);
       printfooter();
       exit();
    }
    if (substr($key, 0, 6) == 'dltype' && ($USER['permissions'] & $LAYOUT)) {
-      printheader($httptitle,"","includes/js/tablemanage.js");
-      $modarray = explode("_", $key);
-      include('includes/type_inc.php');
+      printheader($httptitle,"",'./includes/js/tablemanage.js');
+      $modarray = explode('_', $key);
+      include('./includes/type_inc.php');
       del_type($db,$edit_type,$modarray[1],$tableinfo);
       show_type($db,$edit_type,"",$tableinfo->name);
       printfooter();
@@ -256,7 +256,7 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
 
 if ($edit_type && ($USER['permissions'] & $LAYOUT)) {
    printheader($httptitle);
-   include('includes/type_inc.php');
+   include('./includes/type_inc.php');
    $assoc_name=get_cell($db,$tableinfo->desname,label,associated_table,$edit_type);
    show_type($db,$edit_type,$assoc_name,$tableinfo->name);
    printfooter();

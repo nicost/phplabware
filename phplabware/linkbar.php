@@ -14,11 +14,11 @@
   *  option) any later version.                                              *
   \**************************************************************************/
 
-require("include.php");
-require("includes/db_inc.php");
-require("includes/general_inc.php");
-require("includes/tablemanage_inc.php");
-include ('includes/defines_inc.php');
+require('./include.php');
+require('./includes/db_inc.php');
+require('./includes/general_inc.php');
+require('./includes/tablemanage_inc.php');
+include ('./includes/defines_inc.php');
 
 
 printheader($httptitle);
@@ -32,38 +32,38 @@ if (!($USER["permissions"] & $SUPER)) {
 
 
 while((list($key, $val) = each($HTTP_POST_VARS))) {
-  if ($key== "linkdisplay"){
-      $linkch=$HTTP_POST_VARS["link_display"];
+  if ($key== 'linkdisplay'){
+      $linkch=$HTTP_POST_VARS['link_display'];
       $r=$db->Execute("UPDATE tableoftables SET display = '$linkch' where tablename = 'linkbar'");
    }
-   if (substr($key, 0, 7) == "addlink") {
-      $newlabel=$HTTP_POST_VARS["newlink_label"];
-      $newurl=$HTTP_POST_VARS["newlink_url"];
-      $newdis=$HTTP_POST_VARS["newlink_display"];
-      $newtarget=$HTTP_POST_VARS["newlink_target"];
-      $newsort=$HTTP_POST_VARS["newlink_sortkey"];
-      $linkbarid=$db->GenID("linkbar_id_seq");
+   if (substr($key, 0, 7) == 'addlink') {
+      $newlabel=$HTTP_POST_VARS['newlink_label'];
+      $newurl=$HTTP_POST_VARS['newlink_url'];
+      $newdis=$HTTP_POST_VARS['newlink_display'];
+      $newtarget=$HTTP_POST_VARS['newlink_target'];
+      $newsort=$HTTP_POST_VARS['newlink_sortkey'];
+      $linkbarid=$db->GenID('linkbar_id_seq');
       $r=$db->Execute("Insert into linkbar(id,label,linkurl,sortkey,display,target) values('$linkbarid','$newlabel','$newurl','$newsort','$newdis','$newtarget')");
    }
-   if (substr($key, 0, 7) == "modlink") {
-      $modarray = explode("_", $key);
-      $newid=$HTTP_POST_VARS["link_id"][$modarray[1]];
-      $newlabel=$HTTP_POST_VARS["link_label"][$modarray[1]];
-      $newurl=$HTTP_POST_VARS["link_url"][$modarray[1]];
-      $newdis=$HTTP_POST_VARS["link_display"][$modarray[1]];
-      $newtarget=$HTTP_POST_VARS["link_target"][$modarray[1]];
-      $newsort=$HTTP_POST_VARS["link_sortkey"][$modarray[1]];
+   if (substr($key, 0, 7) == 'modlink') {
+      $modarray = explode('_', $key);
+      $newid=$HTTP_POST_VARS['link_id'][$modarray[1]];
+      $newlabel=$HTTP_POST_VARS['link_label'][$modarray[1]];
+      $newurl=$HTTP_POST_VARS['link_url'][$modarray[1]];
+      $newdis=$HTTP_POST_VARS['link_display'][$modarray[1]];
+      $newtarget=$HTTP_POST_VARS['link_target'][$modarray[1]];
+      $newsort=$HTTP_POST_VARS['link_sortkey'][$modarray[1]];
       $r=$db->Execute("UPDATE  linkbar SET label = '$newlabel',linkurl='$newurl',sortkey='$newsort',display='$newdis',target='$newtarget' where id = '$newid'");
    }
-   if (substr($key, 0, 7) == "dellink") {
-      $modarray = explode("_", $key);
-      $newid=$HTTP_POST_VARS["link_id"][$modarray[1]];
-      $newlabel=$HTTP_POST_VARS["link_label"][$modarray[1]];
+   if (substr($key, 0, 7) == 'dellink') {
+      $modarray = explode('_', $key);
+      $newid=$HTTP_POST_VARS['link_id'][$modarray[1]];
+      $newlabel=$HTTP_POST_VARS['link_label'][$modarray[1]];
       $r=$db->Execute("Delete from linkbar where id='$newid' and label='$newlabel'");
    }     
 }
 
-navbar($USER["permissions"]);
+navbar($USER['permissions']);
 
 // user based links section
 

@@ -214,7 +214,7 @@ function add ($db,$table,$fields,$fieldvalues,$USER,$tableid) {
          echo "<h3 align='center'>That record was already uploaded.</h3>\n";
          return -1;
       }
-   include('includes/defines_inc.php');
+   include('./includes/defines_inc.php');
    if (!($USER['permissions'] & $WRITE) )
       return false;
    // generate the new ID
@@ -736,7 +736,7 @@ function get_access ($fieldvalues,$column) {
 // !Returns an SQL SELECT statement with ids of records the user may see
 // Since it uses subqueries it does not work with MySQL
 function may_read_SQL_subselect ($db,$table,$tableid,$USER,$clause=false) {
-   include_once ('includes/defines_inc.php');
+   include_once ('./includes/defines_inc.php');
    $query="SELECT id FROM $table ";
    // don't know why, but variables defined in defines_in.php are not know here
    // bug in my php version?
@@ -791,7 +791,7 @@ function make_SQL_ids ($r,$ids,$field='id') {
 // Works with MySQL but not with early postgres 7 versions (current ones should
 // work)
 function may_read_SQL_JOIN ($db,$table,$USER) {
-   include ('includes/defines_inc.php');
+   include ('./includes/defines_inc.php');
    if (!($USER['permissions'] & $SUPER)) {
       $query="SELECT id FROM $table ";
       $usergroup=$USER['groupid'];
@@ -885,7 +885,7 @@ function may_read ($db,$tableinfo,$id,$USER) {
 ////
 // !checks if this user may write/modify/delete these data
 function may_write ($db,$tableid,$id,$USER) {
-   include ('includes/defines_inc.php');
+   include ('./includes/defines_inc.php');
    
    $table=get_cell($db,'tableoftables','real_tablename','id',$tableid);
    if ($USER['permissions'] & $SUPER)
@@ -1630,7 +1630,7 @@ function make_search_SQL($db,$tableinfo,$fields,$USER,$search,$searchsort,$where
 // !Checks whether a user has access to a given table
 //
 function may_see_table($db,$USER,$tableid) {
-   include ('includes/defines_inc.php');
+   include ('./includes/defines_inc.php');
    // Sysadmin may see it all
    if ($USER['permissions'] & $SUPER)
       return true;

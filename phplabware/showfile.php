@@ -16,8 +16,8 @@
 
 
 // main include thingies
-require('include.php');
-require('includes/db_inc.php');
+require('./include.php');
+require('./includes/db_inc.php');
 
 $id=$HTTP_GET_VARS['id'];
 $type=$HTTP_GET_VARS['type'];

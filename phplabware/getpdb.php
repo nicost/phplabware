@@ -1,8 +1,8 @@
 <?php
-require("include.php");
+require('./include.php');
 
 // register variables
-$pdbid=$HTTP_POST_VARS["pdbid"];
+$pdbid=$HTTP_POST_VARS['pdbid'];
 
 globalize_vars($post_vars, $HTTP_POST_VARS,$DBNAME,$DB_DESNAME,$system_settings);
 printheader($httptitle);

@@ -501,7 +501,7 @@ function test_report($db,$offset,$tablename) {
          $template.=fgets($tp,64000);
       fclose($tp);
    }
-   require("includes/report_inc.php");
+   require('./includes/report_inc.php');
    $report=make_report($db,$template,$Allfields,$tableinfo,1);
    return $report;
    

@@ -15,7 +15,7 @@
 *  option) any later version.                                              *
 \**************************************************************************/                                                                                     
 
-require ('include.php');
+require ('./include.php');
 
 printheader($httptitle,false);
 navbar ($USER['permissions']);

@@ -15,11 +15,11 @@
   \**************************************************************************/
 
 
-require('include.php');
-require('includes/db_inc.php');
-require('includes/general_inc.php');
-require('includes/tablemanage_inc.php');
-include ('includes/defines_inc.php');
+require('./include.php');
+require('./includes/db_inc.php');
+require('./includes/general_inc.php');
+require('./includes/tablemanage_inc.php');
+include ('./includes/defines_inc.php');
 
 $editfield=$HTTP_GET_VARS['editfield'];
 $editreport=$HTTP_GET_VARS['editreport'];
@@ -38,7 +38,7 @@ reset($HTTP_POST_VARS);
 
 $permissions=$USER['permissions'];
 if ($addcol_datatype=='table') 
-   $jsfile="includes/js/tablemanage.js";
+   $jsfile='./includes/js/tablemanage.js';
 printheader($httptitle,false,$jsfile);
 
 if (!($permissions & $SUPER)) {

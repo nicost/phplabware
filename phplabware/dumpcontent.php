@@ -17,9 +17,9 @@
 // this may take a long time.  Simply kill me if I hang
 ini_set('max_execution_time','0');
 
-require ('include.php');
-require ('includes/db_inc.php');
-require ('includes/general_inc.php');
+require ('./include.php');
+require ('./includes/db_inc.php');
+require ('./includes/general_inc.php');
 
 printheader($httptitle,false);
 navbar ($USER['permissions']);

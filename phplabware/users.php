@@ -19,7 +19,7 @@
 $userfields ='id,login,firstname,lastname,pwd,groupid,permissions,email,indir,outdir';
 
 // main include calls
-require('include.php');
+require('./include.php');
 
 // register variables
 $post_vars = 'email,id,firstname,lastname,login,me,modify,perms,pwd,pwdcheck,user_group,user_add_groups,';
@@ -76,7 +76,7 @@ function tablestring ($db) {
 function delete_user ($db, $id) {
    global $USER;
 
-   include ('includes/defines_inc.php');
+   include ('./includes/defines_inc.php');
    $tables=tablestring($db);
    $original_permissions=get_cell ($db,'users','permissions','id',$id);
    $original_login=get_cell($db,'users','login','id',$id);
@@ -141,7 +141,7 @@ function modify ($db, $type) {
       $permissions=0;
 
    // include here, to avoid being overwritten by post_vars 
-   include ('includes/defines_inc.php');
+   include ('./includes/defines_inc.php');
 
    // check whether status of the victim is smaller than 
    //  the current users status
@@ -245,7 +245,7 @@ function show_user_form ($type) {
    global $userfields, $HTTP_SERVER_VARS, $perms, $USER, $db, $system_settings;
    global $HTTP_SESSION_VARS;
 
-   include ('includes/defines_inc.php');
+   include ('./includes/defines_inc.php');
  
    // read in essential variables
    $fieldname = strtok ($userfields,",");

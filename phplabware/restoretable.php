@@ -15,12 +15,12 @@
   *  option) any later version.                                              *
   \**************************************************************************/                                                                                     
 
-require ('include.php');
+require ('./include.php');
 
 printheader($httptitle,false);
 navbar ($USER['permissions']);
 
-if (!$USER["permissions"] & $SUPER) {
+if (!$USER['permissions'] & $SUPER) {
    echo "<h3 align='center'>Sorry, this page is not for you.</h3>\n";
    printfooter($db, $USER);
 }

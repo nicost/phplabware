@@ -249,7 +249,7 @@ function get_person_link ($db,$id) {
 ////
 // !Prints a table with usefull links 
 function navbar($permissions) {
-   include ('includes/defines_inc.php');
+   include ('./includes/defines_inc.php');
    global $db, $USER, $HTTP_SESSION_VARS; 
    if ($HTTP_SESSION_VARS['javascript_enabled'] && $USER['settings']['menustyle']) 
       $mode='menu';
@@ -468,7 +468,7 @@ if ($HTTP_SESSION_VARS['javascript_enabled'] && $USER['settings']['menustyle']) 
    echo "\n<script language='Javascript'>\n<!--\n";
    if ($jsfile && is_readable($jsfile))
       readfile($jsfile);
-   readfile("includes/js/linkmenu.js");
+   readfile('./includes/js/linkmenu.js');
    echo "\n// End Javascript -->\n</script>\n\n";
    $mode='menu';
 } 

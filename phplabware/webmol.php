@@ -6,7 +6,7 @@
 // This code is Free Software and licensed under the GPL version 2 or later (your choice).  Do some cool stuff with it!
 
 
-require ("include.php");
+require ("./include.php");
 // pdbid can be transfered as a GET or POST variable
 $pdbid=$HTTP_GET_VARS["pdbid"];
 if (!$pdbid) 

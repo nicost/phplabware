@@ -15,11 +15,11 @@
   \**************************************************************************/
 
 
-require('include.php');
-require('includes/db_inc.php');
-require('includes/general_inc.php');
-require('includes/tablemanage_inc.php');
-include ('includes/defines_inc.php');
+require('./include.php');
+require('./includes/db_inc.php');
+require('./includes/general_inc.php');
+require('./includes/tablemanage_inc.php');
+include ('./includes/defines_inc.php');
 
 $post_vars='delimiter,delimiter_type,quote,quote_type,tableid,nrfields,pkey,pkeypolicy,skipfirstline,tmpfile,ownerid,localfile';
 globalize_vars($post_vars, $HTTP_POST_VARS);
