@@ -492,18 +492,18 @@ else {
    // get current page
    $pd_curr_page =current_page($pd_curr_page,"pd"); 
 
+   // and a list with all records we may see
+   $listb=may_read_SQL($db,"pdfs",$tableid,$USER,"tempb");
+	     
    // prepare search SQL statement
-   $pd_query=make_search_SQL($db,"pdfs","pd",$tableid,$fields,$USER,$search,$sortstring);
+   $pd_query=make_search_SQL($db,"pdfs","pd",$tableid,$fields,$USER,$search,$sortstring,$listb["sql"]);
 
    // get the total number of hits
-   $r=$db->CacheExecute(1,$pd_query);
-   $numrows=$r->RecordCount();
+   $r_master=$db->Execute($pd_query);
+   $numrows=$r_master->RecordCount();
 
-   // loop through all entries for next/previous buttons
-   $r=$db->CachePageExecute(1,$pd_query,$num_p_r,$pd_curr_page);
-   while (!($r->EOF) && $r) {
-      $r->MoveNext();
-   }
+   first_last_page ($r_master, $pd_curr_page,$num_p_r,$numrows);
+
    // print form
 ?>
 <form name='pd_form' method='post' action='<?php echo $PHP_SELF?>?<?=SID?>'>  
@@ -515,12 +515,9 @@ else {
    echo "<table border=0 width='50%' align='center'>\n<tr>\n";
    if (may_write($db,"pdfs",false,$USER)) 
       echo "<td align='center'><a href='$PHP_SELF?add=Add PDF$sid'>Add PDF</a></td>\n";
-   //echo "<td align='center'><a href='$PHP_SELF?search=Show%20All$sid'>Show All</a></td>\n</tr>\n";
-   //echo "<td align='center'><button type='submit' name='search' value='Show All'>";
-   //echo "Show All</button></td></tr>\n";
    echo "</table>\n";
 
-   next_previous_buttons($r,true,$num_p_r,$numrows,$pd_curr_page);
+   next_previous_buttons($r_master,true,$num_p_r,$numrows,$pd_curr_page);
 
    // print header of table
    echo "<table border='1' align='center'>\n";
@@ -532,11 +529,9 @@ else {
    // javascript that submit the form with the search button when a selects was chosen
    $jscript="onChange='document.pd_form.searchj.value=\"Search\"; document.pd_form.submit()'";
    echo "<input type='hidden' name='searchj' value=''>\n";
-   // get a list with ids we may see
-   $r=$db->CacheExecute(1,$pd_query);
-   $lista=make_SQL_csf ($r,false,"id",$nr_records);
-   // and a list with all records we may see
-   $listb=may_read_SQL($db,"pdfs",$tableid,$USER);
+   
+   // get a list with ids we may see, $listb has all ids we may see
+   $lista=make_SQL_csf ($r_master,false,"id",$nr_records);
 
    // show title we may see, when too many, revert to text box
 /*   if ($title) $list=$listb; else $list=$lista;
@@ -690,7 +685,7 @@ else {
    echo "</table>\n";
 
    // next/previous buttons
-   next_previous_buttons($r);
+   next_previous_buttons($r_master);
 
    echo "</form>\n";
 
