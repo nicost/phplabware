@@ -119,40 +119,64 @@ function delete ($db, $table, $id, $USER) {
 
 
 ////
-// !Upload files and enters then into table $tablexfiles
+// !Upload files and enters then into table files
 // files should be called file[] in HTTP_POST_FILES
-// filetitle in HTTP_POST_VARS will be inseret in the title field of table files
+// filetitle in HTTP_POST_VARS will be inserited in the title field of table files
 function upload_files ($db,$table,$id,$USER,$system_settings) {
    global $HTTP_POST_FILES,$HTTP_POST_VARS;
-  if (!$db && $table && $id)
+   if (!$db && $table && $id)
       return false;
    if (!may_write($db,$table,$id,$USER))
       return false;
-   if (!$filedir=$system_settings["filedir"])
+   if (!$filedir=$system_settings["filedir"]) 
       return false;
-print_r($HTTP_POST_FILES); 
-echo "<br>\n";
    for ($i=0;$i<sizeof($HTTP_POST_FILES);$i++) {
-echo "$i.<br>";
       if (!$fileid=$db->GenID("files_id_seq"))
          return false;
       $originalname=$HTTP_POST_FILES["file"]["name"][$i];
-echo "$originalname.<br>";
       $mime=$HTTP_POST_FILES["file"]["type"][$i];
+      // work around php bug??  
+      $mime=strtok ($mime,";");
       $size=$HTTP_POST_FILES["file"]["size"][$i];
       $title=$HTTP_POST_VARS["filetitle"][$i];
       // this works asof php 4.02
-      if (move_uploaded_file($HTTP_POST_FILES["file"]["tmp_name"][$i],"$filedir/$fileid"."$originalname")) {
-$db->debug=true;
-         $query="INSERT INTO files (id,filename,mime,size,title) VALUES ($fileid,'$originalname','$mime','$size','$title')";
-	 $db->Execute($query);
-	 // couple to original entry
-	 $query="INSERT INTO $table"."xfiles ($table"."id,filesid) VALUES ($id,$fileid)";
+      if (move_uploaded_file($HTTP_POST_FILES["file"]["tmp_name"][$i],"$filedir/$fileid"."_"."$originalname")) {
+         $tablesid=get_cell($db,"tables","id","tablename",$table);
+         $query="INSERT INTO files (id,filename,mime,size,title,tablesfk,ftableid) VALUES ($fileid,'$originalname','$mime','$size','$title','$tablesid',$id)";
 	 $db->Execute($query);
       }
    }
    return true;
 }
+
+
+////
+// !returns an array with id,name,title,and hyperlink to all
+// files associated with the given record
+function get_files ($db,$table,$id) {
+   $tableid=get_cell($db,"tables","id","tablename",$table);
+   $r=$db->Execute("SELECT id,filename,title FROM files WHERE tablesfk=$tableid AND ftableid=$id");
+   if ($r && !$r->EOF) {
+      $i=0;
+      $sid=SID;
+      while (!$r->EOF) {
+         $filesid=$files[$i]["id"]=$r->fields("id");
+         $filesname=$files[$i]["name"]=$r->fields("filename");
+         $filestitle=$files[$i]["title"]=$r->fields("title");
+         if ($filestitle)
+            $text=$filestitle;
+         else
+             $text=$filesname;
+         $files[$i]["link"]="<a href='showfile.php?id=$filesid&name=$filesname&$sid'>$text</a>\n";
+         $r->MoveNext();
+         $i++;
+      }
+   return $files;
+   }
+}
+
+
+
 ////
 // !Returns an SQL SELECT statement with ids of records the user may see
 // Since it uses subqueries it does not work with MySQL
@@ -238,6 +262,8 @@ function may_read_SQL ($db,$table,$USER) {
    else
       return may_read_SQL_subselect ($db,$table,$USER);
 }
+
+
 ////
 // !determines whether or not the user may read this record
 function may_read ($db,$table,$id,$USER) {
