@@ -626,13 +626,15 @@ function create_new_table($db,$DBNAME){
 	}
 
 /////////////////////////////////////////////////////////////////////////
-////   deletes a general table
+////  
+// !deletes a general table
 function del_table($db,$tablename,$id) {
-   global $string;
+   global $HTTP_POST_VARS, $string;
+
    $modarray = explode("_", $key);
    $table=$modarray[1]."_".$modarray[2];
-   global $HTTP_POST_VARS;
-   $desc=$tablename;$desc.="_desc";
+   $real_tablename=$id."_$tablename";
+   $desc=$real_tablename."_desc";
    $r=$db->Execute("select associated_table from $desc");
    $tempTAB=array();
 	if ($r)
@@ -645,47 +647,45 @@ function del_table($db,$tablename,$id) {
 			}
  	   }
 	$DD3=$table; $DD3.="_id_seq";
-	$r=$db->Execute("Drop table if exists $tablename");
+	$r=$db->Execute("Drop table if exists $real_tablename");
 	$r=$db->Execute("Drop table if exists $desc");
 	$r=$db->Execute("Drop table if exists $DD3");
 	$r=$db->Execute("Delete from tableoftables WHERE id=$id");
 	if ($r){$string="Table $tablename has been deleted";}
-	return false;
+	return $string;
 }
 
 /////////////////////////////////////////////////////////////////////////
 ////   
 // !creates a general table 
-function add_table ($db,$tablename,$sortkey) 
-	{
-	global $string;
-	$string="";
-    $desc=$tablename;$desc.="_desc";
+function add_table ($db,$tablename,$sortkey) {
+    global $string;
     $shortname=substr($tablename,0,3);
    
    //check to ensure that duplicate table or database does not exist
-    $isbad=0;
-    $ALLTABLES=$db->MetaTables();
-    foreach($ALLTABLES as $table1)
-    {
- 	$table1desc=$table1; $table1desc.="_desc";
- 	if ("$tablename" == "$table1"){$isbad=1;} 
- 	if ("$desc" == "$table1desc") {$isbad=1;}
- 	}
-	if ($tablename==""){$string="please enter a title for the table!";}
-	if ($isbad==1){$string="A table with the name $tablename already exists!";}
-	else 
-		{	  
-  	   $r=$db->Execute("CREATE TABLE $tablename (id int UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY, title text, access varchar(9), ownerid int(11), magic int(11), lastmodby int(11), lastmoddate int(11),date int(11))");
+   $r=$db->Execute("SELECT tablename FROM tableoftables");
+   $ALLTABLES=$r->GetArray();
+   foreach($ALLTABLES as $table1) {
+      if ("$tablename" == "$table1")
+         $isbad=true; 
+   }
+   if ($tablename=="")
+      $string="please enter a title for the table!";
+   if ($isbad)
+      {$string="A table with the name $tablename already exists!";}
+   if (!$isbad && $tablename) {
+           $id=$db->GenID("tableoftables"."_id_seq");
+	   $real_tablename=$id."_$tablename";
+           $desc=$real_tablename . "_desc";
+  	   $r=$db->Execute("CREATE TABLE $real_tablename (id int UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY, title text, access varchar(9), ownerid int(11), magic int(11), lastmodby int(11), lastmoddate int(11),date int(11))");
   	   if ($r)
   	   	{
   	   	$string= "Succesfully Added Table $tablename";
-               $id=$db->GenID("tableoftables"."_id_seq",10);
   	       $r=$db->Execute("INSERT INTO tableoftables (id,sortkey,tablename,shortname,Display,Permission) Values($id,'$sortkey','$tablename','$shortname','Y','Users')");
- 			$r=$db->Execute("CREATE TABLE $desc (id int UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,sortkey int,label text, display_table char(1), display_record char(1), required char(1), type text, datatype text, associated_table text, associated_sql text)");   
+ 		$r=$db->Execute("CREATE TABLE $desc (id int UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,sortkey int,label text, display_table char(1), display_record char(1), required char(1), type text, datatype text, associated_table text, associated_sql text)");   
 
-  		   $fieldstring="label, sortkey, display_table, display_record, required, type, datatype, associated_table, associated_sql"; 
-  		   $db->Execute("INSERT INTO $desc ($fieldstring) Values('id','100','N','N','N','int(11)','text','','')");
+  	   $fieldstring="label, sortkey, display_table, display_record, required, type, datatype, associated_table, associated_sql"; 
+  	   $db->Execute("INSERT INTO $desc ($fieldstring) Values('id','100','N','N','N','int(11)','text','','')");
  			$db->Execute("INSERT INTO $desc ($fieldstring) Values('access','110','N','N','N','varchar(9)','text','','')");
  			$db->Execute("INSERT INTO $desc ($fieldstring) Values('ownerid','120','N','N','N','int(11)','text','','')");
  			$db->Execute("INSERT INTO $desc ($fieldstring) Values('magic','130,'N','N','N','int(11)','text','','')");
