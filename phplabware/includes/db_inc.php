@@ -830,7 +830,7 @@ function may_read_SQL ($db,$tableinfo,$USER,$temptable='tempa') {
       $list=may_read_SQL_JOIN ($db,$tableinfo->realname,$USER);
       if (!$list)
          $list='-1';
-      $result['sql']= " id IN ($list) ";
+      $result['sql']= " {$tableinfo->realname}.id IN ($list) ";
       $result['numrows']=substr_count($list,',');
    }
    else {
