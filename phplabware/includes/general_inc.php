@@ -385,21 +385,32 @@ function display_record($db,$Allfields,$id,$tableinfo,$backbutton=true,$previous
    } 
    echo "<form method='post' action='$PHP_SELF?tablename=".$tableinfo->name."&".SID."'>\n";
    echo "<input type='hidden' name='md' value='$md'>\n";
+
+   // for organizational purpose, define buttons here:
    // next and previous buttons
    if ($previousid)
       $previousbutton="<input type=\"button\" name=\"view_".$previousid."\" value=\"Previous\" onClick='MyWindow=window.open(\"general.php?tablename={$tableinfo->name}&showid=$previousid&jsnewwindow=true\",\"view\",\"scrollbar=yes,resizable=yes,width=600,height=400\")'>\n";
    if ($nextid)
       $nextbutton="<input type=\"button\" name=\"view_".$nextid."\" value=\"Next\" onClick='MyWindow=window.open(\"general.php?tablename={$tableinfo->name}&showid=$nextid&jsnewwindow=true\",\"view\",\"scrollbar=yes,resizable=yes,width=600,height=400\")'>\n";
-   // provide a modify button 
-   if (may_write($db,$tableinfo->id,$id,$USER)) {
-         $modifybutton= "<input type=\"submit\" name=\"mod_" . $id . "\" value=\"Modify\">\n";
-   }
+   // closebutton
+   $closebutton="<input type=\"button\" onclick='self.close();window.opener.focus();' name='Close' value='Close'>\n";
    if ($backbutton) {
-      echo "<tr>\n<td colspan=8 align='center'>";
-      echo " $previousbutton $modifybutton<input type='submit' name='submit' value='Back'> $nextbutton</td>\n</tr>\n";
+      $backbutton="<input type='submit' name='submit' value='Back'>\n";
+   }
+   // modify button 
+   if (may_write($db,$tableinfo->id,$id,$USER)) {
+      $modifybutton= "<input type=\"submit\" name=\"mod_" . $id . "\" value=\"Modify\">\n";
+   }
+
+   // and now diaply the buttons
+   echo "</table>\n";
+   echo "<table border=0 align='center' width='100%'>\n";
+   if ($backbutton) {
+      echo "<tr>\n<td align='left'>";
+      echo " $previousbutton>/td><td align='center'>$modifybutton $backbutton</td><td align='right'>$nextbutton </td>\n</tr>\n";
    }
    else
-      echo "<tr><td colspan=8 align='center'>&nbsp;<br>$previousbutton $modifybutton<button onclick='self.close();window.opener.focus();' name='Close' value='close'>Close</button> $nextbutton</td></tr>\n";
+      echo "<tr><td align='left'>$previousbutton &nbsp;</td><td align='center'> $modifybutton $closebutton </td><td align='right'>$nextbutton &nbsp;</td></tr>\n";
    echo "</table>";
 }
 
