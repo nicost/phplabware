@@ -1021,7 +1021,7 @@ function searchhelp ($db,$tableinfo,$column,&$columnvalues,$query,$wcappend,$and
             $query[0].="$and $column='$columnvalues[$column]' ";
       }
       elseif ($rc->fields[1]=='mpulldown') {
-      // 
+         unset ($id_list);
          $rmp=$db->Execute("SELECT recordid FROM {$rc->fields[3]} WHERE typeid='{$columnvalues[$column]}'");
          if ($rmp) {
             $id_list=$rmp->fields[0];
@@ -1033,17 +1033,20 @@ function searchhelp ($db,$tableinfo,$column,&$columnvalues,$query,$wcappend,$and
          }
          if ($id_list)
             $query[0].="$and id IN ($id_list) ";
+         else // nothing found, make sure we do not crash the search statement
+            $query[0].="$and id IN (-1) ";
+            
       }
-      elseif (substr($rc->fields[0],0,3)=="int") {
+      elseif (substr($rc->fields[0],0,3)=='int') {
          $query[0].=numerictoSQL ($columnvalues[$column],$column,"int",$and); 
       }
-      elseif (substr($rc->fields[0],0,5)=="float") {
+      elseif (substr($rc->fields[0],0,5)=='float') {
          $query[0].=numerictoSQL ($columnvalues[$column],$column,"float",$and); 
       }
       else {
          $columnvalues[$column]=trim($columnvalues[$column]);
          $columnvalue=$columnvalues[$column];
-         $columnvalue=str_replace("*","%",$columnvalue);
+         $columnvalue=str_replace('*','%',$columnvalue);
          if ($wcappend)
             $columnvalue="%$columnvalue%";
          //else
