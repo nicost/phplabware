@@ -332,10 +332,10 @@ function navbar($permissions) {
       echo "<table border=0 width=100% cellspacing='0' cellpadding='0' bgcolor='eeeeff'>\n";
       echo "<tr>\n<form name='menubar'>\n";
       echo "<td width='7%'>&nbsp;</td>\n";
-      echo "<td width='8%'>$linkmenu</td>\n";
-      echo "<td width='10%'>$tablemenu</td>\n";
-      echo "<td width='10%'>$systemmenu</td>\n";
-      echo "<td width='65%'>&nbsp;</td>\n";
+      echo "<td width='1%'>$linkmenu</td>\n";
+      echo "<td width='1%'>$tablemenu</td>\n";
+      echo "<td width='1%'>$systemmenu</td>\n";
+      echo "<td width='90%'>&nbsp;</td>\n";
       echo "</tr>\n</form>\n</table>\n";
    }
    else {
