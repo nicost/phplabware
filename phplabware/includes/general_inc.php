@@ -243,9 +243,8 @@ function display_record($db,$Allfields,$id,$tablename,$real_tablename) {
             $files=get_files($db,$tablename,$id,$nowfield["columnid"]);
             if ($files) { 
                echo "<th>Files:</th>\n<td colspan=5>";
-               //echo "<tr><th>Files:</th>\n<td colspan=5>";
                for ($i=0;$i<sizeof($files);$i++)  {
-                  echo $files[$i]["link"]."&nbsp;&nbsp;(".$files[$i]["type"];
+                  echo $files[$i]["link"]."&nbsp;&nbsp;(<i>".$files[$i]["name"]."</i>, ".$files[$i]["type"];
                   echo " file, ".$files[$i]["size"].")<br>\n";
                }
                echo "<td>\n";
@@ -378,7 +377,7 @@ function display_add($db,$tableid,$real_tablename,$tabledesc,$Allfields,$id,$nam
 	    echo "<td colspan=4> <table border=0>";
 	    for ($i=0;$i<sizeof($files);$i++)  {
 	       echo "<tr><td colspan=2>".$files[$i]["link"];
-	       echo "&nbsp;&nbsp;(".$files[$i]["type"]." file)</td>\n";
+	       echo "&nbsp;&nbsp;(<i>".$files[$i]["name"]."</i>, ".$files[$i]["type"]." file)</td>\n";
 	       echo "<td><input type='submit' name='def_".$files[$i]["id"]."' value='Delete' Onclick=\"if(confirm('Are you sure the file ".$files[$i]["name"]." should be removed?')){return true;}return false;\"></td></tr>\n";
 	    }
 	    echo "<tr><th>Replace file(s) with</th>\n";
