@@ -74,6 +74,8 @@ if ($use_sessions) {
                $PHP_SELF=$HTTP_SERVER_VARS["PHP_SELF"];
                $server= getenv ("HTTP_HOST");
                $url="http://$server$PHP_SELF";
+               $get_string=getenv("QUERY_STRING");
+               $url=url_get_string($url);
                echo "<html>\n<head>\n";
 ?>
 <meta http-equiv='refresh' content=0;URL="<?php echo $url ?>?<?=SID?>">

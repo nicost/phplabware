@@ -88,6 +88,21 @@ function randomImage($imagedir) {
    return "<img src='$imagedir/$filename'>\n";   
 }
 
+////
+// !returns get vars plus SID when needed
+function url_get_string ($url) {
+   $get_string=getenv("QUERY_STRING");
+   $sid=SID;
+   if ($get_string) {
+      $url=$url."?$get_string";
+      if ($sid)
+         $url=$url."&$sid";
+      return $url;
+   }
+   if ($sid)
+      $url=$url."?$sid";
+   return $url;
+}
 
 ////
 // !presents the login screen when authenticating witth sessions
@@ -101,7 +116,7 @@ function loginscreen ($message="<h3>Login to PhpLabWare</h3>") {
    }
    else
       $addres=$PHP_SELF;
-
+   $addres=url_get_string($addres);
    printheader ("Login to PhpLabWare");
    echo "<form name='loginform' method='post' action=$addres>\n";
    echo "<input type='hidden' name='logon' value='true'>\n";
