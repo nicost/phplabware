@@ -281,7 +281,7 @@ while (!($r->EOF) && $r) {
 // user based links section
 echo "<hr><table align='center'>\n";
 $rr=$db->Execute("SELECT Display FROM tableoftables where tablename='linkbar'");
-$linkdis=$rr->fields["Display"];
+$linkdis=$rr->fields["display"];
 echo "<h3 align='center'>Edit Linkbar</h3>\n";
 echo "<tr><th>Linkbar Display</th>";
 if($linkdis=="1")
