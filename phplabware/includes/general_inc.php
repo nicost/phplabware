@@ -255,7 +255,7 @@ function display_record($db,$Allfields,$id,$tablename,$real_tablename,$backbutto
             echo "<th>$nowfield[label]</th><td colspan=2>$textlarge</td>\n";
          }
          elseif ($nowfield["datatype"]=="file" || $nowfield["datatype"]=="image") {
-            $files=get_files($db,$tablename,$id,$nowfield["columnid"]);
+            $files=get_files($db,$tablename,$id,$nowfield["columnid"],0,"big");
             if ($files) { 
                echo "<th>Files:</th>\n<td colspan=5>";
                for ($i=0;$i<sizeof($files);$i++)  {
@@ -417,7 +417,7 @@ function display_add($db,$tableinfo,$Allfields,$id,$namein,$system_settings) {
 	    echo "</th><td colspan=6><textarea name='$nowfield[name]' rows='5' cols='100%'>$nowfield[values]</textarea>";
 	 }
 	 if ($nowfield["datatype"]=="file" || $nowfield["datatype"]=="image") {
-	    $files=get_files($db,$tableinfo->name,$id,$nowfield["columnid"]);
+	    $files=get_files($db,$tableinfo->name,$id,$nowfield["columnid"],0,"big");
 	    echo "<tr>";
 	    echo "<th>$nowfield[label]:</th>\n";
 	    echo "</th>\n";
