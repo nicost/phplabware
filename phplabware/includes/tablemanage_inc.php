@@ -209,21 +209,21 @@ function add_table ($db,$tablename,$tablelabel,$sortkey,$plugincode) {
 
          $fieldstring="id,label,columnname,sortkey,display_table,display_record, required, type, datatype, associated_table, associated_column"; 
          $descid=$db->GenId("$desc"."_id");  
-  	 $db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'id','id','100','N','N','N','int(11)','text','','')");
+  	 $db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'id','id','100','N','N','N','int(11)','text',NULL,NULL)");
          $descid=$db->GenId("$desc"."_id");  
-         $db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'access','access','110','N','N','N','varchar(9)','text','','')");
+         $db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'access','access','110','N','N','N','varchar(9)','text',NULL,NULL)");
          $descid=$db->GenId("$desc"."_id");  
-         $db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'ownerid','ownerid','120','N','N','N','int(11)','text','','')");
+         $db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'ownerid','ownerid','120','N','N','N','int(11)','text',NULL,NULL)");
          $descid=$db->GenId("$desc"."_id");  
-         $db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'magic','magic','130','N','N','N','int(11)','text','','')");
+         $db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'magic','magic','130','N','N','N','int(11)','text',NULL,NULL)");
          $descid=$db->GenId("$desc"."_id");  
-         $db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'title','title','140','Y','Y','Y','text','text','','')");
+         $db->Execute("INSERT INTO $desc ($fieldstring,modifiable) Values($descid,'title','title','140','Y','Y','Y','text','text',NULL,NULL,'Y')");
          $descid=$db->GenId("$desc"."_id");  
-         $db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'lastmoddate','lastmoddate','150','N','N','N','int(11)','text','','')");
+         $db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'lastmoddate','lastmoddate','150','N','N','N','int(11)','text',NULL,NULL)");
          $descid=$db->GenId("$desc"."_id");  
-         $db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'lastmodby','lastmodby','160','N','N','N','int(11)','text','','')");
+         $db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'lastmodby','lastmodby','160','N','N','N','int(11)','text',NULL,NULL)");
          $descid=$db->GenId("$desc"."_id");  
-         $db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'date','date','170','N','N','N','int(11)','text','','')");
+         $db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'date','date','170','N','N','N','int(11)','text',NULL,NULL)");
       }  
       else {
          $string="Poblems adding this table.  Sorry ;(";
