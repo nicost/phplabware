@@ -1333,11 +1333,31 @@ function searchhelp ($db,$tableinfo,$column,&$columnvalues,$query,$wcappend,$and
             $columnvalues[$column]=trim($columnvalues[$column]);
             $columnvalue=$columnvalues[$column];
             $columnvalue=str_replace('*','%',$columnvalue);
-            if ($wcappend)
-               $columnvalue="%$columnvalue%";
-            //else
-            //   $columnvalue="% $columnvalue %";
-            $query[2].="$and UPPER({$tableinfo->realname}.$column) LIKE UPPER('$columnvalue') ";
+            // support logical AND and OR
+            $token_array=explode(' ',$columnvalue);
+            // this is ugly stuff, there must be a neater way of parsing
+            foreach($token_array as $token) {
+               $count++;
+               if ($nextand)
+                  $and=$nextand;
+               if (($token=='AND' || $token=='OR') && $count>1) {
+                   $nextand=$token;
+                   $booleanfound=true;
+               }
+               else {
+                   $booleanfound=false;
+                   $cvalue.=$token.' ';
+               }
+               if ($booleanfound || $count >= sizeof($token_array)) {
+                  $cvalue=trim($cvalue);
+                  if ($wcappend)
+                     $cvalue="%$cvalue%";
+                  $query[2].="$and UPPER({$tableinfo->realname}.$column) LIKE UPPER('$cvalue') ";
+               }
+            //if ($wcappend)
+            //   $columnvalue="%$columnvalue%";
+            //$query[2].="$and UPPER({$tableinfo->realname}.$column) LIKE UPPER('$columnvalue') ";
+            }
          }
       }
    }
