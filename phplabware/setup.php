@@ -12,7 +12,7 @@
   *  option) any later version.                                              *
   \**************************************************************************/                                                                             
 
-$version_code=0.0022;
+$version_code=0.0023;
 $localdir=exec("pwd");
 include ('includes/functions_inc.php');
 if (!file_exists("includes/config_inc.php")) {
@@ -57,7 +57,6 @@ if (!@$db->Connect($db_host, $db_user, $db_pwd, $db_name)) {
 
 // if table settings does not exist, we'll need to create the initial tables
 $version=get_cell($db, "settings", "version", "id", 1);
-
 
 if (! ($version || $pwd) ) {
    // This must be the first time, ask for a sysadmin password
@@ -104,6 +103,9 @@ if ($version) {
       }
       if ($version<0.0022) {
          include ("dd/0_0022_inc.php");
+      }
+      if ($version<0.0023) {
+         include ("dd/0_0023_inc.php");
       }
       
       $query="UPDATE settings SET version='$version_code' WHERE id=1";
