@@ -21,7 +21,7 @@ require("includes/general_inc.php");
 require("includes/tablemanage_inc.php");
 include ('includes/defines_inc.php');
 
-$post_vars="delimiter,delimiter_type,tableid,nrfields,pkey,pkeypolicy,tmpfile,ownerid";
+$post_vars="delimiter,delimiter_type,tableid,nrfields,pkey,pkeypolicy,skipfirstline,tmpfile,ownerid";
 globalize_vars($post_vars, $HTTP_POST_VARS);
 
 $permissions=$USER["permissions"];
@@ -128,6 +128,8 @@ if ($HTTP_POST_VARS["assign"]=="Import Data") {
          $access=$system_settings["access"];
          $lastmoddate=time();
          $lastmodby=$USER["id"];
+         if ($skipfirstline=="yes")
+            $line=chop(fgets($fh,1000000));
          // fgets should not need second parameter, but my php version does...
          while ($line=chop(fgets($fh,1000000))) {
             $fields=check_input (explode($delimiter,$line),$to_types,$nrfields);
@@ -159,22 +161,33 @@ if ($HTTP_POST_VARS["assign"]=="Import Data") {
             if ( !(isset($pkey) || isset($recorid)) ) {
                $query_start="INSERT INTO $table (";
                $query_end=" VALUES (";
+               $newid=false;
                for ($i=0;$i<$nrfields;$i++) {
                   if ($fields[$i] && $to_fields[$i]) {
                      $worthit=true;
                      $query_start.="$to_fields[$i],";  
                      $query_end.="'$fields[$i]',";
+                     if ($to_fields[$i]=="id")
+                        $newid=$fields[$i];
                   }
                }
                // delete last commas and combine into SQL INSERT query
                if ($worthit) {
-                  if (!$id_chosen) {
+                  if (!$newid) {
                      $id=$db->GenID($table."_id_seq");
                      if ($id)
-                        $query="$query_start id,access,lastmoddate,lastmodby,ownerid) $query_end '$id','$access','$lastmoddate','$lastmodby','$ownerid')";
+                        $query="$query_start id,access,date,lastmoddate,lastmodby,ownerid) $query_end '$id','$access','$lastmoddate','$lastmoddate','$lastmodby','$ownerid')";
                   }
-                  else
-                     $query="$query_start access,lastmoddate,lastmodby,ownerid) $query_end '$access','$lastmoddate','$lastmodby','$ownerid')";
+                  else {
+                     // let's make sure the 'next' id will be higher
+                     if ($newid)
+                        while ($id<$newid)
+                           $id=$db->GenID($table."_id_seq");
+                     // check whether this id was used
+                     if (get_cell($db,$table,"id","id",$newid))
+                        $duplicateid++;
+                     $query="$query_start access,date,lastmoddate,lastmodby,ownerid) $query_end '$access','$lastmoddate','$lastmoddate','$lastmodby','$ownerid')";
+                  }
                   if ($r=$db->Execute($query))
                       $inserted++;
                } 
@@ -186,6 +199,8 @@ if ($HTTP_POST_VARS["assign"]=="Import Data") {
             $inserted=0;
          if (!isset($modified))
             $modified=0;
+         if (!isset($duplicateid))
+            $duplicateid=0;
          if ($inserted==1)
             $inserted_text="record was";
          else
@@ -194,7 +209,14 @@ if ($HTTP_POST_VARS["assign"]=="Import Data") {
             $modified_text="record was";
          else
             $modified_text="records were";
+         if ($duplicateid==1)
+            $duplicate_text="record was";
+         else
+            $duplicate_text="records were";
          echo "<h3 align='center'>$inserted $inserted_text inserted, and $modified $modified_text modified in Database <a href='$table_link'>$table_label</a></h3>";
+         if ($duplicateid)
+            echo "<h3 align='center'>$duplicateid $duplicate_text rejected because their ids have already been used.</h3>\n";
+
          fclose($fh);
          unlink ("$tmpdir/$tmpfile");
          printfooter();
@@ -224,15 +246,11 @@ if ($HTTP_POST_VARS["dataupload"]=="Continue") {
          if ($fh) {
             $firstline=chop(fgets($fh,1000000));
             $fields=explode($delimiter,$firstline);
-            //$nrfields=sizeof($fields);
             $secondline=chop(fgets($fh,1000000));
             $fields2=explode($delimiter,$secondline);
-            //if (sizeof($fields2) > $nrfields)
-               //$nrfields=sizeof($fields2);
             $nrfields=substr_count($firstline,$delimiter)+1;
             fclose($fh);
          }
-         // echo "$nrfields fields found.<br>";
          $tablename=get_cell($db,"tableoftables","tablename","id",$tableid);
          echo "<h3 align='center'>Import Data(2): Assign fields to Columns of table <i>$tablename</i></h3>\n";
          echo "<form method='post' id='procesdata' enctype='multipart/form-data' ";
@@ -269,10 +287,17 @@ if ($HTTP_POST_VARS["dataupload"]=="Continue") {
          $colspan=$nrfields+2;
          echo "</table>\n";
 
-         echo "<table align='center'><tr>\n";
-         echo "<tr><th>When a record with identical Primary key is already present, overwrite existing data or skip the record?</th></tr>\n";
-         echo "<tr><td align='center'><input type='radio' name='pkeypolicy' value='overwrite'> overwrite</input>\n";
-         echo "<input type='radio' name='pkeypolicy' value='skip' checked> skip</input></td></td></tr>\n";
+         echo "<table align='left'>\n";
+
+         echo "<tr><th>When a record with identical Primary key is already present, overwrite existing data or skip the record?</th>\n";
+         echo "<td><input type='radio' name='pkeypolicy' value='overwrite'> overwrite</input></td>\n";
+         echo "<td><input type='radio' name='pkeypolicy' value='skip' checked> skip</input></td></tr>\n";
+
+         echo "<tr><th>Skip first line?</th>\n";
+         echo "<td><input type='radio' name='skipfirstline' value='yes'> Yes</input></td>\n";
+         echo "<td><input type='radio' name='skipfirstline' value='no' checked> no</input></td></tr></table>\n";
+
+         echo "<br><br>\n<table align='center>\n";
          echo "<tr><td align='center'><input type='submit' name='assign' value='Import Data'></td></tr>\n";
          echo "</table>\n</form>";
 
@@ -323,7 +348,7 @@ if ($r)
 echo "<td>$menu2</td>\n";
 echo "</tr>\n";
 
-echo "<tr><td colspan='3' align='center'><input type='submit' name='dataupload' value='Continue'></td></tr>\n";
+echo "<tr><td colspan='4' align='center'><input type='submit' name='dataupload' value='Continue'></td></tr>\n";
 
 echo "</table>\n";
 echo "</form>\n";   
