@@ -330,8 +330,6 @@ else {
    }
    // then look whether it should be modified
    elseif ($submit=='Modify Record') {
-print_r($HTTP_POST_VARS);
-echo "test.<br>";
       $modfields=comma_array_SQL_where($db,$tableinfo->desname,"columnname","modifiable","Y");
       // The pdf plugin wants to modify fields that have been set to modifiable=='N'
       if (! (check_g_data($db,$HTTP_POST_VARS,$tableinfo,true) && 
