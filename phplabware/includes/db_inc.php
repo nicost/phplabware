@@ -487,7 +487,8 @@ function make_SQL_ids ($r,$ids,$field="id") {
    $column_count=1;
    while (!$r->EOF) {
       $id=$r->fields[$field];
-      $ids .=",$id";
+      if ($id)
+         $ids .=",$id";
       $r->MoveNext();
       $column_count+=1;
    }
