@@ -139,7 +139,7 @@ else {
     // first handle addition of a new record
    if ($submit == "Add Record") {
       if (!(check_g_data($db, $HTTP_POST_VARS, $table_desname) && 
-            $id=add($db,$real_tablename,$fields,$HTTP_POST_VARS,$USER) ) )
+            $id=add($db,$real_tablename,$fields,$HTTP_POST_VARS,$USER,$tableid) ) )
       	{
          add_g_form($db,$fields,$HTTP_POST_VARS,0,$USER,$PHP_SELF,$system_settings,$real_tablename,$tableid, $table_desname);
          printfooter ();
