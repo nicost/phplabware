@@ -3,6 +3,9 @@
 // Adds columns gw, gr, ow, or to each table
 // Adodb datadictionary is used to add these plus indices
 
+// This might take a while:
+ini_set("max_execution_time","0");
+
 $ra=$db->Execute("SELECT real_tablename,table_desc_name,shortname FROM tableoftables");
 $dict=NewDataDictionary($db);
 $fields="
