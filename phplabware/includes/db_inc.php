@@ -56,9 +56,11 @@ if (!function_exists('array_key_exists')) {
    }
 }
 
-//////////////////////////////////////////////////////
-////
-// !Analogue of adodb GetMenu2, but display referenced values (using getvalues)
+/**
+ * *
+ *  Analogue of adodb GetMenu2, but display referenced values (using getvalues)
+ *
+ */
 function GetValuesMenu ($db,$selectname,$selected,$tablename,$columnname,$whereclause=false,$jscript=false) {
    global $max_menu_length;
 
@@ -88,9 +90,11 @@ function GetValuesMenu ($db,$selectname,$selected,$tablename,$columnname,$wherec
 }
 
 
-//////////////////////////////////////////////////////
-////
-// !SQL where search that returns a comma delimited string
+/**
+ * *
+ *  SQL where search that returns a comma delimited string
+ *
+ */
 function comma_array_SQL_where($db,$tablein,$column,$searchfield,$searchval)
 {
    $rs = $db->Execute("select $column from $tablein where $searchfield='$searchval' order by sortkey");
@@ -104,9 +108,11 @@ function comma_array_SQL_where($db,$tablein,$column,$searchfield,$searchval)
    return join(",",$tempa);
 }
 
-/////////////////////////////////////////////////////
-////
-// !SQL search (entrire column) that returns a comma delimited string
+/**
+ * *
+ *  SQL search (entrire column) that returns a comma delimited string
+ *
+ */
 function comma_array_SQL($db,$tablein,$column,$where=false) 
 {
    $rs = $db->Execute("select $column from $tablein $where order by sortkey");
@@ -120,9 +126,11 @@ function comma_array_SQL($db,$tablein,$column,$where=false)
       return join(",",$tempa);
 }
 
-////
-// !Helper function for sortstring
-// returns a string with format tablename.columnname, reflecting the data source for the specified column
+/**
+ *  Helper function for sortstring
+ *
+ * returns a string with format tablename.columnname, reflecting the data source for the specified column
+ */
 function origin_column ($db,$tableinfo,$key){
    $r=$db->Execute("SELECT associated_table,associated_column FROM $tableinfo->desname WHERE columnname='$key'");
    if (!$r->fields[0])
@@ -137,8 +145,10 @@ function origin_column ($db,$tableinfo,$key){
 }
 
 
-////
-// !Update sortdirarray and returns formatted sortdirstring
+/**
+ *  Update sortdirarray and returns formatted sortdirstring
+ *
+ */
 function sortstring($db,$tableinfo,&$sortdirarray,$sortup,$sortdown) {
    if ($sortup && $sortup<>" ") {
       if (is_array($sortdirarray) && array_key_exists($sortup,$sortdirarray)) {
@@ -173,8 +183,10 @@ function sortstring($db,$tableinfo,&$sortdirarray,$sortup,$sortdown) {
    return $sortstring;
 }
 
-////
-// !Displays header of 'general' table
+/**
+ *  Displays header of 'general' table
+ *
+ */
 function tableheader ($sortdirarray,$nowfield) {
    $columnname=$nowfield['name'];
    $columnlabel=$nowfield['label'];
@@ -195,12 +207,14 @@ function tableheader ($sortdirarray,$nowfield) {
    echo "</td></tr></table></th>\n";
 }
 
-////
-// !Inserts $fields with $fieldvalues into $table
-// Returns the id of inserted record on succes, false otherwise.
-// $fields is a comma separated list with all column names
-// Fieldvalues must be an associative array containing all the $fields to be added.
-// Fields named 'date' are automatically filled with a Unix timestamp
+/**
+ *  Inserts $fields with $fieldvalues into $table
+ *
+ * Returns the id of inserted record on succes, false otherwise.
+ * $fields is a comma separated list with all column names
+ * Fieldvalues must be an associative array containing all the $fields to be added.
+ * Fields named 'date' are automatically filled with a Unix timestamp
+ */
 function add ($db,$table,$fields,$fieldvalues,$USER,$tableid) {
    if (!may_write($db,$tableid,false,$USER)) {
       echo "<h3>You are not allowed to do this.<br>";
@@ -270,9 +284,11 @@ function add ($db,$table,$fields,$fieldvalues,$USER,$tableid) {
    }
 }
 
-////
-// !For multiple choice pulldowns.  
-// Deletes entries in key_table for a give record,and then re-inserts the ones present in the array
+/**
+ *  For multiple choice pulldowns.  
+ *
+ * Deletes entries in key_table for a give record,and then re-inserts the ones present in the array
+ */
 function update_mpulldown ($db,$key_table,$recordid,$valueArray) {
    $db->Execute ("DELETE FROM $key_table WHERE recordid=$recordid");
    if (is_array($valueArray)) {
@@ -283,17 +299,18 @@ function update_mpulldown ($db,$key_table,$recordid,$valueArray) {
 }
 
 
-////
-// !Modifies $fields in $table with values $fieldvalues where id=$id
-// Returns true on succes, false on failure
-// Fieldvalues must be an associative array containing all the $fields to be added.
-// If a field is not present in $fieldvalues, it will be set to NULL.  
-// The entry 'id' in $fields will be ignored.
-// Fields lastmodby and lastmoddate will be automatically set
+/**
+ *  Modifies $fields in $table with values $fieldvalues where id=$id
+ *
+ * Returns true on succes, false on failure
+ * Fieldvalues must be an associative array containing all the $fields to be added.
+ * If a field is not present in $fieldvalues, it will be set to NULL.  
+ * The entry 'id' in $fields will be ignored.
+ * Fields lastmodby and lastmoddate will be automatically set
+ */
 function modify ($db,$table,$fields,$fieldvalues,$id,$USER,$tableid) {
    if (!may_write($db,$tableid,$id,$USER))
       return false;
-//$db->debug=true;
    // delete all entries in trust related to this record first
    $db->Execute("DELETE FROM trust WHERE tableid='$tableid' and recordid='$id'");
    // then add back trusted users entered on the form
@@ -327,7 +344,6 @@ function modify ($db,$table,$fields,$fieldvalues,$id,$USER,$tableid) {
    if ($test) {
       $query.=" WHERE id='$id'";
       $result=$db->Execute($query);
-//$db->debug=false;
       if ($result) {
          if (function_exists('plugin_modify')) {
             plugin_modify($db,$tableid,$id);
@@ -338,11 +354,13 @@ function modify ($db,$table,$fields,$fieldvalues,$id,$USER,$tableid) {
 }
 
 
-////
-// !Deletes the entry with id=$id
-// Returns true on succes, false on failure
-// Checks whether the delete is allowed
-// This is very generic, it is likely that you will need to do more cleanup
+/**
+ *  Deletes the entry with id=$id
+ *
+ * Returns true on succes, false on failure
+ * Checks whether the delete is allowed
+ * This is very generic, it is likely that you will need to do more cleanup
+ */
 function delete ($db, $tableid, $id, $USER, $filesonly=false) {
 
    $table=get_cell($db,"tableoftables","real_tablename","id",$tableid);
@@ -367,8 +385,10 @@ function delete ($db, $tableid, $id, $USER, $filesonly=false) {
       return true;
 }
 
-////
-// !Generates thumbnails and extracts information from 2-D image files
+/**
+ *  Generates thumbnails and extracts information from 2-D image files
+ *
+ */
 function process_image($db,$fileid,$bigsize) 
 {
    global $USER, $system_settings;
@@ -534,9 +554,11 @@ if (file_exists($HTTP_POST_FILES[$columnname]['tmp_name'][$i])) {
 }
 
 
-////
-// !returns an array with id,name,title,size, and hyperlink to all
-// files associated with the given record
+/**
+ *  returns an array with id,name,title,size, and hyperlink to all
+ *
+ * files associated with the given record
+ */
 function get_files ($db,$table,$id,$columnid,$format=1,$thumbtype='small') {
    $tableid=get_cell($db,'tableoftables','id','tablename',$table);
    $r=$db->Execute("SELECT id,filename,title,mime,type,size FROM files WHERE tablesfk=$tableid AND ftableid=$id AND ftablecolumnid='$columnid'");
@@ -553,7 +575,7 @@ function get_files ($db,$table,$id,$columnid,$format=1,$thumbtype='small') {
          // if this is an image, we'll send the thumbnail
          $rb=$db->Execute("SELECT id FROM images WHERE id='$filesid'");
          if ($rb->fields(0)) {
-            $text="<img src=showfile.php?id=$filesid&type=$thumbtype&$sid>";
+            $text="<img src=showfile.php?id=$filesid&amp;type=$thumbtype&amp;$sid alt='Image'>";
          } 
 	 elseif ($format==1) {
             if (strlen($filestitle) > 0)
@@ -568,8 +590,8 @@ function get_files ($db,$table,$id,$columnid,$format=1,$thumbtype='small') {
          //$text.="<br>\n";
          $icon="icons/$filestype.jpg";
          if (@is_readable($icon))
-            $text="<img src='$icon'>";
-         $files[$i]['link']="<a href='showfile.php?id=$filesid&$sid'>$text</a>\n";
+            $text="<img src='$icon' alt='$filestype File'>";
+         $files[$i]['link']="<a href='showfile.php?id=$filesid&amp;$sid'>$text</a>\n";
          $r->MoveNext();
          $i++;
       }
@@ -578,8 +600,10 @@ function get_files ($db,$table,$id,$columnid,$format=1,$thumbtype='small') {
 }
 
 
-////
-// !Returns path to the file
+/**
+ *  Returns path to the file
+ *
+ */
 function file_path ($db,$fileid) {
    global $system_settings;
    $filename=get_cell($db,'files','filename','id',$fileid);
@@ -587,8 +611,10 @@ function file_path ($db,$fileid) {
 }
 
 
-////
-// !Deletes all file associated with this record,column and table
+/**
+ *  Deletes all file associated with this record,column and table
+ *
+ */
 function delete_column_file($db,$tableid,$columnid,$recordid,$USER) {
 
    $r=$db->Execute("SELECT id FROM files 
@@ -600,11 +626,13 @@ function delete_column_file($db,$tableid,$columnid,$recordid,$USER) {
 }
 
 
-////
-// !Deletes file identified with id.
-// Checks 'mother table' whether this is allowed
-// Also deletes entries in index table for this file
-// Returns name of deleted file on succes
+/**
+ *  Deletes file identified with id.
+ *
+ * Checks 'mother table' whether this is allowed
+ * Also deletes entries in index table for this file
+ * Returns name of deleted file on succes
+ */
 function delete_file ($db,$fileid,$USER) {
    global $system_settings;
 
@@ -630,9 +658,11 @@ function delete_file ($db,$fileid,$USER) {
    return $filename;
 }
 
-////
-// !Returns a 2D array with id and full name of all users
-// called by show_access
+/**
+ *  Returns a 2D array with id and full name of all users
+ *
+ * called by show_access
+ */
 function user_array ($db) {
    $r=$db->Execute("SELECT id,firstname,lastname FROM users ORDER BY lastname");
    while (!$r->EOF){
@@ -647,10 +677,12 @@ function user_array ($db) {
    return $ua;
 }
  
-////
-// !Prints a table with access rights
-// input is string as 'rw-rw-rw-'
-// names are same as used in get_access
+/**
+ *  Prints a table with access rights
+ *
+ * input is string as 'rw-rw-rw-'
+ * names are same as used in get_access
+ */
 function show_access ($db,$tableid,$id,$USER,$global_settings) {
    global $client;
    $table=get_cell($db,'tableoftables','real_tablename','id',$tableid);
@@ -735,9 +767,11 @@ function show_access ($db,$tableid,$id,$USER,$global_settings) {
 }
 
 
-////
-// !Returns a formatted access strings given an associative array
-// with 'grr','evr','grw','evw' as keys
+/**
+ *  Returns a formatted access strings given an associative array
+ *
+ * with 'grr','evr','grw','evw' as keys
+ */
 function get_access ($fieldvalues,$column) {
    global $system_settings;
    $gr=0; $gw=0; $er=0; $ew=0;
@@ -770,9 +804,11 @@ function get_access ($fieldvalues,$column) {
 }
 
 
-////
-// !Returns an SQL SELECT statement with ids of records the user may see
-// Since it uses subqueries it does not work with MySQL
+/**
+ *  Returns an SQL SELECT statement with ids of records the user may see
+ *
+ * Since it uses subqueries it does not work with MySQL
+ */
 function may_read_SQL_subselect ($db,$table,$tableid,$USER,$clause=false) {
    include_once ('./includes/defines_inc.php');
    $query="SELECT id FROM $table ";
@@ -803,9 +839,11 @@ function may_read_SQL_subselect ($db,$table,$tableid,$USER,$clause=false) {
    return $query;
 }
 
-////
-// !returns a comma-separated list of quoted values from a SQL search
-// helper function for may_read_SQL
+/**
+ *  returns a comma-separated list of quoted values from a SQL search
+ *
+ * helper function for may_read_SQL
+ */
 function make_SQL_ids ($r,$ids,$field='id') {
    if (!$r || $r->EOF)
       return substr ($ids,0,-1);
@@ -824,10 +862,12 @@ function make_SQL_ids ($r,$ids,$field='id') {
 }
 
 
-////
-// !Returns an array with ids of records the user may see in SQL format
-// Works with MySQL but not with early postgres 7 versions (current ones should
-// work)
+/**
+ *  Returns an array with ids of records the user may see in SQL format
+ *
+ * Works with MySQL but not with early postgres 7 versions (current ones should
+ * work)
+ */
 function may_read_SQL_JOIN ($db,$table,$USER) {
    include ('./includes/defines_inc.php');
    if (!($USER['permissions'] & $SUPER)) {
@@ -859,9 +899,11 @@ function may_read_SQL_JOIN ($db,$table,$USER) {
 }
 
 
-////
-// !Generates an SQL query asking for the records that may be seen by this user
-// Generates a left join for mysql, subselect for postgres
+/**
+ *  Generates an SQL query asking for the records that may be seen by this user
+ *
+ * Generates a left join for mysql, subselect for postgres
+ */
 function may_read_SQL ($db,$tableinfo,$USER,$temptable='tempa') {
    global $db_type;
    if ($db_type=='mysql') {
@@ -881,8 +923,9 @@ function may_read_SQL ($db,$tableinfo,$USER,$temptable='tempa') {
    return $result;
 }
 
-////
-// Generates a temporary table from given recordset
+/**
+ * Generates a temporary table from given recordset
+ */
 function make_temp_table ($db,$temptable,$r) {
    global $system_settings;
    $rc=$db->Execute("CREATE TEMPORARY TABLE $temptable (
@@ -906,8 +949,10 @@ function make_temp_table ($db,$temptable,$r) {
    unlink($tmpfile);
 }
 
-////
-// !determines whether or not the user may read this record
+/**
+ *  determines whether or not the user may read this record
+ *
+ */
 function may_read ($db,$tableinfo,$id,$USER) {
    $list=may_read_SQL($db,$tableinfo,$USER);
    $query="SELECT id FROM $tableinfo->realname WHERE ".$list['sql'];
@@ -920,8 +965,10 @@ function may_read ($db,$tableinfo,$id,$USER) {
       return true;
 }
 
-////
-// !checks if this user may write/modify/delete these data
+/**
+ *  checks if this user may write/modify/delete these data
+ *
+ */
 function may_write ($db,$tableid,$id,$USER) {
    include ('./includes/defines_inc.php');
    
@@ -959,9 +1006,11 @@ function may_write ($db,$tableid,$id,$USER) {
    }
 }
 
-////
-// !returns an comma-separated list of quoted values from a SQL search
-// derived from make_SQL_ids but can be called from anywhere 
+/**
+ *  returns an comma-separated list of quoted values from a SQL search
+ *
+ * derived from make_SQL_ids but can be called from anywhere 
+ */
 function make_SQL_csf ($r,$ids,$field="id",&$column_count) {
    if (!$r || $r->EOF)
       return false;
@@ -983,8 +1032,10 @@ function make_SQL_csf ($r,$ids,$field="id",&$column_count) {
    }
    return ($ids);
 }
-////
-// !helperfunction for numerictoSQL
+/**
+ *  helperfunction for numerictoSQL
+ *
+ */
 function typevalue ($value,$type) {
    if ($type=='int') {
       return (int)$value;
@@ -995,10 +1046,12 @@ function typevalue ($value,$type) {
    return false; 
 }
 
-////
-// !interprets numerical search terms into an SQL statement
-// implements ranges (i.e. 1-6), and lists (1,2,3) and combinations thereof
-// < and > can also be used
+/**
+ *  interprets numerical search terms into an SQL statement
+ *
+ * implements ranges (i.e. 1-6), and lists (1,2,3) and combinations thereof
+ * < and > can also be used
+ */
 function numerictoSQL (&$tableinfo,$searchterm,$column,$type,$and) {
    $commalist=explode(',',$searchterm);
    for ($i=0;$i<sizeof($commalist);$i++) {
@@ -1031,12 +1084,14 @@ function numerictoSQL (&$tableinfo,$searchterm,$column,$type,$and) {
 
 
 
-////
-// !Converts a (textual) date range into a meaningfull SQL statement
-// Start and end are separated with '-'
-// dates can be in current local (12/24/03), or textual (today, last month,etcc.)
-// Alternatively, a single date can be preceded with a '<' or '>'
-// I am not sure how strtotime deals with US versus European standards...
+/**
+ *  Converts a (textual) date range into a meaningfull SQL statement
+ *
+ * Start and end are separated with '-'
+ * dates can be in current local (12/24/03), or textual (today, last month,etcc.)
+ * Alternatively, a single date can be preceded with a '<' or '>'
+ * I am not sure how strtotime deals with US versus European standards...
+ */
 
 function datetoSQL ($searchterm,$column,$and) {
    $timerange=explode('-',$searchterm);
@@ -1070,9 +1125,11 @@ function datetoSQL ($searchterm,$column,$and) {
 }
 
 
-////
-// !Helper function for search
-// Interprets fields the right way
+/**
+ *  Helper function for search
+ *
+ * Interprets fields the right way
+ */
 function searchhelp ($db,$tableinfo,$column,&$columnvalues,$query,$wcappend,$and) {
    // first get the specs on this column
    $rc=$db->Execute("SELECT type,datatype,associated_table,key_table,associated_column,associated_local_key FROM ".$tableinfo->desname." WHERE columnname='$column'");
@@ -1242,11 +1299,13 @@ function searchhelp ($db,$tableinfo,$column,&$columnvalues,$query,$wcappend,$and
    return $query;
 }
 
-////
-// !Returns an SQL search statement
-// The whereclause should NOT start with WHERE
-// The whereclause should contain the output of may_read_SQL and
-// can also be used for sorting
+/**
+ *  Returns an SQL search statement
+ *
+ * The whereclause should NOT start with WHERE
+ * The whereclause should contain the output of may_read_SQL and
+ * can also be used for sorting
+ */
 function search ($db,$tableinfo,$fields,&$fieldvalues,$whereclause=false,$wcappend=true) 
 {
    $columnvalues=$fieldvalues;
@@ -1305,8 +1364,10 @@ function search ($db,$tableinfo,$fields,&$fieldvalues,$whereclause=false,$wcappe
 }
 
 
-////
-// ! sets AtFirstPage and AtLastPage
+/**
+ *   sets AtFirstPage and AtLastPage
+ *
+ */
 function first_last_page (&$r,&$current_page,$r_p_p,$numrows) {
    // protect against pushing the reload button while at the last page
    if ( (($current_page-1) * $r_p_p) >= $numrows)
@@ -1325,13 +1386,15 @@ function first_last_page (&$r,&$current_page,$r_p_p,$numrows) {
       $r->AtLastPage=false;
 }
 
-////
-// !Displays the next and previous buttons
-// $r is the result of a $db->Execute query used to display the table with records
-// When $paging is true, the records per page field will also be displayed
-// $num_p_r holds the (global) records per page variable
+/**
+ *  Displays the next and previous buttons
+ *
+ * $r is the result of a $db->Execute query used to display the table with records
+ * When $paging is true, the records per page field will also be displayed
+ * $num_p_r holds the (global) records per page variable
+ */
 function next_previous_buttons($r,$paging=false,$num_p_r=false,$numrows=false,$pagenr=false,$db=false,$tableinfo=false) {
-   echo "<table border=0 width='100%'>\n<tr width='100%'>\n<td align='left'>";
+   echo "<table border=0 width='100%'>\n<tr>\n<td align='left'>";
    if (function_exists($r->AtFirstPage))
       $r->AtFirstPage=$r->AtFirstPage();
    if ($r && !$r->AtFirstPage)
@@ -1391,7 +1454,7 @@ function next_previous_buttons($r,$paging=false,$num_p_r=false,$numrows=false,$p
    if (function_exists($r->AtLastPage))
       $r->AtLastPage=$r->AtLastPage();
    if ($r && !$r->AtLastPage)
-      echo "<input type=\"submit\" name=\"next\" value=\"Next\"></td>\n";
+      echo "<input type=\"submit\" name=\"next\" value=\"Next\">\n";
    else
       if ($paging)
          echo "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
@@ -1401,11 +1464,13 @@ function next_previous_buttons($r,$paging=false,$num_p_r=false,$numrows=false,$p
    echo "</table>\n";
 }
 
-////
-// !Returns the variable $num_p_r holding the # of records per page
-// check user settings and POST_VARS
-// Write the value back to the user defaults
-// When no value is found, default to 10
+/**
+ *  Returns the variable $num_p_r holding the # of records per page
+ *
+ * check user settings and POST_VARS
+ * Write the value back to the user defaults
+ * When no value is found, default to 10
+ */
 function paging ($num_p_r,&$USER) {
    global $HTTP_POST_VARS;
    if (!$num_p_r)
@@ -1418,10 +1483,12 @@ function paging ($num_p_r,&$USER) {
    return $num_p_r;
 }
 
-////
-// !Returns current page
-// current page is table specific, therefore
-// The variable name is formed using the short name for the table
+/**
+ *  Returns current page
+ *
+ * current page is table specific, therefore
+ * The variable name is formed using the short name for the table
+ */
 function current_page($curr_page, $sname, $num_p_r, $numrows) {
    global $HTTP_POST_VARS, $HTTP_SESSION_VARS;
    // damage control: if settings are absent, $num_p_rt will be 0
@@ -1453,8 +1520,10 @@ function current_page($curr_page, $sname, $num_p_r, $numrows) {
    return ${$varname};
 }
 
-////
-// !Assembles the search SQL statement and remembers it in HTTP_SESSION_VARS
+/**
+ *  Assembles the search SQL statement and remembers it in HTTP_SESSION_VARS
+ *
+ */
 function make_search_SQL($db,$tableinfo,$fields,$USER,$search,$searchsort,$whereclause=false) {
    global $HTTP_GET_VARS, $HTTP_POST_VARS, $HTTP_SESSION_VARS;
 
@@ -1513,9 +1582,11 @@ function make_search_SQL($db,$tableinfo,$fields,$USER,$search,$searchsort,$where
 }
 
 
-////
-// !Checks whether a user has access to a given table
-//
+/**
+ *  Checks whether a user has access to a given table
+ *
+ *
+ */
 function may_see_table($db,$USER,$tableid) {
    include ('./includes/defines_inc.php');
    // Sysadmin may see it all
