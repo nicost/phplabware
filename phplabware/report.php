@@ -12,6 +12,7 @@
   \**************************************************************************/
 
 // Needs getvars:tablename,reportid,recordid
+// optional getvar: tableview
 
 /// main include thingies
 require("include.php");
@@ -48,13 +49,23 @@ if (!may_read($db,$tableinfo,$recordid,$USER)) {
    exit();
 }
    
-$fields=comma_array_SQL($db,$tableinfo->desname,"columnname");
-$Allfields=getvalues($db,$tableinfo,$fields,"id",$recordid);
-
 $tp=@fopen($system_settings["templatedir"]."/$reportid.tpl","r");
 if ($tp) {
-   while (!feof($tp))
-      $template.=fgets($tp);
+   while (!feof($tp)) {
+      $line=fgets($tp);
+      if (stristr($line,"<!--fields-->")) {
+         $header=$template;
+         unset($template);
+      }
+      elseif (stristr($line,"<!--/fields-->")) {
+         $footerset=true;
+      }
+      elseif ($footerset)
+         $footer.=$line;
+      else
+         $template.=$line; 
+      
+   }
    fclose($tp);
 }
  
@@ -66,7 +77,38 @@ if (!$template) {
    exit();
 }
 
-$report=make_report($template,$Allfields);
-echo $report;
+// For Kurt
+if ($HTTP_GET_VARS["tableview"]) {
+   // figure out the current query:
+   $queryname=$tableinfo->short.'_query';
+   if (session_is_registered ($queryname) && isset($HTTP_SESSION_VARS[$queryname])) {
+      // get a list with all records we may see, create temp table tempb
+      $listb=may_read_SQL($db,$tableinfo,$USER,"tempb");
 
+      // read all fields in from the description file
+      $fields_table=comma_array_SQL($db,$tableinfo->desname,columnname,"");
+      $fields_table="id,".$fields_table;
+
+      // prepare the search statement and remember it
+      $query=make_search_SQL($db,$tableinfo,$fields_table,$USER,$search,$sortstring,$listb["sql"]);
+      //$db->debug=true;
+      $r=$db->Execute($query);
+      //$db->debug=false;
+      echo $header;
+      while ($r && !$r->EOF) {
+         $Allfields=getvalues($db,$tableinfo,$fields_table,"id",$r->fields["id"]);
+         $report=make_report($template,$Allfields);
+         echo $report;
+         $r->MoveNext();
+      }
+      echo $footer;
+   }
+}
+else { // just a single record
+   $fields=comma_array_SQL($db,$tableinfo->desname,"columnname");
+   $Allfields=getvalues($db,$tableinfo,$fields,"id",$recordid);
+
+   $report=make_report($template,$Allfields);
+   echo $report;
+}
 ?>
