@@ -104,10 +104,19 @@ foreach($HTTP_POST_VARS as $key =>$value) {
    }
    // check if sortup or sortdown arrow was been pressed
    else {
-      if (substr($key,0,6)=='sortup')
-         $sortup=substr($key,7);
-      if (substr($key,0,8)=='sortdown')
-         $sortdown=substr($key,9);
+      if (substr($key,0,6)=='sortup') {
+         // some browsers (like Safari) add '_y' to image links clicked
+         if (substr($key,-2)=='_y')
+            $sortup=substr($key,7,-2);
+         else
+            $sortup=substr($key,7);
+      }
+      if (substr($key,0,8)=='sortdown') {
+         if (substr($key,-2)=='_y')
+            $sortdown=substr($key,9,-2);
+         else
+            $sortdown=substr($key,9);
+      }
    }
 } 
 reset ($HTTP_POST_VARS);
@@ -380,6 +389,7 @@ else {
    // when search fails we'll revert to Show All after showing an error message
    if (!$r) {
       echo "<h3 align='center'>The server encountered an error executing your search.  Showing all records instead.</h3><br>\n";
+echo "${$queryname}.<br>";
       $num_p_r=$HTTP_POST_VARS['num_p_r'];
       unset ($HTTP_POST_VARS);
       ${$pagename}=1;
