@@ -14,10 +14,10 @@
   \**************************************************************************/
 
 function show_type ($db,$table,$name) {
-   global $HTTP_POST_VARS,$PHP_SELF,$HTTP_GET_VARS, $DBNAME;
+   global $HTTP_POST_VARS,$PHP_SELF,$HTTP_GET_VARS, $tablname;
 
    $dbstring=$PHP_SELF;$dbstring.="?";
-   if ($DBNAME){$dbstring.="dbname=$DBNAME&";} 
+   if ($DBNAME){$dbstring.="tablename=$tablename&";} 
    $dbstring.="edit_type=$table&";
    if($HTTP_POST_VARS[type_name]) {$name=$HTTP_POST_VARS[type_name];}
    echo "<form method='post' id='typeform' enctype='multipart/form-data' ";
