@@ -207,7 +207,7 @@ function get_person_link ($db,$id) {
 // !Prints a table with usefull links 
 function navbar($permissions) {
    include ('includes/defines_inc.php');
-   global $db; 
+   global $db, $USER; 
 
    $links_per_row=6;
    
@@ -215,20 +215,26 @@ function navbar($permissions) {
 				
       echo "<table border=0 width=100% cellspacing='0' cellpadding='0'>\n";
       echo "<tr bgcolor='eeeeff' align='center'>\n";
-      $records=$db->Execute("select tablename,custom from tableoftables where display='Y' and permission='Users' ORDER by sortkey");
+      $records=$db->Execute("select tablename,custom,id from tableoftables where display='Y' and permission='Users' ORDER by sortkey");
       $count=0;
       if ($records) {
          while (!$records->EOF) {
-            if (($count%$links_per_row)==0)
-               echo "</tr><tr bgcolor='eeeeff' align='center'>";
-            $tabname=$records->fields[0];
-            $scriptname=$records->fields[1];
-            $linkname="";
-            if ($scriptname=="")
-               $linkname="general.php?tablename=$tabname&".SID;
-            else 
-               $linkname=$scriptname."?".SID;
-            echo "<td style='width: 20%' align='center'><a href=\"$linkname\">$tabname</a></td>";
+            $query="SELECT tableid FROM groupxtable_display WHERE groupid='".$USER["group_array"][0]."' ";
+	    for ($i=1;$i<sizeof($USER["group_array"]);$i++)
+	       $query.="OR groupid='".$USER["group_array"][$i]."' ";
+	    $rb=$db->Execute($query);
+	    if ($rb && !$rb->EOF) {
+               if (($count%$links_per_row)==0)
+                  echo "</tr><tr bgcolor='eeeeff' align='center'>";
+               $tabname=$records->fields[0];
+               $scriptname=$records->fields[1];
+               $linkname="";
+               if ($scriptname=="")
+                  $linkname="general.php?tablename=$tabname&".SID;
+               else 
+                  $linkname=$scriptname."?".SID;
+               echo "<td style='width: 20%' align='center'><a href=\"$linkname\">$tabname</a></td>";
+	    }
             $count++;
             $records->MoveNext(); 
          }		

@@ -165,6 +165,12 @@ function add_table ($db,$tablename,$sortkey) {
          if ($r->fields["id"])
             $shortname.="$id";
   	 $r=$db->Execute("INSERT INTO tableoftables (id,sortkey,tablename,real_tablename,shortname,display,permission) Values($id,'$sortkey','$tablename','$real_tablename','$shortname','Y','Users')");
+	 // let all groups see the table by default
+	 $rg=$db->Execute("SELECT id FROM groups");
+	 while ($rg && !$rg->EOF) {
+	    $db->Execute("INSERT INTO groupxtable_display VALUES ('".$rg->fields["id"]."','$id')");
+	    $rg->MoveNext();
+	 }
          $r=$db->Execute("CREATE TABLE $desc (
 		id int PRIMARY KEY,
 		sortkey int,
@@ -205,12 +211,19 @@ function add_table ($db,$tablename,$sortkey) {
 /////////////////////////////////////////////////////////////////////////
 ////
 // !modifies  the display properites of a table within navbar
-function mod_table($db,$id,$tablename,$tablesort,$tabledisplay) {
+function mod_table($db,$id,$tablename,$tablesort,$tabledisplay,$tablegroups) {
    global $string;
 
    $r=$db->Execute("UPDATE tableoftables SET sortkey='$tablesort',display='$tabledisplay' where id='$id'");   	
-   if ($r) 
+   if ($r) {
+      // Set permissions for groups to see these tables
+      $db->Execute("DELETE FROM groupxtable_display WHERE tableid='$id'");
+      if ($tablegroups) {
+         foreach ($tablegroups AS $groupid)
+	    $db->Execute("INSERT into groupxtable_display VALUES ('$groupid','$id')");
+      }
       $string="Succesfully Changed Record $tablename";
+   }
    else 
       $string="Please enter all fields";
    return false;

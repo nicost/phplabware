@@ -50,7 +50,7 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
 	 $newlabel=$HTTP_POST_VARS["link_label"][$modarray[1]];
      $r=$db->Execute("Delete from linkbar where id='$newid' and label='$newlabel'");
      }     
-	 if (substr($key, 0, 8) == "addtable") {
+    if (substr($key, 0, 8) == "addtable") {
       $tablename=$HTTP_POST_VARS["newtable_name"];
       $tablesort=$HTTP_POST_VARS["newtable_sortkey"];
       add_table($db,$tablename,$tablesort);
@@ -61,7 +61,8 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
       $tablename=$HTTP_POST_VARS["table_name"][$modarray[1]];
       $tablesort=$HTTP_POST_VARS["table_sortkey"][$modarray[1]];
       $tabledisplay=$HTTP_POST_VARS["table_display"][$modarray[1]];
-      mod_table($db,$id,$tablename,$tablesort,$tabledisplay);
+      $tablegroups=$HTTP_POST_VARS["tablexgroups"][$id];
+      mod_table($db,$id,$tablename,$tablesort,$tabledisplay,$tablegroups);
       }
    if (substr($key, 0, 8) == "deltable") {  
       $modarray = explode("_", $key);      
@@ -224,9 +225,10 @@ $dbstring=$PHP_SELF;echo "action='$dbstring?".SID."'>\n";
 echo "<table align='center'>\n";
 
 echo "<tr>\n";
-echo "<th>Table Name</th>";
-echo "<th>Display</th>";
-echo "<th>Sort key</th>";
+echo "<th>Table Name</th>\n";
+echo "<th>Display</th>\n";
+echo "<th>Groups</th>\n";
+echo "<th>Sort key</th>\n";
 echo "<th>Custom</th>\n";
 echo "<th>Action</th>\n";
 echo "<th>Fields</th>\n";
@@ -234,12 +236,15 @@ echo "<th>Fields</th>\n";
 echo "</tr>\n";
 echo "<tr><td><input type='text' name='newtable_name' value=''></td>\n";
 echo "<td></td>\n";
+echo "<td></td>\n";
 echo "<td><input type='text' name='newtable_sortkey' value=''></td>\n";
 echo "<td></td>\n";
 echo "<td align='center'><input type='submit' name='addtable' value='Add'></td></tr>\n";
  
 $query = "SELECT id,tablename,display,sortkey,custom FROM tableoftables where display='Y' or display='N' ORDER BY sortkey";
 $r=$db->Execute($query);
+// query for group select boxes
+$rg=$db->Execute("SELECT name,id from groups");
 $rownr=0;
 
 // print all entries
@@ -264,6 +269,14 @@ while (!($r->EOF) && $r) {
       echo "<td><input type='radio' checked value='Y' name='table_display[$rownr]'>yes<input type='radio' value='N' name='table_display[$rownr]'>no</td>\n";
    else
       echo "<td><input type='radio' value='Y' name='table_display[$rownr]'>yes<input type='radio' checked value='N' name='table_display[$rownr]'>no</td>\n";
+   $rgs=$db->Execute("SELECT groupid FROM groupxtable_display WHERE tableid='$id'");
+   while ($rgs && !$rgs->EOF) {
+      $groups_table[]=$rgs->fields["groupid"];
+      $rgs->MoveNext();
+   }
+   echo "<td>".$rg->GetMenu2("tablexgroups[$id][]",$groups_table,true,true,3)."</td>\n";
+   $rg->MoveFirst();
+   unset($groups_table);
    echo "<td><input type='text' name='table_sortkey[]' value='$sortkey'></td>\n";
    if ($Custom=="")
       echo "<td>Yes</td>\n";
