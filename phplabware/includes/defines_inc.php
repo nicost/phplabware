@@ -33,6 +33,6 @@ $PWD_MINIMUM=4;
 $tables="antibodies,protocols";
 
 // maximum length of items displayed in drop-down menu
-$max_menu_length=40;
+$max_menu_length=30;
 
 ?>

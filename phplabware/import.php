@@ -43,11 +43,32 @@ navbar($USER['permissions']);
 function move ($fromfile, $tofile) {
    //  guess this won't work on Windows
    `mv '$fromfile' '$tofile'`;
+    // but this should
     if (!filesize($tofile)) 
       copy($fromfile,$tofile);
     return filesize($tofile);
 }
 
+function mymktime($datestring) {
+   global $system_settings;
+
+   if ($system_settings['date_format']=='n/d/Y') {
+      $month=strtok($datestring,'/');
+      $day=strtok('/');
+      $year=strtok('/');
+   }
+   elseif ($system_settings['date_format']=='M d Y') {
+      $month=strtok($datestring,' ');
+      $day=strtok(' ');
+      $year=strtok(' ');
+   }
+   elseif ($system_settings['date_format']=='d M Y') {
+      $day=strtok($datestring,' ');
+      $month=strtok(' ');
+      $year=strtok(' ');
+   }
+   return mktime(0,0,0,$month,$day,$year);
+}
 
 ////
 // !Upload files and enters then into table files
@@ -142,8 +163,19 @@ function check_input ($tableinfo, &$fields, $to_fields, $field_types, $field_dat
             // see if we have this value already, otherwise make a new entry in the type table....
              $Allfields=getvalues($db,$tableinfo,$to_fields[$i]);
              $rtemp=$db->Execute("SELECT id FROM {$Allfields[0]['ass_t']} WHERE typeshort='{$fields[$i]}'");
-             if ($rtemp)
+             if ($rtemp && $rtemp->fields[0]) {
                 $fields[$i]=$rtemp->fields[0];
+             }
+             else { // insert this new value in the type table:
+$db->debug=true;
+                $typeid=$db->GenId($Allfields[0]['ass_t'].'_id_seq');
+                unset($rtemp);
+                $rtemp=$db->Execute("INSERT INTO {$Allfields[0]['ass_t']} (id,type,typeshort,sortkey) VALUES ($typeid,'{$fields[$i]}','{$fields[$i]}','0')");
+                if ($rtemp && $rtemp->fields[0]) {
+                   $fields[$i]=$rtemp->fields[0];
+                }
+$db->debug=false;
+             }
          }
          // for mpulldowns we have a problem since we do not have the new id yet
 
@@ -209,7 +241,7 @@ if ($HTTP_POST_VARS['assign']=='Import Data') {
       $table_link="$table_custom?".SID;
    else
       $table_link="general.php?tablename=$table_label"."&".SID;
-
+$db->debug=true;
    // fill the tmp table with file related data
    if ($localfile) {
        $dumpdir='phplabwaredump';
@@ -349,6 +381,11 @@ if ($HTTP_POST_VARS['assign']=='Import Data') {
                $newid=false;
                for ($i=0;$i<$nrfields;$i++) {
                   if ($fields[$i] && $to_fields[$i] && $to_datatypes[$i]!='file') {
+                     // when importing a date field we'll have to suppress insertion of the date field or the SQL query will fail
+                     if ($to_fields[$i]=='date') {
+                        $newdate=true;
+                        $fields[$i]=mymktime($fields[$i]);
+                     }
                      $worthit=true;
                      $query_start.="$to_fields[$i],";  
                      $query_end.="'$fields[$i]',";
@@ -368,7 +405,9 @@ if ($HTTP_POST_VARS['assign']=='Import Data') {
                if ($worthit) {
                   if (!$newid) {
                      $id=$db->GenID($table."_id_seq");
-                     if ($id)
+                     if ($id && $newdate)
+                        $query="$query_start id,access,lastmoddate,lastmodby,ownerid) $query_end '$id','$access','$lastmoddate','$lastmodby','$ownerid')";
+                     else
                         $query="$query_start id,access,date,lastmoddate,lastmodby,ownerid) $query_end '$id','$access','$lastmoddate','$lastmoddate','$lastmodby','$ownerid')";
                   }
                   else {
@@ -379,7 +418,10 @@ if ($HTTP_POST_VARS['assign']=='Import Data') {
                      // check whether this id was used
                      if (get_cell($db,$table,'id','id',$newid))
                         $duplicateid++;
-                     $query="$query_start access,date,lastmoddate,lastmodby,ownerid) $query_end '$access','$lastmoddate','$lastmoddate','$lastmodby','$ownerid')";
+                     if ($newdate)
+                     $query="$query_start access,lastmoddate,lastmodby,ownerid) $query_end '$access','$lastmoddate','$lastmodby','$ownerid')";
+                     else
+                        $query="$query_start access,date,lastmoddate,lastmodby,ownerid) $query_end '$access','$lastmoddate','$lastmoddate','$lastmodby','$ownerid')";
                   }
                   if ($r=$db->Execute($query)) {
                       $inserted++;
