@@ -150,7 +150,8 @@ function add_ab_form ($db,$tableid,$fields,$field_values,$id,$USER,$PHP_SELF,$sy
    echo "<th>Files: </th>\n";
    echo "<td colspan=5><table border=0>";
    for ($i=0;$i<sizeof($files);$i++) {
-      echo "<tr><td>".$files[$i]["link"]."</td>\n";
+      echo "<tr><td>".$files[$i]["link"]."\n";
+      echo "&nbsp;&nbsp;(<i>".$files[$i]["name"]."</i>, ".$files[$i]["type"]." file)</td>\n";
       echo "<td><input type='submit' name='def_".$files[$i]["id"]."' value='Delete' Onclick=\"if(confirm('Are you sure the file ".$files[$i]["name"]." should be removed?')){return true;}return false;\"></td></tr>\n";
    }
    echo "<tr><td colspan=2><input type='file' name='file[]' value='$filename'></td>\n";
@@ -268,7 +269,7 @@ function show_ab ($db,$tableid,$fields,$id,$USER,$system_settings) {
    if ($files) {
       echo "<tr><th>Files:</th>\n<td colspan=5>";
       for ($i=0;$i<sizeof($files);$i++) {
-         echo $files[$i]["link"]." (".$files[$i]["type"]." file, ".$files[$i]["size"].")<br>\n";
+         echo $files[$i]["link"]." (<i>".$files[$i]["name"]."</i>, ".$files[$i]["type"]." file, ".$files[$i]["size"].")<br>\n";
       }
       echo "</tr>\n";
    }
