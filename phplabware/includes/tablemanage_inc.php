@@ -322,7 +322,7 @@ function add_columnecg($db,$tablename2,$colname2,$label,$datatype,$Rdis,$Tdis,$r
    elseif (strpos($SQL_reserved,",$colname,")) 
       $string="Column name <i>$colname</i> is a reserved SQL word.  Please pick another column name";
    else {
-      if ($datatype=='pulldown' || $datatype='mpulldown') {
+      if ($datatype=='pulldown' || $datatype=='mpulldown') {
          // create an associated table, not overwriting old ones, using a max number
          $tablestr=$real_tablename;
 	 $tablestr.='ass';
