@@ -15,7 +15,6 @@
 
 /// main include thingies
 require("include.php");
-require("includes/db_inc.php");
 
 // find id associated with table
 $r=$db->Execute("SELECT id,shortname,tablename,real_tablename FROM tableoftables WHERE tablename='$HTTP_GET_VARS[tablename]'");
@@ -38,6 +37,7 @@ $plugin_code=get_cell($db,"tableoftables","plugin_code","id",$tableid);
 if ($plugin_code)
    @include($plugin_code);
 
+require("includes/db_inc.php");
 require("includes/general_inc.php");
 
 // register variables
