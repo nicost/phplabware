@@ -624,14 +624,18 @@ function process_file($db,$fileid,$system_settings) {
    $mimetype=get_cell($db,"files","mime","id",$fileid);
    if (!strstr($mimetype,"html")) {
       $word2html=$system_settings["word2html"];
-      $filepath=file_path($db,$fileid);
-      if (!$filepath)
-         return false;
-      $temp=$system_settings["tmpdir"]."/".uniqid("file");
-      $command= "$word2html $filepath $temp";
-      $result=exec($command);
+      $wv_version=$system_settings["wvHtml_verision"];
+      if ($wv_version<0.7) {
+         $filepath=file_path($db,$fileid);
+         if (!$filepath)
+            return false;
+         $temp=$system_settings["tmpdir"]."/".uniqid("file");
+         $command= "$word2html $filepath $temp";
+         $result=exec($command);
+      }
       // version of wvHtml >= 0.7 have to be called differently:
-      if (@is_readable($temp) || @filesize($temp) < 1) {
+      //if (@is_readable($temp) || @filesize($temp) < 1) {
+      else {
          $command="$word2html --targetdir=".$system_settings["tmpdir"]." \"$filepath\" $converted_file";
          $result=exec($command);
       } 
