@@ -322,6 +322,8 @@ else {
 	 upload_files($db,"antibodies",$id,$USER,$system_settings);
          // to not interfere with search form 
          unset ($HTTP_POST_VARS);
+	 // or we won't see the new record
+	 unset ($HTTP_SESSION_VARS["query"]);
       }
    }
    // then look whether it should be modified
@@ -421,6 +423,7 @@ else {
       $query=$HTTP_SESSION_VARS["query"];
    else
       $query = "SELECT $fields FROM antibodies WHERE id IN ($whereclause) ORDER BY date DESC";
+   $HTTP_SESSION_VARS["query"]=$query;   
    session_register("query");
    
    // paging stuff
