@@ -128,7 +128,7 @@ function get_quote ($quote,$quote_type) {
 ////
 // !corrects problems in input data (Removes quotes around text, 
 // checks for ints and floats, quotes text
-function check_input ($tableinfo, &$fields, $field_types, $field_datatypes, $nrfields)
+function check_input ($tableinfo, &$fields, $to_fields, $field_types, $field_datatypes, $nrfields)
 {
    for ($i=0;$i<$nrfields;$i++) {
       if ($fields[$i]) {
@@ -138,6 +138,8 @@ function check_input ($tableinfo, &$fields, $field_types, $field_datatypes, $nrf
             $fields[$i]=substr($fields[$i],1,-1);
          if ($field_datatypes[$i]=='pulldown') {
             // see if we have this value already, otherwise make a new entry in the type table....
+             $rasslk=$db->Execute("SELECT columnname FROM {$tableinfo->desname} WHERE id={$to_fields["$i"]}");
+             $Allfields=getvalues($db,$tableinfo,$rasslk->fields[0]);
          }
          if ($field_types[$i]=='int'){
             $fields[$i]=(int)$fields[$i];
@@ -289,7 +291,7 @@ if ($HTTP_POST_VARS['assign']=='Import Data') {
             
             //$fields=check_input (explode($quote.$delimiter.$quote,$line),$to_types,$nrfields);
             $fields=explode($quote.$delimiter.$quote,$line);
-            check_input ($tableinfo,$fields,$to_types,$to_datatypes,$nrfields);
+            check_input ($tableinfo,$fields,$to_fields,$to_types,$to_datatypes,$nrfields);
             $worthit=false;
             unset($recordid);
             // if there is a column being used as primary key, we do an SQL
