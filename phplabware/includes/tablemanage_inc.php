@@ -157,7 +157,10 @@ function add_table ($db,$tablename,$tablelabel,$sortkey,$plugincode) {
       $r=$db->Execute("CREATE TABLE $real_tablename (
 		id int PRIMARY KEY, 
 		title text, 
-		access varchar(9), 
+                gr smallint,
+                gw smallint,
+                er smallint,
+                ew smallint,
 		ownerid int, 
 		magic int, 
 		lastmodby int, 
@@ -168,8 +171,10 @@ function add_table ($db,$tablename,$tablelabel,$sortkey,$plugincode) {
          $db->Execute("CREATE INDEX $real_tablename"."_id_index ON $real_tablename (id)");
          $db->Execute("CREATE INDEX $real_tablename"."_title_index ON $real_tablename (title)");
          $db->Execute("CREATE INDEX $real_tablename"."_title_index ON $real_tablename (title(10))");
-         $db->Execute("CREATE INDEX $real_tablename"."_access_index ON $real_tablename (access)");
-         $db->Execute("CREATE INDEX $real_tablename"."_access_index ON $real_tablename (access(9))");
+         $db->Execute("CREATE INDEX $real_tablename"."_gr_index ON $real_tablename (gr)");
+         $db->Execute("CREATE INDEX $real_tablename"."_gw_index ON $real_tablename (gw)");
+         $db->Execute("CREATE INDEX $real_tablename"."_er_index ON $real_tablename (er)");
+         $db->Execute("CREATE INDEX $real_tablename"."_ew_index ON $real_tablename (ew)");
          $db->Execute("CREATE INDEX $real_tablename"."_ownerid_index ON $real_tablename (ownerid)");
          $db->Execute("CREATE INDEX $real_tablename"."_date_index ON $real_tablename (date)");
          // check if shortname has been taken, if so, add id
@@ -211,7 +216,13 @@ function add_table ($db,$tablename,$tablelabel,$sortkey,$plugincode) {
          $descid=$db->GenId("$desc"."_id");  
   	 $db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'id','id','100','N','N','N','int(11)','text',NULL,NULL)");
          $descid=$db->GenId("$desc"."_id");  
-         $db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'access','access','110','N','N','N','varchar(9)','text',NULL,NULL)");
+         $db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'gr','group read','111','N','N','N','smallint','int',NULL,NULL)");
+         $descid=$db->GenId("$desc"."_id");  
+         $db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'gw','group write','112','N','N','N','smallint','int',NULL,NULL)");
+         $descid=$db->GenId("$desc"."_id");  
+         $db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'er','everyone read','113','N','N','N','smallint','int',NULL,NULL)");
+         $descid=$db->GenId("$desc"."_id");  
+         $db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'ew','everyone write','114','N','N','N','smallint','int',NULL,NULL)");
          $descid=$db->GenId("$desc"."_id");  
          $db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'owner','ownerid','120','N','N','N','int(11)','user',NULL,NULL)");
          $descid=$db->GenId("$desc"."_id");  
