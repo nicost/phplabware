@@ -256,9 +256,10 @@ function add_columnecg($db,$tablename2,$colname2,$label,$datatype,$Rdis,$Tdis,$r
    $replace=array("_","_","","");
    $colname = preg_replace ($search,$replace, $colname2);
    $real_tablename=get_cell($db,"tableoftables","real_tablename","id",$id);
+   $desc=get_cell($db,"tableoftables","table_desc_name","id",$id);
 
    $fieldstring="id,columnname,label,sortkey,display_table,display_record,required,type,datatype,associated_table,associated_column"; 
-   $desc=$real_tablename . "_desc";
+//   $desc=$real_tablename . "_desc";
    $fieldid=$db->GenId($desc."_id");
    $label=strtr($label,",'","  ");
    // avoid having more than one column of type 'file'
@@ -311,7 +312,6 @@ function add_columnecg($db,$tablename2,$colname2,$label,$datatype,$Rdis,$Tdis,$r
             return false;
          }
       }
-
    }
 }
 
@@ -329,8 +329,10 @@ function mod_columnECG($db,$id,$sort,$tablename,$colname,$label,$datatype,$Rdis,
    $tablename=$tablename."_".$tableid;
    $desc=$tablename."_desc";
    $r=$db->Execute("UPDATE $desc SET sortkey='$sort',display_table='$Tdis', display_record='$Rdis',required='$req',label='$label' where id='$id'");   	
-   if ($r) 
+   if ($r) { 
       $string="Succesfully Changed Column $colname in $tablename";
+      return true;
+   }
    else 
       $string="Please enter all fields";
    return false;	
@@ -383,6 +385,32 @@ function make_column_js_array($db,$r) {
    }
    $result.=")";
    return $result;
+}
+
+////
+// ! show page with choice of tables, dynamically generate list with columns
+function show_active_link_page ($db,$table_name,$addcol_name,$addcol_label,$link_part_a=false,$link_part_b=false) {
+   echo "<form method='post' id='active_link'>\n";
+   echo "<input type='hidden' name='table_name' value='$table_name'></input>\n";
+   echo "<input type='hidden' name='addcol_name' value='$addcol_name'></input>\n";
+   echo "<input type='hidden' name='addcol_label' value='$addcol_label'></input>\n";
+   echo "<table align='center' cellpadding='2' cellspacing='0'>\n";
+   echo "<tr><td>Enter the link (including http://) here. \"Cell content\" will be extracted from the database</td></tr>\n";
+   echo "<tr><td><input type='text' name='link_part_a' value='$link_part_a'>\n";
+   echo "cell content<input type='text'name='link_part_b' value='$link_part_b'></td></tr>\n";
+
+   echo "<tr><td align='center'><input type='submit' name='submit' value='Submit'></input></td>\n";
+   echo "</tr>\n</table>\n</form>\n";
+}
+
+////
+// !Stores active link data
+function add_active_link ($db,$table,$column,$link_a,$link_b) {
+   $r=$db->Execute("SELECT table_desc_name FROM tableoftables WHERE tablename='$table'");
+   $table_desc=$r->fields["table_desc_name"];
+   if ($r && $link_a) {
+      $r=$db->Execute("UPDATE $table_desc SET link_first='$link_a',link_last='$link_b' WHERE columnname='$column'");
+   }
 }
 
 ////
