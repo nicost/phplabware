@@ -143,6 +143,7 @@ function display_table_change($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr
 
       echo "<td align='center'>&nbsp;\n";  
       if ($HTTP_SESSION_VARS["javascript_enabled"]) {
+         echo "<script language='JavaScript'><!--window.name='mainwin'; </script>";
          $jscript=" onclick='MyWindow=window.open (\"general.php?tablename=".$tableinfo->name."&showid=$id&jsnewwindow=true\",\"view\",\"scrollbar=yes,resizable=yes,width=600,height=400\")'";
          echo "<input type=\"button\" name=\"view_" . $id . "\" value=\"View\" $jscript>\n";
       }
@@ -277,6 +278,10 @@ function display_record($db,$Allfields,$id,$tablename,$real_tablename,$backbutto
    //date_entry($id,$real_tablename);
    echo "</tr>\n";
    make_link($id,$tablename);
+   if (function_exists ("plugin_display_show")){
+      plugin_display_show ($db,$Allfields,$id);
+   return $Allfields;
+    } 
    echo "<form method='post' action='$PHP_SELF?tablename=$tablename&".SID."'>\n";
    echo "<input type='hidden' name='md' value='$md'>\n";
    if ($backbutton) {
@@ -424,8 +429,13 @@ function display_add($db,$tableinfo,$Allfields,$id,$namein,$system_settings) {
       if (function_exists("plugin_display_add"))
          plugin_display_add($db,$tableinfo->id,$nowfield);
       echo "</td></tr>\n";
+  
 	
    }	
+   	/* Call to a function that runs at the end when adding a new record*/   
+       if ((function_exists("plugin_display_add_post")) && (!($id)))   
+         {plugin_display_add_post($db,$tableinfo->id); echo "</td></tr>\n";}
+         
    echo "<td colspan=4>";
    show_access($db,$tableinfo->id,$id,$USER,$system_settings);
    echo "</td></tr>\n"; echo "<tr>";
@@ -544,7 +554,6 @@ function getvalues($db,$tableinfo,$fields,$qfield=false,$field=false) {
       plugin_getvalues($db,$Allfields,$id,$tableinfo->id);
    return $Allfields;
 }
-
 
 
 //////////////////////////////////////////////////////////////////////
