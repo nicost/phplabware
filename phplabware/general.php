@@ -120,8 +120,15 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
          reset($HTTP_POST_VARS);
          while((list($key, $val) = each($HTTP_POST_VARS))) {	
             $testarray=explode('_',$key);
-            if ( ($testarray[1]==$chgarray[1]) && (in_array ($testarray[0],$Fieldsarray))) 
-               $change_values[$testarray[0]]=$val;  
+            if ( ($testarray[1]==$chgarray[1]) && (in_array ($testarray[0],$Fieldsarray))) {
+               if (is_array($val)) {
+                  // special treatment for mpulldowns
+                  $rk=$db->Execute("SELECT key_table FROM {$tableinfo->desname} WHERE columnname='{$testarray[0]}'");
+                  update_mpulldown($db,$rk->fields[0],$testarray[1],$val);
+               } 
+               else
+                  $change_values[$testarray[0]]=$val;  
+            }
          }
          if(check_g_data ($db,$change_values,$tableinfo,true))
             modify($db,$tableinfo->realname,$Fieldscomma,$change_values,$chgarray[1],$USER,$tableinfo->id); 
@@ -358,7 +365,7 @@ else {
       unset ($HTTP_SESSION_VARS[$queryname]);
       unset ($serialsortdirarray);
       session_unregister($queryname);
-      ${$queryname}=make_search_SQL($db,$tableinfo,$fields_table,$USER,$search,$sortstring,$listb["sql"]);
+      ${$queryname}=make_search_SQL($db,$tableinfo,$fields_table,$USER,$search,$sortstring,$listb['sql']);
       $r=$db->Execute(${$queryname});
    }
 
@@ -380,14 +387,14 @@ else {
 
    // get variables for links 
    $sid=SID;
-   if ($sid) $sid="&".$sid;
+   if ($sid) $sid='&'.$sid;
    if ($tableinfo->name) $sid.="&tablename=$tableinfo->name";
 
    // print form;
    $headers = getallheaders();
 
    $dbstring=$PHP_SELF."?"."tablename=$tableinfo->name&";
-   $formname="g_form";
+   $formname='g_form';
    echo "<form name='$formname' method='post' id='generalform' enctype='multipart/form-data' action='$PHP_SELF?$sid'>\n";
    echo "<input type='hidden' name='md' value='$md'>\n";
 

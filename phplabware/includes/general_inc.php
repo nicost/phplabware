@@ -93,15 +93,15 @@ function display_table_change($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr
       echo "<input type='hidden' name='chgj_".$id."' value=''>\n";
       $js="onChange='document.g_form.chgj_".$id.".value=\"Change\";document.g_form.submit()'";
       foreach($Allfields as $nowfield) {
-         if ($nowfield[required]=="Y")
+         if ($nowfield[required]=='Y')
             $thestar="<sup style='color:red'>&nbsp;*</sup>";
          else
             $thestar=false;
-         if ( ($nowfield["modifiable"]=="N") || !$may_write) {
+         if ( ($nowfield["modifiable"]=='N') || !$may_write) {
             echo "<input type='hidden' name='$nowfield[name]_$id' value='$nowfield[values]'>\n";
             echo "<td>$nowfield[text]</td>\n";
          }
-         elseif ($nowfield[datatype]=="text") {
+         elseif ($nowfield[datatype]=='text') {
      	    echo "<td><input type='text' name='$nowfield[name]_$id' value='$nowfield[values]' size=15 $js>$thestar</td>\n";
          }
          elseif ($nowfield['datatype']=='int' || $nowfield['datatype']=='sequence' || $nowfield['datatype']=='float') {
@@ -115,8 +115,22 @@ function display_table_change($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr
          }
          elseif ($nowfield['datatype']=='pulldown') {
             // get previous value	
-            $rp=$db->Execute("SELECT typeshort,id FROM $nowfield[ass_t] ORDER BY sortkey");
+            $rp=$db->Execute("SELECT typeshort,id FROM $nowfield[ass_t] ORDER BY sortkey,typeshort");
             $text=$rp->GetMenu2("$nowfield[name]_$id",$nowfield[values],true,false,0,$js);
+            echo "\n<td>$text $thestar</td>\n";
+         }
+         elseif ($nowfield['datatype']=='mpulldown') {
+            // get previous values
+            unset ($rp);
+            $rp=$db->Execute("SELECT typeshort,id FROM {$nowfield['ass_t']} ORDER BY sortkey,typeshort");
+            unset ($rbv);
+            unset ($valueArray);
+            $rbv=$db->Execute("SELECT typeid FROM {$nowfield['key_t']} WHERE recordid=$id");
+            while ($rbv && !$rbv->EOF) {
+               $valueArray[]=$rbv->fields[0];
+               $rbv->MoveNext();
+            }
+            $text=$rp->GetMenu2($nowfield['name']."_$id",$valueArray,true,true,4,$js);
             echo "\n<td>$text $thestar</td>\n";
          }
          elseif ($nowfield['datatype']=='table') {
