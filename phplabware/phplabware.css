@@ -36,6 +36,16 @@ Table, P, DIV, H5, A, OL, TD, UL
 	font-size : 10pt;
 }
 
+TR.row_odd
+{
+	background-color : #F1FFFF;
+}
+
+TR.row_even
+{
+	background-color : #FFF1FF;
+}
+
 TH  
 {
 	font-family : Arial, Helvetica;
