@@ -62,6 +62,12 @@ function check_pd_data ($db,&$field_values) {
       echo "<h3 align='center'>Please enter the Pubmed ID of the PDF reprint.</h3>";
       return false;
    }
+   // check whether we had this one already
+   $existing_id=get_cell($db,"pdfs","id","pmid",$field_values["pmid"]);
+   if ($existing_id) {
+      echo "<h3 align='center'><a href='pdfs.php?showid=$existing_id'>That paper </a>is already in the database.</h3>\n";
+      return false;
+   }
    // this will protect quotes in the imported data
    set_magic_quotes_runtime(1);
    // data from pubmed and parse
