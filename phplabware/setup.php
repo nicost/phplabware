@@ -193,7 +193,7 @@ if ($version) {
 	    notes text,
 	    location text,
 	    source text,
-	    date datetime)";
+	    date date)";
 	 if (!$db->Execute($query)) $test=false;
          $query="CREATE TABLE ab_type1 
             (id int PRIMARY KEY, 
