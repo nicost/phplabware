@@ -299,12 +299,14 @@ function delete ($db, $tableid, $id, $USER, $filesonly=false) {
       return false;
 
    // check for associated files
+   $db->debug=true;
    $r=$db->Execute("SELECT id FROM files 
                     WHERE tablesfk=$tableid AND ftableid=$id");
    while ($r && !$r->EOF) {
       delete_file ($db,$r->fields("id"),$USER); 
       $r->MoveNext();
    }
+   $db->debug=false;
    // and now delete for real
    if (!$filesonly) {
       if ($db->Execute("DELETE FROM $table WHERE id=$id"))
@@ -443,6 +445,8 @@ function upload_files ($db,$tableid,$id,$columnid,$columnname,$USER,$system_sett
          $query="INSERT INTO files (id,filename,mime,size,title,tablesfk,ftableid,ftablecolumnid,type) VALUES ($fileid,'$originalname','$mime','$size',$title,'$tableid',$id,'$columnid','$filestype')";
 	 $db->Execute($query);
       }
+      else
+         $fileid=false;
    }
    return $fileid;
 }
@@ -531,6 +535,7 @@ function delete_file ($db,$fileid,$USER) {
    $filename=get_cell($db,"files","filename","id",$fileid);
    if (!may_write($db,$tableid,$ftableid,$USER))
       return false;
+   @unlink($system_settings['filedir']."/$fileid"."_$filename");   
    // even if unlink fails we should really remove the entry from the database:
    $db->Execute("DELETE FROM files WHERE id=$fileid");
    // if this was an image:
