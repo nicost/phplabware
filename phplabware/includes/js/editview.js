@@ -3,14 +3,15 @@
 
 var newWindow;
 
-function submit_changes ($tableid,$recordid,$field,$newvalue) {
+
+function submit_changes ($tableid,$recordid,$field,$datatype,$newvalue) {
    // Open new window under existing one, make sure it does not yes exist
    if (!newWindow || newWindow.closed) {
       newWindow = window.open("","PHPLabware","status,height=200,width=300");
       newWindow.blur();
       window.focus();
       // supposedly needed for IE, current Mozilla does not know it
-      setTimeout ("writeToWindow()",50);
+      //setTimeout ("writeToWindow()",50);
    }
    
    // for debugging, we give the new window focus
@@ -22,6 +23,7 @@ function submit_changes ($tableid,$recordid,$field,$newvalue) {
    newForm += "<input type='hidden' name='tableid' value='" + $tableid + "'>\n";
    newForm += "<input type='hidden' name='recordid' value='" + $recordid + "'>\n";
    newForm += "<input type='hidden' name='field' value='" + $field + "'>\n";
+   newForm += "<input type='hidden' name='datatype' value='" + $datatype + "'>\n";
    newForm += "<input type='hidden' name='newvalue' value='" + $newvalue + "'>\n";
 
    //newForm += "<input type='submit' name='Submit' value='Submit'>\n";
@@ -31,27 +33,43 @@ function submit_changes ($tableid,$recordid,$field,$newvalue) {
 
    newWindow.document.editMode.submit();
 
+   //document.onblur=newWindow.close();
+
 }
 
 // simple functions to check input
 
-function isAnInt (inputValue) {
-   if (parseInt(inputValue)) {
-      return true;
+function isInstring (inputValue,goodValues,alertText) {
+   var allValid=true;
+   for (i=0; i<inputValue.length; i++) {
+      ch=inputValue.charAt(i)
+      for (j=0; j<=goodValues.length;j++) {
+         if (ch==goodValues.charAt(j)) {
+            break;
+         }
+         if (j==goodValues.length) {
+            allValid=false;
+            break;
+         }
+      }
    }
-   else {
-      alert("Please use a valid number (fractions not allowed) in this field");
-      return false;
+   if (!allValid) {
+       alert(alertText);
+       return false;
+   } else {
+      return true;
    }
 }
 
+function isAnInt (inputValue) {
+   var goodValues="0123456789";
+   var alertText="Please use a valid number (fractions not allowed) in this field";
+   return isInstring(inputValue,goodValues,alertText);
+}
+
 function isAFloat (inputValue) {
-   if (parseFloat(inputValue)) {
-      return true;
-   }
-   else {
-      alert("Please use a valid number (fractions allowed) in this field");
-      return false;
-   }
+   var goodValues="0123456789" + "." + ",";
+   var alertText="Please use a valid number (fractions allowed) in this field";
+   return isInstring(inputValue,goodValues,alertText);
 }
 
