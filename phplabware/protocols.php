@@ -21,6 +21,7 @@ require ("includes/db_inc.php");
 // main global vars
 $httptitle .= "Protocols";
 $fields="id,access,ownerid,magic,title,type1,type2,notes,date,lastmodby,lastmoddate";
+$tableid=get_cell($db,"tableoftables","id","tablename","protocols");
 
 // register variables
 $showid=$HTTP_GET_VARS["showid"];
@@ -65,8 +66,8 @@ function check_pr_data ($db,&$field_values) {
 // $fields is a comma-delimited string with column names
 // $field_values is hash with column names as keys
 // $id=0 for a new entry, otherwise it is the id
-function add_pr_form ($db,$fields,$field_values,$id,$USER,$PHP_SELF,$system_settings) {
-   if (!may_write($db,"protocols",$id,$USER))
+function add_pr_form ($db,$tableid,$fields,$field_values,$id,$USER,$PHP_SELF,$system_settings) {
+   if (!may_write($db,$tableid,$id,$USER))
       return false;
    global $db_type;
 
@@ -133,7 +134,7 @@ function add_pr_form ($db,$fields,$field_values,$id,$USER,$PHP_SELF,$system_sett
    echo "</tr>\n";
    echo "</table></td>\n\n";
    echo "<td colspan=4>";
-   show_access($db,"protocols",$id,$USER,$system_settings);
+   show_access($db,$tableid,$id,$USER,$system_settings);
    echo "</td></tr>\n";
    
    echo "<tr>";
@@ -151,10 +152,10 @@ function add_pr_form ($db,$fields,$field_values,$id,$USER,$PHP_SELF,$system_sett
 
 ////
 // !Shows a page with nice information on the protocol
-function show_pr ($db,$fields,$id,$USER,$system_settings) {
+function show_pr ($db,$tableid,$fields,$id,$USER,$system_settings) {
    global $PHP_SELF;
 
-   if (!may_read($db,"protocols",$id,$USER))
+   if (!may_read($db,$tableid,$id,$USER))
       return false;
 
    // get values 
@@ -315,7 +316,7 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
    if (substr($key, 0, 3) == "mod") {
       $modarray = explode("_", $key);
       $r=$db->Execute("SELECT $fields FROM protocols WHERE id=$modarray[1]"); 
-      add_pr_form ($db,$fields,$r->fields,$modarray[1],$USER,$PHP_SELF,$system_settings);
+      add_pr_form ($db,$tableid,$fields,$r->fields,$modarray[1],$USER,$PHP_SELF,$system_settings);
       printfooter();
       exit();
    }
@@ -328,14 +329,14 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
          echo "<h3 align='center'>Deleted file <i>$filename</i>.</h3>\n";
       else
          echo "<h3 align='center'>Failed to delete file <i>$filename</i>.</h3>\n";
-      add_pr_form ($db,$fields,$HTTP_POST_VARS,$id,$USER,$PHP_SELF,$system_settings);
+      add_pr_form ($db,$tableid,$fields,$HTTP_POST_VARS,$id,$USER,$PHP_SELF,$system_settings);
       printfooter();
       exit();
    }
    // show the record
    if (substr($key, 0, 4) == "view") {
       $modarray = explode("_", $key);
-      show_pr($db,$fields,$modarray[1],$USER,$system_settings);
+      show_pr($db,$tableid,$fields,$modarray[1],$USER,$system_settings);
       printfooter();
       exit();
    }
@@ -377,27 +378,27 @@ if ($edit_type && ($USER["permissions"] & $LAYOUT)) {
 
 // provide a means to hyperlink directly to a record
 if ($showid) {
-   show_pr($db,$fields,$showid,$USER,$system_settings);
+   show_pr($db,$tableid,$fields,$showid,$USER,$system_settings);
    printfooter();
    exit();
 }
 
 // when the 'Add' button has been chosen: 
 if ($add)
-   add_pr_form ($db,$fields,$field_values,0,$USER,$PHP_SELF,$system_settings);
+   add_pr_form ($db,$tableid,$fields,$field_values,0,$USER,$PHP_SELF,$system_settings);
 
 else {
  
    // first handle addition of a new protocol
    if ($submit == "Add Protocol") {
-      if (! (check_pr_data($db, $HTTP_POST_VARS) && $id=add ($db, "protocols",$fields,$HTTP_POST_VARS,$USER) ) ){
+      if (! (check_pr_data($db, $HTTP_POST_VARS) && $id=add ($db, "protocols",$fields,$HTTP_POST_VARS,$USER,$tableid) ) ){
          echo "</caption>\n</table>\n";
-         add_pr_form ($db,$fields,$HTTP_POST_VARS,0,$USER,$PHP_SELF,$system_settings);
+         add_pr_form ($db,$tableid,$fields,$HTTP_POST_VARS,0,$USER,$PHP_SELF,$system_settings);
          printfooter ();
          exit;
       }
       else {  
-	     $fileid=upload_files($db,"protocols",$id,$USER,$system_settings);
+	     $fileid=upload_files($db,$tableid,$id,$USER,$system_settings);
 	     if ($system_settings["protocols_file"])
 	        report_protocol_addition ($db,$id,$system_settings);
          // insert stuff to deal with word/html files
@@ -410,17 +411,17 @@ else {
    }
    // then look whether it should be modified
    elseif ($submit=="Modify Protocol") {
-      if (! (check_pr_data($db,$HTTP_POST_VARS) && modify ($db,"protocols",$fields,$HTTP_POST_VARS,$HTTP_POST_VARS["id"],$USER)) ) {
+      if (! (check_pr_data($db,$HTTP_POST_VARS) && modify ($db,"protocols",$fields,$HTTP_POST_VARS,$HTTP_POST_VARS["id"],$USER,$tableid)) ) {
          echo "</caption>\n</table>\n";
-         add_pr_form ($db,$fields,$HTTP_POST_VARS,$HTTP_POST_VARS["id"],$USER,$PHP_SELF,$system_settings);
+         add_pr_form ($db,$tableid,$fields,$HTTP_POST_VARS,$HTTP_POST_VARS["id"],$USER,$PHP_SELF,$system_settings);
          printfooter ();
          exit;
       }
       else { 
          if ($HTTP_POST_FILES["file"]["name"][0]) {
             // delete all existing file
-            delete ($db,"protocols",$HTTP_POST_VARS["id"],$USER,true);
-            $fileid=upload_files($db,"protocols",$HTTP_POST_VARS["id"],$USER,$system_settings);
+            delete ($db,$tableid,$HTTP_POST_VARS["id"],$USER,true);
+            $fileid=upload_files($db,$tableid,$HTTP_POST_VARS["id"],$USER,$system_settings);
             process_file($db,$fileid,$system_settings);
          }
          // to not interfere with search form 
@@ -436,7 +437,7 @@ else {
       while((list($key, $val) = each($HTTP_POST_VARS))) {
          if (substr($key, 0, 3) == "del") {
             $delarray = explode("_", $key);
-            delete ($db, "protocols", $delarray[1], $USER);
+            delete ($db,$tableid, $delarray[1], $USER);
          }
       }
    } 
@@ -463,7 +464,7 @@ else {
    $pr_curr_page=current_page($pr_curr_page,"pr");
  
    // prepare the search statement and remember it
-   $pr_query=make_search_SQL($db,"protocols","pr",$fields,$USER,$search);
+   $pr_query=make_search_SQL($db,"protocols","pr",$tableid,$fields,$USER,$search);
 
    // loop through all entries for next/previous buttons
    $r=$db->PageExecute($pr_query,$num_p_r,$pr_curr_page);
@@ -480,7 +481,7 @@ else {
    $sid=SID;
    if ($sid) $sid="&".$sid;
    echo "<table border=0 width='50%' align='center'>\n<tr>\n";
-   if (may_write($db,"pdfs",false,$USER)) 
+   if (may_write($db,$tableid,false,$USER)) 
       echo "<td align='center'><a href='$PHP_SELF?add=Add Protocol$sid'>Add Protocol</a></td>\n";
    echo "</table>\n";
 
@@ -500,7 +501,7 @@ else {
    $r=$db->Execute($pr_query);
    $lista=make_SQL_csf ($r,false,"id",$nr_records);
    // and a list with all records we may see
-   $listb=may_read_SQL($db,"protocols",$USER);
+   $listb=may_read_SQL($db,"protocols",$tableid,$USER);
    // show title we may see, when too many, revert to text box
    if ($title) $list=$listb; else $list=$lista;
    if ($list && ($nr_records < $max_menu_length) ) {
@@ -605,7 +606,7 @@ else {
 
       echo "<td align='center'>&nbsp;\n";
       echo "<input type=\"submit\" name=\"view_" . $id . "\" value=\"View\">\n";
-      if (may_write($db,"protocols",$id,$USER)) {
+      if (may_write($db,$tableid,$id,$USER)) {
          echo "<input type=\"submit\" name=\"mod_" . $id . "\" value=\"Modify\">\n";
          $delstring = "<input type=\"submit\" name=\"del_" . $id . "\" value=\"Remove\" ";
          $delstring .= "Onclick=\"if(confirm('Are you sure the protocol $title ";
@@ -620,7 +621,7 @@ else {
    }
 
    // Add Protocol button
-   if (may_write($db,"protocols",false,$USER)) {
+   if (may_write($db,$tableid,false,$USER)) {
       echo "<tr><td colspan=7 align='center'>";
       echo "<input type=\"submit\" name=\"add\" value=\"Add Protocol\">";
       echo "</td></tr>";

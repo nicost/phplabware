@@ -21,6 +21,7 @@ require ("includes/db_inc.php");
 // main global vars
 $httptitle .= "PDFs";
 $fields="id,access,ownerid,magic,pmid,title,author,type1,type2,notes,date,lastmodby,lastmoddate,volume,fpage,lpage,abstract,year";
+$tableid=get_cell($db,"tableoftables","id","tablename","pdfs");
 
 // register variables
 $get_vars="add,edit_type,showid,search";
@@ -127,8 +128,8 @@ function check_pd_data ($db,&$field_values) {
 // $fields is a comma-delimited list with column names
 // $field_values is a hash with column names as keys
 // $id=0 for a new entry, otherwise it is the id
-function add_pd_form ($db,$fields,$field_values,$id,$USER,$PHP_SELF,$system_settings) {
-   if (!may_write($db,"pdfs",$id,$USER)) 
+function add_pd_form ($db,$tableid,$fields,$field_values,$id,$USER,$PHP_SELF,$system_settings) {
+   if (!may_write($db,$tableid,$id,$USER)) 
       return false;
    global $db_type;
 
@@ -164,13 +165,13 @@ function add_pd_form ($db,$fields,$field_values,$id,$USER,$PHP_SELF,$system_sett
    echo "</tr>\n";
 
    echo "<tr>";
-   echo "<th>Notes: </th><td colspan=6><textarea name='notes' rows='5' cols='100%'>$notes</textarea></td>\n";
+   echo "<th>Notes: </th><td colspan=5><textarea name='notes' rows='5' cols='100%'>$notes</textarea></td>\n";
    echo "</tr>\n";
    
    $files=get_files($db,"pdfs",$id);
    echo "<tr>";
    echo "<th>Files: </th>\n";
-   echo "<td colspan=4><table border=0>";
+   echo "<td colspan=1>\n   <table border=0>\n";
    for ($i=0;$i<sizeof($files);$i++) {
       echo "<tr><td colspan=2>".$files[$i]["link"];
       echo "&nbsp;&nbsp;(".$files[$i]["type"]." file)</td>\n";
@@ -178,11 +179,11 @@ function add_pd_form ($db,$fields,$field_values,$id,$USER,$PHP_SELF,$system_sett
    }
    echo "<tr><th>Replace file(s) with:</th>\n";
    echo "<td><input type='file' name='file[]' value='$filename'></td>\n";
-   
    echo "</tr>\n";
    echo "</table></td>\n\n";
-   echo "<td colspan=4>";
-   show_access($db,"pdfs",$id,$USER,$system_settings);
+
+   echo "<td colspan=3>";
+   show_access($db,$tableid,$id,$USER,$system_settings);
    echo "</td></tr>\n";
    
    echo "<tr>";
@@ -218,10 +219,10 @@ function report_pdf_addition ($db,$id,$system_settings,$PHP_SELF) {
 
 ////
 // !Shows a page with nice information on the pdf
-function show_pd ($db,$fields,$id,$USER,$system_settings) {
+function show_pd ($db,$tableid,$fields,$id,$USER,$system_settings) {
    global $PHP_SELF;
 
-   if (!may_read($db,"pdfs",$id,$USER))
+   if (!may_read($db,$tableid,$id,$USER))
       return false;
 
    // get values 
@@ -335,7 +336,7 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
    if (substr($key, 0, 3) == "mod") {
       $modarray = explode("_", $key);
       $r=$db->Execute("SELECT $fields FROM pdfs WHERE id=$modarray[1]"); 
-      add_pd_form ($db,$fields,$r->fields,$modarray[1],$USER,$PHP_SELF,$system_settings);
+      add_pd_form ($db,$tableid,$fields,$r->fields,$modarray[1],$USER,$PHP_SELF,$system_settings);
       printfooter();
       exit();
    }
@@ -348,14 +349,14 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
          echo "<h3 align='center'>Deleted file <i>$filename</i>.</h3>\n";
       else
          echo "<h3 align='center'>Failed to delete file <i>$filename</i>.</h3>\n";
-      add_pd_form ($db,$fields,$HTTP_POST_VARS,$id,$USER,$PHP_SELF,$system_settings);
+      add_pd_form ($db,$tableid,$fields,$HTTP_POST_VARS,$id,$USER,$PHP_SELF,$system_settings);
       printfooter();
       exit();
    }
    // show the record
    if (substr($key, 0, 4) == "view") {
       $modarray = explode("_", $key);
-      show_pd($db,$fields,$modarray[1],$USER,$system_settings);
+      show_pd($db,$tableid,$fields,$modarray[1],$USER,$system_settings);
       printfooter();
       exit();
    }
@@ -397,27 +398,27 @@ if ($edit_type && ($USER["permissions"] & $LAYOUT)) {
 
 // provide a means to hyperlink directly to a record
 if ($showid) {
-   show_pd($db,$fields,$showid,$USER,$system_settings);
+   show_pd($db,$tableid,$fields,$showid,$USER,$system_settings);
    printfooter();
    exit();
 }
 
 // when the 'Add' button has been chosen: 
 if ($add)
-   add_pd_form ($db,$fields,$field_values,0,$USER,$PHP_SELF,$system_settings);
+   add_pd_form ($db,$tableid,$fields,$field_values,0,$USER,$PHP_SELF,$system_settings);
 
 else {
    // first handle addition of a new reprint
    if ($submit == "Add PDF reprint") {
-      if (! (check_pd_data($db, $HTTP_POST_VARS) && $id=add ($db, "pdfs",$fields,$HTTP_POST_VARS,$USER) ) ){
+      if (! (check_pd_data($db, $HTTP_POST_VARS) && $id=add ($db, "pdfs",$fields,$HTTP_POST_VARS,$USER,$tableid) ) ){
          echo "</caption>\n</table>\n";
-         add_pd_form ($db,$fields,$HTTP_POST_VARS,0,$USER,$PHP_SELF,$system_settings);
+         add_pd_form ($db,$tableid,$fields,$HTTP_POST_VARS,0,$USER,$PHP_SELF,$system_settings);
          printfooter ();
          exit;
       }
       else {  
          $HTTP_POST_FILES["file"]["name"][0]=$HTTP_POST_VARS["pmid"].".pdf";
-	 $fileid=upload_files($db,"pdfs",$id,$USER,$system_settings);
+	 $fileid=upload_files($db,$tableid,$id,$USER,$system_settings);
 	 if ($system_settings["pdfs_file"])
 	    report_pdf_addition ($db,$id,$system_settings,$PHP_SELF);
          // to not interfere with search form 
@@ -428,17 +429,17 @@ else {
    }
    // then look whether it should be modified
    elseif ($submit=="Modify PDF reprint") {
-      if (! (check_pd_data($db,$HTTP_POST_VARS) && modify ($db,"pdfs",$fields,$HTTP_POST_VARS,$HTTP_POST_VARS["id"],$USER)) ) {
+      if (! (check_pd_data($db,$HTTP_POST_VARS) && modify ($db,"pdfs",$fields,$HTTP_POST_VARS,$HTTP_POST_VARS["id"],$USER,$tableid)) ) {
          echo "</caption>\n</table>\n";
-         add_pd_form ($db,$fields,$HTTP_POST_VARS,$HTTP_POST_VARS["id"],$USER,$PHP_SELF,$system_settings);
+         add_pd_form ($db,$tableid,$fields,$HTTP_POST_VARS,$HTTP_POST_VARS["id"],$USER,$PHP_SELF,$system_settings);
          printfooter ();
          exit;
       }
       else { 
          if ($HTTP_POST_FILES["file"]["name"][0]) {
             // delete all existing file
-            delete ($db,"pdfs",$HTTP_POST_VARS["id"],$USER,true);
-            $fileid=upload_files($db,"pdfs",$HTTP_POST_VARS["id"],$USER,$system_settings);
+            delete ($db,$tableid,$HTTP_POST_VARS["id"],$USER,true);
+            $fileid=upload_files($db,$tableid,$HTTP_POST_VARS["id"],$USER,$system_settings);
          }
          // to not interfere with search form 
          unset ($HTTP_POST_VARS);
@@ -453,7 +454,7 @@ else {
       while((list($key, $val) = each($HTTP_POST_VARS))) {
          if (substr($key, 0, 3) == "del") {
             $delarray = explode("_", $key);
-            delete ($db, "pdfs", $delarray[1], $USER);
+            delete ($db,$tableid,$delarray[1],$USER);
          }
       }
    } 
@@ -472,7 +473,7 @@ else {
    $pd_curr_page =current_page($pd_curr_page,"pd"); 
 
    // prepare search SQL statement
-   $pd_query=make_search_SQL($db,"pdfs","pd",$fields,$USER,$search);
+   $pd_query=make_search_SQL($db,"pdfs","pd",$tableid,$fields,$USER,$search);
 
    // loop through all entries for next/previous buttons
    $r=$db->PageExecute($pd_query,$num_p_r,$pd_curr_page);
@@ -511,7 +512,7 @@ else {
    $r=$db->Execute($pd_query);
    $lista=make_SQL_csf ($r,false,"id",$nr_records);
    // and a list with all records we may see
-   $listb=may_read_SQL($db,"pdfs",$USER);
+   $listb=may_read_SQL($db,"pdfs",$tableid,$USER);
 
    // show title we may see, when too many, revert to text box
 /*   if ($title) $list=$listb; else $list=$lista;
@@ -640,7 +641,7 @@ else {
 
       echo "<td align='center'>&nbsp;\n";
       echo "<input type=\"submit\" name=\"view_" . $id . "\" value=\"View\">\n";
-      if (may_write($db,"pdfs",$id,$USER)) {
+      if (may_write($db,$tableid,$id,$USER)) {
          echo "<input type=\"submit\" name=\"mod_" . $id . "\" value=\"Modify\">\n";
          $delstring = "<input type=\"submit\" name=\"del_" . $id . "\" value=\"Remove\" ";
          $delstring .= "Onclick=\"if(confirm('Are you sure the PDF reprint $title ";
@@ -655,7 +656,7 @@ else {
    }
    
    // Add Pdf button
-   if (may_write($db,"pdfs",false,$USER)) {
+   if (may_write($db,$tableid,false,$USER)) {
       echo "<tr><td colspan=9 align='center'>";
       echo "<input type=\"submit\" name=\"add\" value=\"Add Pdf\">";
       echo "</td></tr>";

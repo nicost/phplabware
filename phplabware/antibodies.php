@@ -365,7 +365,7 @@ if ($add)
 else {
    // first handle addition of a new antibody
    if ($submit == "Add Antibody") {
-      if (! (check_ab_data($HTTP_POST_VARS) && $id=add ($db,"antibodies",$tableid,$fields,$HTTP_POST_VARS,$USER) ) ){
+      if (! (check_ab_data($HTTP_POST_VARS) && $id=add ($db,"antibodies",$fields,$HTTP_POST_VARS,$USER,$tableid) ) ){
          echo "</caption>\n</table>\n";
          add_ab_form ($db,$tableid,$fields,$HTTP_POST_VARS,0,$USER,$PHP_SELF,$system_settings);
          printfooter ();
