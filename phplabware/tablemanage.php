@@ -15,14 +15,14 @@
   \**************************************************************************/
 
 
-require("include.php");
-require("includes/db_inc.php");
-require("includes/general_inc.php");
-require("includes/tablemanage_inc.php");
+require('include.php');
+require('includes/db_inc.php');
+require('includes/general_inc.php');
+require('includes/tablemanage_inc.php');
 include ('includes/defines_inc.php');
 
-$editfield=$HTTP_GET_VARS["editfield"];
-$editreport=$HTTP_GET_VARS["editreport"];
+$editfield=$HTTP_GET_VARS['editfield'];
+$editreport=$HTTP_GET_VARS['editreport'];
 $post_vars="newtable_name,newtable_label,newtable_sortkey,newtable_plugincode,addtable,table_id,table_name,table_display,addcol_name,addcol_label,addcol_sort,addcol_dtable,addcol_drecord,addcol_required,addcol_modifiable,addcol_datatype";
 globalize_vars($post_vars, $HTTP_POST_VARS);
 
