@@ -27,9 +27,18 @@ $tableid=get_cell($db,"tableoftables","id","tablename","protocols");
 $showid=$HTTP_GET_VARS["showid"];
 $edit_type=$HTTP_GET_VARS["edit_type"];
 $add=$HTTP_GET_VARS["add"];
-$post_vars = "add,submit,search,searchj";
+$post_vars = "add,submit,search,searchj,serialsortdirarray";
 globalize_vars ($post_vars, $HTTP_POST_VARS);
-if ($searchj)
+
+foreach($HTTP_POST_VARS as $key =>$value) {
+   list($testkey,$testvalue)=explode("_",$key);
+   if ($testkey=="sortup")
+      $sortup=$testvalue;
+   if ($testkey=="sortdown")
+      $sortdown=$testvalue;
+}   
+reset ($HTTP_POST_VARS);
+if ($searchj || $sortup || $sortdown)
    $search="Search";
 
 /****************************FUNCTIONS***************************/
@@ -453,6 +462,7 @@ else {
    if ($search=="Show All") {
       $num_p_r=$HTTP_POST_VARS["num_p_r"];
       unset ($HTTP_POST_VARS);
+      unset ($serialsortdirarray);
       $pr_curr_page=1;
       session_unregister("pr_query");
    }
@@ -462,6 +472,10 @@ else {
       $column=strtok(",");
    }
 
+   // sort stuff
+   $sortdirarray=unserialize(stripslashes($serialsortdirarray));
+   $sortstring=sortstring($sortdirarray,$sortup,$sortdown);
+
    // paging stuff
    $num_p_r=paging($num_p_r,$USER);
 
@@ -469,7 +483,7 @@ else {
    $pr_curr_page=current_page($pr_curr_page,"pr");
  
    // prepare the search statement and remember it
-   $pr_query=make_search_SQL($db,"protocols","pr",$tableid,$fields,$USER,$search);
+   $pr_query=make_search_SQL($db,"protocols","pr",$tableid,$fields,$USER,$search,$sortstring);
    // get total number of hits
    $r=$db->CacheExecute(1,$pr_query);
    $numrows=$r->RecordCount();
@@ -566,11 +580,13 @@ else {
    echo "<input type=\"submit\" name=\"search\" value=\"Show All\"></td>";
    echo "</tr>\n";
 
+   if ($sortdirarray)
+      echo "<input type='hidden' name='serialsortdirarray' value='".serialize($sortdirarray)."'>\n";
    echo "<tr>\n";
-   echo "<th>Title</th>";
-   echo "<th>Author</th>";
-   echo "<th>Notes</th>\n";
-   echo "<th>Category</th>\n";
+   tableheader ($sortdirarray,"title","Title");
+   tableheader ($sortdirarray,"type1","Author");
+   tableheader ($sortdirarray,"notes","Notes");
+   tableheader ($sortdirarray,"type2","Category");
    echo "<th>Files</th>\n";
    echo "<th>Action</th>\n";
    echo "</tr>\n";

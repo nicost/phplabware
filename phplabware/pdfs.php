@@ -26,9 +26,18 @@ $tableid=get_cell($db,"tableoftables","id","tablename","pdfs");
 // register variables
 $get_vars="add,edit_type,showid,search";
 globalize_vars($get_vars, $HTTP_GET_VARS);
-$post_vars = "add,submit,search,searchj";
+$post_vars = "add,submit,search,searchj,serialsortdirarray";
 globalize_vars ($post_vars, $HTTP_POST_VARS);
-if ($searchj)
+
+foreach($HTTP_POST_VARS as $key =>$value) {
+   list($testkey,$testvalue)=explode("_",$key);
+   if ($testkey=="sortup")
+      $sortup=$testvalue;
+   if ($testkey=="sortdown")
+      $sortdown=$testvalue;
+}   
+reset ($HTTP_POST_VARS);
+if ($searchj || $sortup || $sortdown)
    $search="Search";
 
 /****************************FUNCTIONS***************************/
@@ -469,9 +478,14 @@ else {
    if ($search=="Show All") {
       $num_p_r=$HTTP_POST_VARS["num_p_r"];
       unset ($HTTP_POST_VARS);
+      unset ($serialsortdirarray);
       $pd_curr_page=1;
       session_unregister("pd_query");
    }
+
+   // sort stuff
+   $sortdirarray=unserialize(stripslashes($serialsortdirarray));
+   $sortstring=sortstring($sortdirarray,$sortup,$sortdown);
 
    // paging stuff
    $num_p_r=paging($num_p_r, $USER);
@@ -480,7 +494,7 @@ else {
    $pd_curr_page =current_page($pd_curr_page,"pd"); 
 
    // prepare search SQL statement
-   $pd_query=make_search_SQL($db,"pdfs","pd",$tableid,$fields,$USER,$search);
+   $pd_query=make_search_SQL($db,"pdfs","pd",$tableid,$fields,$USER,$search,$sortstring);
 
    // get the total number of hits
    $r=$db->CacheExecute(1,$pd_query);
@@ -597,18 +611,18 @@ else {
    echo "<td>";
    echo "<input type=\"submit\" name=\"search\" value=\"Search\">&nbsp;\n";
    echo "<input type=\"submit\" name=\"search\" value=\"Show All\">&nbsp;\n";
-   //echo "<td align='center'><button type='submit' name='search' value='Show All'>";
-   //echo "Show All</button></td></tr>\n";
    echo "</td></tr>\n";
 
+   if ($sortdirarray)
+      echo "<input type='hidden' name='serialsortdirarray' value='".serialize($sortdirarray)."'>\n";
    echo "<tr>\n";
-   echo "<th>Title</th>\n";
-   echo "<th>Author(s)</th>\n";
-   echo "<th>Category</th>\n";
+   tableheader ($sortdirarray,"title","Title");
+   tableheader ($sortdirarray,"author","Author(s)");
+   tableheader ($sortdirarray,"type2","Category");
    echo "<th>Abstract</th>\n";
-   echo "<th>Journal</th>\n";
-   echo "<th>Volume</th>\n";
-   echo "<th>First Page</th>\n";
+   tableheader ($sortdirarray,"type1","Journal");
+   tableheader ($sortdirarray,"volume","Volume");
+   tableheader ($sortdirarray,"fpage","First Page");
    echo "<th>Files</th>\n";
    echo "<th>Action</th>\n";
    echo "</tr>\n";

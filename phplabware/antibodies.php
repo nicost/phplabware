@@ -28,11 +28,19 @@ $tableid=get_cell($db,"tableoftables","id","tablename","antibodies");
 $showid=$HTTP_GET_VARS["showid"];
 $edit_type=$HTTP_GET_VARS["edit_type"];
 $add=$HTTP_GET_VARS["add"];
-$post_vars = "add,submit,search,searchj";
+$post_vars = "add,submit,search,searchj,serialsortdirarray";
 globalize_vars ($post_vars, $HTTP_POST_VARS);
-if ($searchj)
-   $search="Search";
 
+foreach($HTTP_POST_VARS as $key =>$value) {
+   list($testkey,$testvalue)=explode("_",$key);
+   if ($testkey=="sortup")
+      $sortup=$testvalue;
+   if ($testkey=="sortdown")
+      $sortdown=$testvalue;
+}
+reset ($HTTP_POST_VARS);
+if ($searchj || $sortup || $sortdown) 
+   $search="Search";
 
 /****************************FUNCTIONS***************************/
 
@@ -417,6 +425,7 @@ else {
    if ($search=="Show All") {
       $num_p_r=$HTTP_POST_VARS["num_p_r"];
       unset ($HTTP_POST_VARS);
+      unset ($serialsortdirarray);
       $ab_curr_page=1;
       session_unregister("ab_query");
    }
@@ -426,6 +435,12 @@ else {
       $column=strtok(",");
    }
 
+   // sort stuff
+   $sortdirarray=unserialize(stripslashes($serialsortdirarray));
+   $sortstring=sortstring($sortdirarray,$sortup,$sortdown);
+   if (!$sortstring)
+      $sortstring="name";
+
    // paging stuff
    $num_p_r=paging($num_p_r,$USER);
 
@@ -433,7 +448,8 @@ else {
    $ab_curr_page=current_page($ab_curr_page,"ab");
 
    // prepare SQL search statement, and remember it
-   $ab_query=make_search_SQL($db,"antibodies","ab",$tableid,$fields,$USER,$search,"name");
+   $ab_query=make_search_SQL($db,"antibodies","ab",$tableid,$fields,$USER,$search,$sortstring);
+
    // print form
 ?>
 <form name='ab_form' method='post' action='<?php echo $PHP_SELF?>?<?=SID?>'>  
@@ -453,9 +469,6 @@ else {
    echo "<table border=0 width='50%' align='center'>\n<tr>\n";
    if (may_write($db,$tableid,false,$USER)) 
       echo "<td align='center'><a href='$PHP_SELF?add=Add Antibody$sid'>Add Antibody</a></td>\n";
-   //echo "<td align='center'><a href='$PHP_SELF?search=Show%20All$sid'>Show All</a></td>\n</tr>\n";
-   //echo "<td align='center'><button type='submit' name='search' value='Show All'>";
-   //echo "Show All</button></td></tr>\n";
    echo "</table>\n";
 
    next_previous_buttons($r,true,$num_p_r,$numrows,$ab_curr_page);
@@ -567,16 +580,18 @@ else {
    echo "<input type=\"submit\" name=\"search\" value=\"Show All\"></td>";
    echo "</tr>\n";
 
+   if ($sortdirarray)
+      echo "<input type='hidden' name='serialsortdirarray' value='".serialize($sortdirarray)."'>\n";
    echo "<tr>\n";
-   echo "<th>Name</th>";
-   echo "<th>Antigen</th>\n";
-   echo "<th>Notes</th>\n";
-   echo "<th>Prim./Sec.</th>\n";
-   echo "<th>Label</th>\n";
-   echo "<th>Mono-/Polycl.</th>\n";
-   echo "<th>Host</th>\n";
-   echo "<th>Class</th>\n";
-   echo "<th>Location</th>\n";
+   tableheader ($sortdirarray,"name","Name");
+   tableheader ($sortdirarray,"antigen","Antigen");
+   tableheader ($sortdirarray,"notes","Notes");
+   tableheader ($sortdirarray,"type1","Prim./Sec.");
+   tableheader ($sortdirarray,"type5","Label");
+   tableheader ($sortdirarray,"type2","Mono-/Polycl.");
+   tableheader ($sortdirarray,"type3","Host");
+   tableheader ($sortdirarray,"type4","Class");
+   tableheader ($sortdirarray,"location","Location");
    echo "<th>Files</th>\n";
    echo "<th>Action</th>\n";
    echo "</tr>\n";

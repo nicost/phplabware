@@ -26,9 +26,18 @@ $tableid=get_cell($db,"tableoftables","id","tablename","pdbs");
 // register variables
 $get_vars="add,edit_type,showid,search";
 globalize_vars($get_vars, $HTTP_GET_VARS);
-$post_vars = "add,submit,search,searchj";
+$post_vars = "add,submit,search,searchj,serialsortdirarray";
 globalize_vars ($post_vars, $HTTP_POST_VARS);
-if ($searchj)
+
+foreach($HTTP_POST_VARS as $key =>$value) {
+   list($testkey,$testvalue)=explode("_",$key);
+   if ($testkey=="sortup")
+      $sortup=$testvalue;
+   if ($testkey=="sortdown")
+      $sortdown=$testvalue;
+}   
+reset ($HTTP_POST_VARS);
+if ($searchj || $sortup || $sortdown)
    $search="Search";
 
 /****************************FUNCTIONS***************************/
@@ -265,10 +274,8 @@ if (!may_see_table($db,$USER,$tableid)) {
    printfooter();
    exit();
 }
-
 // check if something should be modified, deleted or shown
 while((list($key, $val) = each($HTTP_POST_VARS))) {
-	
    if (substr($key, 0, 3) == "mod") {
       $modarray = explode("_", $key);
       $r=$db->Execute("SELECT $fields FROM pdbs WHERE id=$modarray[1]"); 
@@ -411,9 +418,14 @@ else {
    if ($search=="Show All") {
       $num_p_r=$HTTP_POST_VARS["num_p_r"];
       unset ($HTTP_POST_VARS);
+      unset ($serialsortdirarray);
       $pb_curr_page=1;
       session_unregister("pb_query");
    }
+
+   // sort stuff
+   $sortdirarray=unserialize(stripslashes($serialsortdirarray));
+   $sortstring=sortstring($sortdirarray,$sortup,$sortdown);
 
    // paging stuff
    $num_p_r=paging($num_p_r, $USER);
@@ -422,7 +434,7 @@ else {
    $pb_curr_page =current_page($pb_curr_page,"pb"); 
 
    // prepare search SQL statement
-   $pb_query=make_search_SQL($db,"pdbs","pb",$tableid,$fields,$USER,$search);
+   $pb_query=make_search_SQL($db,"pdbs","pb",$tableid,$fields,$USER,$search,$sortstring);
 
    // get the total number of hits
    $r=$db->CacheExecute(1,$pb_query);
@@ -493,11 +505,13 @@ else {
    echo "<input type=\"submit\" name=\"search\" value=\"Show All\">&nbsp;\n";
    echo "</td></tr>\n";
 
+   if ($sortdirarray)
+      echo "<input type='hidden' name='serialsortdirarray' value='".serialize($sortdirarray)."'>\n";
    echo "<tr>\n";
-   echo "<th>Title</th>";
-   echo "<th>Author(s)</th>";
-   echo "<th>Notes</th>";
-   echo "<th>Submitted by</th>";
+   tableheader ($sortdirarray,"title","Title");
+   tableheader ($sortdirarray,"author","Author(s)");
+   tableheader ($sortdirarray,"notes","Notes");
+   tableheader ($sortdirarray,"ownerid","Submitted by");
    echo "<th>Pdb</th>";
    echo "<th>Webmol</th>";
    echo "<th>File</th>\n";
