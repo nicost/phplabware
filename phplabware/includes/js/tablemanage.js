@@ -4,8 +4,10 @@ function fillSelectFromArray(selectCtrl, itemArray) {
    var prompt;
 
    // remember what was selected
-   selectedID = selectCtrl.selectedIndex;
-   selectedText = selectCtrl.options[selectedID];
+   //selectedID = selectCtrl.selectedIndex;
+   selectedID = 0;
+   //   selectedText = selectCtrl.options[selectedID];
+   selectedText = "";
    // empty existing items
    for (i = selectCtrl.options.length; i >= 0; i--) {
 	selectCtrl.options[i] = null;
