@@ -15,16 +15,16 @@
 // optional getvar: tableview
 
 /// main include thingies
-require("include.php");
-require("includes/db_inc.php");
-require("includes/general_inc.php");
-require("includes/report_inc.php");
+require('include.php');
+require('includes/db_inc.php');
+require('includes/general_inc.php');
+require('includes/report_inc.php');
 
 $tableinfo=new tableinfo($db);
 
 if (!$tableinfo->id) {
    printheader($httptitle);
-   navbar($USER["permissions"]);
+   navbar($USER['permissions']);
    echo "<h3 align='center'> Table: <i>$HTTP_GET_VARS[tablename]</i> does not exist.</h3>";
    printfooter();
    exit();
@@ -36,7 +36,7 @@ $tableview=$HTTP_GET_VARS['tableview'];
  
 if (!($reportid && ($recordid || $tableview)) ) {
    printheader($httptitle);
-   navbar($USER["permissions"]);
+   navbar($USER['permissions']);
    echo "<h3 align='center'>Not enough information to generate the report.</h3>";
    printfooter();
    exit();
@@ -44,14 +44,14 @@ if (!($reportid && ($recordid || $tableview)) ) {
 
 if (!may_read($db,$tableinfo,$recordid,$USER)) {
    printheader($httptitle);
-   navbar($USER["permissions"]);
+   navbar($USER['permissions']);
    echo "<h3 align='center'>This information is not intended to be seen by you.</h3>";
    printfooter();
    exit();
 }
    
 if ($reportid>0) {
-   $tp=@fopen($system_settings["templatedir"]."/$reportid.tpl","r");
+   $tp=@fopen($system_settings['templatedir']."/$reportid.tpl","r");
    if ($tp) {
       while (!feof($tp)) {
          $line=fgets($tp);
@@ -72,7 +72,7 @@ if ($reportid>0) {
  
    if (!$template) {
       printheader($httptitle);
-      navbar($USER["permissions"]);
+      navbar($USER['permissions']);
       echo "<h3 align='center'>Template file was not found!</h3>";
       printfooter();
       exit();
@@ -80,12 +80,12 @@ if ($reportid>0) {
 }
 
 // displays multiple records in a report (last search statement)
-if ($HTTP_GET_VARS["tableview"]) {
+if ($HTTP_GET_VARS['tableview']) {
    // figure out the current query:
    $queryname=$tableinfo->short.'_query';
    if (session_is_registered ($queryname) && isset($HTTP_SESSION_VARS[$queryname])) {
       // get a list with all records we may see, create temp table tempb
-      $listb=may_read_SQL($db,$tableinfo,$USER,"tempb");
+      $listb=may_read_SQL($db,$tableinfo,$USER,'tempb');
 
       // read all fields in from the description file
       $fields_table=comma_array_SQL($db,$tableinfo->desname,columnname,"");
@@ -102,7 +102,7 @@ if ($HTTP_GET_VARS["tableview"]) {
          echo "<phplabware_base>\n";
       $counter=1;
       while ($r && !$r->EOF) {
-         $Allfields=getvalues($db,$tableinfo,$fields_table,"id",$r->fields["id"]);
+         $Allfields=getvalues($db,$tableinfo,$fields_table,'id',$r->fields['id']);
          if ($reportid>0)
             echo make_report($db,$template,$Allfields,$tableinfo,$counter);
          else
@@ -118,8 +118,8 @@ if ($HTTP_GET_VARS["tableview"]) {
    }
 }
 else { // just a single record
-   $fields=comma_array_SQL($db,$tableinfo->desname,"columnname");
-   $Allfields=getvalues($db,$tableinfo,$fields,"id",$recordid);
+   $fields=comma_array_SQL($db,$tableinfo->desname,'columnname');
+   $Allfields=getvalues($db,$tableinfo,$fields,'id',$recordid);
 
    $report=make_report($db,$template,$Allfields,$tableinfo);
    echo $report;
