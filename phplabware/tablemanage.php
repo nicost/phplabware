@@ -5,8 +5,7 @@ require("includes/general_inc.php");
 include ('includes/defines_inc.php');
 
 $editfield=$HTTP_GET_VARS["editfield"];
-$string="";
-$post_vars="newtable_name,newtable_sortkey,addtable,table_id,table_name,table_display";
+$post_vars="newtable_name,newtable_sortkey,addtable,table_id,table_name,table_display,addcol_name,addcol_sort,addcol_dtable,addcol_drecord,addcol_required,addcol_datatype";
 globalize_vars($post_vars, $HTTP_POST_VARS);
 
 $permissions=$USER["permissions"];
@@ -104,8 +103,9 @@ if ($editfield)
 	$noshow=array("id","access","ownerid","magic","lastmoddate","lastmodby","date");
 	$nodel=array("title","date","lastmodby","lastmoddate");
 	navbar($USER["permissions"]);
-	$currdesc=$editfield;
-	$currdesc.="_desc";
+	$r=$db->Execute("SELECT id FROM tableoftables WHERE tablename='$editfield'");
+	$id=$r->fields[0];
+	$currdesc=$id."_".$editfield."_desc";
 	echo "<h3 align='center'>$string</h3>";
 	echo "<h3 align='center'>Edit columns of $editfield</h3><br>";
 	echo "<table align='center'>\n";
