@@ -110,7 +110,7 @@ $desc_fields="sortkey,label,columnname,display_table,display_record,required,typ
 $ADODB_FETCH_MODE=ADODB_FETCH_NUM;
 $s=$db->Execute("SELECT $desc_fields FROM $table_desc");
 while (!$s->EOF) {
-   fwrite ($fp,'$newid=$db->GenID("newtable_desc_name"."_id");');
+   fwrite ($fp,'$newid=$db->GenID("$newtable_desc_name"."_id");');
    fwrite ($fp,'
       $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid');
    // rewrite types to standard SQL
