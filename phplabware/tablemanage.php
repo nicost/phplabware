@@ -36,12 +36,6 @@ if (!($permissions & $SUPER)) {
 }
  
 while((list($key, $val) = each($HTTP_POST_VARS))) {
-   if (substr($key, 0, 7) == "dellink") {
-       $modarray = explode("_", $key);
-       $newid=$HTTP_POST_VARS["link_id"][$modarray[1]];
-       $newlabel=$HTTP_POST_VARS["link_label"][$modarray[1]];
-       $r=$db->Execute("Delete from linkbar where id='$newid' and label='$newlabel'");
-   }     
    if (substr($key, 0, 8) == "addtable") {
        $tablename=$HTTP_POST_VARS["newtable_name"];
        $tablesort=$HTTP_POST_VARS["newtable_sortkey"];
@@ -146,18 +140,21 @@ if ($editfield)	{
 	$datatype = $r->fields["datatype"];
 	$sort = $r->fields["sortkey"];
 	$show=1;
-	foreach($noshow as $doshow)
-	  	{if ($label==$doshow){$show=0;}} 	   
-      // print start of row of selected group
-	  if ($show==1)
-	  	{	
-	  	echo "<input type='hidden' name='column_id[]' value='$id'>\n";	    
-	      echo "<input type='hidden' name='column_datatype[]' value='$datatype'>\n";
-  	    if ($rownr % 2) echo "<tr class='row_odd' align='center'>\n";	
-  	    else echo "<tr class='row_even' align='center'>\n";         
-		  echo "<input type='hidden' name='column_name[]' value='$label'>\n";echo "<td>$label</td>\n";  
-		  echo "<td><input type='text' name='column_sort[]' value='$sort'></td>\n";
-	  	if($display_table=="Y"){
+	foreach($noshow as $doshow) {
+	   if ($label==$doshow)
+              $show=0;
+	} 	   
+        // print start of row of selected group
+	if ($show==1) {
+	   echo "<input type='hidden' name='column_id[]' value='$id'>\n";	    
+	   echo "<input type='hidden' name='column_datatype[]' value='$datatype'>\n";
+  	   if ($rownr % 2) 
+	      echo "<tr class='row_odd' align='center'>\n";	
+  	   else 
+	      echo "<tr class='row_even' align='center'>\n";         
+ 	   echo "<input type='hidden' name='column_name[]' value='$label'>\n";echo "<td>$label</td>\n";  
+	   echo "<td><input type='text' name='column_sort[]' value='$sort'></td>\n";
+	   if($display_table=="Y"){
 	  		echo "<td><input type='radio' name='column_dtable[$rownr]' value='Y' CHECKED >yes";
 	  		echo "<input type='radio' name='column_dtable[$rownr]' value='N'>no</td>\n";}
 	  	else{
