@@ -24,6 +24,9 @@ while (!$r->EOF) {
    $db->Execute("ALTER TABLE $table_desc_name ADD COLUMN link_first text");
    $db->Execute("ALTER TABLE $table_desc_name ADD COLUMN link_last text");
    $db->Execute("ALTER TABLE $table_desc_name ADD COLUMN modifiable varchar(1)");
+   $db->Execute("UPDATE $table_desc_name SET modifiable='Y'");
+   $db->Execute("UPDATE $table_desc_name SET modifiable='N' WHERE columnname='magic' OR columnname='lastmoddate' OR columnname='lastmodby' OR columnname='date' OR columnname='access' OR columnname='id' OR columnname='ownerid'");
+   
    $r->MoveNext();
 }
 
