@@ -64,7 +64,7 @@ function add_ab_form ($db,$fields,$field_values,$id,$USER,$PHP_SELF) {
       $column=strtok(",");
    }
 ?>
-<form method='post' id='antibodyform action='<?php echo $PHP_SELF?>?<?=SID?>'> 
+<form method='post' id='antibodyform' enctype='multipart/form-data' action='<?php echo $PHP_SELF?>?<?=SID?>'> 
 <?php
    // generate a unique ID (magic) to avoid double uploads 
    if (!$magic)
@@ -131,7 +131,7 @@ function add_ab_form ($db,$fields,$field_values,$id,$USER,$PHP_SELF) {
    echo "</tr>\n";
    
    echo "<tr>";
-   echo "<th>File: </th><td colspan=1><input type='file' name='filename[]' value='$filename'></td>\n";
+   echo "<th>File: </th><td colspan=1><input type='file' name='file[]' value='$filename'></td>\n";
    echo "<td></td><th>File Title:</th><td><input type='text' name='filetitle[]' value='$filetile'></td>\n";
    echo "</tr>\n";
    
@@ -300,8 +300,6 @@ else {
          exit;
       }
       else {  // to not interfere with search form 
-	 echo "calling upload_files.<br>";
-	 print_r($HTTP_POST_FILES);
 	 upload_files($db,"antibodies",$HTTP_POST_VARS["id"],$USER,$system_settings);
          unset ($HTTP_POST_VARS);
       }
