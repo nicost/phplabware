@@ -901,13 +901,9 @@ function searchhelp ($db,$tableinfo,$column,&$columnvalues,$query,$wcappend,$and
       }
       elseif (substr($rc->fields[0],0,3)=="int") {
          $query[0].=numerictoSQL ($columnvalues[$column],$column,"int",$and); 
-         // $columnvalues[$column]=(int)$columnvalues[$column];
-         // $query[0].="$and $column='$columnvalues[$column]' ";
       }
       elseif (substr($rc->fields[0],0,5)=="float") {
          $query[0].=numerictoSQL ($columnvalues[$column],$column,"float",$and); 
-         // $columnvalues[$column]=(float)$columnvalues[$column];
-         // $query[0].="$and $column='$columnvalues[$column]' ";
       }
       else {
          $columnvalues[$column]=trim($columnvalues[$column]);
