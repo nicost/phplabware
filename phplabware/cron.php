@@ -133,7 +133,7 @@ $procesmu=$endmu-$startmu;
 $pt=$process+$procesmu;
 $ptime=sprintf("%0f",$pt);
 
-echo "Indexed $textfilecounter text files and $pdffilecounter pdf files in $ptime seconds";
+echo "Indexed $textfilecounter text files and $pdffilecounter pdf files in $ptime seconds<br>";
 
 // load plugin php code if it has been defined 
 if ($HTTP_GET_VARS[tablename]) {
@@ -145,5 +145,13 @@ if ($HTTP_GET_VARS[tablename]) {
       if (function_exists("plugin_cron"))
          plugin_cron($db,$tableinfo);
    }
+}
+
+// we'll do the postgres maintenance
+if (substr($db_type,0,8)=='postgres') {
+   $db->Execute('VACUUM');
+   $db->Execute('ANALYZE');
+   $db->Execute('VACUUM ANALYZE');
+   echo "Finished postgres maintenance.<br>";
 }
 ?>
