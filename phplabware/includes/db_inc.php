@@ -176,7 +176,6 @@ function sortstring($db,$tableinfo,&$sortdirarray,$sortup,$sortdown) {
 ////
 // !Displays header of 'general' table
 function tableheader ($sortdirarray,$nowfield) {
-//print_r($nowfield);
    $columnname=$nowfield['name'];
    $columnlabel=$nowfield['label'];
    echo "<th><table align='center' width='100%'><td align='left'>";
@@ -297,7 +296,6 @@ function modify ($db,$table,$fields,$fieldvalues,$id,$USER,$tableid) {
    if (!may_write($db,$tableid,$id,$USER))
       return false;
 //$db->debug=true;
-//print_r($fieldvalues);
    // delete all entries in trust related to this record first
    $db->Execute("DELETE FROM trust WHERE tableid='$tableid' and recordid='$id'");
    // then add back trusted users entered on the form
