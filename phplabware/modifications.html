@@ -8,6 +8,8 @@
 <h3>Change log for PhpLabware</h3>
 <h4>Version 0.5</h4>
 <ul>
+<li>Reworked data import module.  Now should add all unknown values to mpulldown fields too.</li>
+<li>Fixed problem with reports that caused shorter columnnames to be used instead of longer ones (when the first part of the two matched).</li>
 <li>Started a second permissions chain for users allowing more properties to be set without affecting access rights.  This was needed for URL-based logins (allowing even quicker deep linking).</li>
 <li>Made much (most/all?) generated HTML w3c compliant, also looks better in IE.</li>
 <li>Editing table values in edit mode is now much faster: Pages are not reloaded anymore after each change, using javascript a new window is opened through which the changes are send to the server.</li>
