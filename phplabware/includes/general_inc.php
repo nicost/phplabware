@@ -451,17 +451,17 @@ function check_g_data ($db,&$field_values, $DB_DESNAME) {
 // $field_values is hash with column names as keys
 // $id=0 for a new entry, otherwise it is the id
 function add_g_form ($db,$fields,$field_values,$id,$USER,$PHP_SELF,$system_settings,$real_tablename, $tablename,$DB_DESNAME) {
-   if (!may_write($db,$$real_tablename,$id,$USER)) 
-           return false; 
+   if (!may_write($db,$real_tablename,$id,$USER)) 
+      return false; 
    if ($id) {
-		$Allfields=getvalues($db,$real_tablename,$DB_DESNAME,$fields,id,$id);
-		$namein=get_cell($db,$DBNAME,"title","id",$id);		
-		display_add($db,$tablename,$real_tablename,$DB_DESNAME,$Allfields,$id,$namein,$system_settings);
-	}    
-	else {
-		$Allfields=getvalues($db,$DBNAME,$DB_DESNAME,$fields);
-		display_add($db,$tablename,$real_tablename,$DB_DESNAME,$Allfields,$id,"",$system_settings);
-	}
+	$Allfields=getvalues($db,$real_tablename,$DB_DESNAME,$fields,id,$id);
+	$namein=get_cell($db,$DBNAME,"title","id",$id);		
+	display_add($db,$tablename,$real_tablename,$DB_DESNAME,$Allfields,$id,$namein,$system_settings);
+   }    
+   else {
+	$Allfields=getvalues($db,$DBNAME,$DB_DESNAME,$fields);
+	display_add($db,$tablename,$real_tablename,$DB_DESNAME,$Allfields,$id,"",$system_settings);
+   }
 }
 
 ////
