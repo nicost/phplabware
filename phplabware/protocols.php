@@ -287,21 +287,19 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
       $modarray = explode("_", $key);
       $table=$modarray[1]."_".$modarray[2];
       include("includes/type_inc.php");
-      if (!add_type($db,$table)) {
-         show_type($db,$table,"Category");
-         printfooter();
-         exit();
-      }
+      add_type($db,$table);
+      show_type($db,$table,"Category");
+      printfooter();
+      exit();
    }
    if (substr($key, 0, 6) == "mdtype") {
       $modarray = explode("_", $key);
       $table=$modarray[1]."_".$modarray[2];
       include("includes/type_inc.php");
-      if (!mod_type($db,$table,$modarray[3])) {
-         show_type($db,$table,"Category");
-         printfooter();
-         exit();
-      }
+      mod_type($db,$table,$modarray[3]);
+      show_type($db,$table,"Category");
+      printfooter();
+      exit();
    }
    if (substr($key, 0, 6) == "dltype") {
       $modarray = explode("_", $key);
