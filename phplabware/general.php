@@ -47,7 +47,9 @@ if (!$edit_type) {
    $queryname=$tableshort."_query";
    $pagename=$tableshort."_curr_page";
    // read all fields in from the description file
-   $fields=comma_array_SQL($db,$table_desname,label);
+//$fields_label=comma_array_SQL($db,$table_desname,label);
+   $fields=comma_array_SQL($db,$table_desname,columnname);
+//echo "$fields_label.<br>$fields.<br>";
 }
 
 // check if something should be modified, deleted or shown
@@ -249,8 +251,9 @@ else {
    $listb=may_read_SQL($db,$real_tablename,$tableid,$USER);
 
    //  get a list of all fields that are displayed in the table
-   $Fieldscomma=comma_array_SQL_where($db,$table_desname,"label","display_table","Y");
-   $Allfields=getvalues($db,$real_tablename,$table_desname,$Fieldscomma,display_table,"Y");	
+   $Fieldscomma=comma_array_SQL_where($db,$table_desname,"columnname","display_table","Y");
+   $Labelcomma=comma_array_SQL_where($db,$table_desname,"label","display_table","Y");
+   $Allfields=getvalues($db,$real_tablename,$table_desname,$Fieldscomma);	
    
    // javascript to automatically execute search when pulling down 
    $jscript="onChange='document.g_form.searchj.value=\"Search\"; document.g_form.submit()'";
@@ -309,7 +312,7 @@ else {
    echo "</tr>\n";
 
 
-   display_midbar($Fieldscomma);
+   display_midbar($Labelcomma);
    display_table_info($db,$tableid,$table_desname,$Fieldscomma,${$queryname},$num_p_r,${$pagename});
    printfooter($db,$USER);
 }
