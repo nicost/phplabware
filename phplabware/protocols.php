@@ -310,7 +310,7 @@ function process_file($db,$fileid,$system_settings) {
             $id=$db->GenID("files_id_seq");
             $query="INSERT INTO files (id,filename,mime,size,title,tablesfk,ftableid,ftablecolumnid,type) VALUES ($id,'$filename','$mime','$size','".$r->fields("title")."','".$r->fields("tablesfk")."','".$r->fields("ftableid")."',1,'$type')";
             if ($db->execute($query)) {
-                $newloc=file_path($db,$id);
+                $newloc="\"".file_path($db,$id)."\"";
                `mv $temp $newloc`;
             }
             else
