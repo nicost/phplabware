@@ -40,6 +40,8 @@ function check_pb_data ($db,&$field_values) {
    // read title, author, pdbid from file
    // we can not demand a file to there since this might be a modify
    if (is_readable($HTTP_POST_FILES["file"]["tmp_name"][0])) {
+      // force the mime-type to be pdb compliant
+       $HTTP_POST_FILES["file"]["type"][0]="chemical/x-pdb";  
        $fh=fopen($HTTP_POST_FILES["file"]["tmp_name"][0],"r");  
        $test1=false;
        $test2=true;
