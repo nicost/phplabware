@@ -310,19 +310,23 @@ if ($version) {
    if ($action) {
       if ($dateformat)
          $settings["dateformat"]=$dateformat;
+      if ($filedir) 
+         if (is_writable($filedir))
+            $settings["filedir"]=$filedir;
+	 else
+	    echo "<h4 align='center>Directory $filedir is not writeable</h4>";
       if ($secure_server_new=="Yes")
          $settings["secure_server"]=true;
       else
          $settings["secure_server"]=false;
       if ($authmethod)
          $settings["authmethod"]=$authmethod;
-      if ($checkpwd)
-         $settings["checkpwd"]=$checkpwd;
+      $settings["checkpwd"]=$checkpwd;
       $settings_ser=serialize($settings);
       $query="UPDATE settings SET settings='$settings_ser' WHERE id=1";
       $result=$db->Execute($query);
       if ($result)
-         echo "<h3 align='center'>Succefully updated the database settings.</h3>\n";
+         echo "<h3 align='center'>Succesfully updated the database settings.</h3>\n";
       else
          echo "<h3 align='center'>Failed to update settings!</h3>\n";
    }
@@ -333,6 +337,20 @@ if ($version) {
 <?php
    echo "<table border=1 align='center' width='70%'>\n";
    echo "<tr><th>Description</th><th>Setting</th></tr>\n";
+
+   echo "<tr><td colspan='2' align='center'><i>Directories</i></th></tr>\n";
+   echo "<tr><td>Location of directory <i>files</i>. The webdaemon should ";
+   echo "have read and write priveleges there, but it should not be directly ";
+   echo "accessible through the web.  If you changes this value, ";
+   echo "the directory will be moved to the new location.</td>";
+   if (!$settings["filedir"]) {
+      $dir=getenv("SCRIPT_FILENAME");
+      $dir=substr($dir,0,strrpos($dir,"/")+1)."files";
+      $settings["filedir"]=$dir;
+   }
+   $filedir=$settings["filedir"];
+   echo "<td><input type='text' name='filedir' value='$filedir'></td></tr>\n";
+
    echo "<tr><td colspan='2' align='center'><i>Localization</i></th></tr>\n";
    echo "<tr><td>Date Format:</td>\n";
    $query="SELECT dateformat,id FROM dateformats ORDER BY sortkey";
