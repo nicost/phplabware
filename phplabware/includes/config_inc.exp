@@ -29,4 +29,9 @@ $db_user = "postgres";
 // Password of that database user
 $db_pwd = "";
 
+// if true, the setup script checks that the browser runs on the local host
+// this makes setup.php more secure, but will not work when the database server
+// runs on a remote host. Use 'true' or 'false'.
+$setup_local=true;
+
 ?>
