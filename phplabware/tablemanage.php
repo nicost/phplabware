@@ -287,8 +287,9 @@ echo "</table>\n";
    
 // user based links section
 echo "<hr><table align='center'>\n";
-$rr=$db->Execute("SELECT Display FROM tableoftables where tablename='linkbar'");
+$rr=$db->Execute("SELECT display FROM tableoftables where tablename='linkbar'");
 $linkdis=$rr->fields["display"];
+
 echo "<h3 align='center'>Edit Linkbar</h3>\n";
 echo "<tr><th>Linkbar Display</th>";
 if($linkdis=="1")
