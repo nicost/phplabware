@@ -14,12 +14,12 @@
 
 
 // This might take a while:
-ini_set("max_execution_time","0");
+ini_set('max_execution_time','0');
 
-include ("includes/defines_inc.php");
-include ("includes/functions_inc.php");
-include ("includes/init_inc.php");
-include ("includes/db_inc.php");
+include ('includes/defines_inc.php');
+include ('includes/functions_inc.php');
+include ('includes/init_inc.php');
+include ('includes/db_inc.php');
 
 ////
 // !Writes the index files needed for full text searches of files
@@ -53,13 +53,13 @@ function doindexfile ($db,$filetext,$fileid,$indextable,$recordid,$pagenr)
 // we keep track of the time it takes to do the indexing
 $starttime=microtime();
 
-$host=getenv("HTTP_HOST");
-if (! ($host=="localhost" ||$host=="127.0.0.1") ) {
+$host=getenv('HTTP_HOST');
+if (! ($host=='localhost' ||$host=='127.0.0.1') ) {
    echo "This script should only be called by the CRON daemon.";
    exit ();
 }
 
-$gs=$system_settings["gs"];
+$gs=$system_settings['gs'];
 if (!@is_readable($gs))
    echo "Could not read ghostscipt binary (gs) at '$gs'.<br>";
    
@@ -71,34 +71,36 @@ while ($rfiles && !($rfiles->EOF)) {
 
    // find out to which table we are going to write the index 
    $rdesc=$db->Execute("SELECT table_desc_name FROM tableoftables WHERE id=".$rfiles->fields[tablesfk]);
-   if($rdesc->fields[table_desc_name]) {
-      $rindextable=$db->Execute("SELECT associated_table FROM ".$rdesc->fields[table_desc_name]." WHERE id=".$rfiles->fields[ftablecolumnid]);
+   if($rdesc->fields['table_desc_name']) {
+      $rindextable=$db->Execute("SELECT associated_table FROM ".$rdesc->fields[table_desc_name]." WHERE id=".$rfiles->fields['ftablecolumnid']);
       if ($rindextable->fields[associated_table]) {
+         // add the filename to the text so that it will be indexed too
+         $filepath=file_path($db,$rfiles->fields['id']);
+         $filename=$rfiles->fields['filename'];
          // treat text files and pdf files differently
-         if (strstr($rfiles->fields[mime],"text")) {
-            $fp=fopen(file_path($db,$rfiles->fields[id]),"r");
+         if (strstr($rfiles->fields['mime'],'text')) {
+            $fp=fopen($filepath,'r');
             if ($fp) {
                while (!feof($fp)) {
                   $filetext.=fgetss($fp,64000);
                }
                fclose($fp);
             }
-            $filetext=strtolower($filetext);
-            if (doindexfile ($db,$filetext,$rfiles->fields[id],$rindextable->fields[associated_table],$rfiles->fields[ftableid],1)) {
-               $db->Execute ("UPDATE files SET indexed=1 WHERE id=".$rfiles->fields[id]);
+            $filetext=strtolower($filetext)."\n".$filename;
+            if (doindexfile ($db,$filetext,$rfiles->fields['id'],$rindextable->fields['associated_table'],$rfiles->fields['tableid'],1)) {
+               $db->Execute ("UPDATE files SET indexed=1 WHERE id=".$rfiles->fields['id']);
                $textfilecounter++;
             }
          }
          // for pdf files we use ghostscript.  Part of this code was taken from docmgr
-         elseif (strstr($rfiles->fields[mime],"pdf") && $gs) {
+         elseif (strstr($rfiles->fields['mime'],'pdf') && $gs) {
             //first we have to figure out how many pages
             //are in the file.  this is a rough method.
             //we have gs kick up an error after it opens
             //the file and sees how many pages there are
 
-            $filepath=file_path($db,$rfiles->fields[id]);
             $numpages = `$gs -dNODISPLAY "$filepath" -c quit`;
-            $pos1 = strpos($numpages,"through");
+            $pos1 = strpos($numpages,'through');
             $numpages = substr($numpages,$pos1);
             $pos2 = strpos($numpages,".");
             $numpages= trim(substr($numpages,8,$pos2-8));
@@ -108,7 +110,7 @@ while ($rfiles && !($rfiles->EOF)) {
                $tempstring=`$gs -q -dNODISPLAY -dNOBIND -dWRITESYSTEMDICT -dSIMPLE -dFirstPage=$page -dLastPage=$page -c save -f ps2ascii.ps "$filepath" -c quit`; 
               //strip out all the trash from the string
               //$tempstring = string_clean($tempstring,$preventIndex,$keepIndex);
-               $filetext=strtolower($tempstring);
+               $filetext=strtolower($tempstring)."\n".$filename;
                doindexfile ($db,$filetext,$rfiles->fields[id],$rindextable->fields[associated_table],$rfiles->fields[ftableid],$page); 
             }
             $db->Execute ("UPDATE files SET indexed=1 WHERE id=".$rfiles->fields[id]);
@@ -136,13 +138,13 @@ $ptime=sprintf("%0f",$pt);
 echo "Indexed $textfilecounter text files and $pdffilecounter pdf files in $ptime seconds<br>";
 
 // load plugin php code if it has been defined 
-if ($HTTP_GET_VARS[tablename]) {
+if ($HTTP_GET_VARS['tablename']) {
    $tableinfo=new tableinfo($db);
-   $plugin_code=get_cell($db,"tableoftables","plugin_code","id",$tableinfo->id);
+   $plugin_code=get_cell($db,'tableoftables','plugin_code','id',$tableinfo->id);
    if ($plugin_code) {
       @include($plugin_code);
       // and execute the cron plugin
-      if (function_exists("plugin_cron"))
+      if (function_exists('plugin_cron'))
          plugin_cron($db,$tableinfo);
    }
 }
@@ -152,6 +154,6 @@ if (substr($db_type,0,8)=='postgres') {
    $db->Execute('VACUUM');
    $db->Execute('ANALYZE');
    $db->Execute('VACUUM ANALYZE');
-   echo "Finished postgres maintenance.<br>";
+   echo "Finished postgres maintenance.\n";
 }
 ?>
