@@ -119,7 +119,7 @@ function display_record($db,$Allfields,$id,$tablename,$real_tablename) {
    echo "<table border=0 align='center'>\n";
    foreach ($Allfields as $nowfield) {
       //see if display_table is set
-      if ($nowfield[display_table]=="Y") {
+      if ($nowfield[display_record]=="Y") {
          if ($nowfield[datatype]=="textlong") {
             $textlarge=nl2br(htmlentities($nowfield[values]));
             echo "<tr><th>$nowfield[label]</th><td colspan=6>$textlarge</td>\n";
