@@ -483,7 +483,7 @@ function display_record($db,$Allfields,$id,$tableinfo,$backbutton=true,$previous
 	    if ($nowfield['link'])
                echo "<td colspan=2>{$nowfield['link']}</td>\n";
             else       
-               echo "<td colspan=2>$nowfield[text]</td>\n";
+               echo "<td colspan=2>{$nowfield['text']}</td>\n";
          }
          $count++;
       }
@@ -829,15 +829,20 @@ function getvalues($db,$tableinfo,$fields,$qfield=false,$field=false)
 	 }
          if ($id) {
             ${$column}['recordid']=$id;
+
+            // datatype table (the toughest of all)
             if ($rb->fields['datatype']=='table') {
+               // if there is an associated local key, we'll need to get the actual value from there
                if ($rb->fields['associated_local_key']) {
                   ${$column}['ass_local_column_name']=get_cell($db,$tableinfo->desname,'columnname','id',$rb->fields['associated_local_key']);
                   ${$column}['values']=get_cell($db,$tableinfo->realname,${$column}['ass_local_column_name'],'id',$id); 
                }
                $text=false;
                $values=false;
+               // if there is a value, we'll dig into the associated table to find out what our associated value and text are
                if (${$column}['values']) {
                   $asstableinfo=new tableinfo($db,${$column}['ass_table_name']);
+                  // we always link to the id column of the associated table
                   $tmpvalue=getvalues($db,$asstableinfo,${$column}['ass_column_name'],'id',${$column}['values']);
 //print_r($tmpvalue);
 //print_r(${$column}['values']);
@@ -874,6 +879,8 @@ function getvalues($db,$tableinfo,$fields,$qfield=false,$field=false)
                   ${$column}['datatype']=$datatype;
 */
             }
+
+            // datatype link
             elseif ($rb->fields['datatype']=='link') {
                if (${$column}['values'])
                   ${$column}['text']="<a href='".${$column}["values"]."' target='_blank'>link</a>";
