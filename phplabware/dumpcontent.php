@@ -64,7 +64,14 @@ $pre_seperator="";
 $post_seperator="\t";
 
 // open file to write output to
-$outfile=$system_settings["tmpdir"]."/dumpcontent.txt";
+$outfile=$system_settings['tmpdir'].'/dumpcontent.txt';
+$filedir=$system_settings['tmpdir'].'/files/';
+// since it is a tmp dir we can destroy all content (right?)
+if (file_exists($filedir))
+   `rm -rf {$filedir}*`;
+else
+   `mkdir $filedir`;
+
 $fp=fopen($outfile,"w");
 if (!$fp) {
    echo "<h3 align='center'>Failed to open <i>$outfile</i> for output</h3>\n";
@@ -92,6 +99,19 @@ while ($r->fields["id"] && !$r->EOF) {
    $rowvalues=getvalues($db,$tableinfo,$fields,"id",$r->fields["id"]);
    foreach ($rowvalues as $row) {
       if (is_array($row)) {
+         // files will be exported to the directory files
+         if ($row['datatype']=='file') {
+            $files=get_files($db,$tableinfo->name,$row['recordid'],$row['columnid'],0);
+            for ($i=0;$i<sizeof($files);$i++) {
+              $filecounter++;
+              fwrite ($fp,$pre_seperator.$files[$i]['name'].$post_seperator);
+              $path=file_path($db,$files[$i]['id']);
+              $cpstr="cp $path {$filedir}{$files[$i]['name']}";
+              `$cpstr`;
+            }
+         }
+         else {
+            
          if ($valuesOnly) {
             fwrite ($fp,$pre_seperator.$row['values'].$post_seperator);
          }
@@ -100,6 +120,7 @@ while ($r->fields["id"] && !$r->EOF) {
                fwrite ($fp,$pre_seperator.$row['values'].$post_seperator);
             else
                fwrite ($fp,$pre_seperator.$row['text'].$post_seperator);
+         }
          }
       }
       else
@@ -115,6 +136,8 @@ fclose($fp);
 
 echo "<h3>Wrote script to $outfile.</h3>";
 echo "<h3>Wrote $counter records.</h3>";
+if ($filecounter)
+   echo "<h3>Saved $filecounter files in $filedir.</h3>";
 
 printfooter($db, $USER);
 
