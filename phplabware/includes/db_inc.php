@@ -821,7 +821,7 @@ function may_read_SQL_JOIN ($db,$table,$USER) {
 
 
 ////
-// !Generates an SQL query asking for the records that mey be seen by this users
+// !Generates an SQL query asking for the records that may be seen by this user
 // Generates a left join for mysql, subselect for postgres
 function may_read_SQL ($db,$tableinfo,$USER,$temptable='tempa') {
    global $db_type;
@@ -1236,9 +1236,14 @@ function searchhelp ($db,$tableinfo,$column,&$columnvalues,$query,$wcappend,$and
          $query[1].= "LEFT JOIN {$asstableinfo->realname} ON {$tableinfo->realname}.$associated_local_key={$asstableinfo->realname}.id ";
       // for nested structure: recursively call searchhelp, this will also yield the real sort or search statement we are inetersted in and will make all nested joints
       $table_where=searchhelp($db,$asstableinfo,$rtdesc->fields[0],&$tablecolumnvalues,false,$wcappend,false);
-      $query[1].=$table_where[1];
-      if ($table_where[2])
+      // this can again lead to joining to the same table twice: check!
+      if (! strstr($query[1],$table_where[1])) {
+         $query[1].=$table_where[1];
+      }
+      // we should always propagate the WHERE clause
+      if ($table_where[2]) {
          $query[2].=$and.' '.$table_where[2];
+      }
    }
    //consider other columns only when there is a search value.  These will only contribute to the WHERE part, not to the FROM part
    if ($columnvalues[$column]) {
