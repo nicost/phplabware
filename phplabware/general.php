@@ -89,9 +89,9 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
    }
    if (substr($key, 0, 6) == "mdtype") {
       $modarray = explode("_", $key);
-      $table=$modarray[1]."_".$modarray[2];
+      $table=$modarray[1]."_".$modarray[2]."_".$modarray[3];
       include("includes/type_inc.php");
-      mod_type($db,$table,$modarray[3]);
+      mod_type($db,$table,$modarray[4]);
       show_type($db,$table,"",$tablename);
       printfooter();
       exit();
@@ -140,7 +140,7 @@ else {
          exit;
       }
       else {  
-	 $fileid=upload_files($db,$real_tablename,$id,$USER,$system_settings);
+	 $fileid=upload_files($db,$tablename,$id,$USER,$system_settings);
       // insert stuff to deal with word/html files
          process_file($db,$fileid,$system_settings); 
          // to not interfere with search form 
@@ -151,7 +151,7 @@ else {
    }
    // then look whether it should be modified
    elseif ($submit=="Modify Record") {
-      if (! (check_g_data($db,$HTTP_POST_VARS) && modify($db,$real_tablename,$fields,$HTTP_POST_VARS,$HTTP_POST_VARS["id"],$USER)) ) {
+      if (! (check_g_data($db,$HTTP_POST_VARS,$table_desname) && modify($db,$real_tablename,$fields,$HTTP_POST_VARS,$HTTP_POST_VARS["id"],$USER)) ) {
          add_g_form ($db,$fields,$HTTP_POST_VARS,$HTTP_POST_VARS["id"],$USER,$PHP_SELF,$system_settings,$real_tablename,$tablenmae,$table_desname);
          printfooter ();
          exit;
@@ -160,7 +160,7 @@ else {
          if ($HTTP_POST_FILES["file"]["name"][0]) {
             // delete all existing file
             delete ($db,$real_tablename,$HTTP_POST_VARS["id"],$USER,true);
-            $fileid=upload_files($db,$real_tablename,$HTTP_POST_VARS["id"],$USER,$system_settings);
+            $fileid=upload_files($db,$tablename,$HTTP_POST_VARS["id"],$USER,$system_settings);
             process_file($db,$fileid,$system_settings);
          }
          // to not interfere with search form 
