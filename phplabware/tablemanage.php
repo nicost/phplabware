@@ -22,6 +22,7 @@ require("includes/tablemanage_inc.php");
 include ('includes/defines_inc.php');
 
 $editfield=$HTTP_GET_VARS["editfield"];
+$editreport=$HTTP_GET_VARS["editreport"];
 $post_vars="newtable_name,newtable_label,newtable_sortkey,newtable_plugincode,addtable,table_id,table_name,table_display,addcol_name,addcol_label,addcol_sort,addcol_dtable,addcol_drecord,addcol_required,addcol_modifiable,addcol_datatype";
 globalize_vars($post_vars, $HTTP_POST_VARS);
 
@@ -101,6 +102,20 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
       show_active_link_page($db,$tablename,$colname,$collabel,$link_a,$link_b);
       printfooter();
       exit();
+      break;
+   }
+   elseif (substr($key, 0, 9) == "modreport") {  
+      $modarray = explode("_", $key);
+      mod_report($db,$modarray[1]);
+      break;
+   } 
+   elseif (substr($key, 0, 9) == "delreport") { 
+      $modarray = explode("_", $key);
+      rm_report($db,$modarray[1]);
+      break;
+   }
+   elseif ($key=="addreport") {
+      add_report($db);
       break;
    }
 }
@@ -262,21 +277,79 @@ if ($editfield)	{
    	 $candel=1;
    	 foreach($nodel as $checkme){
             if ($columnname==$checkme){
-               $candel=0;
+                  $candel=0;
+               }
             }
+            if ($candel==1)
+               echo "$delstring</td>\n";
+ 	    echo "</tr>\n";
          }
-         if ($candel==1)
-            echo "$delstring</td>\n";
- 	 echo "</tr>\n";
+         $r->MoveNext();
+         $rownr+=1;		
       }
-      $r->MoveNext();
-      $rownr+=1;		
-	
-		}
-	echo "</table></form>\n";
-	printfooter($db,$USER);
-	exit;
-	}
+
+   echo "</table></form>\n";
+   printfooter($db,$USER);
+   exit;
+}
+
+/////  Reports
+elseif ($editreport)	{
+   navbar($USER["permissions"]);
+
+   $r=$db->Execute("SELECT id,table_desc_name,label FROM tableoftables WHERE tablename='$editreport'");
+   $tableid=$r->fields["id"];
+   $tablelabel=$r->fields["label"];
+   echo "<h3 align='center'>$string</h3>";
+   echo "<h3 align='center'>Edit reports for table <i>$tablelabel</i></h3><br>";
+
+   echo "<form method='post' name='reportform' id='repedit' enctype='multipart/form-data' ";
+   $dbstring=$PHP_SELF;
+   echo "action='$dbstring?editreport=$editreport&".SID."'>\n"; 
+
+   // Tableheader
+   echo "<table align='center' border='0' cellpadding='2' cellspacing='0'>\n";
+   echo "<tr>\n";
+   echo "<th>Report Name</th>\n";
+   echo "<th>Sortkey</th>\n";
+   echo "<th>Report</th>\n";
+   echo "<th>Action</th>\n";
+   echo "</tr>\n";
+
+   // New addition
+   echo "<input type='hidden' name='table_name' value='$editreport'>\n";
+   echo "<tr align='center' >\n";
+   echo "<td><input type='text' name='addrep_label' value='' size='10'></td>\n";
+   echo "<td><input type='text' name='addrep_sortkey' value='' size='5'></td>\n";
+   echo "<td><input type='text' name='addrep_template' value='' size='35'></td>\n";
+   echo "<td align='center'><input type='submit' name='addreport' value='Add'></td></tr>\n\n";
+
+   // Loop through existing templates
+   $rp=$db->Execute("SELECT id,label,template,sortkey FROM reports WHERE tableid='$tableid' ORDER BY sortkey");
+   $rownr=0;
+   while ($rp && !$rp->EOF) {
+      $id=$rp->fields["id"];
+      echo "<input type='hidden' name='report_id[$rownr]' value='$id'>\n";
+      if ($rownr % 2) 
+        echo "<tr class='row_odd' align='center'>\n";	
+      else 
+         echo "<tr class='row_even' align='center'>\n";         
+
+      echo "<td><input type=text name=report_label[$rownr] value='".$rp->fields["label"]."' size=10></td>\n";
+      echo "<td><input type=text name=report_sortkey[$rownr] value='".$rp->fields["sortkey"]."'size=5></td>\n";
+      echo "<td><input type=text name=report_template[$rownr] value='".$rp->fields["template"]."' size=35></td>\n";
+      $modstring = "<input type='submit' name='modreport"."_$rownr' value='Modify'>\n";
+      $delstring = "<input type='submit' name='delreport"."_$rownr' value='Remove' ";
+      $delstring .= "Onclick=\"if(confirm('Are you absolutely sure that the report ".$rp->fields["label"] ." should be removed? (No undo possible!)')){return true;}return false;\">";  
+      echo "<td>$modstring &nbsp; $delstring</td>\n";
+      echo "</tr>\n";
+      $rp->MoveNext();
+      $rownr++;
+   }
+   echo "</table>\n";
+   printfooter();
+   exit;
+}
 
 navbar($USER["permissions"]);
 echo "<h3 align='center'>$string</h3>";
@@ -294,6 +367,7 @@ echo "<th>Sort key</th>\n";
 echo "<th>Plugin code</th>\n";
 echo "<th>Action</th>\n";
 echo "<th>Fields</th>\n";
+echo "<th>Reports</th>\n";
 
 echo "</tr>\n";
 echo "<tr><td><input type='text' name='newtable_name' value='' ></td>\n";
@@ -302,8 +376,8 @@ echo "<td></td>\n";
 echo "<td></td>\n";
 echo "<td><input type='text' name='newtable_sortkey' value='' size=6></td>\n";
 echo "<td><input type='text' name='newtable_plugincode' value=''></td>\n";
-echo "<td></td>\n";
-echo "<td align='center'><input type='submit' name='addtable' value='Add'></td></tr>\n";
+echo "<td align='center'><input type='submit' name='addtable' value='New'></td>\n";
+echo "<td></td>\n<td></td>\n</tr>\n";
  
 $query = "SELECT id,tablename,label,display,sortkey,plugin_code FROM tableoftables where display='Y' or display='N' ORDER BY sortkey";
 $r=$db->Execute($query);
@@ -355,6 +429,7 @@ while (!($r->EOF) && $r) {
    if ($Custom=="") {
       echo "<td align='center'>$modstring $delstring</td>\n";
       echo "<td><a href='$PHP_SELF?editfield=$name&'>Edit Fields</td></a>";
+      echo "<td><a href='$PHP_SELF?editreport=$name&'>Edit Reports</td></a>";
    }
    else
       echo "<td align='center'>$modstring</td><td></td>";
