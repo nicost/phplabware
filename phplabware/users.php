@@ -175,7 +175,6 @@ function modify ($db, $type) {
    $theid=$USER['id'];
    $theip=getenv('REMOTE_ADDR');
    $thedate=time();
-
    if ($type=='modify'  && $id) {
       $query = "UPDATE users SET login='$login', firstname='$firstname', 
                      lastname='$lastname',  
@@ -196,8 +195,7 @@ function modify ($db, $type) {
 	       $db->Execute("INSERT INTO usersxgroups VALUES ('$id','$add_groupid')");
       } else
          echo "Could not modify settings of user: <i>$firstname $lastname</i>.<br>\n";
-   }
-   elseif ($type =='create') {
+   } elseif ($type =='create') {
          $id=$db->GenID('users_id_seq');
          $pwd=md5($pwd);
          $new_user_settings['menustyle']=1;
@@ -213,8 +211,7 @@ function modify ($db, $type) {
          } 
          else
             echo "Failed to add user: <i>$firstname $lastname</i>.<br>\n";
-   }
-   elseif ($type=='me'  && $id) {
+   } elseif ($type=='me'  && $id) {
       $query = "UPDATE users SET firstname='$firstname', 
                      lastname='$lastname',  
                      email='$email',
@@ -247,8 +244,7 @@ function modify ($db, $type) {
       else
          $result.="Failed to modify you settings.<br>\n";
       $result.="    </td>\n  </tr>\n</table>\n\n";
-   }
-   else 
+   } else 
       $result.= "Strange error!< Please report to your system administrator<br>\n";
    return $result;
 }
@@ -262,7 +258,7 @@ function show_user_form ($type) {
    global $HTTP_SESSION_VARS;
 
    include ('./includes/defines_inc.php');
- 
+
    // read in essential variables
    $fieldname = strtok ($userfields,",");
    while ($fieldname) {
@@ -278,7 +274,7 @@ function show_user_form ($type) {
       for ($i=0; $i<sizeof($perms2); $i++)
          $permissions2=$permissions2 | $perms2[$i];
 
-   if (!$groupid) $groupid = $USER["groupid"];
+   if (!$groupid) $groupid = $USER['groupid'];
 
    // check whether this is not illegitimate
    if (! ( ($USER['permissions'] & $SUPER) || 
