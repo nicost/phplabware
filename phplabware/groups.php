@@ -21,9 +21,9 @@ allowonly($SUPER, $USER["permissions"]);
 // register variables
 $PHP_SELF = $HTTP_SERVER_VARS ["PHP_SELF"];
 $get_vars = "mod,groupid,groupname,";
-globalize_vars ($get_vars,"HTTP_GET_VARS");
+globalize_vars ($get_vars,$HTTP_GET_VARS);
 $post_vars = "add,groupid,groupname,submit,";
-globalize_vars ($post_vars, "HTTP_POST_VARS");
+globalize_vars ($post_vars, $HTTP_POST_VARS);
 
 // main global vars
 $title = "Admin Groups";
