@@ -64,12 +64,15 @@ function date_entry($id,$DBNAME) {
 ///////////////////////////////////////////////////////////
 //// 
 // !Displays all information within the table
-function display_table_info($db,$tableid,$DB_DESNAME,$Fieldscomma,$pr_query,$num_p_r,$pr_curr_page) {
+function display_table_info($db,$tableid,$DB_DESNAME,$Fieldscomma,$pr_query,$num_p_r,$pr_curr_page,$r=false) {
    global $nr_records,$max_menu_length,$USER,$LAYOUT;
-
    $tablename=get_cell($db,"tableoftables","tablename","id",$tableid);
+
    $real_tablename=get_cell($db,"tableoftables","real_tablename","id",$tableid);
-   $r=$db->CachePageExecute(2,$pr_query,$num_p_r,$pr_curr_page);
+   if (!$r)
+      $r=$db->CachePageExecute(2,$pr_query,$num_p_r,$pr_curr_page);
+   else
+      $r->MoveFirst();
    $rownr=1;
    // print all entries
    while (!($r->EOF) && $r)  {
