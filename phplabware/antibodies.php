@@ -358,8 +358,10 @@ else {
 <form name='form' method='post' action='<?php echo $PHP_SELF?>?<?=SID?>'>  
 <?php
 
-   if ($search=="Show All")
+   if ($search=="Show All") {
       unset ($HTTP_POST_VARS);
+      session_unregister("query");
+   }
    $column=strtok($fields,",");
    while ($column) {
       ${$column}=$HTTP_POST_VARS[$column];
@@ -415,8 +417,11 @@ else {
    $whereclause=may_read_SQL ($db,"antibodies",$USER);
    if ($search=="Search")
       $query=search("antibodies",$fields,$HTTP_POST_VARS," id IN ($whereclause) ORDER BY name");
+   elseif (session_is_registered ("query") && $HTTP_SESSION_VARS["query"])
+      $query=$HTTP_SESSION_VARS["query"];
    else
       $query = "SELECT $fields FROM antibodies WHERE id IN ($whereclause) ORDER BY date DESC";
+   session_register("query");
    $r=$db->Execute($query);
    $rownr=1;
    // print all entries
