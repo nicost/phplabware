@@ -12,7 +12,7 @@
   *  option) any later version.                                              *
   \**************************************************************************/                                                                             
 
-$version_code=0.41;
+$version_code=0.5;
 $localdir=exec('pwd');
 include ('./includes/functions_inc.php');
 if (!file_exists('./includes/config_inc.php')) {
