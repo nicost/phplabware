@@ -52,6 +52,7 @@ function plugin_add ($db,$tableid,$id)
 // You could, for instance, calculate a value of a field based on other fields
 function plugin_check_data($db,&$field_values,$table_desc,$modify=false) 
 {
+
    global $HTTP_POST_FILES;
    // we need some info from the database
    $pdftable=get_cell($db,"tableoftables","real_tablename","table_desc_name",$table_desc);
@@ -68,18 +69,6 @@ function plugin_check_data($db,&$field_values,$table_desc,$modify=false)
    // avoid problems with spaces and the like
    $field_values["pmid"]=trim($field_values["pmid"]);
    $pmid=$field_values["pmid"];
-
-/*
-   // no fun without a pmid
-   if (!$field_values["pmid"]) {
-      if ($modify)
-         return true;
-      else {
-         echo "<h3 align='center'>Please enter the Pubmed ID of the PDF reprint.</h3>";
-         return false;
-      }
-   }
-*/
 
    
    // check whether we had this one already
@@ -170,11 +159,33 @@ function plugin_check_data($db,&$field_values,$table_desc,$modify=false)
       return false;
    }
 
+   // check if there is a file (in database for modify, in _POST_FILES for add)
+   if ($modify) {
+      // check in database
+      $file_uploaded=true;
+   } elseif (isset($HTTP_POST_FILES['tmp_name'][0])) {
+         $file_uploaded=true;
+   }
+   if (!$file_uploaded) {
+      // no file uploaded, try to fetch it directly 
+      fetch_pdf($pmid,$journal);
+   }
+
    // some stuff goes wrong when this remains on
    set_magic_quotes_runtime(0);
    return true;
 }
 
+/**
+ * Finds the journal link through eutils elink
+ *
+ * When it knows the journal, will try to download the pdf directly
+ *
+ */
+function fetch_pdf($pmid,$journal)
+{
+
+}
 
 ////
 // !Overrides the standard 'show record'function
