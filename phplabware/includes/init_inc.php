@@ -28,6 +28,8 @@ reset($HTTP_POST_VARS);
 // essential includes
 include ('includes/config_inc.php');
 include ('adodb/adodb.inc.php');
+// be compatible with adodb version 1.80
+$ADODB_FETCH_MODE=ADODB_FETCH_DEFAULT;
 
 // Open connection to the database
 $db = NewADOConnection ($db_type);
