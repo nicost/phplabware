@@ -924,6 +924,7 @@ function typevalue ($value,$type) {
 ////
 // !interprets numerical search terms into an SQL statement
 // implements ranges (i.e. 1-6), and lists (1,2,3) and combinations thereof
+// < and > can also be used
 function numerictoSQL ($searchterm,$column,$type,$and) {
    $commalist=explode(",",$searchterm);
    for ($i=0;$i<sizeof($commalist);$i++) {
@@ -969,9 +970,9 @@ function searchhelp ($db,$tableinfo,$column,&$columnvalues,$query,$wcappend,$and
       $query[1]=true;
       // since all tables now have desc. tables,we can check for int/floats
       // should probably do this more upstream for performance gain
-      $rc=$db->Execute("SELECT type,datatype,associated_table,key_table FROM ".$tableinfo->desname." WHERE columnname='$column'");
+      $rc=$db->Execute("SELECT type,datatype,associated_table,key_table,associated_column,associated_local_key FROM ".$tableinfo->desname." WHERE columnname='$column'");
       if ($rc->fields[1]=='file' && $rc->fields[2]) {
-         $rw=$db->Execute("SELECT id FROM words WHERE word LIKE '".strtolower($columnvalues[$column])."'");
+         $rw=$db->Execute("SELECT id FROM words WHERE word LIKE '".strtolower($columnvalues[$column])."%'");
          if ($rw && $rw->fields[0]) {
             $rh=$db->Execute("SELECT recordid FROM ".$rc->fields[2]." WHERE wordid='".$rw->fields[0]."'");
             if ($rh && $rh->fields[0]) {
@@ -986,6 +987,30 @@ function searchhelp ($db,$tableinfo,$column,&$columnvalues,$query,$wcappend,$and
 	     else $query[0].="$and id=0 ";
          }
 	 else $query[0].="$and id=0 ";
+      }
+      elseif ($rc->fields[1]=='table') {
+         $rtableoftables=$db->Execute("SELECT real_tablename,table_desc_name,id FROM tableoftables WHERE id={$rc->fields['associated_table']}");
+         $rtdesc=$db->Execute("SELECT columnname,datatype,type FROM {$rtableoftables->fields[1]} WHERE id='{$rc->fields['associated_column']}'");
+         $tablecolumnvalues[$rtdesc->fields[0]]=$columnvalues[$column];
+         $asstableinfo=new tableinfo($db,false,$rtableoftables->fields[2]);
+         $table_where=searchhelp($db,$tableinfo,$rtdesc->fields[0],&$tablecolumnvalues,false,$wcappend,false);
+         $rtable=$db->Execute("SELECT id FROM {$rtableoftables->fields[0]} WHERE {$table_where[0]}");
+         if ($rtable && $rtable->fields[0]) {
+             while (!$rtable->EOF) {
+                $rhtemp[]=$rtable->fields[0];
+                $rtable->MoveNext();
+             }
+             $ids=join (",",$rhtemp);
+             if ($rc->fields['associated_local_key']) {
+                $rasslk=$db->Execute("SELECT columnname FROM {$tableinfo->desname} WHERE id={$rc->fields['associated_local_key']}");
+                $query[0].="$and {$rasslk->fields[0]} IN ($ids) ";
+             }
+             else
+                $query[0].="$and $column IN ($ids) ";
+         }
+         // no search results so give an impossible clause
+         else
+            $query[0].="$and $column='0' ";
       }
       // there are some (old) cases where pulldowns are of type text...
       elseif ($rc->fields[1]=='pulldown') {
@@ -1003,7 +1028,7 @@ function searchhelp ($db,$tableinfo,$column,&$columnvalues,$query,$wcappend,$and
             $rmp->MoveNext();
             while (!$rmp->EOF) {
                $id_list.=",{$rmp->fields[0]}";
-               $rmp->MoveNExt();
+               $rmp->MoveNext();
             }
          }
          if ($id_list)
@@ -1021,8 +1046,8 @@ function searchhelp ($db,$tableinfo,$column,&$columnvalues,$query,$wcappend,$and
          $columnvalue=str_replace("*","%",$columnvalue);
          if ($wcappend)
             $columnvalue="%$columnvalue%";
-         else
-            $columnvalue="% $columnvalue %";
+         //else
+         //   $columnvalue="% $columnvalue %";
          $query[0].="$and UPPER($column) LIKE UPPER('$columnvalue') ";
       }
    }

@@ -63,6 +63,75 @@ function date_entry($id,$real_tablename) {
 }
 
 
+////
+// !Displays searchbar in table view
+// For data of type table, recursive calls ar used
+// The ugly stuff with HTTP_POST_VARS could be done better
+// it would also be nicer if a string was returned instead of writing directly
+function searchfield ($db,$tableinfo,$nowfield,$HTTP_POST_VARS,$jscript) {
+   global $USER;
+   $LAYOUT=16;
+   $column=strtok($tableinfo->fields,",");
+   while ($column) {
+      ${$column}=$HTTP_POST_VARS[$column];
+      $column=strtok(",");
+   }
+   if ($nowfield['datatype']== 'link')
+      echo "<td style='width: 10%'>&nbsp;</td>\n";
+   // datatype of column date is text (historical oversight...)
+   elseif ($nowfield['name']=='date') 
+      echo "<td style='width: 10%'>&nbsp;</td>\n";
+   // datatype of column ownerid is text (historical oversight...)
+   elseif ($nowfield['name']=='ownerid') {
+       if ($list) {
+          $rowners=$db->Execute("SELECT ownerid FROM $tableinfo->realname WHERE $list");
+         while ($rowners && !$rowners->EOF) {
+             $ownerids[]=$rowners->fields[0];
+             $rowners->MoveNext();
+          }
+   if ($ownerids)
+             $ownerlist=implode(',',$ownerids);
+       }
+       if ($ownerlist) {   
+          $rowners2=$db->Execute("SELECT lastname,id FROM users WHERE id IN ($ownerlist)");
+           $text=$rowners2->GetMenu2("$nowfield[name]",${$nowfield[name]},true,false,0,"style='width: 80%' $jscript");
+          echo "<td style='width:10%'>$text</td>\n";
+       }   
+       else
+          echo "<td style='width:10%'>test</td>\n";
+    }
+    elseif ($nowfield['datatype']=='int' || $nowfield['datatype']=='float' || $nowfield['datatype']=='sequence' || $nowfield['datatype']=='date') {
+  	    echo  " <td style='width: 10%'><input type='text' name='$nowfield[name]' value='".${$nowfield[name]}."'size=8 align='center'></td>\n";
+    }
+    elseif ($nowfield['datatype']== 'text' || $nowfield['datatype']=='file')
+       echo  " <td style='width: 25%'><input type='text' name='$nowfield[name]' value='".${$nowfield[name]}."'size=8></td>\n";
+    elseif ($nowfield['datatype']== 'textlong')
+       echo  " <td style='width: 10%'><input type='text' name='$nowfield[name]' value='".${$nowfield[name]}."'size=8></td>\n";
+    elseif ($nowfield['datatype']== 'pulldown' || $nowfield['datatype']=='mpulldown') {
+       echo "<td style='width: 10%'>";
+       if ($USER['permissions'] & $LAYOUT)  {
+          $jscript2=" onclick='MyWindow=window.open (\"general.php?tablename=".$tableinfo->name."&edit_type=$nowfield[ass_t]&jsnewwindow=true&formname=$formname&selectname=$nowfield[name]".SID."\",\"type\",\"scrollbar=yes,resizable=yes,width=600,height=400\")'";
+          echo "<input type='button' name='edit_button' value='Edit $nowfield[label]' $jscript2><br>\n";
+       }	 		 			
+       $rpull=$db->Execute("SELECT typeshort,id from $nowfield[ass_t] ORDER by sortkey,typeshort");
+       if ($rpull)
+   $text=$rpull->GetMenu2("$nowfield[name]",${$nowfield[name]},true,false,0,"style='width: 80%' $jscript");   
+   else
+     $text="&nbsp;";
+     echo "$text</td>\n";
+   }
+   elseif ($nowfield['datatype']== 'table') {
+       $ass_tableinfo=new tableinfo ($db,$nowfield['ass_table_name'],false);
+       $rasslk=$db->Execute("SELECT columnname FROM {$ass_tableinfo->desname} WHERE id={$nowfield['ass_column']}");
+       $ass_Allfields=getvalues($db,$ass_tableinfo,$rasslk->fields[0]);
+       // scary hacks, their ugliness shows that we need to reorganize some stuff
+       $ass_Allfields[0]['name']=$nowfield['name']; 
+       $ass_tableinfo->fields="{$nowfield['name']}";
+       searchfield($db,$ass_tableinfo,$ass_Allfields[0],$HTTP_POST_VARS,$jscript);
+    }
+    elseif ($nowfield["datatype"]=="image")
+       echo "<td style='width: 10%'>&nbsp;</td>";
+}
 
 ///////////////////////////////////////////////////////////
 //// 
@@ -376,6 +445,7 @@ function show_reports($db,$tableinfo,$recordid=false) {
       echo $menu;
    }
 }
+
 ///////////////////////////////////////////////////////////
 ////
 // !display addition and modification form

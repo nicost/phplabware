@@ -449,6 +449,7 @@ else {
    echo "<tr align='center'>\n";
    echo "<input type='hidden' name='searchj' value=''>\n";
 
+
    foreach($Allfields as $nowfield)  {
       if ($HTTP_POST_VARS[$nowfield[name]]) {
          $list=$listb['sql']; 
@@ -458,86 +459,9 @@ else {
          $list=$lista;   
          $count=$listb['numrows'];
       }
-      if ($nowfield['datatype']== 'link')
-         echo "<td style='width: 10%'>&nbsp;</td>\n";
-      // datatype of column date is text (historical oversight...)
-      elseif ($nowfield['name']=='date') 
-         echo "<td style='width: 10%'>&nbsp;</td>\n";
-      // datatype of column ownerid is text (historical oversight...)
-      elseif ($nowfield['name']=='ownerid') {
-         if ($list) {
-            $rowners=$db->Execute("SELECT ownerid FROM $tableinfo->realname WHERE $list");
-            while ($rowners && !$rowners->EOF) {
-               $ownerids[]=$rowners->fields[0];
-               $rowners->MoveNext();
-            }
-	    if ($ownerids)
-               $ownerlist=implode(',',$ownerids);
-         }
-         if ($ownerlist) {   
-            $rowners2=$db->Execute("SELECT lastname,id FROM users WHERE id IN ($ownerlist)");
-             $text=$rowners2->GetMenu2("$nowfield[name]",${$nowfield[name]},true,false,0,"style='width: 80%' $jscript");
-            echo "<td style='width:10%'>$text</td>\n";
-         }   
-         else
-            echo "<td style='width:10%'>test</td>\n";
-      }
-      elseif ($nowfield['datatype']=='int' || $nowfield['datatype']=='float' || $nowfield['datatype']=='sequence' || $nowfield['datatype']=='date') {
-    	    echo  " <td style='width: 10%'><input type='text' name='$nowfield[name]' value='".${$nowfield[name]}."'size=8 align='center'></td>\n";
-      }
-      elseif ($nowfield['datatype']== 'text' || $nowfield['datatype']=='file')
-         echo  " <td style='width: 25%'><input type='text' name='$nowfield[name]' value='".${$nowfield[name]}."'size=8></td>\n";
-      elseif ($nowfield['datatype']== 'textlong')
-         echo  " <td style='width: 10%'><input type='text' name='$nowfield[name]' value='".${$nowfield[name]}."'size=8></td>\n";
-      elseif ($nowfield['datatype']== 'pulldown' || $nowfield['datatype']=='mpulldown') {
-         echo "<td style='width: 10%'>";
-         if ($USER['permissions'] & $LAYOUT)  {
-            $jscript2=" onclick='MyWindow=window.open (\"general.php?tablename=".$tableinfo->name."&edit_type=$nowfield[ass_t]&jsnewwindow=true&formname=$formname&selectname=$nowfield[name]".SID."\",\"type\",\"scrollbar=yes,resizable=yes,width=600,height=400\")'";
-            echo "<input type='button' name='edit_button' value='Edit $nowfield[label]' $jscript2><br>\n";
-         }	 		 			
-         $rpull=$db->Execute("SELECT typeshort,id from $nowfield[ass_t] ORDER by sortkey,typeshort");
-         if ($rpull)
-	    $text=$rpull->GetMenu2("$nowfield[name]",${$nowfield[name]},true,false,0,"style='width: 80%' $jscript");   
-	 else
-	    $text="&nbsp;";
-    	 echo "$text</td>\n";
-      }
-      elseif ($nowfield['datatype']== 'table') {
-         echo "<td style='width: 10%'>";
-         if ($nowfield['ass_local_key'])
-            $text="&nbsp;"; 
-         else {
-/*
-            $rtable=$db->Execute("SELECT $nowfield[name] FROM $tableinfo->realname WHERE $list");
-            $list2=make_SQL_csf($rtable,false,"$nowfield[name]",$dummy);
-            // if aprevious search had been done while count>$max_menu_length
-            // we need to backtranslate the id # to a reasonable text:
-            if ($list2) {
-$db->debug=true;
-               $rcount=$db->Execute("SELECT COUNT(id) FROM {$nowfield['ass_table_name']} WHERE id IN ($list2)");
-               if ($rcount && ($rcount->fields[0] < $max_menu_length)) {
-                  
-                $text=GetValuesMenu($db,$nowfield['name'],${$nowfield['name']},$nowfield['ass_table_name'],$nowfield['ass_column_name'],"WHERE id IN ($list2)","style='width: 80%' $jscript");
-                }
-                else {
-*/
-                   if (${$nowfield['name']}) {
-                      $tblvalue=getvalues($db,$tableinfo,$nowfield['name'],$nowfield['name'],${$nowfield['name']});
-                      ${$nowfield['name']}=$tblvalue[0]['text'];
-                   }
-                   $text="<input type='hidden' name='max_{$nowfield['name']}' value='true'>\n";
-                   $text.="<input type='text' name='{$nowfield['name']}' value='{$$nowfield['name']}'>\n";
-/*                }
-            }
-            else
-               $text="&nbsp;";
-*/         }
-
-         echo "$text</td>\n";
-      }
-      elseif ($nowfield["datatype"]=="image")
-         echo "<td style='width: 10%'>&nbsp;</td>";
+      searchfield($db,$tableinfo,$nowfield,$HTTP_POST_VARS,$jscript);
    }	 
+
    echo "<td style='width: 5%'><input type=\"submit\" name=\"search\" value=\"Search\">&nbsp;";
    echo "<input type=\"submit\" name=\"search\" value=\"Show All\"></td>";
    echo "</tr>\n\n";
