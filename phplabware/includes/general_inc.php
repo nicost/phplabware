@@ -32,6 +32,8 @@ function user_entry($id,$real_tablename) {
    echo "<td>&nbsp;</td>";
 }
 
+
+
 ///////////////////////////////////////////////////////////
 //// 
 // !Prints name and date
@@ -522,9 +524,9 @@ function getvalues($db,$tableinfo,$fields,$qfield=false,$field=false) {
             ${$column}["ass_column_name"]=get_cell($db,${$column}["ass_table_desc_name"],"columnname","id",$rb->fields["associated_column"]);
 	 }
          if ($id) {
-            if ($rb->fields["datatype"]=="table") {
-               if ($rb->fields["associated_local_key"]) {
-                  ${$column}["ass_local_column_name"]=get_cell($db,$tableinfo->desname,"columnname","id",$rb->fields["associated_local_key"]);
+            if ($rb->fields['datatype']=='table') {
+               if ($rb->fields['associated_local_key']) {
+                  ${$column}['ass_local_column_name']=get_cell($db,$tableinfo->desname,"columnname","id",$rb->fields["associated_local_key"]);
                   ${$column}["values"]=get_cell($db,$tableinfo->realname,${$column}["ass_local_column_name"],"id",$id); 
                }
                $text=false;
@@ -563,13 +565,13 @@ echo "<br>";
 */
 
             }
-            elseif ($rb->fields["datatype"]=="user") {
+            elseif ($rb->fields['datatype']=='user') {
                $rname=$db->Execute("SELECT firstname,lastname,email FROM users WHERE id=".${$column}["values"]);
                if ($rname && $rname->fields) {
                   if ($rname->fields['email'])
-                     ${$column}['text']="<a href='mailto:".$rname->fields[email]."'>".$rname->fields[firstname]." ".$rname->fields[lastname]."</a>\n";
+                     ${$column}['text']="<a href='mailto:".$rname->fields['email']."'>".$rname->fields['firstname']." ".$rname->fields['lastname']."</a>\n";
                   else
-                     ${$column}["text"]=$rname->fields[firstname]." ".$rname->fields[lastname]."\n";
+                     ${$column}['text']=$rname->fields['firstname']." ".$rname->fields['lastname']."\n";
                }
             }
             elseif ($rb->fields['datatype']=='date' && ${$column}['values']>0) {
