@@ -334,7 +334,7 @@ else {
          printfooter ();
          exit;
       }
-      else {   
+      else { 
 	 upload_files($db,"antibodies",$HTTP_POST_VARS["id"],$USER,$system_settings);
          // to not interfere with search form 
          unset ($HTTP_POST_VARS);
@@ -392,6 +392,7 @@ else {
    echo "<td style='width: 10%'>$text</td>\n";
 
    echo "<td><input type='text' name='location' value='$location' size=8></td>\n";
+   echo "<td>&nbsp;</td>";
    echo "<td><input type=\"submit\" name=\"search\" value=\"Search\">&nbsp;";
    echo "<input type=\"submit\" name=\"search\" value=\"Show All\"></td>";
    echo "</tr>\n";
@@ -400,12 +401,13 @@ else {
    echo "<th>Name</th>";
    echo "<th>Antigen</th>\n";
    echo "<th>Notes</th>\n";
-   echo "<th>Prim./Second.</th>\n";
+   echo "<th>Prim./Sec.</th>\n";
    echo "<th>Label</th>\n";
    echo "<th>Mono-/Polycl.</th>\n";
    echo "<th>Host</th>\n";
    echo "<th>Class</th>\n";
    echo "<th>Location</th>\n";
+   echo "<th>Files</th>\n";
    echo "<th>Action</th>\n";
    echo "</tr>\n";
 
@@ -415,7 +417,6 @@ else {
       $query=search("antibodies",$fields,$HTTP_POST_VARS," id IN ($whereclause) ORDER BY name");
    else
       $query = "SELECT $fields FROM antibodies WHERE id IN ($whereclause) ORDER BY date DESC";
-   //$db->debug=true;
    $r=$db->Execute($query);
    $rownr=1;
    // print all entries
@@ -432,7 +433,6 @@ else {
       $antigen = $r->fields["antigen"];
       $notes = $r->fields["notes"];
       $location = $r->fields["location"];
- 
  
       // print start of row of selected group
       if ($rownr % 2)
@@ -452,7 +452,15 @@ else {
       echo "<td>$at3</td>\n";
       echo "<td>$at4</td>\n";
       echo "<td>$location&nbsp;</td>\n";
-      
+      $files=get_files($db,"antibodies",$id,3);
+      echo "<td>";
+      if ($files) 
+         for ($i=0;$i<sizeof($files);$i++)
+	    echo $files[$i]["link"]."<br>";
+      else
+         echo "&nbsp;";
+      echo "</td>\n";
+
       echo "<td align='center'>&nbsp;\n";
       echo "<input type=\"submit\" name=\"view_" . $id . "\" value=\"View\">\n";
       if (may_write($db,"antibodies",$id,$USER)) {
@@ -471,7 +479,7 @@ else {
 
    // print footer of table
    if (may_write($db,"antibodies",false,$USER)) {
-      echo "<tr><td colspan=10 align='center'>";
+      echo "<tr><td colspan=11 align='center'>";
       echo "<input type=\"submit\" name=\"add\" value=\"Add Antibody\">";
       echo "</td></tr>";
    }
