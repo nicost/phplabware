@@ -257,7 +257,7 @@ function may_write ($db,$table,$id,$USER) {
 // The whereclause should NOT start with WHERE
 // The whereclause should contain the output of may_read_SQL and
 // can also be used for sorting
-function search ($table,$fields,$fieldvalues,$whereclause=false) {
+function search ($table,$fields,$fieldvalues,$whereclause=false,$wcappend=true) {
    $columnvalues=$fieldvalues;
    $query="SELECT $fields FROM $table WHERE ";
    $column=strtok($fields,",");
@@ -266,8 +266,13 @@ function search ($table,$fields,$fieldvalues,$whereclause=false) {
    if ($column && $columnvalues[$column]) {
       $test=true;
       if (is_string($columnvalues[$column])) {
-         $columnvalues[$column]=str_replace("*","%",$columnvalues[$column]);
-         $query.="$column LIKE '$columnvalues[$column]' ";
+         $columnvalue=$columnvalues[$column];
+         $columnvalue=str_replace("*","%",$columnvalue);
+	 if ($wcappend)
+	    $columnvalue="%$columnvalue%";
+	 else
+	    $columnvalue="% $columnvalue %";
+         $query.="$column LIKE '$columnvalue' ";
       }
       else
          $query.="$column='$columnvalues[$column]' ";
@@ -276,8 +281,13 @@ function search ($table,$fields,$fieldvalues,$whereclause=false) {
    while ($column) { 
       if ($column && $columnvalues[$column]) {
          if (is_string($columnvalues[$column])) {
-            $columnvalues[$column]=str_replace("*","%",$columnvalues[$column]);
-            $query.="AND $column LIKE '$columnvalues[$column]' ";
+            $columnvalue=$columnvalues[$column];
+            $columnvalue=str_replace("*","%",$columnvalue);
+            if ($wcappend)
+	       $columnvalue="%$columnvalue%";
+	    else
+	       $columnvalue="% $columnvalue %";
+            $query.="$column LIKE '$columnvalue' ";
          }
          else
             $query.="$column='$columnvalues[$column]' ";
@@ -571,6 +581,9 @@ else {
 ?>
 <form name='form' method='post' action='<?php echo $PHP_SELF?>?<?=SID?>'>  
 <?php
+
+   if ($search=="Show All")
+      unset ($HTTP_POST_VARS);
    $column=strtok($fields,",");
    while ($column) {
       ${$column}=$HTTP_POST_VARS[$column];
@@ -581,7 +594,7 @@ else {
    echo "<tr align='center'>\n";
    echo "<td><input type='text' name='name' value='$name' size=8></td>\n";
    echo "<td><input type='text' name='antigen' value='$antigen' size=8></td>\n";
-   echo "<td><input type='text' name='concentration' value='$concentration' size=4></td>\n";
+   echo "<td><input type='text' name='notes' value='$notes' size=8></td>\n";
    $r=$db->Execute("SELECT type,id FROM ab_type1");
    $text=$r->GetMenu2("type1",$type1,true,false,0,"style='width: 80%'");
    echo "<td style='width: 10%'>$text</td>\n";
@@ -603,16 +616,17 @@ else {
    echo "<td style='width: 10%'>$text</td>\n";
 
    echo "<td><input type='text' name='location' value='$location' size=8></td>\n";
-   echo "<td><input type=\"submit\" name=\"search\" value=\"Search\"></td>";
+   echo "<td><input type=\"submit\" name=\"search\" value=\"Search\">&nbsp;";
+   echo "<input type=\"submit\" name=\"search\" value=\"Show All\"></td>";
    echo "</tr>\n";
 
    echo "<tr>\n";
    echo "<th>Name</th>";
    echo "<th>Antigen</th>\n";
-   echo "<th>mg/ml</th>\n";
-   echo "<th>Primary/Secondary</th>\n";
+   echo "<th>Notes</th>\n";
+   echo "<th>Prim./Second.</th>\n";
    echo "<th>Label</th>\n";
-   echo "<th>Mono-/Polyclonal</th>\n";
+   echo "<th>Mono-/Polycl.</th>\n";
    echo "<th>Host</th>\n";
    echo "<th>Class</th>\n";
    echo "<th>Location</th>\n";
@@ -640,7 +654,7 @@ else {
       $at4=get_cell($db,"ab_type4","type","id",$r->fields["type4"]);
       $at5=get_cell($db,"ab_type5","type","id",$r->fields["type5"]);
       $antigen = $r->fields["antigen"];
-      $concentration = $r->fields["concentration"];
+      $notes = $r->fields["notes"];
       $location = $r->fields["location"];
  
  
@@ -652,7 +666,10 @@ else {
 
       echo "<td>$name</td>\n";
       echo "<td>$antigen&nbsp;</td>\n";
-      echo "<td>$concentration&nbsp;</td>\n";
+      if ($notes)
+         echo "<td>yes</td>\n";
+      else
+         echo "<td>no</td>\n";
       echo "<td>$at1</td>\n";
       echo "<td>$at5</td>\n";
       echo "<td>$at2</td>\n";
