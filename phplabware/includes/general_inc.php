@@ -68,7 +68,7 @@ function date_entry($id,$real_tablename) {
 //// 
 // !Displays information in table in edit mode
 function display_table_change($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr_curr_page,$page_array,$r=false) {
-   global $nr_records,$max_menu_length,$USER,$LAYOUT,$HTTP_SESSION_VARS;
+   global $nr_records,$USER,$LAYOUT,$HTTP_SESSION_VARS;
 
    $first_record=($pr_curr_page - 1) * $num_p_r;
    $current_record=$first_record;
@@ -181,7 +181,7 @@ function display_table_change($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr
 //// 
 // !Displays all information within the table
 function display_table_info($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr_curr_page,$page_array,$r=false) {
-   global $nr_records,$max_menu_length,$USER,$LAYOUT,$HTTP_SESSION_VARS;
+   global $nr_records,$USER,$LAYOUT,$HTTP_SESSION_VARS;
 
    $first_record=($pr_curr_page - 1) * $num_p_r;
    $current_record=$first_record;
@@ -200,7 +200,10 @@ function display_table_info($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr_c
          else echo "<tr class='row_even' align='center'>\n";
   
       foreach($Allfields as $nowfield) 
-         echo "<td>$nowfield[text]</td>\n"; 
+         if ($nowfield['link'])
+            echo "<td>{$nowfield['link']}</td>\n";
+         else
+            echo "<td>{$nowfield['text']}</td>\n"; 
 
       echo "<td align='center'>&nbsp;\n";  
       if ($HTTP_SESSION_VARS["javascript_enabled"]) {
@@ -330,7 +333,7 @@ function show_reports($db,$tableinfo,$recordid) {
 ////
 // !display addition and modification form
 function display_add($db,$tableinfo,$Allfields,$id,$namein,$system_settings) { 
-   global $PHP_SELF, $db_type, $md, $USER, $LAYOUT, $HTTP_POST_VARS;
+   global $PHP_SELF,$db_type,$md,$max_menu_length,$USER,$LAYOUT,$HTTP_POST_VARS;
    
    $dbstring=$PHP_SELF;$dbstring.="?";$dbstring.="tablename=".$tableinfo->name."&";
    echo "<form method='post' id='protocolform' enctype='multipart/form-data' name='form' action='$dbstring";
@@ -424,9 +427,15 @@ function display_add($db,$tableinfo,$Allfields,$id,$namein,$system_settings) {
             // only display primary key here
             if (!$nowfield['ass_local_key']) { 
                // get previous value	
-               $r=$db->Execute("SELECT $nowfield[ass_column_name],id FROM $nowfield[ass_table_name] ORDER BY {$nowfield['ass_column_name']}");
+               $r=$db->Execute("SELECT COUNT(id) FROM {$nowfield['ass_table_name']}");
+               if ($r->fields[0] > $max_menu_length) {
+                  $text="<input type='text' name='{$nowfield['name']}' value='{$nowfield['text']}'>";
+               }
+               else {
+                  $r=$db->Execute("SELECT $nowfield[ass_column_name],id FROM $nowfield[ass_table_name] ORDER BY {$nowfield['ass_column_name']}");
                
-               $text=$r->GetMenu2("$nowfield[name]",$nowfield[values],true,false);
+                  $text=$r->GetMenu2("$nowfield[name]",$nowfield[values],true,false);
+               }
                echo "<tr><th>$nowfield[label]:";
                if ($nowfield[required]=="Y")
                   echo"<sup style='color:red'>&nbsp;*</sup>";
@@ -532,31 +541,32 @@ function getvalues($db,$tableinfo,$fields,$qfield=false,$field=false) {
                if (${$column}['values']) {
                   $asstableinfo=new tableinfo($db,${$column}['ass_table_name']);
                   $tmpvalue=getvalues($db,$asstableinfo,${$column}['ass_column_name'],'id',${$column}['values']);
-                  $text="<a target=_ href=\"general.php?tablename={$asstableinfo->name}&showid=".${$column}['values']."\">{$tmpvalue[0]['text']}</a>\n";
+                  ${$column}['link']="<a target=_ href=\"general.php?tablename={$asstableinfo->name}&showid=".${$column}['values']."\">{$tmpvalue[0]['text']}</a>\n";
+                  $text=$tmpvalue[0]['text'];
                }
                if (!$text)
                   $text="&nbsp;";
-               ${$column}["text"]=$text;
+               ${$column}['text']=$text;
             }
-            elseif ($rb->fields["datatype"]=="link") {
-               if (${$column}["values"])
-                  ${$column}["text"]="<a href='".${$column}["values"]."' target='_blank'>link</a>";
+            elseif ($rb->fields['datatype']=='link') {
+               if (${$column}['values'])
+                  ${$column}['text']="<a href='".${$column}["values"]."' target='_blank'>link</a>";
             }
-            elseif ($rb->fields["datatype"]=="pulldown") {
-               ${$column}["text"]=get_cell($db,${$column}["ass_t"],"typeshort","id",${$column}["values"]); 
+            elseif ($rb->fields['datatype']=='pulldown') {
+               ${$column}['text']=get_cell($db,${$column}['ass_t'],'typeshort','id',${$column}['values']); 
             }
-            elseif ($rb->fields["datatype"]=="textlong") {
-               if (${$column}["values"]=="")
-                  ${$column}["text"]="no";
+            elseif ($rb->fields['datatype']=='textlong') {
+               if (${$column}['values']=="")
+                  ${$column}['text']='no';
                else 
-                  ${$column}["text"]="yes";
+                  ${$column}['text']='yes';
             }
-            elseif ($rb->fields["datatype"]=="file" || $rb->fields["datatype"]=="image") {
-               $tbname=get_cell($db,"tableoftables","tablename","id",$tableinfo->id);
-               $files=get_files($db,$tbname,$id,${$column}["columnid"],3);
+            elseif ($rb->fields['datatype']=='file' || $rb->fields['datatype']=='image') {
+               $tbname=get_cell($db,'tableoftables','tablename','id',$tableinfo->id);
+               $files=get_files($db,$tbname,$id,${$column}['columnid'],3);
                if ($files) 
                   for ($i=0;$i<sizeof($files);$i++)
-                     ${$column}["text"].=$files[$i]["link"];
+                     ${$column}["text"].=$files[$i]['link'];
 
             }
             elseif ($rb->fields['datatype']=='user') {
@@ -598,8 +608,10 @@ function getvalues($db,$tableinfo,$fields,$qfield=false,$field=false) {
 // !Checks input data to addition
 // returns false if something can not be fixed     
 function check_g_data ($db,&$field_values, $DB_DESNAME,$modify=false) {
+   $max_menu_length;
 
-   $rs = $db->Execute("select columnname,datatype from $DB_DESNAME where required ='Y' and (datatype != 'file')");
+   // make sure all the required fields are there 
+   $rs = $db->Execute("SELECT columnname,datatype FROM $DB_DESNAME where required='Y' and (datatype != 'file')");
    while (!$rs->EOF) {
       $fieldA=$rs->fields[0];
       if (!$field_values["$fieldA"]) {
@@ -608,8 +620,9 @@ function check_g_data ($db,&$field_values, $DB_DESNAME,$modify=false) {
       }
       $rs->MoveNext();
    }
+
    // make sure ints and floats are correct, try to set the UNIX date
-   $rs = $db->Execute("select columnname,datatype from $DB_DESNAME where datatype IN ('int','float','date')");
+   $rs = $db->Execute("SELECT columnname,datatype,associated_table,associated_column FROM $DB_DESNAME WHERE datatype IN ('int','float','table','date','sequence')");
    while ($rs && !$rs->EOF) {
       $fieldA=$rs->fields[0];
       if (isset($field_values["$fieldA"]) && (strlen($field_values[$fieldA]) >0)) {
@@ -617,6 +630,18 @@ function check_g_data ($db,&$field_values, $DB_DESNAME,$modify=false) {
             $field_values["$fieldA"]=(int)$field_values["$fieldA"];
          elseif ($rs->fields[1]=='float')
             $field_values["$fieldA"]=(float)$field_values["$fieldA"];
+         elseif ($rs->fields[1]=='table') {
+            $source_tableinfo=new tableinfo($db,false,$rs->fields[2]);
+            $rcount=$db->Execute("SELECT COUNT(id) FROM {$source_tableinfo->realname}");
+            if ($rcount->fields[0] > $max_menu_length) {
+               // go through some stuff to discover which item the user wants to link against.  Guess we should even ask for input if we are in doubt
+               $source_columnname=get_cell($db,$source_tableinfo->desname,'columnname','id',$rs->fields[3]);
+               $rtable=$db->Execute("SELECT id FROM {$source_tableinfo->realname} WHERE $source_columnname='{$field_values["$fieldA"]}'");
+               $field_values["$fieldA"]=$rtable->fields[0];
+            }
+            else
+               $field_values["$fieldA"]=(int)$field_values["$fieldA"];
+         }
          elseif ($rs->fields[1]=='date') {
             $field_values["$fieldA"]=strtotime($field_values["$fieldA"]);
             if ($field_values["$fieldA"] < 0)
@@ -630,6 +655,7 @@ function check_g_data ($db,&$field_values, $DB_DESNAME,$modify=false) {
       }
       $rs->MoveNext();
    }
+
    // Hooray, the first call to a plugin function!!
    if (function_exists("plugin_check_data")) {
       if (!plugin_check_data($db,$field_values,$DB_DESNAME,$modify))
