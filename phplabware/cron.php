@@ -17,7 +17,6 @@ include ("includes/functions_inc.php");
 include ("includes/init_inc.php");
 include ("includes/db_inc.php");
 
-$db->debug=true;
 ////
 // !Writes the index files needed for full text searches of files
 function doindexfile ($db,$filetext,$fileid,$indextable,$recordid,$pagenr)
