@@ -140,7 +140,7 @@ function add_pb_form ($db,$tableid,$fields,$field_values,$id,$USER,$PHP_SELF,$sy
    else {
  	 echo "<tr><th></th><td>";
 ?>
-<a href="#" onClick="MyWindow=window.open('http://mullinslab.ucsf.edu/labware/getpdb.php','MyWindow','toolbar=yes,location=no,directories=no,status=no,menubar=yes,scrollbars=yes,resizable=yes,width=600,height=300'); return false;">
+<a href="#" onClick="MyWindow=window.open('getpdb.php','MyWindow','toolbar=yes,location=no,directories=no,status=no,menubar=yes,scrollbars=yes,resizable=yes,width=600,height=300'); return false;">
 Click here to download pdb files</A><?php
 
       echo "</td></tr>\n";

@@ -231,11 +231,17 @@ else {
    ${$queryname}=make_search_SQL($db,$real_tablename,$tableshort,$tableid,$fields,$USER,$search,$sortstring);
    
    $r=$db->CacheExecute(2,${$queryname});
-   $numrows=$r->RecordCount();
-   // loop through all entries for next/previous buttons
-   $r=$db->CachePageExecute(2,${$queryname},$num_p_r,${$pagename});
-   while (!($r->EOF) && $r) {
-      $r->MoveNext();
+
+
+
+   if ($r)
+   	{
+   	$numrows=$r->RecordCount();
+   	// loop through all entries for next/previous buttons
+   	$r=$db->CachePageExecute(2,${$queryname},$num_p_r,${$pagename});
+   	while (!($r->EOF) && $r) {
+   	   $r->MoveNext();
+   	}
    }
 
    // get variables for links 
