@@ -77,6 +77,9 @@ function display_table_change($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr
    if (!$r)
       $r=$db->Execute($pr_query);
    $r->Move($first_record);
+   if ($HTTP_SESSION_VARS["javascript_enabled"]) {
+      echo "<script language='JavaScript'><!--window.name='mainwin';--></script>\n";
+   }
    // print all entries
    while (!($r->EOF) && $r && $current_record < $last_record)  {
       // Get required ID and title
@@ -143,7 +146,6 @@ function display_table_change($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr
 
       echo "<td align='center'>&nbsp;\n";  
       if ($HTTP_SESSION_VARS["javascript_enabled"]) {
-         echo "<script language='JavaScript'><!--window.name='mainwin'; </script>";
          $jscript=" onclick='MyWindow=window.open (\"general.php?tablename=".$tableinfo->name."&showid=$id&jsnewwindow=true\",\"view\",\"scrollbar=yes,resizable=yes,width=600,height=400\")'";
          echo "<input type=\"button\" name=\"view_" . $id . "\" value=\"View\" $jscript>\n";
       }
