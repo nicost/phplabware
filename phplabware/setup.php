@@ -161,30 +161,31 @@ if ($version) {
    printheader("Settings");
    navbar($USER["permissions"]);
    $settings=unserialize(get_cell($db, "settings", "settings", "id", 1));
-   // display form with current settings
-   if ($action) {
-      // insert database updates here
-      if ($version<$version_code) {
-         $test=true;
-	 // $db->debug=true;
-         if ($version<0.002) {
-	    $query="CREATE TABLE authmethods 
-	       (id int PRIMARY KEY, 
-	        method text)";
-	    if (!$db->Execute($query)) $test=false;
-	    $query="INSERT INTO authmethods VALUES (1,'SQL')";
-	    if (!$db->Execute($query)) $test=false;
-	    $query="INSERT INTO authmethods VALUES (2,'PAM')";
-	    if (!$db->Execute($query)) $test=false;
-	 }
-	 $query="UPDATE settings SET version='$version_code' WHERE id=1";
+
+   // insert database updates here
+   if ($version<$version_code) {
+      $test=true;
+      // $db->debug=true;
+      if ($version<0.002) {
+         $query="CREATE TABLE authmethods 
+            (id int PRIMARY KEY, 
+	     method text)";
 	 if (!$db->Execute($query)) $test=false;
-	 
-	 if ($test)
-            echo "<h3 align='center'>Succefully updated the database to version $version_code.</h3>\n";
-	 else 
-            echo "<h3 align='center'>Failed to update the database to version $version_code.</h3>\n";
+	 $query="INSERT INTO authmethods VALUES (1,'SQL')";
+	 if (!$db->Execute($query)) $test=false;
+	 $query="INSERT INTO authmethods VALUES (2,'PAM')";
+	 if (!$db->Execute($query)) $test=false;
       }
+      $query="UPDATE settings SET version='$version_code' WHERE id=1";
+      if (!$db->Execute($query)) $test=false;
+ 	 
+       if ($test)
+          echo "<h3 align='center'>Succefully updated the database to version $version_code.</h3>\n";
+       else 
+          echo "<h3 align='center'>Failed to update the database to version $version_code.</h3>\n";
+   }
+
+   if ($action) {
       
       if ($secure_server_new=="Yes")
          $settings["secure_server"]=true;
@@ -202,6 +203,8 @@ if ($version) {
       else
          echo "<h3 align='center'>Failed to update settings!</h3>\n";
    }
+
+   // display form with current settings
    echo "<form enctype='multipart/form-data' method='post' ";
    echo "name='globals-form' action='$PHP_SELF'>\n";
    echo "<table border=1 align='center'>\n";
