@@ -1615,7 +1615,8 @@ function make_search_SQL($db,$tableinfo,$fields,$USER,$search,$searchsort,$where
       // extract variables from session
       globalize_vars ($fields, ${$fieldvarsname});
    }
-//echo "${$queryname}.<br>";
+   // do one last error control: replace double commas with singles
+   ${$queryname}=preg_replace("/,,/",",",${$queryname});
    return ${$queryname};
 }
 
