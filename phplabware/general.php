@@ -40,7 +40,7 @@ if ($plugin_code)
    @include($plugin_code);
 
 // register variables
-$get_vars='tablename,md,showid,edit_type,add,jsnewwindow';
+$get_vars='tablename,md,showid,edit_type,add,jsnewwindow,modify';
 globalize_vars($get_vars, $HTTP_GET_VARS);
 $post_vars = 'add,md,edit_type,submit,search,searchj,serialsortdirarray';
 globalize_vars($post_vars, $HTTP_POST_VARS);
@@ -49,7 +49,7 @@ $httptitle .=$tableinfo->label;
 
 // this shows a record entry in a new window, called through javascript
 if ($jsnewwindow && $showid && $tableinfo->name) {
-   printheader($httptitle);
+   printheader($httptitle.' - View record ');
    if (function_exists('plugin_show')){
       plugin_show($db,$tableinfo,$showid,$USER,$system_settings,false);
    }   
@@ -72,9 +72,22 @@ if ($jsnewwindow && $showid && $tableinfo->name) {
    exit();
 }
 
+// open a modify window in a new window, called through javascript
+if ($jsnewwindow && $modify) {
+   // simply translate a GET variable into a POST variable
+   // it will be picked up below
+   while((list($key, $val) = each($HTTP_GET_VARS))) {	
+      // display form with information regarding the record to be changed
+      if (substr($key, 0, 4) == 'mod_' && $val=='Modify') {
+         $HTTP_POST_VARS[$key]=$val;
+      }
+   }
+}
+
 // Mode can be changed through a get var and is perpetuated through post vars
 if ($HTTP_GET_VARS['md'])
    $md=$HTTP_GET_VARS['md'];
+
 foreach($HTTP_POST_VARS as $key =>$value) {
    // for table links, search in the linked table instead of the current one
    if (substr($key, 0, 3) == 'max') {
@@ -110,12 +123,11 @@ if (!may_see_table($db,$USER,$tableinfo->id)) {
    printfooter();
    exit();
 }
-
 // check if something should be modified, deleted or shown
 while((list($key, $val) = each($HTTP_POST_VARS))) {	
    // display form with information regarding the record to be changed
-   if (substr($key, 0, 3) == 'mod') {
-      printheader($httptitle);
+   if (substr($key, 0, 3) == 'mod' && $val=='Modify') {
+      printheader($httptitle.' - Modify record ');
       navbar($USER['permissions']);
       $modarray = explode('_', $key);
       $r=$db->Execute("SELECT $tableinfo->fields FROM ".$tableinfo->realname." WHERE id=$modarray[1]"); 
