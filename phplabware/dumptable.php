@@ -48,15 +48,6 @@ $table_desc=get_cell($db,"tableoftables","table_desc_name","tablename",$tablenam
 $table_label=get_cell($db,"tableoftables","label","tablename",$tablename);
 $table_plugin=get_cell($db,"tableoftables","plugin_code","tablename",$tablename);
 
-// Check for associated tables:
-unset($r);
-$r=$db->Execute("SELECT DISTINCT associated_table FROM $table_desc WHERE associated_column !=''");
-while ($r && !$r->EOF) {
-   $asstable=get_cell($db,'tableoftables','tablename','id',$r->fields[0]);
-   echo "Please make sure that you also export table <i>$asstable</i>, and restore table $asstable before restoring table <i>$table_label</i>, since the latter containes links to the former.<br>";
-   $r->MoveNext();
-}
-
 // open file to write output to
 $outfile=$system_settings["tmpdir"]."/$tablename.php";
 $fp=fopen($outfile,"w");
@@ -66,8 +57,25 @@ if (!$fp) {
    exit();
 }
 
-$header="<?php\n\n\n\n\n";
+$header="<?php\n\n";
 fwrite($fp,$header);
+
+// Check for associated tables:
+unset($r);
+$r=$db->Execute("SELECT DISTINCT associated_table FROM $table_desc WHERE associated_column !=''");
+while ($r && !$r->EOF) {
+   $asstable=get_cell($db,'tableoftables','tablename','id',$r->fields[0]);
+   echo "Please make sure that you also export table <i>$asstable</i>, and restore table $asstable before restoring table <i>$table_label</i>, since the latter containes links to the former.<br>";
+   fwrite($fp,'unset($asstableid);'."\n");
+   fwrite ($fp,'$asstableid=get_cell($db,"tableoftables","tablename","tablename","'.$asstable."\");\n");
+   fwrite ($fp,'if (!$asstableid) {
+   echo "Table <i>'.$asstable.'</i> is needed by table '.$tablename.'.  Please restore table '.$asstable.' first.<br>";
+   printfooter();
+   exit();
+}
+'); 
+   $r->MoveNext();
+}
 
 fwrite ($fp,'$newtableid=$db->GenID("tableoftables_gen_id_seq");'."\n");
 fwrite ($fp,'$newtablename='."\"$tablename\";\n");
@@ -134,7 +142,7 @@ while (!$s->EOF) {
    fwrite ($fp,')");
       ');
    // recreate pull down tables
-   if ($s->fields[7]=="pulldown") {
+   if ($s->fields[7]=="pulldown" || $s->fields[7]=='mpulldown') {
       fwrite($fp,'$ass_table=$newtable_realname."ass";
       $id_ass=$db->GenId($ass_table,20);
       $ass_table.="_$id_ass";
@@ -145,22 +153,43 @@ while (!$s->EOF) {
          typeshort text)");
       $db->Execute("UPDATE $newtable_desc_name SET associated_table=\'$ass_table\' WHERE id=$newid");
       ');
+      if ($s->fields[7]=='mpulldown') {
+         fwrite ($fp,'$ask_table=$newtable_realname."ask_".$id_ass;
+            $db->Execute("CREATE TABLE $ask_table (
+               recordid int,
+               typeid int)");
+         $db->Execute("UPDATE $newtable_desc_name SET key_table=\'$ask_table\' WHERE id=$newid");
+         ');
+      }
    }
    // destroy links to tables, since those will fail
    elseif ($s->fields[7]=='table') {
       $asstable_name=get_cell($db,'tableoftables','tablename','id',$s->fields[8]);
       $asstable_descname=get_cell($db,'tableoftables','table_desc_name','id',$s->fields[8]);
       $asscolumnname=get_cell($db,$asstable_descname,'columnname','id',$s->fields[9]);
-// also do associated local column
+      // also do associated local column
+      $asslocalcolumnname=get_cell($db,$table_desc,'columnname','id',$s->fields[10]);
+      // we need to write the whole description table and only then make the association to local columns:
+      if ($asslocalcolumnname) {
+         fwrite($fp,'$lid[]=$newid;
+');
+         fwrite($fp,'$lasscolumnname[]='.$asslocalcolumnname.";\n");
+      }
 
-      fwrite($fp,'$asstable_id=get_cell($db,"tableoftables","id","tablename",'.$asstable_name.')');
-      fwrite($fp,'$asstable_desc=get_cell($db,"tableoftables","table_desc_name","tablename",'.$asstable_name.')');
-      fwrite($fp,'$asscolumn_id=get_cell($db,"$asstable_desc","id","columnname",'.$asscolumnname.')');
-      fwrite ($fp,'$db->Execute("UPDATE $newtable_desc_name SET associated_table=asstable_id,associated_column=$asscolumn_id,key_table=NULL WHERE id=$newid");
+      fwrite($fp,'$asstable_id=get_cell($db,"tableoftables","id","tablename",'.$asstable_name.");\n");
+      fwrite($fp,'$asstable_desc=get_cell($db,"tableoftables","table_desc_name","tablename",'.$asstable_name.");\n");
+      fwrite($fp,'$asscolumn_id=get_cell($db,"$asstable_desc","id","columnname",'.$asscolumnname.");\n");
+      fwrite ($fp,'$db->Execute("UPDATE $newtable_desc_name SET associated_table=$asstable_id,associated_column=$asscolumn_id,key_table=NULL WHERE id=$newid");
       ');
    }
    $s->MoveNext();
 }
+// if there were associated local columns in the description table, create those link now
+fwrite ($fp,"\n".'for ($i=0;$i<sizeof($lid);$i++) {'."\n");
+fwrite ($fp,'   // find local associated column'."\n");
+fwrite ($fp,'   $r=$db->Execute("SELECT id FROM $newtable_desc_name WHERE columnname=\'{$lasscolumnname[$i]}\'");'."\n");
+fwrite ($fp,'   $db->Execute("UPDATE $newtable_desc_name SET associated_local_key='.'\'{$r->fields[0]}\' WHERE id=\'{$lid[$i]}\'");'."\n");
+fwrite ($fp,"}\n");
 
 fwrite ($fp,'// and finally create the table
       $rc=$db->Execute(" CREATE TABLE $newtable_realname (
