@@ -30,5 +30,9 @@ $PWD_MINIMUM=4;
 
 // comma-separated list (no spaces!) of tables containing user entries
 // these tables should have the field 'userid'
-$tables="";
+$tables="antibodies,protocols";
+
+// maximum length of items displayed in drop-down menu
+$max_menu_length=20;
+
 ?>
