@@ -100,7 +100,7 @@ function check_pd_data ($db,&$field_values) {
 // !Prints a form with pdf stuff
 // $id=0 for a new entry, otherwise it is the id
 function add_pd_form ($db,$fields,$field_values,$id,$USER,$PHP_SELF,$system_settings) {
-   if (!may_write($db,"protocols",$id,$USER))
+   if (!may_write($db,"pdfs",$id,$USER)) 
       return false;
    global $db_type;
 
@@ -119,7 +119,7 @@ function add_pd_form ($db,$fields,$field_values,$id,$USER,$PHP_SELF,$system_sett
    echo "<input type='hidden' name='magic' value='$magic'>\n";
    echo "<table border=0 align='center'>\n";
    if ($id) {
-      echo "<tr><td colspan=5 align='center'><h3>Modify PDF metadata <i>$title</i></h3></td></tr>\n";
+      echo "<tr><td colspan=5 align='center'><h3>Modify reprint:<br> <i>$title</i></h3></td></tr>\n";
       echo "<input type='hidden' name='id' value='$id'>\n";
    }
    else
@@ -256,7 +256,7 @@ function show_pd ($db,$fields,$id,$USER,$system_settings) {
    echo "cmd=Link&db=PubMed&dbFrom=PubMed&from_uid=$pmid'>Related articles at Pubmed</a></td></tr>\n";
 
 ?>   
-<form method='post' id='protocolview' action='<?php echo $PHP_SELF?>?<?=SID?>'> 
+<form method='post' id='pdfview' action='<?php echo $PHP_SELF?>?<?=SID?>'> 
 <?php
    echo "<tr>";
    echo "<td colspan=7 align='center'><input type='submit' name='submit' value='Back'></td>\n";
@@ -350,7 +350,7 @@ else {
    // print header of table
    echo "<table border='1' align='center'>\n";
    echo "<caption>\n";
-   // first handle addition of a new protocol
+   // first handle addition of a new reprint
    if ($submit == "Add PDF reprint") {
       if (! (check_pd_data($db, $HTTP_POST_VARS) && $id=add ($db, "pdfs",$fields,$HTTP_POST_VARS,$USER) ) ){
          echo "</caption>\n</table>\n";
