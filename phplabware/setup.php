@@ -30,7 +30,7 @@ if ($adodb_version<1.71) {
    exit();
 }
 
-$post_vars="access,action,authmethod,baseURL,homeURL,checkpwd,dateformat,filedir,pwd,protocols_file,pdfs_file,pdfget,secure_server_new,submit,tmpdir,word2html";
+$post_vars="access,action,authmethod,baseURL,homeURL,checkpwd,dateformat,filedir,pwd,protocols_file,pdfs_file,pdfget,secure_server_new,submit,tmpdir,tmpdirpsql,word2html";
 globalize_vars($post_vars, $HTTP_POST_VARS);
 
 if ($set_local) {
@@ -161,6 +161,14 @@ if ($version) {
             if (!isset ($system_settings["tmpdir"]))
                $system_settings["tmpdir"]=session_save_path();
          }
+      if ($tmpdirpsql) 
+         if (is_writeable($tmpdirpsql))
+            $system_settings["tmpdirpsql"]=$tmpdirpsql;
+	 else {
+	    echo "<h4 align='center'>Directory $tmpdirpsql is not writeable</h4>";
+            if (!isset ($system_settings["tmpdirpsql"]))
+               $system_settings["tmpdirpsql"]="/tmp";
+         }
       if (isset($word2html) && @is_readable($word2html))
          $system_settings["word2html"]=$word2html;
       else {
@@ -245,6 +253,13 @@ if ($version) {
    if (!$system_settings["tmpdir"]) 
       $system_settings["tmpdir"]="/tmp";
    echo "<td><input type='text' name='tmpdir' value='".$system_settings["tmpdir"]."'></td></tr>\n";
+   
+   if ($db_type=="postgres7") {
+      echo "<tr><td>Directory for exchange of files between the webdaemon and the postgres daemon.  Both should be able to read and write here. </td>";
+      if (!$system_settings["tmpdirpsql"]) 
+         $system_settings["tmpdirpsql"]="/tmp";
+      echo "<td><input type='text' name='tmpdirpsql' value='".$system_settings["tmpdirpsql"]."'></td></tr>\n";
+   }
    
    echo "<tr><td>Server URL.</td>\n ";
    if (!$system_settings["baseURL"]) {
