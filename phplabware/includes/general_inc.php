@@ -244,7 +244,8 @@ function make_link($id)
 	}
 
 ///////////////////////////////////////////////////////////
-// display addition and modification form
+////
+// !display addition and modification form
 function display_add($Allfields,$id,$namein)  
 	{
 	global $db, $DBNAME, $DB_DESNAME, $db_type, $USER;	
@@ -353,18 +354,19 @@ else $value="Add Record";
 // submit and clear buttons
 echo "<td colspan=7 align='center'><input type='submit' name='submit' value='$value'>\n";
 echo "&nbsp;&nbsp;<input type='submit' name='submit' value='Cancel'></td>\n";
-echo "</tr>\n";echo "</table></form>\n";
+echo "</tr>\n";
+echo "</table></form>\n";
 
 //end of table
-   $dbstring=$PHP_SELF;$dbstring.="?";$dbstring.="dbname=$DBNAME&";
-    echo "<form method='post' id='protocolform' enctype='multipart/form-data' action='$dbstring";
-	?><?=SID?>'><?php
+$dbstring=$PHP_SELF;$dbstring.="?";$dbstring.="dbname=$DBNAME&";
+echo "<form method='post' id='protocolform' enctype='multipart/form-data' action='$dbstring";
+?><?=SID?>'><?php
 
-   echo "<tr><td colspan=7 align='center'><input type='submit' name='submit' value='Back'></td>\n";
-   echo "</tr></table></form>\n";
 }
+
 ///////////////////////////////////////////////////////////////////////
-// Get all description table values out for a display
+////
+// !Get all description table values out for a display
 function getvalues($db,$DBNAME,$DB_DESNAME,$fields,$qfield,$field)
 	{
 	global $db,$DBNAME,$DB_DESNAME;
@@ -390,7 +392,8 @@ function getvalues($db,$DBNAME,$DB_DESNAME,$fields,$qfield,$field)
 	return $Allfields;
 	}
 /////////////////////////////////////////////////
-/// displays the bar between the search header and the records
+////
+// !displays the bar between the search header and the records
 function display_midbar($labelcomma)
 	{
 	$labelarray=explode(",",$labelcomma);
@@ -401,7 +404,8 @@ function display_midbar($labelcomma)
     echo "</tr>\n";
 	}
 //////////////////////////////////////////////////////
-// SQL where search that returns a comma delimited string
+////
+// !SQL where search that returns a comma delimited string
 function comma_array_SQL_where($db,$tablein,$column,$searchfield,$searchval)
 	{
 	$tempa=array();
@@ -418,8 +422,10 @@ function comma_array_SQL_where($db,$tablein,$column,$searchfield,$searchval)
 $out=join(",",$tempa);
 return $out;
 }
+
 //////////////////////////////////////////////////////
-// SQL search (entrire column) that returns a comma delimited string
+////
+// !SQL search (entrire column) that returns a comma delimited string
 function comma_array_SQL($db,$tablein,$column)
 	{
 	global $db;
@@ -438,20 +444,22 @@ return $out;
 }
 
 //////////////////////////////////////////////////////
-// SQL search that returns a single cell
+////
+// !SQL search that returns a single cell
 function simple_SQL($db,$tablein,$column,$searchfield,$searchval)
 	{
 	$rs = $db->Execute("select $column from $tablein where $searchfield ='$searchval'");
 	$fieldA=$rs->fields[0];
 	return $fieldA;
 }
+
 //////////////////////////////////////////////////////////////////////
 ////  general functions
 /****************************FUNCTIONS***************************/
 ////
 // !Checks input data to addition
 // returns false if something can not be fixed     
-function check_pr_data ($db,&$field_values) {
+function check_g_data ($db,&$field_values) {
    global $db, $DB_DESNAME;
 
    $allreq=array();
@@ -489,7 +497,7 @@ function check_pr_data ($db,&$field_values) {
 // $fields is a comma-delimited string with column names
 // $field_values is hash with column names as keys
 // $id=0 for a new entry, otherwise it is the id
-function add_pr_form ($db,$fields,$field_values,$id,$USER,$PHP_SELF,$system_settings,$DB_DESNAME) 
+function add_g_form ($db,$fields,$field_values,$id,$USER,$PHP_SELF,$system_settings,$DB_DESNAME) 
 	{
 	global $db, $DBNAME, $DB_DESNAME;
 	if (!may_write($db,$DBNAME,$id,$USER)) return false; 
@@ -507,7 +515,7 @@ function add_pr_form ($db,$fields,$field_values,$id,$USER,$PHP_SELF,$system_sett
 
 ////
 // !Shows a page with nice information on the record
-function show_pr($db,$fields,$id,$USER,$system_settings,$DBNAME,$DB_DESNAME) 
+function show_g($db,$fields,$id,$USER,$system_settings,$DBNAME,$DB_DESNAME) 
 	{
     if (!may_read($db,"$DBNAME",$id,$USER))
     return false;
