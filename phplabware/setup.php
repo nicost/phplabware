@@ -25,7 +25,7 @@ include ('includes/config_inc.php');
 include ("includes/defines_inc.php");
 include ('adodb/adodb.inc.php');
 
-$post_vars="access,action,authmethod,baseURL,checkpwd,dateformat,filedir,pwd,secure_server_new,submit,tmpdir,word2html";
+$post_vars="access,action,authmethod,baseURL,homeURL,checkpwd,dateformat,filedir,pwd,secure_server_new,submit,tmpdir,word2html";
 globalize_vars($post_vars, $HTTP_POST_VARS);
 
 if ($set_local) {
@@ -144,6 +144,8 @@ if ($version) {
       }
       if ($baseURL)
          $system_settings["baseURL"]=$baseURL;
+      if ($homeURL)
+         $system_settings["homeURL"]=$homeURL;
       if ($secure_server_new=="Yes")
          $system_settings["secure_server"]=true;
       else
@@ -195,8 +197,13 @@ if ($version) {
    if (!$system_settings["baseURL"]) {
       $system_settings["baseURL"]="http://".getenv("SERVER_NAME");
    }
-      
    echo "<td><input type='text' name='baseURL' value='".$system_settings["baseURL"]."'></td></tr>\n";
+      
+   echo "<tr><td>URL to return to after logging out.</td>\n ";
+   if (!$system_settings["homeURL"]) {
+      $system_settings["homeURL"]="http://".getenv("SERVER_NAME");
+   }
+   echo "<td><input type='text' name='homeURL' value='".$system_settings["homeURL"]."'></td></tr>\n";
 
    echo "<tr><td colspan='2' align='center'><i>Helper Applications</i></th></tr>\n";
    echo "<tr><td>wvHtml:</td>\n";
