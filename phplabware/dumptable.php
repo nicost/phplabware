@@ -3,17 +3,17 @@
 // dumptable.php - Creates the php code needed to re-create the table structure
 // dumptable.php - author: Nico Stuurman<nicost@sourceforge.net>
 
-  /***************************************************************************
-  * Creates the php code needed to re-create the table structure             *
-  * Takes 'tablename' as a get variable                                      *
-  *                                                                          *
-  * Copyright (c) 2002 by Nico Stuurman                                      *
-  * ------------------------------------------------------------------------ *
-  *  This program is free software; you can redistribute it and/or modify it *
-  *  under the terms of the GNU General Public License as published by the   *
-  *  Free Software Foundation; either version 2 of the License, or (at your  *
-  *  option) any later version.                                              *
-  \**************************************************************************/                                                                                     
+/***************************************************************************
+* Creates the php code needed to re-create the table structure             *
+* Takes 'tablename' as a get variable                                      *
+*                                                                          *
+* Copyright (c) 2002 by Nico Stuurman                                      *
+* ------------------------------------------------------------------------ *
+*  This program is free software; you can redistribute it and/or modify it *
+*  under the terms of the GNU General Public License as published by the   *
+*  Free Software Foundation; either version 2 of the License, or (at your  *
+*  option) any later version.                                              *
+\**************************************************************************/                                                                                     
 
 require ("include.php");
 
@@ -25,15 +25,20 @@ if (!$USER["permissions"] & $SUPER) {
    printfooter($db, $USER);
 }
 
-$tablename=$HTTP_GET_VARS["tablename"];
-if (!$tablename) {
-   echo "<h3 align='center'>Usage: dumptable.php?tablename=mytablename.</h3>\n";
-   printfooter($db, $USER);
-}
 
+$tablename=$HTTP_GET_VARS["tablename"];
 $tableid=get_cell($db,"tableoftables","id","tablename",$tablename);
 if (!$tableid) {
-   echo "<h3 align='center'>Table <i>$tablename</i> does not exist.</h3>\n";
+   echo "<h3>This script will create a php file with code that will re-create the table you selected in phplabware.  Only the table structure, not its content will be re-created</h3>";
+   $r=$db->execute("SELECT id,tablename FROM tableoftables");
+   if ($r) {
+      echo "<table align='center'>\n";
+      echo "<tr><td><h3>Select one of the following tables:</h3></td></tr>\n";
+      while ($r && !$r->EOF) {
+         echo "<tr><td><a href='dumptable.php?tablename=".$r->fields[1]."'>".$r->fields[1]."</a></td></tr>\n";
+         $r->MoveNext();
+      }
+   }
    printfooter($d, $USER);
    exit();
 }
