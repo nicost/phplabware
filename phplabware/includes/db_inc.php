@@ -1201,126 +1201,134 @@ function search ($db,$tableinfo,$fields,&$fieldvalues,$whereclause=false,$wcappe
 // !Helper function for search
 // Interprets fields the right way
 function searchhelp ($db,$tableinfo,$column,&$columnvalues,$query,$wcappend,$and) {
-   if ($column=='ownerid') {
-      $query[5]=true;
-      $query[2].= "$and ownerid={$columnvalues[$column]} ";
-   }
-   else {
-      $query[5]=true;
-      // since all tables now have desc. tables,we can check for int/floats
-      // should probably do this more upstream for performance gain
-      $rc=$db->Execute("SELECT type,datatype,associated_table,key_table,associated_column,associated_local_key FROM ".$tableinfo->desname." WHERE columnname='$column'");
-      if ($rc->fields[1]=='file' && $rc->fields[2]) {
-         $rw=$db->Execute("SELECT id FROM words WHERE word LIKE '".strtolower($columnvalues[$column])."%'");
-         if ($rw && $rw->fields[0]) {
-            $query[1].="LEFT JOIN {$rc->fields[2]} ON {$tableinfo->realname}.id={$rc->fields[2]}.recordid ";
-            $query[2].="{$rc->fields[2]}.wordid='{$rw->fields[0]}' ";
-         }
-	 else $query[2].="$and id=0 ";
-      }
-      elseif ($rc->fields[1]=='table') {
-         $rtableoftables=$db->Execute("SELECT real_tablename,table_desc_name,id FROM tableoftables WHERE id={$rc->fields['associated_table']}");
-         $rtdesc=$db->Execute("SELECT columnname,datatype,type FROM {$rtableoftables->fields[1]} WHERE id='{$rc->fields['associated_column']}'");
-         $tablecolumnvalues[$rtdesc->fields[0]]=$columnvalues[$column];
-         $asstableinfo=new tableinfo($db,false,$rtableoftables->fields[2]);
-         // find the key and the column it relates to
-         if ($rc->fields['associated_local_key']) {
-            $rasslk=$db->Execute("SELECT columnname,associated_column FROM {$tableinfo->desname} WHERE id={$rc->fields['associated_local_key']}");
-            $associated_local_key=$rasslk->fields[0];
-            $rtdesc2=$db->Execute("SELECT columnname,datatype,type FROM {$asstableinfo->desname} WHERE id={$rasslk->fields[1]}");
-            $foreign_key=$rtdesc2->fields[0];
-            
-         }
-         else {
-            $associated_local_key=$column;
-            $foreign_key=$rtdesc->fields[0];
-         }
-         // check whether we already have this table as a join:
-         // postgres does not like the same join twice, this also dictates that we can not use multiple foreign keys in a table
-         if (!strstr($query[1],$asstableinfo->realname))
-            $query[1].= "LEFT JOIN {$asstableinfo->realname} ON {$tableinfo->realname}.$associated_local_key={$asstableinfo->realname}.$foreign_key ";
-         $table_where=searchhelp($db,$asstableinfo,$rtdesc->fields[0],&$tablecolumnvalues,false,$wcappend,false);
-         $query[1].=$table_where[1];
-         $query[2].=$and.' '.$table_where[2];
-      }
-      // there are some (old) cases where pulldowns are of type text...
-      elseif ($rc->fields[1]=='pulldown') {
-         $columnvalues[$column]=(int)$columnvalues[$column];
-         if ($columnvalues["$column"]==-1)
-            $query[2].="$and ({$tableinfo->realname}.$column='' OR {$tableinfo->realname}.$column IS NULL) ";
-         else
-            $query[2].="$and {$tableinfo->realname}.$column='$columnvalues[$column]' ";
-      }
-      elseif ($rc->fields[1]=='mpulldown') {
-         // emulate a logical AND between values selected in a mpulldown
-         unset ($id_list);
-         // keep the code to deal with single selects and multiple selects
-         if (is_array($columnvalues)) {
-            unset($id_list);
-            $j=0;
-            // read in values from types tables and arrange in groups
-            foreach($columnvalues[$column] as $typeid) {
-               $rl=$db->Execute("SELECT recordid FROM {$rc->fields[3]} WHERE typeid=$typeid");
-               while ($rl && !$rl->EOF) {
-                  $id_list[$j].=$rl->fields[0].',';
-                  $rl->MoveNext();
-               }
-               $id_list[$j]=substr($id_list[$j],0,-1);
-               // if nothing is found we'll pass an impossible id value
-               if (strlen($id_list[$j]) <1)
-                  $id_list[$j]='-1';
-               $j++;
-            }
-         }
-         else {  // for 'single' selects
-            $rmp=$db->Execute("SELECT recordid FROM {$rc->fields[3]} WHERE typeid='{$columnvalues[$column]}'");
-            if ($rmp) {
-               $id_list=$rmp->fields[0];
-               $rmp->MoveNext();
-               while (!$rmp->EOF) {
-                  $id_list.=",{$rmp->fields[0]}";
-                  $rmp->MoveNext();
-               }
-            }
-         }
-         // pass the multiple lists to the main query
-         if (is_array($id_list)) {
-            foreach ($id_list as $list) {
-               if (!$listfound) {
-                  $query[2].="$and {$tableinfo->realname}.id IN ($list) ";
-                  $listfound=true;
-               }
-               else
-                  $query[2].="AND {$tableinfo->realname}.id IN ($list) ";
-            }
-            // we should not be able to get here:
-            if (!$listfound)
-               $query[2].="$and {$tableinfo->realname}.id IN (-1) ";
-         }
-         elseif ($id_list) // for 'single' selects
-            $query[2].="$and {$tableinfo->realname}.id IN ($id_list) ";
-         else // nothing found, make sure we do not crash the search statement
-            $query[2].="$and {$tableinfo->realname}.id IN (-1) ";
-            
-      }
-      elseif ($rc->fields[1]=='date') {
-         $query[2].= datetoSQL($columnvalues[$column],$column,$and);
-      }
-      elseif (substr($rc->fields[0],0,3)=='int') {
-         $query[2].=numerictoSQL ($tableinfo,$columnvalues[$column],$column,'int',$and); 
-      }
-      elseif (substr($rc->fields[0],0,5)=='float') {
-         $query[2].=numerictoSQL ($tableinfo,$columnvalues[$column],$column,'float',$and); 
+   // first get the specs on this column
+   $rc=$db->Execute("SELECT type,datatype,associated_table,key_table,associated_column,associated_local_key FROM ".$tableinfo->desname." WHERE columnname='$column'");
+   // get the left joins in the sql statement right
+   if ($rc->fields[1]=='table') {
+      $rtableoftables=$db->Execute("SELECT real_tablename,table_desc_name,id FROM tableoftables WHERE id={$rc->fields['associated_table']}");
+      $rtdesc=$db->Execute("SELECT columnname,datatype,type FROM {$rtableoftables->fields[1]} WHERE id='{$rc->fields['associated_column']}'");
+      $tablecolumnvalues[$rtdesc->fields[0]]=$columnvalues[$column];
+      $asstableinfo=new tableinfo($db,false,$rtableoftables->fields[2]);
+      // find the key and the column it relates to
+      if ($rc->fields['associated_local_key']) {
+         $rasslk=$db->Execute("SELECT columnname,associated_column FROM {$tableinfo->desname} WHERE id={$rc->fields['associated_local_key']}");
+         $associated_local_key=$rasslk->fields[0];
+         $rtdesc2=$db->Execute("SELECT columnname,datatype,type FROM {$asstableinfo->desname} WHERE id={$rasslk->fields[1]}");
+         $foreign_key=$rtdesc2->fields[0];
       }
       else {
-         $columnvalues[$column]=trim($columnvalues[$column]);
-         $columnvalue=$columnvalues[$column];
-         $columnvalue=str_replace('*','%',$columnvalue);
-         if ($wcappend)
-            $columnvalue="%$columnvalue%";
-         //else
-         //   $columnvalue="% $columnvalue %";
-         $query[2].="$and UPPER({$tableinfo->realname}.$column) LIKE UPPER('$columnvalue') ";
+         $associated_local_key=$column;
+         $foreign_key=$rtdesc->fields[0];
+      }
+      // check whether we already have this table as a join:
+      // postgres does not like the same join twice, this also dictates that we can not use multiple foreign keys in a table
+      if (!strstr($query[1],$asstableinfo->realname))
+         $query[1].= "LEFT JOIN {$asstableinfo->realname} ON {$tableinfo->realname}.$associated_local_key={$asstableinfo->realname}.$foreign_key ";
+      // for nested structure: recursively call searchhelp, this will also yield the real sort or search statement we are inetersted in and will make all nested joints
+      $table_where=searchhelp($db,$asstableinfo,$rtdesc->fields[0],&$tablecolumnvalues,false,$wcappend,false);
+      $query[1].=$table_where[1];
+      if ($table_where[2])
+         $query[2].=$and.' '.$table_where[2];
+   }
+   //consider other columns only when there is a search value.  These will only contribute to the WHERE part, not to the FROM part
+   if ($columnvalues[$column]) {
+      $query[5]=true;
+      if ($column=='ownerid') {
+         $query[2].= "$and ownerid={$columnvalues[$column]} ";
+      }
+      else {
+         $query[5]=true;
+         // since all tables now have desc. tables,we can check for int/floats
+         // should probably do this more upstream for performance gain
+         if ($rc->fields[1]=='file' && $rc->fields[2]) {
+            $rw=$db->Execute("SELECT id FROM words WHERE word LIKE '".strtolower($columnvalues[$column])."%'");
+            if ($rw && $rw->fields[0]) {
+               $query[1].="LEFT JOIN {$rc->fields[2]} ON {$tableinfo->realname}.id={$rc->fields[2]}.recordid ";
+               $query[2].="{$rc->fields[2]}.wordid='{$rw->fields[0]}' ";
+            }
+	    else $query[2].="$and id=0 ";
+         }
+         if ($rc->fields[1]=='table') {
+         }
+         // there are some (old) cases where pulldowns are of type text...
+         elseif ($rc->fields[1]=='pulldown') {
+            $columnvalues[$column]=(int)$columnvalues[$column];
+            if ($columnvalues["$column"]==-1)
+               $query[2].="$and ({$tableinfo->realname}.$column='' OR {$tableinfo->realname}.$column IS NULL) ";
+            else
+               $query[2].="$and {$tableinfo->realname}.$column='$columnvalues[$column]' ";
+         }
+         elseif ($rc->fields[1]=='mpulldown') {
+            // emulate a logical AND between values selected in a mpulldown
+            unset ($id_list);
+            // keep the code to deal with single selects and multiple selects
+            if (is_array($columnvalues)) {
+               unset($id_list);
+               $j=0;
+               // read in values from types tables and arrange in groups
+               foreach($columnvalues[$column] as $typeid) {
+                  $rl=$db->Execute("SELECT recordid FROM {$rc->fields[3]} WHERE typeid=$typeid");
+                  while ($rl && !$rl->EOF) {
+                     $id_list[$j].=$rl->fields[0].',';
+                     $rl->MoveNext();
+                  }
+                  $id_list[$j]=substr($id_list[$j],0,-1);
+                  // if nothing is found we'll pass an impossible id value
+                  if (strlen($id_list[$j]) <1)
+                     $id_list[$j]='-1';
+                  $j++;
+               }
+            }
+            else {  // for 'single' selects
+               $rmp=$db->Execute("SELECT recordid FROM {$rc->fields[3]} WHERE typeid='{$columnvalues[$column]}'");
+               if ($rmp) {
+                  $id_list=$rmp->fields[0];
+                  $rmp->MoveNext();
+                  while (!$rmp->EOF) {
+                     $id_list.=",{$rmp->fields[0]}";
+                     $rmp->MoveNext();
+                  }
+              }
+            }
+            // pass the multiple lists to the main query
+            if (is_array($id_list)) {
+               foreach ($id_list as $list) {
+                  if (!$listfound) {
+                     $query[2].="$and {$tableinfo->realname}.id IN ($list) ";
+                     $listfound=true;
+                  }
+                  else
+                     $query[2].="AND {$tableinfo->realname}.id IN ($list) ";
+               }
+               // we should not be able to get here:
+               if (!$listfound)
+                  $query[2].="$and {$tableinfo->realname}.id IN (-1) ";
+            }
+            elseif ($id_list) // for 'single' selects
+               $query[2].="$and {$tableinfo->realname}.id IN ($id_list) ";
+            else // nothing found, make sure we do not crash the search statement
+               $query[2].="$and {$tableinfo->realname}.id IN (-1) ";
+               
+         }
+         elseif ($rc->fields[1]=='date') {
+            $query[2].= datetoSQL($columnvalues[$column],$column,$and);
+         }
+         elseif (substr($rc->fields[0],0,3)=='int') {
+            $query[2].=numerictoSQL ($tableinfo,$columnvalues[$column],$column,'int',$and); 
+         }
+         elseif (substr($rc->fields[0],0,5)=='float') {
+            $query[2].=numerictoSQL ($tableinfo,$columnvalues[$column],$column,'float',$and); 
+         }
+         else {
+            $columnvalues[$column]=trim($columnvalues[$column]);
+            $columnvalue=$columnvalues[$column];
+            $columnvalue=str_replace('*','%',$columnvalue);
+            if ($wcappend)
+               $columnvalue="%$columnvalue%";
+            //else
+            //   $columnvalue="% $columnvalue %";
+            $query[2].="$and UPPER({$tableinfo->realname}.$column) LIKE UPPER('$columnvalue') ";
+         }
       }
    }
    return $query;
@@ -1348,6 +1356,14 @@ function search ($db,$tableinfo,$fields,&$fieldvalues,$whereclause=false,$wcappe
    // flag telling whether WHERE field already contains a statement
    $query[5]=false;
    $column=strtok($fields,',');
+   while ($column) { 
+      if ($query[5])
+         $query=searchhelp ($db,$tableinfo,$column,$columnvalues,$query,$wcappend,"AND");
+      else
+         $query=searchhelp ($db,$tableinfo,$column,$columnvalues,$query,$wcappend,$and);
+      $column=strtok (',');
+   }
+/*
    while ($column && !$columnvalues[$column])
       $column=strtok (',');
    if ($column && $columnvalues[$column]) {
@@ -1361,6 +1377,7 @@ function search ($db,$tableinfo,$fields,&$fieldvalues,$whereclause=false,$wcappe
       }
       $column=strtok (',');
    }
+*/
    if ($whereclause)
       if ($query[5])
          $query[2] .= "AND $whereclause";
