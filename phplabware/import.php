@@ -49,6 +49,8 @@ function move ($fromfile, $tofile) {
     return filesize($tofile);
 }
 
+// interpret a date string according to the system settings
+// this can fail when importing data from another continent
 function mymktime($datestring) {
    global $system_settings;
 
@@ -291,6 +293,9 @@ if ($HTTP_POST_VARS['assign']=='Import Data') {
             $to_types[$i]='text';
          }
          elseif ($to_datatypes[$i]=='date'){
+            // if date is an int, assume it is UNIX date, otherwise convert 
+            if (!is_int($fields[$i]))
+               $fields[$i]=mymktime($fields[$i]);
             // this has type int (wrong!), set to_type to text
             $to_types[$i]='text';
          }
@@ -378,15 +383,20 @@ if ($HTTP_POST_VARS['assign']=='Import Data') {
             // if there is no primary key set, we simply INSERT a new record
             //if ( !(isset($pkey) || isset($recordid)) ) {
 	    elseif ($pkeypolicy!='onlyupdate') {
+$db->debug=true;
                $query_start="INSERT INTO $table (";
                $query_end=" VALUES (";
                $newid=false;
                for ($i=0;$i<$nrfields;$i++) {
                   if ($fields[$i] && $to_fields[$i] && $to_datatypes[$i]!='file') {
-                     // when importing a date field we'll have to suppress insertion of the date field or the SQL query will fail
+                     // if date is an int, assume it is UNIX date, otherwise convert 
+                     if ($to_datatypes[$i]=='date') {
+                        if (!is_int($fields[$i]))
+                           $fields[$i]=mymktime($fields[$i]);
+                     }
+                     //  
                      if ($to_fields[$i]=='date') {
                         $newdate=true;
-                        $fields[$i]=mymktime($fields[$i]);
                      }
                      $worthit=true;
                      $query_start.="$to_fields[$i],";  
