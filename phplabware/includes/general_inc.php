@@ -354,15 +354,14 @@ function getvalues($db,$DBNAME,$DB_DESNAME,$fields,$qfield=false,$field=false) {
 /////////////////////////////////////////////////
 ////
 // !displays the bar between the search header and the records
-function display_midbar($labelcomma)
-	{
-	$labelarray=explode(",",$labelcomma);
-	echo "<tr>\n";
-    foreach($labelarray as $fieldlabel) 
-	{echo "<th>$fieldlabel</th>";}
-    echo "<th>Action</th>\n";
-    echo "</tr>\n";
-	}
+function display_midbar($labelcomma) {
+   $labelarray=explode(",",$labelcomma);
+   echo "<tr>\n";
+   foreach($labelarray as $fieldlabel) 
+      echo "<th>$fieldlabel</th>";
+   echo "<th>Action</th>\n";
+   echo "</tr>\n";
+}
 
 //////////////////////////////////////////////////////
 ////
