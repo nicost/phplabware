@@ -43,19 +43,28 @@ function check_pb_data ($db,&$field_values) {
        $fh=fopen($HTTP_POST_FILES["file"]["tmp_name"][0],"r");  
        $test1=false;
        $test2=true;
+       $llength=71;
        while ($fh && $test2 && !feof($fh)) {
           $line=chop(fgets($fh,1024));
           $lid=strtok($line," ");
           switch ($lid) {
              case "HEADER":
                 $pdbid=trim(strrchr($line," "));
-                if (!$field_values["pdbid"]) $field_values["pdbid"]=$pdbid;
+                if (strlen($pdbid)<4) {
+                   // this must be an old pdb format
+                   $pdbid=substr($line,62,4);
+                   $llength=62;
+                }
+                $field_values["pdbid"]=$pdbid;
                 break;
              case "TITLE":
-                $field_values["title"].=substr($line,10);
+                $field_values["title"].=substr($line,10,$llength);
+                break;
+             case "COMPND":
+                $compnd.=substr($line,10,$llength);
                 break;
              case "AUTHOR":
-                $field_values["author"].=substr($line,10);
+                $field_values["author"].=substr($line,10,$llength);
                 $test1=true;
                 break;
              default:
@@ -63,10 +72,8 @@ function check_pb_data ($db,&$field_values) {
          }
       }
    }
-   if (!$field_values["title"]) {
-      echo "<h3>Please enter a title for the PDB.</h3>";
-      return false;
-   }
+   if (!$field_values["title"])
+      $field_values["title"]=$compnd;
    return true;
 }
 
@@ -101,30 +108,31 @@ function add_pb_form ($db,$fields,$field_values,$id,$USER,$PHP_SELF,$system_sett
    }
    else
       echo "<tr><td colspan=5 align='center'><h3>New PDB</h3></td></tr>\n";
-   echo "<tr>\n";
+/*   echo "<tr>\n";
    echo "<th>Title: <sup style='color:red'>&nbsp;*</sup></th>\n";
    echo "<td><input type='text' name='title' value='$pmid' size=14><br>";
    echo "</td></tr>\n";
+*/
+
+   if ($id) {
+      echo "<tr><th>PDBID:</th><td>$pdbid</td></tr>\n";
+      echo "<input type='hidden' name='pdbid' value='$pdbid'>\n";
+      echo "<tr><th>Title:</th><td>$title</td></tr>\n";
+      echo "<input type='hidden' name='title' value='$title'>\n";
+      echo "<tr><th>Authors:</th><td>$author</td></tr>\n";
+      echo "<input type='hidden' name='author' value='$author'>\n";
+   }
+   else {
+      echo "<tr><th>PDB file:</th>\n";
+      echo "<td><input type='file' name='file[]' value='$filename'></td>\n";
+      echo "</tr>\n";
+   }
 
    echo "<tr>";
    echo "<th>Notes: </th><td colspan=6><textarea name='notes' rows='5' cols='100%'>$notes</textarea></td>\n";
    echo "</tr>\n";
    
-   $files=get_files($db,"pdbs",$id);
-   echo "<tr>";
-   echo "<th>Files: </th>\n";
-   echo "<td colspan=4><table border=0>";
-   for ($i=0;$i<sizeof($files);$i++) {
-      echo "<tr><td colspan=2>".$files[$i]["link"];
-      echo "&nbsp;&nbsp;(".$files[$i]["type"]." file)</td>\n";
-      echo "<td><input type='submit' name='def_".$files[$i]["id"]."' value='Delete' Onclick=\"if(confirm('Are you sure the file ".$files[$i]["name"]." should be removed?')){return true;}return false;\"></td></tr>\n";
-   }
-   echo "<tr><th>Replace file(s) with:</th>\n";
-   echo "<td><input type='file' name='file[]' value='$filename'></td>\n";
-   
-   echo "</tr>\n";
-   echo "</table></td>\n\n";
-   echo "<td colspan=4>";
+   echo "<tr><td colspan=4 align='right'>";
    show_access($db,"pdbs",$id,$USER,$system_settings);
    echo "</td></tr>\n";
    
@@ -218,6 +226,11 @@ function show_pb ($db,$fields,$id,$USER,$system_settings) {
    echo "<tr><th>Links:</th><td colspan=7><a href='$PHP_SELF?showid=$id&";
    echo SID;
    echo "'>".$system_settings["baseURL"].getenv("SCRIPT_NAME")."?showid=$id</a> (This page)<br>\n";
+   if ($pdbid) {
+      $Pdblink="<a href='http://www.rcsb.org/pdb/cgi/explore.cgi?pdbId=$pdbid'>$pdbid</a>(Entry at PDB database)\n";
+      $Webmollink="<a href='http://'>$pdbid</a>(View Molecule with WebMol)\n";
+   }
+   echo "$Pdblink<br>$Webmollink</td></tr>\n";
 
 ?>   
 <form method='post' id='pdbview' action='<?php echo $PHP_SELF?>?<?=SID?>'> 
@@ -415,23 +428,26 @@ else {
    // show title we may see, when too many, revert to text box
    echo "<td><input type='text' name='title' value='$title' size=15></td>\n";
 
-   // show a list with authors having stuff we may see
-/*   if ($author) $list=$listb; else $list=$lista;
-   if ($list && ($nr_records < $max_menu_length) ) {
-      $r=$db->Execute("SELECT author FROM pdbs WHERE id IN ($list)");
-      $text=$r->GetMenu("author",$author,true,false,0,"style='width: 80%' $jscript");
-      echo "<td style='width: 10%'>$text</td>\n";
-   }
-   else 
-*/
-
-
    echo "<td><input type='text' name='author' value='$author' size=15></td>\n";
    echo "<td><input type='text' name='notes' value='$notes' size=15></td>\n";
    
-   echo "<td>&nbsp;</td>\n";
+   if ($ownerid) $list=$listb; else $list=$lista;
+   $r=$db->Execute("SELECT ownerid FROM pdbs WHERE id IN ($list)");
+   $list2=make_SQL_ids($r,false,"ownerid");
+   if ($list2) {
+      if ($db_type=="mysql") // mysql does not use the ansi SQL || operator
+         $r=$db->Execute("SELECT CONCAT(firstname, ' ', lastname),id  from users WHERE id IN ($list2) ORDER by lastname");
+      else
+         $r=$db->Execute("SELECT firstname || ' ' || lastname,id  from users WHERE id IN ($list2) ORDER by lastname");
+      $text=$r->GetMenu2("ownerid",$ownerid,true,false,0,"style='width: 80%' $jscript");
+   }
+   else
+      $text="&nbsp;";
+   echo "<td>$text</td>\n";
+
+   //echo "<td>&nbsp;</td>\n";
    echo "<td><input type='text' name='pdbid' value='$pdbid' size=6></td>\n";
-   echo "<td>&nbsp;</td>\n";
+   echo "<td>&nbsp;</td>\n<td>&nbsp;</td>\n";
 
    echo "<td>";
    echo "<input type=\"submit\" name=\"search\" value=\"Search\">&nbsp;\n";
@@ -443,7 +459,8 @@ else {
    echo "<th>Author(s)</th>";
    echo "<th>Notes</th>";
    echo "<th>Submitted by</th>";
-   echo "<th>pdbid</th>";
+   echo "<th>Pdb</th>";
+   echo "<th>Webmol</th>";
    echo "<th>File</th>\n";
    echo "<th>Action</th>\n";
    echo "</tr>\n";
@@ -455,11 +472,17 @@ else {
  
       // get results of each row
       $id = $r->fields["id"];
-      $title = $r->fields["title"];
+      $title = "&nbsp;".$r->fields["title"];
       $author="&nbsp;".$r->fields["author"];
-      $notes= "&nbsp;".substr($r->fields["notes"],0,75)."...";
+      $notes= "&nbsp;".substr($r->fields["notes"],0,150)."...";
       $owner="&nbsp;".get_cell($db,"users","firstname","id",$r->fields["ownerid"])." ".get_cell($db,"users","lastname","id",$r->fields["ownerid"]);
-      $pdbid="&nbsp;".$r->fields["pdbid"];
+      $pdbid=$r->fields["pdbid"];
+      if ($pdbid) {
+         $Pdblink="<a href='http://www.rcsb.org/pdb/cgi/explore.cgi?pdbId=$pdbid'>$pdbid</a>\n";
+         $Webmollink="<a href='http://'>$pdbid</a>\n";
+      }
+      else
+         $Webmolllink=$Pdblink="&nbsp;";
  
       // print start of row of selected group
       if ($rownr % 2)
@@ -471,7 +494,8 @@ else {
       echo "<td>$author</td>\n";
       echo "<td>$notes</td>\n";
       echo "<td>$owner</td>\n";
-      echo "<td>$pdbid</td>\n";
+      echo "<td>$Pdblink</td>\n";
+      echo "<td>$Webmollink</td>\n";
       $files=get_files($db,"pdbs",$id,3);
       echo "<td>";
       if ($files) 
