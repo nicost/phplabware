@@ -484,6 +484,7 @@ else {
  
    // prepare the search statement and remember it
    $pr_query=make_search_SQL($db,"protocols","pr",$tableid,$fields,$USER,$search,$sortstring);
+
    // get total number of hits
    $r=$db->CacheExecute(1,$pr_query);
    $numrows=$r->RecordCount();
@@ -584,9 +585,9 @@ else {
       echo "<input type='hidden' name='serialsortdirarray' value='".serialize($sortdirarray)."'>\n";
    echo "<tr>\n";
    tableheader ($sortdirarray,"title","Title");
-   tableheader ($sortdirarray,"type1","Author");
+   tableheader ($sortdirarray,"type2","Author");
    tableheader ($sortdirarray,"notes","Notes");
-   tableheader ($sortdirarray,"type2","Category");
+   tableheader ($sortdirarray,"type1","Category");
    echo "<th>Files</th>\n";
    echo "<th>Action</th>\n";
    echo "</tr>\n";
