@@ -471,8 +471,12 @@ function searchhelp ($db,$table,$column,$columnvalues,$query,$wcappend,$and) {
    }
    else {
       $query[1]=true;
+      // cheap way to map whether we are dealing with an int column
+      // this will fail when users tries to find numbers in a text field
       $test=(int)$columnvalues[$column];
-      if ($test <> ($columnvalues[$column])) {
+      if ($test) 
+         $query[0].="$and $column='$columnvalues[$column]' ";
+      else {
          $columnvalues[$column]=trim($columnvalues[$column]);
          $columnvalue=$columnvalues[$column];
          $columnvalue=str_replace("*","%",$columnvalue);
@@ -482,8 +486,6 @@ function searchhelp ($db,$table,$column,$columnvalues,$query,$wcappend,$and) {
             $columnvalue="% $columnvalue %";
          $query[0].="$and $column LIKE '$columnvalue' ";
       }
-      else
-         $query[0].="$and $column='$columnvalues[$column]' ";
    }
    return $query;
 }
