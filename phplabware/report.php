@@ -33,7 +33,7 @@ if (!$tableinfo->id) {
 $reportid=(int)$HTTP_GET_VARS['reportid'];
 $recordid=(int)$HTTP_GET_VARS['recordid'];
 $tableview=$HTTP_GET_VARS['tableview'];
-
+ 
 if (!($reportid && ($recordid || $tableview)) ) {
    printheader($httptitle);
    navbar($USER["permissions"]);
@@ -50,32 +50,33 @@ if (!may_read($db,$tableinfo,$recordid,$USER)) {
    exit();
 }
    
-$tp=@fopen($system_settings["templatedir"]."/$reportid.tpl","r");
-if ($tp) {
-   while (!feof($tp)) {
-      $line=fgets($tp);
-      if (stristr($line,"<!--fields-->")) {
-         $header=$template;
-         unset($template);
+if ($reportid>0) {
+   $tp=@fopen($system_settings["templatedir"]."/$reportid.tpl","r");
+   if ($tp) {
+      while (!feof($tp)) {
+         $line=fgets($tp);
+         if (stristr($line,"<!--fields-->")) {
+            $header=$template;
+            unset($template);
+         }
+         elseif (stristr($line,"<!--/fields-->")) {
+            $footerset=true;
+         }
+         elseif ($footerset)
+            $footer.=$line;
+         else
+            $template.=$line; 
       }
-      elseif (stristr($line,"<!--/fields-->")) {
-         $footerset=true;
-      }
-      elseif ($footerset)
-         $footer.=$line;
-      else
-         $template.=$line; 
-      
+      fclose($tp);
    }
-   fclose($tp);
-}
  
-if (!$template) {
-   printheader($httptitle);
-   navbar($USER["permissions"]);
-   echo "<h3 align='center'>Template file was not found!</h3>";
-   printfooter();
-   exit();
+   if (!$template) {
+      printheader($httptitle);
+      navbar($USER["permissions"]);
+      echo "<h3 align='center'>Template file was not found!</h3>";
+      printfooter();
+      exit();
+   }
 }
 
 // displays multiple records in a report (last search statement)
@@ -95,16 +96,25 @@ if ($HTTP_GET_VARS["tableview"]) {
       //$db->debug=true;
       $r=$db->Execute($query);
       //$db->debug=false;
-      echo $header;
+      if ($reportid>0)
+         echo $header;
+      else //xml
+         echo "<phplabware_base>\n";
       $counter=1;
       while ($r && !$r->EOF) {
          $Allfields=getvalues($db,$tableinfo,$fields_table,"id",$r->fields["id"]);
-         $report=make_report($db,$template,$Allfields,$tableinfo,$counter);
-         echo $report;
+         if ($reportid>0)
+            echo make_report($db,$template,$Allfields,$tableinfo,$counter);
+         else
+            echo make_xml ($db,$Allfields,$tableinfo);
+         //echo $report;
          $r->MoveNext();
          $counter++;
       }
-      echo $footer;
+     if ($reportid>0)
+         echo $footer;
+      else
+         echo '</'."phplabware_base>\n>";
    }
 }
 else { // just a single record
