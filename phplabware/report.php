@@ -53,6 +53,7 @@ if (!may_read($db,$tableinfo,$recordid,$USER)) {
 }
    
 if ($reportid>0) {
+   $reportname=get_cell($db,'reports','label','id',$reportid);
    $tp=@fopen($system_settings['templatedir']."/$reportid.tpl",'r');
    if ($tp) {
       while (!feof($tp)) {
@@ -81,6 +82,17 @@ if ($reportid>0) {
    }
 }
 
+// if we want to output to a file, send the appropriate headers now
+if ($USER['settings']['reportoutput']==2) {
+   header('Accept-Ranges: bytes');
+   header('Connection: close');
+   header("Content-Type: text/html");
+   // we don't yet know how long this is going to be
+   //header("Content-Length: $filesize");
+   header("Content-Disposition-type: attachment");
+   header("Content-Disposition: attachment; filename=$reportname");
+}
+
 // displays multiple records in a report (last search statement)
 if ($HTTP_GET_VARS['tableview']) {
    // figure out the current query:
@@ -106,7 +118,7 @@ if ($HTTP_GET_VARS['tableview']) {
       while ($r && !$r->EOF) {
          $Allfields=getvalues($db,$tableinfo,$fields_table,'id',$r->fields['id']);
          if ($reportid>0) {
-            echo make_report($db,$template,$Allfields,$tableinfo,$counter);
+            echo make_report($db,$template,$Allfields,$tableinfo,$USER['settings']['reportoutput'],$counter);
          }
          else
             echo make_xml ($db,$Allfields,$tableinfo);

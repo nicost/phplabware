@@ -559,6 +559,7 @@ function make_link($id,$DBNAME) {
 // ! Make dropdown menu with available templates
 // When one is chosen, open the formatted record in a new window
 function show_reports($db,$tableinfo,$recordid=false) {
+   global $USER;
    $r=$db->Execute("SELECT id,label FROM reports WHERE tableid=".$tableinfo->id);
    if ($r && !$r->EOF) {
       if ($recordid) {
@@ -575,8 +576,8 @@ function show_reports($db,$tableinfo,$recordid=false) {
          $menu.="</td></tr>\n";
       }
       else { // for tableview reports
-         $menu="<td>Report:</td>\n";
-         $menu.="<td><select name='reportlinks' onchange='linkmenu(this)'>\n";
+         $menu="<td>Report: \n";
+         $menu.="<select name='reportlinks' onchange='linkmenu(this)'>\n";
          $menu.="<option value=''>---Reports---</option>\n";
          $url="target "."report.php?tablename=".$tableinfo->name."&reportid=-1&tableview=true";
          $menu.="<option value='$url'>xml</option>\n";
@@ -586,6 +587,15 @@ function show_reports($db,$tableinfo,$recordid=false) {
             $r->MoveNext();
          }
          $menu.="</select>\n";
+         // add radio buttons for output options:
+         $menu.="Send to:\n";
+         if (!(isset($USER['settings']['reportoutput'])) || $USER['settings']['reportoutput']==1)
+             $checked='checked';
+         $menu.="<input type='radio' name='reportoutput' $checked value='1' onChange='document.g_form.submit();'>screen\n";
+         if ($USER['settings']['reportoutput']==2)
+             $checked2='checked';
+         $menu.="<input type='radio' name='reportoutput' $checked2 value='2' onChange='document.g_form.submit();'>file\n";
+
          $menu.="</td>\n";
       }
       echo $menu;
@@ -886,6 +896,7 @@ function getvalues($db,$tableinfo,$fields,$qfield=false,$field=false)
                   }
                   ${$column}['link']="<a target=_ href=\"general.php?tablename={$asstableinfo->name}&showid=".${$column}['values']."\">{${$column}['nested']['text']}</a>\n";
                }
+               $text=${$column}['nested']['text'];
                if (!$text)
                   $text="&nbsp;";
                ${$column}['text']=$text;

@@ -29,10 +29,11 @@ function make_xml ($db,$data,$tableinfo) {
 
 ////
 // !Takes a template and data and generates a report
+// $target: 1=screen(html), 2=file
 // $value are translated into the text value
 // %value are translated into the actual value
 // &value are translated into the sum of all values seen so far
-function make_report ($db,$template,$data,$tableinfo,$counter=false) {
+function make_report ($db,$template,$data,$tableinfo,$target=1,$counter=false) {
    global $sums;
    foreach ($data as $column) {
       if ($column['name']) {
@@ -54,7 +55,8 @@ function make_report ($db,$template,$data,$tableinfo,$counter=false) {
             }
             $template=str_replace("$".$column['name'],$ftext,$template);
          }
-         elseif ($column['link'])
+         // we do not want to send bad links to a file
+         elseif ($column['link'] && $target==1)
             $template=str_replace("$".$column['name'],$column['link'],$template);
          else   
             $template=str_replace("$".$column['name'],$column['text'],$template);

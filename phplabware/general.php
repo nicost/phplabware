@@ -53,6 +53,11 @@ else {
    // release viewid we remembered
    unset($USER['settings']['view']["$tableinfo->name"]);
 }
+
+// Activate selected report output or default
+if (isset ($HTTP_POST_VARS['reportoutput'])) {
+   $USER['settings']['reportoutput']=$HTTP_POST_VARS['reportoutput'];
+}
    
 
 // load plugin php code if it has been defined 
