@@ -711,7 +711,7 @@ function check_g_data ($db,&$field_values,$tableinfo,$modify=false) {
 
    // Hooray, the first call to a plugin function!!
    if (function_exists("plugin_check_data")) {
-      if (!plugin_check_data($db,$field_values,$DB_DESNAME,$modify))
+      if (!plugin_check_data($db,$field_values,$tableinfo->desname,$modify))
          return false;
    }
 
