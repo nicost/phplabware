@@ -62,8 +62,12 @@ function add ($db,$table,$fields,$fieldvalues,$USER) {
       $query="INSERT INTO $table ($columns) VALUES ($values)";
       if ($db->Execute($query))
          return $id;
-      else
+      else {
          echo "<h3>Database error.  Contact your system administrator.</h3>\n";
+	 $db->debug=true;
+         $db->Execute($query);
+	 $db->debug=false;
+      }
    }
 }
 
