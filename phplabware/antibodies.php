@@ -447,21 +447,26 @@ else {
    // get current page
    $ab_curr_page=current_page($ab_curr_page,"ab");
 
+   // and a list with all records we may see
+   $listb=may_read_SQL($db,"antibodies",$tableid,$USER,"tempb");
+
    // prepare SQL search statement, and remember it
-   $ab_query=make_search_SQL($db,"antibodies","ab",$tableid,$fields,$USER,$search,$sortstring);
+   $ab_query=make_search_SQL($db,"antibodies","ab",$tableid,$fields,$USER,$search,$sortstring,$listb["sql"]);
 
    // print form
 ?>
 <form name='ab_form' method='post' action='<?php echo $PHP_SELF?>?<?=SID?>'>  
 <?php
    // get total number of hits
-   $r=$db->CacheExecute(1,$ab_query);
+   $r=$db->Execute($ab_query);
    $numrows=$r->RecordCount();
    // loop through all entries for next/previous buttons
-   $r=$db->CachePageExecute(1,$ab_query,$num_p_r,$ab_curr_page);
+/*   $r=$db->CachePageExecute(1,$ab_query,$num_p_r,$ab_curr_page);
    while (!($r->EOF) && $r) {
       $r->MoveNext();
    }
+*/
+   first_last_page ($r,$ab_curr_page,$num_p_r,$numrows);
 
    // row with action links
    $sid=SID;
@@ -483,15 +488,13 @@ else {
    //javascript that submits the form when a select was chosen
    $jscript="onChange='document.ab_form.searchj.value=\"Search\"; document.ab_form.submit()'";
    echo "<input type='hidden' name='searchj' value=''>\n";
-   $r=$db->CacheExecute(1,$ab_query);
+   //$r=$db->CacheExecute(1,$ab_query);
    $lista=make_SQL_csf ($r,false,"id",$nr_records);
-   // and a list with all records we may see
-   $listb=may_read_SQL($db,"antibodies",$tableid,$USER);
    // show title we may see, when too many, revert to text box
    if ($name) $list=$listb; else $list=$lista;
    if ($list && ($nr_records < $max_menu_length) ) {
-      $r=$db->Execute("SELECT name FROM antibodies WHERE id IN ($list) ORDER BY name");
-      $text=$r->GetMenu("name",$name,true,false,0,"style='width: 80%' $jscript");
+      $rt=$db->Execute("SELECT name FROM antibodies WHERE id IN ($list) ORDER BY name");
+      $text=$rt->GetMenu("name",$name,true,false,0,"style='width: 80%' $jscript");
       echo "<td style='width: 10%'>$text</td>\n";
    }
    else
@@ -501,11 +504,11 @@ else {
 
    echo "<td style='width: 10%'>";
    if ($type1) $list=$listb; else $list=$lista;
-   $r=$db->Execute("SELECT type1 FROM antibodies WHERE id IN ($list)");
-   $list2=make_SQL_ids($r,false,"type1");
+   $rl=$db->Execute("SELECT type1 FROM antibodies WHERE id IN ($list)");
+   $list2=make_SQL_ids($rl,false,"type1");
    if ($list2) {
-      $r=$db->Execute("SELECT typeshort,id FROM ab_type1 WHERE id IN ($list2) ORDER BY sortkey");
-      $text=$r->GetMenu2("type1",$type1,true,false,0,"style='width: 80%' $jscript");
+      $rl=$db->Execute("SELECT typeshort,id FROM ab_type1 WHERE id IN ($list2) ORDER BY sortkey");
+      $text=$rl->GetMenu2("type1",$type1,true,false,0,"style='width: 80%' $jscript");
       echo "$text</td>\n";
    }
    else
@@ -518,11 +521,11 @@ else {
       echo "'>Edit Labels</a><br>\n";
    }   
    if ($type5) $list=$listb; else $list=$lista;
-   $r=$db->Execute("SELECT type5 FROM antibodies WHERE id IN ($list)");
-   $list2=make_SQL_ids($r,false,"type5");
+   $r5=$db->Execute("SELECT type5 FROM antibodies WHERE id IN ($list)");
+   $list2=make_SQL_ids($r5,false,"type5");
    if ($list2) {
-      $r=$db->Execute("SELECT typeshort,id FROM ab_type5 WHERE id IN ($list2) ORDER BY sortkey");
-      $text=$r->GetMenu2("type5",$type5,true,false,0,"style='width: 80%' $jscript");
+      $r2=$db->Execute("SELECT typeshort,id FROM ab_type5 WHERE id IN ($list2) ORDER BY sortkey");
+      $text=$r2->GetMenu2("type5",$type5,true,false,0,"style='width: 80%' $jscript");
       echo "$text</td>\n";
    }
    else
@@ -530,11 +533,11 @@ else {
 
    echo "<td style='width: 10%'>";
    if ($type2) $list=$listb; else $list=$lista;
-   $r=$db->Execute("SELECT type2 FROM antibodies WHERE id IN ($list)");
-   $list2=make_SQL_ids($r,false,"type2");
+   $r2=$db->Execute("SELECT type2 FROM antibodies WHERE id IN ($list)");
+   $list2=make_SQL_ids($r2,false,"type2");
    if ($list2) {
-      $r=$db->Execute("SELECT typeshort,id FROM ab_type2 WHERE id IN ($list2) ORDER BY sortkey");
-      $text=$r->GetMenu2("type2",$type2,true,false,0,"style='width: 80%' $jscript");
+      $r2=$db->Execute("SELECT typeshort,id FROM ab_type2 WHERE id IN ($list2) ORDER BY sortkey");
+      $text=$r2->GetMenu2("type2",$type2,true,false,0,"style='width: 80%' $jscript");
       echo "$text</td>\n";
    }
    else
@@ -547,11 +550,11 @@ else {
       echo "'>Edit Hosts</a><br>\n";
    }    
    if ($type3) $list=$listb; else $list=$lista;
-   $r=$db->Execute("SELECT type3 FROM antibodies WHERE id IN ($list)");
-   $list2=make_SQL_ids($r,false,"type3");
+   $r3=$db->Execute("SELECT type3 FROM antibodies WHERE id IN ($list)");
+   $list2=make_SQL_ids($r3,false,"type3");
    if ($list2) {
-      $r=$db->Execute("SELECT typeshort,id FROM ab_type3 WHERE id IN ($list2) ORDER BY sortkey");
-      $text=$r->GetMenu2("type3",$type3,true,false,0,"style='width: 80%' $jscript");
+      $r3=$db->Execute("SELECT typeshort,id FROM ab_type3 WHERE id IN ($list2) ORDER BY sortkey");
+      $text=$r3->GetMenu2("type3",$type3,true,false,0,"style='width: 80%' $jscript");
       echo "$text</td>\n";
    }
    else
@@ -564,11 +567,11 @@ else {
       echo "'>Edit Classes</a><br>\n";
    }    
    if ($type4) $list=$listb; else $list=$lista;
-   $r=$db->Execute("SELECT type4 FROM antibodies WHERE id IN ($list)");
-   $list2=make_SQL_ids($r,false,"type4");
+   $r4=$db->Execute("SELECT type4 FROM antibodies WHERE id IN ($list)");
+   $list2=make_SQL_ids($r4,false,"type4");
    if ($list2) {
-      $r=$db->Execute("SELECT typeshort,id FROM ab_type4 WHERE id IN ($list2) ORDER BY sortkey");
-      $text=$r->GetMenu2("type4",$type4,true,false,0,"style='width: 80%' $jscript");
+      $r4=$db->Execute("SELECT typeshort,id FROM ab_type4 WHERE id IN ($list2) ORDER BY sortkey");
+      $text=$r4->GetMenu2("type4",$type4,true,false,0,"style='width: 80%' $jscript");
       echo "$text</td>\n";
    }
    else
@@ -597,10 +600,15 @@ else {
    echo "</tr>\n";
 
 
-   $r=$db->CachePageExecute(1,$ab_query,$num_p_r,$ab_curr_page);
+   //$r=$db->CachePageExecute(1,$ab_query,$num_p_r,$ab_curr_page);
    $rownr=1;
    // print all entries
-   while (!($r->EOF) && $r) {
+   $r->Move(1);
+   $current_record=($ab_curr_page-1) * $num_p_r;
+   $last_record=$ab_curr_page*$num_p_r;
+   $r->Move($current_record);
+
+   while (!($r->EOF) && $r && ($current_record < $last_record)) {
  
       // get results of each row
       $id = $r->fields["id"];
@@ -654,6 +662,7 @@ else {
       echo "</tr>\n";
    
       $r->MoveNext();
+      $current_record++;
       $rownr+=1;
    }
 
