@@ -311,6 +311,13 @@ function process_file($db,$fileid,$system_settings) {
 printheader($httptitle);
 navbar($USER["permissions"]);
 
+# check wether user may see this table
+if (!may_see_table($db,$USER,$tableid)) {
+   echo "<h3 align='center'>These data are not for you.  Sorry;(</h3>\n";
+   printfooter();
+   exit();
+}
+
 // check if something should be modified, deleted or shown
 while((list($key, $val) = each($HTTP_POST_VARS))) {
    if (substr($key, 0, 3) == "mod") {
