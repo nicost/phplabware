@@ -172,12 +172,15 @@ function display_table_change($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr
             $thestar="<sup style='color:red'>&nbsp;*</sup>";
          else
             $thestar=false;
-         if ( ($nowfield['modifiable']=='N') || !$may_write) {
+         if ( ($nowfield['modifiable']!='Y') || !$may_write) {
             echo "<input type='hidden' name='$nowfield[name]_$id' value='$nowfield[values]'>\n";
             echo "<td>$nowfield[text]</td>\n";
          }
          elseif ($nowfield['datatype']=='text') {
      	    echo "<td><input type='text' name='$nowfield[name]_$id' value='$nowfield[values]' size=15 $js>$thestar</td>\n";
+         }
+         elseif ($nowfield['datatype']=='date') {
+     	    echo "<td><input type='text' name='$nowfield[name]_$id' value='$nowfield[text]' size=12 $js>$thestar</td>\n";
          }
          elseif ($nowfield['datatype']=='int' || $nowfield['datatype']=='sequence' || $nowfield['datatype']=='float') {
      	    echo "<td><input type='text' name='$nowfield[name]_$id' value='$nowfield[values]' size=8 $js>$thestar</td>\n";
