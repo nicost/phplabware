@@ -31,7 +31,6 @@ $httptitle .=$tablename;
 printheader($httptitle);
 navbar($USER["permissions"]);
 
-
 // find id associated with table
 if (!$edit_type) {
    $r=$db->Execute("SELECT id FROM tableoftables WHERE tablename='$tablename'");
@@ -46,6 +45,7 @@ if (!$edit_type) {
    // read all fields in from the description file
    $fields=comma_array_SQL($db,$table_desname,label);
 }
+
 // check if something should be modified, deleted or shown
 while((list($key, $val) = each($HTTP_POST_VARS))) {	
    // display form with information regarding the record to be changed
@@ -217,8 +217,7 @@ else {
    $sid=SID;
    if ($sid) $sid="&".$sid;
    if ($tablename) $sid.="&tablename=$tablename";
-   
-   if (may_write($db,$real_tablename,false,$USER)) 
+/*   
 
    // get a list with ids we may see
    $r=$db->Execute($p_query);
@@ -227,10 +226,13 @@ else {
    // and a list with all records we may see
    $listb=may_read_SQL($db,$real_tablename,$USER);
    if ($title) $list=$listb; else $list=$lista;   
-   
+*/   
    // Need to put in a singular name
    echo "<table border=0 width='50%' align='center'>\n<tr>\n";
-   echo "<td align='center'><B>$tablename</B><br><p><a href='$PHP_SELF?&add=Add record&tablename=$tablename&<?=SID?>'>Add Record</a></td>\n"; echo "</table>\n";
+   echo "<td align='center'><B>$tablename</B><br>";
+   if (may_write($db,$real_tablename,false,$USER)) 
+      echo "<p><a href='$PHP_SELF?&add=Add&tablename=$tablename&<?=SID?>'>Add Record</a></td>\n"; 
+   echo "</tr>\n</table>\n";
    next_previous_buttons($r,true,$num_p_r);
 
    // print header of table
