@@ -20,9 +20,13 @@ the terms of the GNU General Public License as published by the Free Software Fo
 
 ////
 // ! outputs to a file a reference plus link to the newly added pdf
-function report_pdf_addition ($db,$id,$tablename,$real_tablename,$journaltable) 
+function plugin_add ($db,$tableid,$id) 
 {
    global $PHP_SELF,$system_settings;
+   $table_desc=get_cell($db,"tableoftables","table_desc_name","id",$tableid);
+   $tablename=get_cell($db,"tableoftables","tablename","id",$tableid);
+   $real_tablename=get_cell($db,"tableoftables","real_tablename","id",$tableid);
+   $journaltable=get_cell($db,$table_desc,"associated_table","columnname","journal");
 
    $r=$db->Execute("SELECT ownerid,title,journal,pubyear,volume,fpage,lpage,author FROM $real_tablename WHERE id=$id");
    $fid=@fopen($system_settings["pdfs_file"],w);
@@ -150,8 +154,6 @@ function plugin_check_data($db,&$field_values,$table_desc,$modify=false)
    }
    // some stuff goes wrong when this remains on
    set_magic_quotes_runtime(0);
-   if (!$modify)
-      report_pdf_addition ($db,$id,$pdftablelabel,$pdftable,$journaltable); 
    return true;
 }
 

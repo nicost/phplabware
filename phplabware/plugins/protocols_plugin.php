@@ -18,12 +18,18 @@ the terms of the GNU General Public License as published by the Free Software Fo
 */
 
 ////
-// ! outputs a reference plus link to a file
-function report_protocol_addition ($db,$id,$tablename,$real_tablename,$authortable)
+// !When a record has been added,some data are written to a file fro inclusion
+// in a webpage (to announce the addition)
+function plugin_add ($db,$tableid,$id)
 {
    global $system_settings;
 
-   if (!$system_Settings["protocols_file"])
+   $table_desc=get_cell($db,"tableoftables","table_desc_name","id",$tableid);
+   $tablename=get_cell($db,"tableoftables","tablename","id",$tableid);
+   $real_tablename=get_cell($db,"tableoftables","real_tablename","table_desc_name",$table_desc);
+   $authortable=get_cell($db,$table_desc,"associated_table","columnname","type2");
+
+   if (!$system_settings["protocols_file"])
       return false;
    $r=$db->Execute("SELECT ownerid,title,type1,type2 FROM $real_tablename WHERE id=$id");
    $fid=fopen($system_settings["protocols_file"],w);
@@ -68,7 +74,6 @@ function plugin_check_data($db,&$fieldvalues,$table_desc,$modify=false)
            $fieldvalues["firstname"]."','".$fieldvalues["lastname"]."')");
       $fieldvalues["type2"]=$id;
    }
-   report_protocol_addition ($db,$id,$protocoltablelabel,$protocoltable,$authortable);
    return true;
 }
 
