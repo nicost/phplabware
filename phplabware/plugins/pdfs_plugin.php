@@ -200,11 +200,10 @@ echo "In Fetch_pdf.<br>";
    if (! (isset($pmid) && isset($journal) )) {
       return false;
    }
-
    $search= new eutils_link($pmid);
    $search->setMaxResults(5);
+   $search->setManualSearchParam('cmd','llinks');
    if ($search->doSearch()) {
-      //print_r($search->parser->content);
       // we get the xml file back in a kind of funny array...
       foreach($search->parser->content as $hit) {
 //print_r($hit);
@@ -217,7 +216,6 @@ echo "In Fetch_pdf.<br>";
       echo "<br>link: ";
       print_r($links);
       echo ".<br>";
-      //if (isset ($link)) {
       foreach($links as $link) {
          // grep the base of the url and handle all know cases accordingly.
          // This is where we'll have to write grabbers for each journal
@@ -252,7 +250,32 @@ echo "In Fetch_pdf.<br>";
                }
             }
             break;
-          }
+            case 'www.pubmedcentral.gov' :
+               /**
+                * For pubmed central we need the 'artid'.  Retrieve this using elink
+                */
+               $searchid= new eutils_link($pmid);
+               $searchid->setMaxResults(5);
+               $searchid->setManualSearchParam('db','pmc');
+               if ($searchid->doSearch()) {
+//print_r($searchid->parser->content);
+                  foreach($searchid->parser->content as $hit) {
+//print_r($hit);
+                     if (isset($hit['eLinkResult']['LinkSet']['LinkSetDb']['Link']['Id'])) {
+                        $artid=$hit['eLinkResult']['LinkSet']['LinkSetDb']['Link']['Id'];
+                        echo "<br>Artid=$artid.<br>";
+                        if (is_numeric($artid)) { 
+                           $url="/picrender.fcgi?artid=$artid&action=stream&blobtype=pdf";
+                           if (do_pdf_download($host,$url,'file')) {
+                                return true;
+                           }
+                           
+                         }
+                     }
+                  }
+               }
+           break;
+           }
       }
  
    }
@@ -260,22 +283,56 @@ echo "In Fetch_pdf.<br>";
 }
 
 /**
- * Given a host and url, downloads a pdf and stores info in HTTP_POST_FILES
+ * Given a host and url(the part after the host), downloads a pdf and stores info in HTTP_POST_FILES
  * 
  * @author Nico Stuurman
  */
 function do_pdf_download ($host,$url,$fieldname) 
 {
-   global $HTTP_POST_FILES;
+   global $HTTP_POST_FILES, $system_settings;
    // download the pdf, probably using a netsocket so that we can use the header
 
   // save the file in temp location
-
+echo "<br>$host$url, $fieldname.<br>";
+   $fp=fsockopen($host,80,$errno,$errstr,5);
+   if ($fp) {
+      /**
+       * Construct http request
+       */
+      $out="GET $url HTTP/1.0\r\n";
+      $out.="Host: $host\r\n";
+      $out.="Connection: Close\r\n\r\n";
+      /**
+       * Construct tmp filename
+       */
+      /**
+       * Initiate http request and read response
+       */
+      fwrite($fp,$out);
+      while (!feof($fp) && strlen(trim($data=(fgets($fp,1024))))>1) {
+         $header.=$data;
+      }
+      /**
+       * Possibly check headers that the mime type is pdf
+       */
+      $tmpfile=$system_settings['tmpdir'].'/'.uniqid('file');
+echo "tmpfile: $tmpfile.<br>";
+      $fout=fopen ($tmpfile,'w');
+      
+echo "Header: $header.<br>";
+      while ($fout && !feof($fp)) {
+         fwrite($fout,fgets($fp,2048));
+      }
+      fclose($fp);
+      fclose($fout);
+   }
   // set:
-   $HTTP_POST_FILES['file']['tmpname'][0]=$tmploc;
-   $HTTP_POST_FILES['file']['name'][0]=$filename;
-   $HTTP_POST_FILES['file']['type'][0]=$mimetype;
-   $HTTP_POST_FILES['file']['size'][0]=$filesize;
+   $HTTP_POST_FILES[$fieldname]['tmp_name'][0]=$tmpfile;
+   $HTTP_POST_FILES[$fieldname]['name'][0]='pdf';
+   $HTTP_POST_FILES[$fieldname]['type'][0]='application/pdf';
+   $HTTP_POST_FILES[$fieldname]['size'][0]=filesize($tmpfile);
+   unset ($HTTP_POST_FILES[$fieldname]['error']);
+print_r($HTTP_POST_FILES);
 
 }
 
