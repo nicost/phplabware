@@ -993,7 +993,7 @@ function searchhelp ($db,$tableinfo,$column,&$columnvalues,$query,$wcappend,$and
          $rtdesc=$db->Execute("SELECT columnname,datatype,type FROM {$rtableoftables->fields[1]} WHERE id='{$rc->fields['associated_column']}'");
          $tablecolumnvalues[$rtdesc->fields[0]]=$columnvalues[$column];
          $asstableinfo=new tableinfo($db,false,$rtableoftables->fields[2]);
-         $table_where=searchhelp($db,$tableinfo,$rtdesc->fields[0],&$tablecolumnvalues,false,$wcappend,false);
+         $table_where=searchhelp($db,$asstableinfo,$rtdesc->fields[0],&$tablecolumnvalues,false,$wcappend,false);
          $rtable=$db->Execute("SELECT id FROM {$rtableoftables->fields[0]} WHERE {$table_where[0]}");
          if ($rtable && $rtable->fields[0]) {
              while (!$rtable->EOF) {
