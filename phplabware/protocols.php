@@ -224,6 +224,7 @@ function show_pr ($db,$fields,$id,$USER,$system_settings) {
 
    echo "</table></form>\n";
 }
+
 ////
 // !Tries to convert a MsWord file into html 
 // When succesfull, the file is added to the database
@@ -271,7 +272,7 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
       printfooter();
       exit();
    }
-   // delete file and show antibody form
+   // delete file and show protocol form
    if (substr($key, 0, 3) == "def") {
       $modarray = explode("_", $key);
       $filename=delete_file($db,$modarray[1],$USER);
@@ -380,7 +381,7 @@ else {
    $r=$db->Execute("SELECT ownerid FROM protocols WHERE id IN ($list)");
    $list2=make_SQL_ids($r,false,"ownerid");
    if ($list2) {
-      $r=$db->Execute("SELECT login,id from users WHERE id IN ($list2) ORDER by login");
+      $r=$db->Execute("SELECT CONCAT(firstname, ' ', lastname),id  from users WHERE id IN ($list2) ORDER by login");
       $text=$r->GetMenu2("ownerid",$ownerid,true,false,0,"style='width: 80%'");
    }
    else
