@@ -293,11 +293,11 @@ function process_file($db,$fileid,$system_settings) {
       $command= "$word2html \"$filepath\" $temp";
       $result=exec($command);
       // wvHtml version 0.7 and up are called differently:
-      if (!@is_readable($temp)) {
-         $command="$word2html --targetdir=".$system_settings["tmpdir"]." $filepath $converted_file";
+      if (!@is_readable($temp) || (@filesize($temp)<1) ) {
+         $command="$word2html --targetdir=".$system_settings["tmpdir"]." \"$filepath\" $converted_file";
          $result=exec($command);
       }
-      if (@is_readable($temp)) {
+      if (@is_readable($temp) && (@filesize($temp)>0)) {
          unset ($HTTP_POST_FILES);
          $r=$db->query ("SELECT filename,mime,title,tablesfk,ftableid FROM files WHERE id=$fileid");
          if ($r && !$r->EOF) {
