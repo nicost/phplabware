@@ -16,6 +16,28 @@
 /// main include thingies
 require("include.php");
 require("includes/db_inc.php");
+
+// find id associated with table
+$r=$db->Execute("SELECT id,shortname,tablename,real_tablename FROM tableoftables WHERE tablename='$HTTP_GET_VARS[tablename]'");
+$tableid=$r->fields["id"];
+if (!$tableid) {
+   printheader($httptitle);
+   navbar($USER["permissions"]);
+   echo "<h3 align='center'> Table: <i>$HTTP_GET_VARS[tablename]</i> does not exist.</h3>";
+   printfooter();
+   exit();
+}
+$tableshort=$r->fields["shortname"];
+$real_tablename=$r->fields["real_tablename"];
+$table_desname=$real_tablename."_desc";
+$queryname=$tableshort."_query";
+$pagename=$tableshort."_curr_page";
+
+// load plugin php code if it has been defined 
+$plugin_code=get_cell($db,"tableoftables","plugin_code","id",$tableid);
+if ($plugin_code)
+   @include($plugin_code);
+
 require("includes/general_inc.php");
 
 // register variables
@@ -27,7 +49,7 @@ globalize_vars($post_vars, $HTTP_POST_VARS);
 if ($HTTP_GET_VARS["md"])
    $md=$HTTP_GET_VARS["md"];
 
-// extract fields to be sorted
+// check if sortup or sortdown arrow has been pressed
 foreach($HTTP_POST_VARS as $key =>$value) {
    list($testkey,$testvalue)=explode("_",$key,2);
    // images add _x and _y, remove these here
@@ -50,25 +72,11 @@ $httptitle .=$tablename;
 printheader($httptitle);
 navbar($USER["permissions"]);
 
-// find id associated with table
-//if (!$edit_type) {
-   $r=$db->Execute("SELECT id,shortname,tablename,real_tablename FROM tableoftables WHERE tablename='$tablename'");
-   $tableid=$r->fields["id"];
-   if (!$tableid) {
-      echo "<h3 align='center'> Table: <i>$tablename</i> does not exist.</h3>";
-      printfooter();
-      exit();
-   }
-   $tableshort=$r->fields["shortname"];
-   $real_tablename=$r->fields["real_tablename"];
-   $table_desname=$real_tablename."_desc";
-   $queryname=$tableshort."_query";
-   $pagename=$tableshort."_curr_page";
-   // read all fields in from the description file
-   // $fields_label=comma_array_SQL($db,$table_desname,label);
-   $fields=comma_array_SQL($db,$table_desname,columnname);
-   $fields_table=comma_array_SQL($db,$table_desname,columnname,"WHERE display_table='Y'");
-//
+
+// read all fields in from the description file
+// $fields_label=comma_array_SQL($db,$table_desname,label);
+$fields=comma_array_SQL($db,$table_desname,columnname);
+$fields_table=comma_array_SQL($db,$table_desname,columnname,"WHERE display_table='Y'");
 
 // check wether user may see this table
 if (!may_see_table($db,$USER,$tableid)) {
