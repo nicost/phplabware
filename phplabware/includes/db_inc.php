@@ -285,7 +285,8 @@ function delete ($db, $tableid, $id, $USER, $filesonly=false) {
 // files should be called file[] in HTTP_POST_FILES
 // filetitle in HTTP_POST_VARS will be inserted in the title field of table files
 // returns id of last uploaded file upon succes, false otherwise
-function upload_files ($db,$tableid,$id,$columnid,$columnname,$USER,$system_settings) {
+function upload_files ($db,$tableid,$id,$columnid,$columnname,$USER,$system_settings)
+{
    global $HTTP_POST_FILES,$HTTP_POST_VARS,$system_settings;
 
    $table=get_cell($db,"tableoftables","tablename","id",$tableid);
@@ -308,6 +309,9 @@ function upload_files ($db,$tableid,$id,$columnid,$columnname,$USER,$system_sett
          return false;
       $originalname=$HTTP_POST_FILES["$columnname"]["name"][$i];
       $mime=$HTTP_POST_FILES["$columnname"]["type"][$i];
+      // sometimes mime types are not set properly, let's try to fix those
+      if (substr($originalname,-4,4)==".pdf")
+         $mime="application/pdf";
       // work around php bug??  
       $mime=strtok ($mime,";");
       $filestype=substr(strrchr($mime,"/"),1);
