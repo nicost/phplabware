@@ -219,8 +219,10 @@ else {
    // prepare the search statement and remember it
    $fields="id,".$fields;
    ${$queryname}=make_search_SQL($db,$real_tablename,$tableshort,$tableid,$fields,$USER,$search);
+   $r=$db->CacheExecute(2,${$queryname});
+   $numrows=$r->RecordCount();
    // loop through all entries for next/previous buttons
-   $r=$db->PageExecute(${$queryname},$num_p_r,${$pagename});
+   $r=$db->CachePageExecute(2,${$queryname},$num_p_r,${$pagename});
    while (!($r->EOF) && $r) {
       $r->MoveNext();
    }
@@ -240,13 +242,13 @@ else {
    if (may_write($db,$tableid,false,$USER)) 
       echo "<p><a href='$PHP_SELF?&add=Add&tablename=$tablename&<?=SID?>'>Add Record</a></td>\n"; 
    echo "</tr>\n</table>\n";
-   next_previous_buttons($r,true,$num_p_r);
+   next_previous_buttons($r,true,$num_p_r,$numrows,${$pagename});
 
    // print header of table
    echo "<table border='1' align='center'>\n";
 
    // get a list with ids we may see
-   $r=$db->Execute(${$queryname});
+   $r=$db->CacheExecute(2,${$queryname});
    $lista=make_SQL_csf ($r,false,"id",$nr_records);
 
    // and a list with all records we may see
