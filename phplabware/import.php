@@ -25,6 +25,7 @@ $post_vars="delimiter,delimiter_type,tableid,nrfields,pkey,pkeypolicy,tmpfile,ow
 globalize_vars($post_vars, $HTTP_POST_VARS);
 
 $permissions=$USER["permissions"];
+$httptitle.=" Import data";
 printheader($httptitle,false,$jsfile);
 
 if (!($permissions & $SUPER)) {
