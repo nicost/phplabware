@@ -269,7 +269,7 @@ echo "<td align='center'> <table><tr>
    <td colspan=2><input type='radio' name='delimiter_type' value='other'> other:
    <input type='text' name='delimiter' value='$delimiter' size='2'></td></tr>
    </table></td>\n";
-$query = "SELECT label,id FROM tableoftables where (display='Y' OR display='N') AND (custom=NULL OR custom='') ORDER BY sortkey";
+$query = "SELECT label,id FROM tableoftables where id>1000 ORDER BY sortkey";
 $r=$db->Execute($query);
 if ($r)
    $menu=$r->GetMenu2("tableid",$tableid);
