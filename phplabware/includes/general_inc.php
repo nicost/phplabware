@@ -740,10 +740,11 @@ function display_add($db,$tableinfo,$Allfields,$id,$namein,$system_settings) {
 	       echo "&nbsp;&nbsp;(<i>".$files[$i]['name']."</i>, ".$files[$i]['type']." file)</td>\n";
 	       echo "<td><input type='submit' name='def_".$files[$i]["id"]."' value='Delete' Onclick=\"if(confirm('Are you sure the file ".$files[$i]["name"]." should be removed?')){return true;}return false;\"></td></tr>\n";
 	    }
-            if ($files)
-	       echo '<tr><th>Replace '.$nowfield['datatype']."(s) with</th>\n";
+/*            if ($files)
+	        echo '<tr><th>Replace '.$nowfield['datatype']."(s) with</th>\n";
             else
-	       echo '<tr><th>Upload '.$nowfield['datatype']."</th>\n";
+*/
+            echo '<tr><th>Upload '.$nowfield['datatype']."</th>\n";
 	    echo "<td>&nbsp;</td><td><input type='file' name='".$nowfield[name]."[]' value='$filename'></td>\n";
 	    echo "</tr></table><br>\n\n";
 	 }

@@ -346,7 +346,7 @@ else {
          while (!$rc->EOF) {
             if ($HTTP_POST_FILES[$rc->fields['columnname']]['name'][0]) {
                // delete all existing files
-               delete_column_file ($db,$tableinfo->id,$rc->fields['id'],$HTTP_POST_VARS['id'],$USER);
+               //delete_column_file ($db,$tableinfo->id,$rc->fields['id'],$HTTP_POST_VARS['id'],$USER);
                // store the file uploaded by the user
                $fileid=upload_files($db,$tableinfo->id,$HTTP_POST_VARS['id'],$rc->fields['id'],$rc->fields['columnname'],$USER,$system_settings);
                if ($rc->fields['datatype']=='file') {
