@@ -548,10 +548,10 @@ function may_read_SQL_JOIN ($db,$table,$USER) {
 ////
 // !Generates an SQL query asking for the records that mey be seen by this users
 // Generates a left join for mysql, subselect for postgres
-function may_read_SQL ($db,$table,$tableid,$USER,$temptable="tempa") {
+function may_read_SQL ($db,$tableinfo,$USER,$temptable="tempa") {
    global $db_type;
    if ($db_type=="mysql") {
-      $list=may_read_SQL_JOIN ($db,$table,$USER);
+      $list=may_read_SQL_JOIN ($db,$tableinfo->realname,$USER);
       if (!$list)
          $list="-1";
       $result["sql"]= " id IN ($list) ";
@@ -559,10 +559,10 @@ function may_read_SQL ($db,$table,$tableid,$USER,$temptable="tempa") {
    }
    else {
       //return may_read_SQL_subselect ($db,$table,$tableid,$USER);
-      $r=$db->Execute(may_read_SQL_subselect ($db,$table,$tableid,$USER));
+      $r=$db->Execute(may_read_SQL_subselect ($db,$tableinfo->realname,$tableinfo->id,$USER));
       $result["numrows"]=$r->NumRows();
       make_temp_table($db,$temptable,$r); 
-      $result["sql"] = " ($table.id = $temptable.uniqueid) ";
+      $result["sql"] = " ($tableinfo->realname.id = $temptable.uniqueid) ";
    }
    return $result;
 }
@@ -594,10 +594,10 @@ function make_temp_table ($db,$temptable,$r) {
 
 ////
 // !determines whether or not the user may read this record
-function may_read ($db,$tableid,$id,$USER) {
-   $table=get_cell($db,"tableoftables","real_tablename","id",$tableid);
-   $list=may_read_SQL($db,$table,$tableid,$USER);
-   $query="SELECT id FROM $table WHERE ".$list["sql"];
+function may_read ($db,$tableinfo,$id,$USER) {
+//   $table=get_cell($db,"tableoftables","real_tablename","id",$tableid);
+   $list=may_read_SQL($db,$tableinfo,$USER);
+   $query="SELECT id FROM $tableinfo->realname WHERE ".$list["sql"];
    $r=$db->Execute($query);
    if (!$r)
       return false;
@@ -853,20 +853,20 @@ function current_page($curr_page, $sname) {
 
 ////
 // !Assembles the search SQL statement and remembers it in HTTP_SESSION_VARS
-function make_search_SQL($db,$table,$tableshort,$tableid,$fields,$USER,$search,$searchsort="title",$whereclause=false) {
+function make_search_SQL($db,$tableinfo,$fields,$USER,$search,$searchsort="title",$whereclause=false) {
    global $HTTP_POST_VARS, $HTTP_SESSION_VARS;
 
    if (!$searchsort)
       $searchsort="title";
-   $fieldvarsname=$tableshort."_fieldvars";
+   $fieldvarsname=$tableinfo->short."_fieldvars";
    global ${$fieldvarsname};
    $queryname=$tableshort."_query";
    if (!$whereclause)
-      $whereclause=may_read_SQL ($db,$table,$tableid,$USER);
+      $whereclause=may_read_SQL ($db,$tableinfo,$USER);
    if (!$whereclause)
       $whereclause=-1;
    if ($search=="Search") {
-      ${$queryname}=search($table,$fields,$HTTP_POST_VARS," $whereclause ORDER BY $searchsort");
+      ${$queryname}=search($tableinfo->realname,$fields,$HTTP_POST_VARS," $whereclause ORDER BY $searchsort");
       ${$fieldvarsname}=$HTTP_POST_VARS;
    }
    elseif (session_is_registered ($queryname) && isset($HTTP_SESSION_VARS[$queryname])) {
@@ -874,7 +874,7 @@ function make_search_SQL($db,$table,$tableshort,$tableid,$fields,$USER,$search,$
       ${$fieldvarsname}=$HTTP_SESSION_VARS[$fieldvarsname];
    }
    else {
-      ${$queryname} = "SELECT $fields FROM $table WHERE $whereclause ORDER BY date DESC";
+      ${$queryname} = "SELECT $fields FROM $tableinfo->realname WHERE $whereclause ORDER BY date DESC";
       ${$fieldvarsname}=$HTTP_POST_VARS;
    }
    $HTTP_SESSION_VARS[$queryname]=${$queryname};   

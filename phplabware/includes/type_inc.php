@@ -98,15 +98,14 @@ function show_type ($db,$table,$name, $tablename=false) {
 // Currently, there can be only 1 related table ($table2)
 // When more are needed,make $table2 into an array 
 
-function del_type ($db,$table,$index,$table2) {
-   global $HTTP_POST_VARS, $DBNAME, $HTTP_GET_VARS, $DB_DESNAME;
+function del_type ($db,$table,$index,$tableinfo) {
+   global $HTTP_POST_VARS, $HTTP_GET_VARS;
 
    $id=$HTTP_POST_VARS["type_id"][$index]; 
-   $string="";
-   if ($DBNAME) {
-      $recordref=get_cell($db,$DB_DESNAME,"columnname","associated_table",$table);
+   if ($tableinfo->realname) {
+      $recordref=get_cell($db,$tableinfo->desname,"columnname","associated_table",$table);
       if ($id) {
-         $r=$db->Execute("UPDATE $table2 SET $recordref=NULL WHERE $recordref='$id'");
+         $r=$db->Execute("UPDATE $tableinfo->realname SET $recordref=NULL WHERE $recordref='$id'");
          if ($r) 
 	    $r=$db->Execute("DELETE FROM $table WHERE id=$id");
 	 if ($r)
@@ -118,7 +117,7 @@ function del_type ($db,$table,$index,$table2) {
    else { 
       if ($id) {
          $table_array=explode("_",$table);
-      	 $r=$db->Execute("UPDATE $table2 SET ".$table_array[1]."='' WHERE ".
+      	 $r=$db->Execute("UPDATE $tableinfo->realname SET ".$table_array[1]."='' WHERE ".
                        $table_array[1]."=$id");
       	 if ($r) // keep database structure intact
       	    $r=$db->Execute("DELETE FROM $table WHERE id=$id");

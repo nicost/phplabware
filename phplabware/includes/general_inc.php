@@ -623,8 +623,7 @@ function add_g_form ($db,$tableinfo,$field_values,$id,$USER,$PHP_SELF,$system_se
 ////
 // !Shows a page with nice information on the record
 function show_g($db,$tableinfo,$id,$USER,$system_settings,$backbutton=true)  {
-   //$tablename=get_cell($db,"tableoftables","tablename","id",$tableid);
-   if (!may_read($db,$tableinfo->id,$id,$USER))
+   if (!may_read($db,$tableinfo,$id,$USER))
        return false;
    $Allfields=getvalues($db,$tableinfo,$tableinfo->fields,id,$id);
    display_record($db,$Allfields,$id,$tableinfo->name,$tableinfo->realname,$backbutton);
@@ -683,6 +682,8 @@ function process_file($db,$fileid,$system_settings) {
    }
    return false;
 }
+
+
 ////
 // !Helper function for indexfile
 function doindexfile ($db,$filetext,$fileid,$indextable,$recordid,$pagenr)

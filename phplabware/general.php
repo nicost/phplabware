@@ -5,7 +5,7 @@
   /***************************************************************************
   * This script displays a table with protocols in phplabware.               *
   *                                                                          *
-  * Copyright (c) 2002 by Ethan Garner,Nico Stuurman<nicost@sf.net           *
+  * Copyright (c) 2002 by Ethan Garner,Nico Stuurman<nicost@sf.net>          *
   * ------------------------------------------------------------------------ *
   *  This program is free software; you can redistribute it and/or modify it *
   *  under the terms of the GNU General Public License as published by the   *
@@ -15,6 +15,9 @@
 
 /// main include thingies
 require("include.php");
+require("includes/db_inc.php");
+require("includes/general_inc.php");
+
 class tableinfo {
    var $short;
    var $realname;
@@ -23,32 +26,35 @@ class tableinfo {
    var $queryname;
    var $pagename;
    var $id;
-}
-$tableinfo=new tableinfo;
 
-// find id associated with table
-$r=$db->Execute("SELECT id,shortname,tablename,real_tablename,table_desc_name,label FROM tableoftables WHERE tablename='$HTTP_GET_VARS[tablename]'");
-$tableinfo->id=$tableid=$r->fields["id"];
-if (!$tableid) {
+   function tableinfo ($db) {
+      global $HTTP_GET_VARS;
+
+      $r=$db->Execute("SELECT id,shortname,tablename,real_tablename,table_desc_name,label FROM tableoftables WHERE tablename='$HTTP_GET_VARS[tablename]'");
+      $this->id=$r->fields["id"];
+      $this->short=$r->fields["shortname"];
+      $this->realname=$r->fields["real_tablename"];
+      $this->label=$r->fields["label"];
+      $this->desname=$r->fields["table_desc_name"];
+      $this->fields=comma_array_SQL($db,$this->desname,columnname);
+      $this->name=$HTTP_GET_VARS[tablename];
+   }
+}
+
+$tableinfo=new tableinfo($db);
+
+if (!$tableinfo->id) {
    printheader($httptitle);
    navbar($USER["permissions"]);
    echo "<h3 align='center'> Table: <i>$HTTP_GET_VARS[tablename]</i> does not exist.</h3>";
    printfooter();
    exit();
 }
-$tableinfo->short=$tableshort=$r->fields["shortname"];
-$tableinfo->realname=$real_tablename=$r->fields["real_tablename"];
-$tableinfo->label=$tablelabel=$r->fields["label"];
-$tableinfo->desname=$table_desname=$r->fields["table_desc_name"];
-$tableinfo->queryname=$queryname=$tableshort."_query";
-$tableinfo->pagename=$pagename=$tableshort."_curr_page";
-$tableinfo->name=$HTTP_GET_VARS[tablename];
 
-require("includes/db_inc.php");
-require("includes/general_inc.php");
+$tableinfo->queryname=$queryname=$tableinfo->short."_query";
+$tableinfo->pagename=$pagename=$tableinfo->short."_curr_page";
 
 // read all fields in from the description file
-$tableinfo->fields=$fields=comma_array_SQL($db,$tableinfo->desname,columnname);
 $fields_table=comma_array_SQL($db,$tableinfo->desname,columnname,"WHERE display_table='Y'");
 
 // load plugin php code if it has been defined 
@@ -68,7 +74,7 @@ $httptitle .=$tableinfo->label;
 if ($jsnewwindow && $showid && $tableinfo->name) {
    printheader($httptitle);
    if (function_exists("plugin_show"))
-      plugin_show($db,$fields,$showid,$USER,$system_settings,$tableid,$real_tablename,$table_desname,false);
+      plugin_show($db,$tableinfo,$showid,$USER,$system_settings,false);
    else
       show_g($db,$tableinfo,$showid,$USER,$system_settings,false);
    printfooter();
@@ -110,7 +116,7 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
    // display form with information regarding the record to be changed
    if (substr($key, 0, 3) == "mod") {
       $modarray = explode("_", $key);
-      $r=$db->Execute("SELECT $fields FROM ".$tableinfo->realname." WHERE id=$modarray[1]"); 
+      $r=$db->Execute("SELECT $tableinfo->fields FROM ".$tableinfo->realname." WHERE id=$modarray[1]"); 
       add_g_form($db,$tableinfo,$r->fields,$modarray[1],$USER,$PHP_SELF,$system_settings);
       printfooter();
       exit();
@@ -126,8 +132,8 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
             if ( ($testarray[1]==$chgarray[1]) && (in_array ($testarray[0],$Fieldsarray))) 
                $change_values[$testarray[0]]=$val;  
          }
-         if(check_g_data ($db,$change_values,$table_desname,true))
-            modify($db,$real_tablename,$Fieldscomma,$change_values,$chgarray[1],$USER,$tableid); 
+         if(check_g_data ($db,$change_values,$tableinfo->desname,true))
+            modify($db,$tableinfo->realname,$Fieldscomma,$change_values,$chgarray[1],$USER,$tableinfo->id); 
          break;
       }
    } 
@@ -148,7 +154,7 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
    if (substr($key, 0, 4) == "view" && !$HTTP_SESSION_VARS["javascript_enabled"]) {
       $modarray = explode("_", $key);
       if (function_exists("plugin_show"))
-         plugin_show($db,$fields,$modarray[1],$USER,$system_settings,$tableid,$real_tablename,$table_desname,true);
+         plugin_show($db,$tableinfo,$showid,$USER,$system_settings,false);
       else
          show_g($db,$tableinfo,$modarray[1],$USER,$system_settings,true);
       printfooter();
@@ -158,33 +164,25 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
 // Add/modify/delete pulldown menu items 
    if (substr($key, 0, 7) == "addtype") {
       $modarray = explode("_", $key);
-      //$table=$modarray[1]."_".$modarray[2]."_".$modarray[3];
-      $table=$edit_type;
       include("includes/type_inc.php");
-      add_type($db,$table);
-      show_type($db,$table,"",$tablename);	
+      add_type($db,$edit_type);
+      show_type($db,$edit_type,"",$tableinfo->name);	
       printfooter();
       exit();
    }
    if (substr($key, 0, 6) == "mdtype") {
       $modarray = explode("_", $key);
-      //$table=$modarray[1]."_".$modarray[2]."_".$modarray[3];
-      $table=$edit_type;
       include("includes/type_inc.php");
-      mod_type($db,$table,$modarray[1]);
-      show_type($db,$table,"",$tablename);
+      mod_type($db,$edit_type,$modarray[1]);
+      show_type($db,$edit_type,"",$tableinfo->name);
       printfooter();
       exit();
    }
    if (substr($key, 0, 6) == "dltype") {
       $modarray = explode("_", $key);
-      //$table=$modarray[1]."_".$modarray[2]."_".$modarray[3];
-      $table=$edit_type;
       include("includes/type_inc.php");
-      $DBNAME=$real_tablename;
-      $DB_DESNAME=$table_desname;
-      del_type($db,$table,$modarray[1],$real_tablename);
-      show_type($db,$table,"",$tablename);
+      del_type($db,$edit_type,$modarray[1],$tableinfo);
+      show_type($db,$edit_type,"",$tableinfo->name);
       printfooter();
       exit();
    }
@@ -192,8 +190,8 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
 
 if ($edit_type && ($USER["permissions"] & $LAYOUT)) {
    include("includes/type_inc.php");
-   $assoc_name=get_cell($db,$table_desname,label,associated_table,$edit_type);
-   show_type($db,$edit_type,$assoc_name,$tablename);
+   $assoc_name=get_cell($db,$tableinfo->desname,label,associated_table,$edit_type);
+   show_type($db,$edit_type,$assoc_name,$tableinfo->name);
    printfooter();
    exit();
 }
@@ -201,7 +199,7 @@ if ($edit_type && ($USER["permissions"] & $LAYOUT)) {
 // provide a means to hyperlink directly to a record
 if ($showid && !$jsnewwindow) {
    if (function_exists("plugin_show"))
-      plugin_show($db,$fields,$showid,$USER,$system_settings,$tableid,$real_tablename,$table_desname,true);
+      plugin_show($db,$tableinfo,$showid,$USER,$system_settings,false);
    else
       show_g($db,$tableinfo,$showid,$USER,$system_settings,true);
    printfooter();
@@ -215,8 +213,8 @@ if ($add) {
 else { 
     // first handle addition of a new record
    if ($submit == "Add Record") {
-      if (!(check_g_data($db, $HTTP_POST_VARS, $table_desname) && 
-            $id=add($db,$tableinfo->realname,$fields,$HTTP_POST_VARS,$USER,$tableinfo->id) ) )
+      if (!(check_g_data($db, $HTTP_POST_VARS, $tableinfo->desname) && 
+            $id=add($db,$tableinfo->realname,$tableinfo->fields,$HTTP_POST_VARS,$USER,$tableinfo->id) ) )
       	{
          add_g_form($db,$tableinfo,$HTTP_POST_VARS,0,$USER,$PHP_SELF,$system_settings);
          printfooter ();
@@ -227,11 +225,11 @@ else {
          if ($id>0) {
             $rb=$db->Execute("SELECT id,columnname,associated_table FROM ".$tableinfo->desname." WHERE datatype='file'");
             while (!$rb->EOF) {
-       	       $fileid=upload_files($db,$tableid,$id,$rb->fields["id"],$rb->fields["columnname"],$USER,$system_settings);
+       	       $fileid=upload_files($db,$tableinfo->id,$id,$rb->fields["id"],$rb->fields["columnname"],$USER,$system_settings);
                // try to convert word files into html files
                $htmlfileid=process_file($db,$fileid,$system_settings); 
                // and try to index the uploaded file
-               indexfile($db,$tableinfo,$rb->fields["associated_table"],$id,$fileid,$htmlfileid);
+               //indexfile($db,$tableinfo,$rb->fields["associated_table"],$id,$fileid,$htmlfileid);
                $rb->MoveNext(); 
             }
             // call plugin code to do something with newly added data
@@ -246,19 +244,19 @@ else {
    }
    // then look whether it should be modified
    elseif ($submit=="Modify Record") {
-      if (! (check_g_data($db,$HTTP_POST_VARS,$table_desname,true) && modify($db,$real_tablename,$fields,$HTTP_POST_VARS,$HTTP_POST_VARS["id"],$USER,$tableid)) ) {
+      if (! (check_g_data($db,$HTTP_POST_VARS,$tableinfo->desname,true) && modify($db,$tableinfo->realname,$tableinfo->fields,$HTTP_POST_VARS,$HTTP_POST_VARS["id"],$USER,$tableinfo->id)) ) {
          add_g_form ($db,$tableinfo,$HTTP_POST_VARS,$HTTP_POST_VARS["id"],$USER,$PHP_SELF,$system_settings);
          printfooter ();
          exit;
       }
       else { 
-         $rc=$db->Execute("SELECT id,columnname FROM $table_desname WHERE datatype='file'");
+         $rc=$db->Execute("SELECT id,columnname FROM $tableinfo->desname WHERE datatype='file'");
          while (!$rc->EOF) {
             if ($HTTP_POST_FILES[$rc->fields["columnname"]]["name"][0]) {
                // delete all existing files
-               delete_column_file ($db,$tableid,$rc->fields["id"],$HTTP_POST_VARS["id"],$USER);
+               delete_column_file ($db,$tableinfo->id,$rc->fields["id"],$HTTP_POST_VARS["id"],$USER);
                // store the file uploaded by the user
-               $fileid=upload_files($db,$tableid,$HTTP_POST_VARS["id"],$rc->fields["id"],$rc->fields["columnname"],$USER,$system_settings);
+               $fileid=upload_files($db,$tableinfo->id,$HTTP_POST_VARS["id"],$rc->fields["id"],$rc->fields["columnname"],$USER,$system_settings);
                // try to convert it to an html file
                $htmlfileid=process_file($db,$fileid,$system_settings);
                // and index the file content
@@ -278,7 +276,7 @@ else {
       while((list($key, $val) = each($HTTP_POST_VARS))) {
          if (substr($key, 0, 3) == "del") {
             $delarray = explode("_", $key);
-            delete ($db,$tableid,$delarray[1], $USER);
+            delete ($db,$tableinfo->id,$delarray[1], $USER);
          }
       }
    } 
@@ -291,7 +289,7 @@ else {
       unset ($serialsortdirarray);
       session_unregister($queryname);
    }
-   $column=strtok($fields,",");
+   $column=strtok($tableinfo->fields,",");
    while ($column) {
       ${$column}=$HTTP_POST_VARS[$column];
       $column=strtok(",");
@@ -307,12 +305,12 @@ else {
    // get current page
    ${$pagename}=current_page(${$pagename},$tableshort);
    // get a list with all records we may see, create temp table tempb
-   $listb=may_read_SQL($db,$real_tablename,$tableid,$USER,"tempb");
+   $listb=may_read_SQL($db,$tableinfo,$USER,"tempb");
 
    // prepare the search statement and remember it
    $fields_table="id,".$fields_table;
 
-   ${$queryname}=make_search_SQL($db,$real_tablename,$tableshort,$tableid,$fields_table,$USER,$search,$sortstring,$listb["sql"]);
+   ${$queryname}=make_search_SQL($db,$tableinfo,$fields_table,$USER,$search,$sortstring,$listb["sql"]);
    $r=$db->Execute(${$queryname});
 
    // set variables needed for paging
@@ -334,19 +332,19 @@ else {
    // get variables for links 
    $sid=SID;
    if ($sid) $sid="&".$sid;
-   if ($tablename) $sid.="&tablename=$tablename";
+   if ($tableinfo->name) $sid.="&tablename=$tableinfo->name";
 
    // print form;
-   $dbstring=$PHP_SELF."?"."tablename=$tablename&";
+   $dbstring=$PHP_SELF."?"."tablename=$tableinfo->name&";
    echo "<form name=g_form method='post' id='generalform' enctype='multipart/form-data' action='$PHP_SELF?$sid'>\n";
    echo "<input type='hidden' name='md' value='$md'>\n";
 
    echo "<table border=0 width='50%' align='center'>\n<tr>\n";
    
    // variable md contains edit/view mode setting.  Propagated as post var to remember state.  md can only be changed as a get variable
-   $modetext="<a href='$PHP_SELF?tablename=$tablename&md=";
+   $modetext="<a href='$PHP_SELF?tablename=$tableinfo->name&md=";
  
-   $may_write=may_write($db,$tableid,false,$USER);
+   $may_write=may_write($db,$tableinfo->id,false,$USER);
    if ($md=="edit") {
       $tabletext="Edit Table ";
       if ($may_write)
@@ -358,9 +356,9 @@ else {
       $tabletext="View Table ";
       $modetext.="edit'>(to edit mode)</a>\n";
    }
-   echo "<td align='center'>$tabletext <B>$tablelabel</B> $modetext<br>";
+   echo "<td align='center'>$tabletext <B>$tableinfo->label</B> $modetext<br>";
    if ($may_write)
-      echo "<p><a href='$PHP_SELF?&add=Add&tablename=$tablename&".SID."'>Add Record</a></td>\n"; 
+      echo "<p><a href='$PHP_SELF?&add=Add&tablename=$tableinfo->name&".SID."'>Add Record</a></td>\n"; 
    echo "</tr>\n</table>\n";
    next_previous_buttons($rp,true,$num_p_r,$numrows,${$pagename});
 
@@ -377,12 +375,12 @@ else {
    }
    else {
       make_temp_table($db,"tempa",$r);
-      $lista= " ($real_tablename.id=tempa.uniqueid) ";
+      $lista= " ($tableinfo->realname.id=tempa.uniqueid) ";
    }
 
    //  get a list of all fields that are displayed in the table
-   $Fieldscomma=comma_array_SQL_where($db,$table_desname,"columnname","display_table","Y");
-   $Labelcomma=comma_array_SQL_where($db,$table_desname,"label","display_table","Y");
+   $Fieldscomma=comma_array_SQL_where($db,$tableinfo->desname,"columnname","display_table","Y");
+   $Labelcomma=comma_array_SQL_where($db,$tableinfo->desname,"label","display_table","Y");
    $Allfields=getvalues($db,$tableinfo,$Fieldscomma,false,false);	
    
    // javascript to automatically execute search when pulling down 
@@ -406,7 +404,7 @@ else {
       elseif ($nowfield["datatype"]=="int" || $nowfield["datatype"]=="float" || $nowfield["datatype"]=="sequence") {
          // show titles we may see, when too many, revert to text box
          if ($list && ($count < $max_menu_length) )  {
-  	     $rlist=$db->CacheExecute(2,"SELECT $nowfield[name] FROM $real_tablename WHERE $list");
+  	     $rlist=$db->CacheExecute(2,"SELECT $nowfield[name] FROM $tableinfo->realname WHERE $list");
              $text=$rlist->GetMenu("$nowfield[name]",${$nowfield[name]},true,false,0,"style='width: 80%' $jscript");
              echo "<td style='width: 10%'>$text</td>\n";
          }
@@ -420,7 +418,7 @@ else {
       elseif ($nowfield["datatype"]== "pulldown") {
          echo "<td style='width: 10%'>";
          if ($USER["permissions"] & $LAYOUT)  {
-            echo "<a href='$PHP_SELF?tablename=$tablename&edit_type=$nowfield[ass_t]&".SID;
+            echo "<a href='$PHP_SELF?tablename=$tableinfo->name&edit_type=$nowfield[ass_t]&".SID;
             echo "'>Edit $nowfield[label]</a><br>\n";
          }	 		 			
          $rpull=$db->Execute("SELECT typeshort,id from $nowfield[ass_t] ORDER by sortkey,typeshort");
@@ -435,7 +433,7 @@ else {
          if ($nowfield["ass_local_key"])
             $text="&nbsp;"; 
          else {
-            $rtable=$db->Execute("SELECT $nowfield[name] FROM $real_tablename WHERE $list");
+            $rtable=$db->Execute("SELECT $nowfield[name] FROM $tableinfo->realname WHERE $list");
             $list2=make_SQL_csf($rtable,false,"$nowfield[name]",$dummy);
             if ($list2) {
                $rtable=$db->Execute("SELECT $nowfield[ass_column_name],id FROM $nowfield[ass_table_name] WHERE id IN ($list2)");
