@@ -712,6 +712,7 @@ function search ($table,$fields,$fieldvalues,$whereclause=false,$wcappend=true) 
    while ($column && !$columnvalues[$column])
       $column=strtok (",");
    if ($column && $columnvalues[$column]) {
+      $query[1]=true;
       $query=searchhelp ($db,$table,$column,$columnvalues,$query,$wcappend,false);
    }
    $column=strtok (",");
@@ -726,6 +727,8 @@ function search ($table,$fields,$fieldvalues,$whereclause=false,$wcappend=true) 
          $query[0] .= "AND $whereclause";
       else
          $query[0] .= $whereclause;
+   if (function_exists("plugin_search"))
+      $query[0]=plugin_search($query[0],$columnvalues,$query[1]);
    return $query[0];
 }
 
