@@ -160,16 +160,18 @@ function viewlist($db,$tableinfo,$viewid) {
 ////////////////////////////////////////////////////////
 ////
 //! Generated menu with user-defined views
-function viewmenu($db, $tableinfo,$viewid) {
+function viewmenu($db, $tableinfo,$viewid,$useronly=1,$jscript='OnChange="document.g_form.submit()"') {
    global $USER, $db_type;
    
+   if ($useronly)
+      $userreq="tableviews.userid={$USER['id']} AND";
    // first find views accessible to user
    if ($db_type=='mysql') 
-      $r=$db->Execute("SELECT DISTINCT viewname,viewnames.viewnameid FROM viewnames LEFT JOIN tableviews ON viewnames.viewnameid=tableviews.viewnameid WHERE tableviews.userid ={$USER['id']} AND tableviews.tableid={$tableinfo->id} AND tableviews.viewmode=1");
+      $r=$db->Execute("SELECT DISTINCT viewname,viewnames.viewnameid FROM viewnames LEFT JOIN tableviews ON viewnames.viewnameid=tableviews.viewnameid WHERE $userreq tableviews.tableid={$tableinfo->id} AND tableviews.viewmode=1");
    else
-      $r=$db->Execute("SELECT viewname,viewnameid FROM viewnames WHERE viewnameid IN (SELECT viewnameid FROM tableviews WHERE userid ={$USER['id']} AND tableid={$tableinfo->id} AND viewmode=1)"); 
+      $r=$db->Execute("SELECT viewname,viewnameid FROM viewnames WHERE viewnameid IN (SELECT viewnameid FROM tableviews WHERE $userreq tableid={$tableinfo->id} AND viewmode=1)"); 
    if ($r) {
-      $viewname.= 'View: '.$r->GetMenu2('viewid',$viewid,true,false,0,'OnChange="document.g_form.submit()"');
+      $viewname.= 'View: '.$r->GetMenu2('viewid',$viewid,true,false,0,$jscript);
    }
    if ($viewid)
       $viewidtext="&viewid=$viewid";
@@ -431,6 +433,7 @@ function display_record($db,$Allfields,$id,$tableinfo,$backbutton=true,$previous
    $count=0;
    echo "<tr>\n";
    // if viewid is defined we will over-ride display record with values from the view settings
+//echo "$viewid.<br>";
    if ($viewid) {
       $r=$db->Execute("SELECT columnid FROM tableviews WHERE viewnameid=$viewid AND viewmode=2");
       while ($r && !$r->EOF) {
@@ -438,6 +441,7 @@ function display_record($db,$Allfields,$id,$tableinfo,$backbutton=true,$previous
          $r->MoveNext();
       }
    }
+//print_r($viewlist);
    foreach ($Allfields as $nowfield) {
 
       // decide whether this field will be shown
@@ -491,8 +495,12 @@ function display_record($db,$Allfields,$id,$tableinfo,$backbutton=true,$previous
       plugin_display_show ($db,$Allfields,$id);
       return $Allfields;
    } 
-   echo "<form method='post' action='$PHP_SELF?tablename=".$tableinfo->name."&".SID."'>\n";
+   echo "</table>\n";
+
+   echo "<form method='post' name='g_form' action='$PHP_SELF?tablename=".$tableinfo->name."&".SID."'>\n";
    echo "<input type='hidden' name='md' value='$md'>\n";
+   echo "<input type='hidden' name='showid' value='$id'>\n";
+   //echo "<input type='hidden' name='jsnewwindow' value='false'>\n";
 
    // for organizational purpose, define buttons here:
    // next and previous buttons
@@ -510,9 +518,9 @@ function display_record($db,$Allfields,$id,$tableinfo,$backbutton=true,$previous
       $modifybutton= "<input type=\"submit\" name=\"mod_" . $id . "\" value=\"Modify\">\n";
    }
    // viewmenu:
-   $viewmenu=viewmenu($db,$tableinfo,$viewid);
+   $viewmenu=viewmenu($db,$tableinfo,$viewid,false);
+
    // and now display the buttons
-   echo "</table>\n";
    echo "<table border=0 align='center' width='100%'>\n";
    if ($backbutton) {
       echo "<tr>\n<td align='left'>";
@@ -520,7 +528,8 @@ function display_record($db,$Allfields,$id,$tableinfo,$backbutton=true,$previous
    }
    else
       echo "<tr><td align='left'>$previousbutton &nbsp;</td><td align='center'> $modifybutton $closebutton </td><td>$viewmenu</td><td align='right'>$nextbutton &nbsp;</td></tr>\n";
-   echo "</table>";
+   echo "</table>\n\n";
+   echo "</form>\n";
 }
 
 ///////////////////////////////////////////////////////////

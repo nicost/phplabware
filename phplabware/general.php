@@ -63,7 +63,7 @@ if ($plugin_code)
 // register variables
 $get_vars='tablename,md,showid,edit_type,add,jsnewwindow,modify';
 globalize_vars($get_vars, $HTTP_GET_VARS);
-$post_vars = 'add,md,edit_type,submit,search,searchj,serialsortdirarray';
+$post_vars = 'add,md,edit_type,showid,submit,search,searchj,serialsortdirarray';
 globalize_vars($post_vars, $HTTP_POST_VARS);
 // hack
 if (isset($HTTP_POST_VARS['subm'])) {
@@ -267,7 +267,7 @@ if ($showid && !$jsnewwindow) {
    if (function_exists('plugin_show'))
       plugin_show($db,$tableinfo,$showid,$USER,$system_settings,false);
    else {
-      show_g($db,$tableinfo,$showid,$USER,$system_settings,true);
+      show_g($db,$tableinfo,$showid,$USER,$system_settings,true,false,false,$viewid);
    }   
    printfooter();
    exit();
