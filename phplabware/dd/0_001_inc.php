@@ -93,7 +93,8 @@
    $result=$db->Execute("CREATE TABLE tables
          (id int PRIMARY KEY,
           sortkey int,
-          tablename text)");
+          tablename text,
+          shortname text)");
    if (!$result) $test=false;
    $db->Execute("CREATE INDEX tables_id_index ON tables (id)"); 
    $db->Execute("CREATE INDEX tables_tablename_index ON tables (tablename)"); 
