@@ -453,15 +453,16 @@ else {
    // prepare SQL search statement, and remember it
    $ab_query=make_search_SQL($db,"antibodies","ab",$tableid,$fields,$USER,$search,$sortstring,$listb["sql"]);
 
-   // print form
-?>
-<form name='ab_form' method='post' action='<?php echo $PHP_SELF?>?<?=SID?>'>  
-<?php
    // get total number of hits
    $r=$db->Execute($ab_query);
    $numrows=$r->RecordCount();
 
    first_last_page ($r,$ab_curr_page,$num_p_r,$numrows);
+
+   // print form
+?>
+<form name='ab_form' method='post' action='<?php echo $PHP_SELF?>?<?=SID?>'>  
+<?php
 
    // row with action links
    $sid=SID;
