@@ -225,7 +225,7 @@ function navbar($permissions) {
 
 ////
 // !Prints initial part of webpage
-function printheader($title) {
+function printheader($title,$head=false) {
    global $version;
 
    header("Cache-Control: private, no-cache, musti-revalidate");
@@ -236,6 +236,7 @@ function printheader($title) {
 	"http://www.w3.org/TR/html4/loose.dtd">
 <HTML>
 <HEAD>
+<?php echo $head ?>
 <TITLE><?php echo "$title" ?></TITLE>
 <LINK rel="STYLESHEET" type="text/css" href="phplabware.css">
 </HEAD>
