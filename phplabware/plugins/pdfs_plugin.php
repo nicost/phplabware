@@ -82,7 +82,7 @@ function plugin_check_data($db,&$field_values,$table_desc,$modify=false)
    if (!$modify) {
       $existing_id=get_cell($db,$pdftable,"id","pmid",$field_values["pmid"]);
       if ($existing_id) {
-         echo "<h3 align='center'><a href='pdfs.php?showid=$existing_id'>That paper </a>is already in the database.</h3>\n";
+         echo "<h3 align='center'><a href='general.php?tablename=$pdftablelabel&showid=$existing_id'>That paper </a>is already in the database.</h3>\n";
          return false;
       }
    }
