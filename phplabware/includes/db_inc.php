@@ -16,6 +16,30 @@
   *  option) any later version.                                              *
   \**************************************************************************/       
 
+class tableinfo {
+   var $short;
+   var $realname;
+   var $label;
+   var $desname;
+   var $queryname;
+   var $pagename;
+   var $id;
+
+   function tableinfo ($db) {
+      global $HTTP_GET_VARS;
+
+      $r=$db->Execute("SELECT id,shortname,tablename,real_tablename,table_desc_name,label FROM tableoftables WHERE tablename='$HTTP_GET_VARS[tablename]'");
+      $this->id=$r->fields["id"];
+      $this->short=$r->fields["shortname"];
+      $this->realname=$r->fields["real_tablename"];
+      $this->label=$r->fields["label"];
+      $this->desname=$r->fields["table_desc_name"];
+      $this->fields=comma_array_SQL($db,$this->desname,columnname);
+      $this->name=$HTTP_GET_VARS[tablename];
+   }
+}
+
+
 if (!function_exists("array_key_exists")) {
    function array_key_exists($find,$array){
       while ((list($key,$value)=each($array)) && !$test) {
@@ -24,6 +48,38 @@ if (!function_exists("array_key_exists")) {
       }
       return $test;
    }
+}
+
+//////////////////////////////////////////////////////
+////
+// !SQL where search that returns a comma delimited string
+function comma_array_SQL_where($db,$tablein,$column,$searchfield,$searchval)
+{
+   $rs = $db->Execute("select $column from $tablein where $searchfield='$searchval' order by sortkey");
+
+   if ($rs) {
+      while (!$rs->EOF) {
+         $tempa[]=$rs->fields[0];
+         $rs->MoveNext();
+      }
+   }
+   $out=join(",",$tempa);
+   return $out;
+}
+
+//////////////////////////////////////////////////////
+////
+// !SQL search (entrire column) that returns a comma delimited string
+function comma_array_SQL($db,$tablein,$column,$where=false) 
+{
+   $rs = $db->Execute("select $column from $tablein $where order by sortkey");
+   if ($rs) {
+      while (!$rs->EOF) {
+         $tempa[]=$rs->fields[0];
+         $rs->MoveNext();
+      }
+   }
+   return join(",",$tempa);
 }
 
 ////
@@ -693,8 +749,22 @@ function searchhelp ($db,$tableinfo,$column,&$columnvalues,$query,$wcappend,$and
       $query[1]=true;
       // since all tables now have desc. tables,we can check for int/floats
       // should probably do this more upstream for performance gain
-      $rc=$db->Execute("SELECT type FROM ".$tableinfo->desc." WHERE columnname='$column'");
-      if (substr($rc->fields[0],0,3)=="int") {
+      $rc=$db->Execute("SELECT type,datatype,associated_table FROM ".$tableinfo->desname." WHERE columnname='$column'");
+      if ($rc->fields[1]=="file" && $rc->fields[2]) {
+         $rw=$db->Execute("SELECT id FROM words WHERE word LIKE '$columnvalues[$column]'");
+         if ($rw && $rw->fields[0]) {
+            $rh=$db->Execute("SELECT recordid FROM ".$rc->fields[2]." WHERE wordid='".$rw->fields[0]."'");
+             if ($rh && $rh->fields[0]) {
+                while (!$rh->EOF) {
+                   $rhtemp[]=$rh->fields[0];
+                   $rh->MoveNext();
+                }
+                $ids=join (",",$rhtemp);
+                $query[0].="$and id IN ($ids) ";
+             }
+         }
+      }
+      elseif (substr($rc->fields[0],0,3)=="int") {
          $columnvalues[$column]=(int)$columnvalues[$column];
          $query[0].="$and $column='$columnvalues[$column]' ";
       }
@@ -722,9 +792,6 @@ function searchhelp ($db,$tableinfo,$column,&$columnvalues,$query,$wcappend,$and
 // The whereclause should contain the output of may_read_SQL and
 // can also be used for sorting
 function search ($db,$tableinfo,$fields,&$fieldvalues,$whereclause=false,$wcappend=true) {
-   //global $db;
-   //$rb=$db->Execute("SELECT table_desc_name FROM tableoftables WHERE real_tablename='$table'");
-  // $table_desc=$r->fields[0];
    $columnvalues=$fieldvalues;
    $query[0]="SELECT $fields FROM ".$tableinfo->realname." WHERE ";
    $query[1]=$query[2]=false;
