@@ -473,8 +473,15 @@ else {
             $rtable=$db->Execute("SELECT $nowfield[name] FROM $tableinfo->realname WHERE $list");
             $list2=make_SQL_csf($rtable,false,"$nowfield[name]",$dummy);
             if ($list2) {
-               $rtable=$db->Execute("SELECT $nowfield[ass_column_name],id FROM $nowfield[ass_table_name] WHERE id IN ($list2)");
-               $text=$rtable->GetMenu2($nowfield["name"],${$nowfield[name]},true,false,0,"style='width: 80%' $jscript");
+               $rcount=$db->Execute("SELECT COUNT(id) FROM {$nowfield['ass_table_name']} WHERE id IN ($list2)");
+               if ($rcount && ($rcount->fields[0] < $max_menu_length)) {
+                  
+               // $rtable=$db->Execute("SELECT $nowfield[ass_column_name],id FROM $nowfield[ass_table_name] WHERE id IN ($list2)");
+               // $text=$rtable->GetMenu2($nowfield["name"],${$nowfield[name]},true,false,0,"style='width: 80%' $jscript");
+                $text=GetValuesMenu($db,$nowfield['name'],${$nowfield['name']},$nowfield['ass_table_name'],$nowfield['ass_column_name'],"WHERE id IN ($list2)","style='width: 80%' $jscript");
+                }
+                else
+                   $text="<input type='text' name='{$nowfield['name']}' value='{$$nowfield['name']}'>\n";
             }
             else
                $text="&nbsp;";

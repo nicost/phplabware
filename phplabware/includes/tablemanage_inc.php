@@ -294,6 +294,7 @@ function add_columnecg($db,$tablename2,$colname2,$label,$datatype,$Rdis,$Tdis,$r
    $fieldid=$db->GenId($desc."_id");
    $label=strtr($label,",'","  ");
    $colname=strtolower($colname);
+
    // check whether this name exists, the query should fail
    $rb=$db->Execute("SELECT $colname FROM $real_tablename");
    if ($rb)
@@ -626,22 +627,24 @@ function show_table_column_page ($db,$table_name,$addcol_name,$addcol_label) {
    $r->MoveFirst();
    echo "<tr><td>".$r->GetMenu2("table_select","",true,false,0,$jscript)."</td>\n";
    echo "<td><select name='table_column_select'></select></td>\n";
-   echo "<td><input type='submit' name='submit' value='Submit'></input></td>\n";
    echo "</tr>\n";
    $HTTP_GET_VARS['tablename']=$table_name;
    $tableinfo=new tableinfo($db);
-$db->debug=true;
-   $rs=$db->Execute("SELECT id,associated_table,associated_column FROM {$tableinfo->desname} WHERE associated_table LIKE '%' AND NOT (associated_local_key LIKE '')");
+   $rs=$db->Execute("SELECT id,associated_table,associated_column,associated_local_key,label FROM {$tableinfo->desname} WHERE associated_table LIKE '%'");
    if ($rs && !$rs->EOF) {
       echo "<tr><td colspan=3><b>Or:</b> group with an already existing Primary Key:</td></tr>\n";
-      echo "<tr><td><input type='radio' name='ass_to' value='0'></td><td colspan=2>None (Fill in above,and make it a primary key)</input></td></tr>\n";
+      echo "<tr><td colspan=3><input type='radio' name='ass_to'> None (Fill in above, and make it a primary key)</input></td></tr>\n";
       while (!$rs->EOF) {
-         echo "<tr><td><input type='radio' name='ass_to' value='{$rs->fields[0]}'></td><td colspan=2>Local column: (Foreign table: column:)</td></tr>\n";
+         if ($rs->fields['associated_table'] && !$rs->fields['associated_local_key']) {
+            $ass_tableinfo=new tableinfo($db,false,$rs->fields['associated_table']);
+            $ass_column=get_cell($db,$ass_tableinfo->desname,'label','id',$rs->fields['associated_column']);
+            echo "<tr><td colspan=3><input type='radio' name='ass_to' value='{$rs->fields[0]}-{$rs->fields[1]}-{$rs->fields[2]}'> Local column: <i>{$rs->fields['label']}</i> (Foreign table: <i>{$ass_tableinfo->name}</i>, column: <i>$ass_column</i>),</input></td></tr>\n";
+         }
          $rs->MoveNext();
       }
    }
-$db->debug=false;
   
+   echo "<tr><td colspan=3 align='center'><input type='submit' name='submit' value='Submit'></input></td></tr>\n";
    echo "</table>\n</form>\n";
 }
 
@@ -650,12 +653,13 @@ $db->debug=false;
 //  if there is already an association with the other table, that association
 //  will be used as a key
 function add_associated_table($db,$table,$column,$table_ass,$column_ass) {
+   global $HTTP_POST_VARS;
+
    $r=$db->Execute("SELECT table_desc_name FROM tableoftables WHERE tablename='$table'");
    $table_desc=$r->fields["table_desc_name"];
-   $r=$db->Execute("SELECT id FROM $table_desc WHERE associated_table='$table_ass' AND associated_local_key IS NULL");
-   if ($r && !$r->EOF) {
-      $prim_column=$r->fields["id"];
-      $r=$db->Execute("UPDATE $table_desc SET associated_table='$table_ass', associated_column='$column_ass', associated_local_key='$prim_column' WHERE columnname='$column'");
+   if ($HTTP_POST_VARS['ass_to']) {
+      $ass_to_values=split("-",$HTTP_POST_VARS['ass_to']);
+      $r=$db->Execute("UPDATE $table_desc SET associated_table='{$ass_to_values[1]}', associated_column='{$ass_to_values[2]}', associated_local_key='{$ass_to_values[0]}' WHERE columnname='$column'");
    }
    else { 
       $r=$db->Execute("UPDATE $table_desc SET associated_table='$table_ass', associated_column='$column_ass' WHERE columnname='$column'");

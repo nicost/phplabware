@@ -67,7 +67,11 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
       break;
    }
    elseif ($key=="table_column_select") {
-      add_associated_table($db,$table_name,$addcol_name,$HTTP_POST_VARS["table_select"],$HTTP_POST_VARS["table_column_select"]);
+      add_associated_table($db,$table_name,$addcol_name,$HTTP_POST_VARS['table_select'],$HTTP_POST_VARS['table_column_select']);
+      break;
+   }
+   elseif ($key=="ass_to") {
+      add_associated_table($db,$table_name,$addcol_name,false,false);
       break;
    }
    elseif ($key=="link_part_a") {
@@ -270,9 +274,15 @@ if ($editfield)	{
          echo "<td>$datatype</td>\n";
          if ($ass_table || $ass_column) {
             echo "<td>";
-            if (! $r->fields["associated_local_key"])
+            if (! $r->fields['associated_local_key']) {
                echo "<b>primary key</b><br>";
-            echo "$ass_table<br>$ass_column</td>\n";
+               echo "$ass_table<br>$ass_column</td>\n";
+            }
+            else {
+               $ass_local_column=get_cell($db,$currdesc,'label','id',$r->fields['associated_local_key']);
+               echo "primary key: $ass_local_column<br>\n"; 
+               echo "$ass_column</td>\n";
+            }
          }
          else
             echo "<td>&nbsp;</td>\n";

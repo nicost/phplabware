@@ -432,9 +432,10 @@ function display_add($db,$tableinfo,$Allfields,$id,$namein,$system_settings) {
                   $text="<input type='text' name='{$nowfield['name']}' value='{$nowfield['text']}'>";
                }
                else {
-                  $r=$db->Execute("SELECT $nowfield[ass_column_name],id FROM $nowfield[ass_table_name] ORDER BY {$nowfield['ass_column_name']}");
+                  $text=GetValuesMenu($db,$nowfield['name'],$nowfield['values'],$nowfield['ass_table_name'],$nowfield['ass_column_name'],false);
+                  //$r=$db->Execute("SELECT $nowfield[ass_column_name],id FROM $nowfield[ass_table_name] ORDER BY {$nowfield['ass_column_name']}");
                
-                  $text=$r->GetMenu2("$nowfield[name]",$nowfield[values],true,false);
+                  //$text=$r->GetMenu2("$nowfield[name]",$nowfield[values],true,false);
                }
                echo "<tr><th>$nowfield[label]:";
                if ($nowfield[required]=="Y")
@@ -532,6 +533,7 @@ function getvalues($db,$tableinfo,$fields,$qfield=false,$field=false) {
             ${$column}["ass_column_name"]=get_cell($db,${$column}["ass_table_desc_name"],"columnname","id",$rb->fields["associated_column"]);
 	 }
          if ($id) {
+            ${$column}['recordid']=$id;
             if ($rb->fields['datatype']=='table') {
                if ($rb->fields['associated_local_key']) {
                   ${$column}['ass_local_column_name']=get_cell($db,$tableinfo->desname,"columnname","id",$rb->fields["associated_local_key"]);
