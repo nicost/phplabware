@@ -214,21 +214,22 @@ function modify ($db, $type) {
              $query.=", pwd='$pwd'";
       }
       $query .= " WHERE id='$id';";
-      echo "\n<table border=0 align='center'>\n  <tr>\n    <td align='center'>\n      ";
+      $result.="\n<table border=0 align='center'>\n  <tr>\n    <td align='center'>\n      ";
       if ($db->Execute($query)) {
          // modify menu view in settings
          if ($HTTP_POST_VARS["menustyle"]==1)
             $USER["settings"]["menustyle"]=1;
          else
             $USER["settings"]["menustyle"]=0;
-         echo "Your settings have been modified.<br>\n";
+         $result.= "Your settings have been modified.<br>\n";
       }
       else
-         echo "Failed to modify you settings.<br>\n";
-      echo "    </td>\n  </tr>\n</table>\n\n";
+         $result.="Failed to modify you settings.<br>\n";
+      $result.="    </td>\n  </tr>\n</table>\n\n";
    }
    else 
-      echo "Strange error!< Please report to your system administrator<br>\n";
+      $result.= "Strange error!< Please report to your system administrator<br>\n";
+   return $result;
 }
 
 ////
@@ -399,8 +400,9 @@ if ($type=="me") {
 if ($me=="Change Settings") {
    $title.="Change Settings";
    printheader($title);
+   $result=modify ($db, "me");
    navbar ($USER["permissions"]);
-   modify ($db, "me");
+   echo $result;
    show_user_form("me");
    printfooter($db,$USER);
    exit();
