@@ -135,10 +135,13 @@ if ($version) {
             if (!isset ($system_settings["tmpdir"]))
                $system_settings["tmpdir"]=session_save_path();
          }
-      if (is_readable($word2html))
+      if (isset($word2html) && @is_readable($word2html))
          $system_settings["word2html"]=$word2html;
-      else
+      else {
          unset($system_settings["word2html"]);
+	 if (isset($word2html))
+	    echo "<h3 align='center'>wvHtml was not found at '$word2html'.</h3>";
+      }
       if ($baseURL)
          $system_settings["baseURL"]=$baseURL;
       if ($secure_server_new=="Yes")
