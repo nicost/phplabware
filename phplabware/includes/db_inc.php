@@ -705,6 +705,8 @@ function make_search_SQL($db,$table,$tableshort,$tableid,$fields,$USER,$search,$
    global ${$fieldvarsname};
    $queryname=$tableshort."_query";
    $whereclause=may_read_SQL ($db,$table,$tableid,$USER);
+   if (!$whereclause)
+      $whereclause=-1;
    if ($search=="Search") {
       ${$queryname}=search($table,$fields,$HTTP_POST_VARS," id IN ($whereclause) ORDER BY $searchsort");
       ${$fieldvarsname}=$HTTP_POST_VARS;

@@ -219,6 +219,7 @@ else {
    // prepare the search statement and remember it
    $fields="id,".$fields;
    ${$queryname}=make_search_SQL($db,$real_tablename,$tableshort,$tableid,$fields,$USER,$search);
+   
    $r=$db->CacheExecute(2,${$queryname});
    $numrows=$r->RecordCount();
    // loop through all entries for next/previous buttons
