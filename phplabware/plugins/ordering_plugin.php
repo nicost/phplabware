@@ -35,9 +35,11 @@ function plugin_display_add_post($db,$nowfield)
 
 
 
-////
-// !Extends function display_show
-// modified to duplicatean entry for reordering
+/**
+ *  Extends function display_show
+ *
+ * modified to duplicatean entry for reordering
+ */
 function plugin_display_show ($db,$Allfields,$id)
 {
    global $PHP_SELF, $md, $USER, $tableinfo, $system_settings;
