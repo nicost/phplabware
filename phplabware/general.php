@@ -126,8 +126,11 @@ if ($showid) {
    exit();
 }
 
+/*
 // when create new table has been chosen
 if ($createnew){create_new_table($db);}
+*/
+
 // when the 'Add' button has been chosen: 
 if ($add) {
    add_g_form($db,$fields,$field_values,0,$USER,$PHP_SELF,$system_settings,$real_tablename,$tablename,$table_desname);
