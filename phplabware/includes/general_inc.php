@@ -685,25 +685,6 @@ function process_file($db,$fileid,$system_settings) {
 
 
 ////
-// !Helper function for indexfile
-function doindexfile ($db,$filetext,$fileid,$indextable,$recordid,$pagenr)
-{
-   if (!$pagenr)
-      $pagenr=1;
-   $thetext=split("[ ,.:;\"\n]",$filetext);
-   foreach ($thetext as $word) {
-      if (strlen($word)>3) {
-         $r=$db->Execute("SELECT id FROM words WHERE word='$word'");
-         $wordid=$r->fields[0];
-         if (!$wordid) {
-            $wordid=$db->GenID("word_seq");
-            $db->Execute("INSERT INTO words VALUES ($wordid,'$word')");
-         }
-         $db->Execute("INSERT INTO $indextable VALUES ($wordid,$fileid,$recordid,$pagenr)");
-      }
-   }
-}
-////
 // !Indexes the content of the given file
 // The file is converted to a text file (pdfs with ghost script,
 // word files were already converted to html,html characters are stripped),
