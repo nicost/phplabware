@@ -21,13 +21,13 @@ while ($r1007 && !$r1007->EOF) {
       while ($rc1007 && !$rc1007->EOF) {
          $at=(int)$rc1007->fields[1];
          if($at)
-            $db->Execute("UPDATE {$r1007->fields[1]} SET associated_table=$at");
+            $db->Execute("UPDATE {$r1007->fields[1]} SET associated_table=$at WHERE id={$r1007->fields[0]}");
          $ac=(int)$rc1007->fields[2];
          if($ac)
-            $db->Execute("UPDATE {$r1007->fields[1]} SET associated_column=$ac");
+            $db->Execute("UPDATE {$r1007->fields[1]} SET associated_column=$ac WHERE id={$r1007->fields[0]}");
          $alt=(int)$rc1007->fields[3];
          if($alt)
-            $db->Execute("UPDATE {$r1007->fields[1]} SET associated_local_key=$alt");
+            $db->Execute("UPDATE {$r1007->fields[1]} SET associated_local_key=$alt WHERE id={$r1007->fields[0]");
          $rc1007->MoveNext();
       }
       
