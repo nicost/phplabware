@@ -213,7 +213,7 @@ function navbar($permissions) {
 				
       echo "<table border=0 width=100% cellspacing='0' cellpadding='0'>\n";
       echo "<tr bgcolor='eeeeff' align='center'>\n";
-      $records=$db->Execute("select tablename,Custom from tableoftables where display='Y' and permission='Users' ORDER by sortkey");
+      $records=$db->Execute("select tablename,custom from tableoftables where display='Y' and permission='Users' ORDER by sortkey");
       $count=0;
       if ($records) {
          while (!$records->EOF) {
