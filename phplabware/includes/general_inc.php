@@ -267,8 +267,8 @@ function display_record($db,$Allfields,$id,$tableinfo,$backbutton=true)
             $textlarge=nl2br(htmlentities($nowfield[values]));
             echo "<th>$nowfield[label]</th><td colspan=2>$textlarge</td>\n";
          }
-         elseif ($nowfield["datatype"]=="file" || $nowfield["datatype"]=="image") {
-            $files=get_files($db,$tableinfo->name,$id,$nowfield["columnid"],0,"big");
+         elseif ($nowfield['datatype']=='file' || $nowfield['datatype']=='image') {
+            $files=get_files($db,$tableinfo->name,$id,$nowfield['columnid'],0,'big');
             if ($files) { 
                echo "<th>$nowfield[label]:</th>\n<td colspan=5>";
                for ($i=0;$i<sizeof($files);$i++)  {
