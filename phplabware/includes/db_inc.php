@@ -23,8 +23,10 @@
 // Fieldvalues must be an associative array containing all the $fields to be added.
 // Fields named 'date' are automatically filled with a Unix timestamp
 function add ($db,$table,$fields,$fieldvalues,$USER) {
-   if (!may_write($db,$table,false,$USER))
+   if (!may_write($db,$table,false,$USER)) {
+      echo "<h3>You are not allowed to do this.<br>";
       return false;
+   }
    include('includes/defines_inc.php');
    if (!($USER["permissions"] & $WRITE) )
       return false;
@@ -57,8 +59,11 @@ function add ($db,$table,$fields,$fieldvalues,$USER) {
       $query="INSERT INTO $table ($columns) VALUES ($values)";
       if ($db->Execute($query))
          return $id;
+      else
+         echo "<h3>Database error.  Contact your system administrator.</h3>\n";
    }
 }
+
 
 ////
 // !Modifies $fields in $table with values $fieldvalues where id=$id
