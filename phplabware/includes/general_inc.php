@@ -3,7 +3,7 @@
 // general_inc.php - functions used by general.php, user-defined tabels
 // general.php - author: Ethan Garner, Nico Stuurman <nicost@sf.net>
   /***************************************************************************
-  * Copyright (c) 2001 by Ethan Garner, Nico Stuurman                        *
+  * Copyright (c) 2002 by Ethan Garner, Nico Stuurman                        *
   * ------------------------------------------------------------------------ *
   *  Part of phplabware, a web-driven groupware suite for research labs      *
   *  This file contains classes and functions needed in general.php.         *
@@ -76,58 +76,14 @@ function display_table_info($db,$tableid,$DB_DESNAME,$Fieldscomma,$pr_query,$num
       // Get required ID and title
       $id=$r->fields["id"];
       $title=$r->fields["title"];		
-      $Allfields=getvalues($db,$real_tablename,$DB_DESNAME,$Fieldscomma,id,$id);
+      $Allfields=getvalues($db,$real_tablename,$DB_DESNAME,$tableid,$Fieldscomma,id,$id);
       // print start of row of selected group
       if ($rownr % 2)echo "<tr class='row_odd' align='center'>\n";
          else echo "<tr class='row_even' align='center'>\n";
   
-      foreach($Allfields as $nowfield) { 	// read in all entries into variables
-         if ($nowfield[datatype] =="text") {
-            if ($nowfield[values])
-               echo "<td>$nowfield[values]</td>\n"; 
-            else
-               echo "<td>&nbsp;</td>\n";
-         }
-         elseif ($nowfield[datatype] =="link") {
-            if ($nowfield[values])
-               echo "<td><a href='$nowfield[values]' target='_blank'>link</a></td>\n";
-            else 
-               echo "<td>&nbsp;</td>\n";
-         } 
-         elseif ($nowfield[datatype] =="pulldown") {
-            $text=get_cell($db,$nowfield[ass_t],"typeshort","id",$nowfield[values]); 
-            if (!$text)
-               $text="&nbsp;";
-            echo "<td>$text</td>";
-         }
-         elseif ($nowfield[datatype] =="table") {
-            $text=false;
-            $key=$nowfield["values"];
-            if (!$key)
-               $key=get_cell($db,$real_tablename,$nowfield["ass_local_column_name"],"id",$id); 
-            if ($key)
-               $text=get_cell($db,$nowfield["ass_table_name"],$nowfield["ass_column_name"],"id",$key); 
-            if (!$text)
-               $text="&nbsp;";
-            echo "<td>$text</td>";
-         }
-         elseif ($nowfield[datatype] == "textlong") {
-            if ($nowfield[values]=="")
-               echo "<td>no</td>\n";
-            else 
-               echo "<td>yes</td>\n"; 
-         }
-         elseif ($nowfield[datatype] == "file") {
-            $files=get_files($db,$tablename,$id,3);
-            echo "<td>";
-            if ($files) 
-               for ($i=0;$i<sizeof($files);$i++)
-                  echo $files[$i]["link"];
-            else
-               echo "&nbsp;";
-            echo "</td>\n";
-         }
-      }	
+      foreach($Allfields as $nowfield) 
+         echo "<td>$nowfield[text]</td>\n"; 
+
       echo "<td align='center'>&nbsp;\n";  
       echo "<input type=\"submit\" name=\"view_" . $id . "\" value=\"View\">\n";
       if (may_write($db,$tableid,$id,$USER)) {
@@ -161,41 +117,15 @@ function display_record($db,$Allfields,$id,$tablename,$real_tablename) {
    global $PHP_SELF;
 
    echo "<table border=0 align='center'>\n";
-   echo "<tr align='center'>\n";
-   echo "<td colspan=2></td>\n";
    foreach ($Allfields as $nowfield) {
       //see if display_table is set
-      if ($nowfield[display_table]==Y) {
-         if ($nowfield[datatype]=="text"){
-            echo "<tr>\n";
-            echo "<th>$nowfield[label]</th>\n";
-            if ($nowfield[values])
-               echo "<td colspan=2>$nowfield[values]</td></tr>\n";
-            else
-               echo "<td colspan=2>&nbsp;</td></tr>\n";
-         }
-	 if ($nowfield[datatype]=="link") {
-            echo "<tr>\n<th>$nowfield[label]</th>\n";
-            echo "<td colspan=2><a href='$nowfield[values]' target='_blank'>$nowfield[values]</a></td></tr>\n";
-         }
-         if ($nowfield[datatype]=="pulldown") {
-            $text=get_cell($db,$nowfield[ass_t],"type","id",$nowfield[values]);
-            echo "<tr>\n<th>$nowfield[label]:</th>\n<td>$text</td></tr>\n";
-         }
-         if ($nowfield[datatype]=="table") {
-            if ($nowfield["ass_local_key"])
-                $searchid=get_cell($db,$real_tablename,$nowfield["ass_local_column_name"],"id",$id);
-            else
-                $searchid=$nowfield["values"];
-            $text=get_cell($db,$nowfield[ass_table_name],$nowfield["ass_column_name"],"id",$searchid);
-            echo "<tr>\n<th>$nowfield[label]:</th>\n<td>$text</td></tr>\n";
-         }
+      if ($nowfield[display_table]=="Y") {
          if ($nowfield[datatype]=="textlong") {
             $textlarge=nl2br(htmlentities($nowfield[values]));
             echo "<tr><th>$nowfield[label]</th><td colspan=6>$textlarge</td>\n";
             echo "</tr>\n";
          }
-         if ($nowfield[datatype]=="file") {
+         elseif ($nowfield[datatype]=="file") {
             $files=get_files($db,$tablename,$id);
             if ($files) { 
                echo "<tr><th>Files:</th>\n<td colspan=5>";
@@ -205,6 +135,11 @@ function display_record($db,$Allfields,$id,$tablename,$real_tablename) {
                }
                echo "<td></tr>\n";
             }				
+         }
+         // most datatypes are handled in getvalues
+         else {
+            echo "<tr><th>$nowfield[label]</th>\n";
+            echo "<td colspan=2>$nowfield[text]</td></tr>\n";
          }
       }
    }
@@ -250,8 +185,13 @@ function display_add($db,$tableid,$real_tablename,$tabledesc,$Allfields,$id,$nam
    echo "<table border=0 align='center'>\n<tr align='center'>\n<td colspan=2></td>\n";
    foreach ($Allfields as $nowfield) {
       //see if display_record is set
-      if (($nowfield[display_record]==Y) || ($nowfield[display_table]==Y)) {
-         if ($nowfield[datatype]=="text") {
+      if ( (($nowfield["display_record"]=="Y") || ($nowfield["display_table"]=="Y")) ) {
+         if ($nowfield["modifiable"]=="N") {
+            echo "<tr><th>$nowfield[label]:</th>"; 
+            echo "<input type='hidden' name='$nowfield[name]' value='$nowfield[values]'>\n";
+            echo "<td>$nowfield[text]</td></tr>\n";
+         }
+         elseif ($nowfield[datatype]=="text") {
             echo "<tr><th>$nowfield[label]:"; 
             if ($nowfield[required]=="Y") {
                echo "<sup style='color:red'>&nbsp;*</sup>";
@@ -343,17 +283,20 @@ function display_add($db,$tableid,$real_tablename,$tabledesc,$Allfields,$id,$nam
 ///////////////////////////////////////////////////////////////////////
 ////
 // !Get all description table values out for a display
-function getvalues($db,$DBNAME,$DB_DESNAME,$fields,$qfield=false,$field=false) {
-   if ($qfield)
+function getvalues($db,$DBNAME,$DB_DESNAME,$tableid,$fields,$qfield=false,$field=false) {
+   if ($qfield) {
       $r=$db->Execute("SELECT $fields FROM $DBNAME WHERE $qfield=$field"); 
+      $rid=$db->Execute("SELECT id FROM $DBNAME WHERE $qfield=$field");
+      $id=$rid->fields["id"];
+   }
    else
       $r=$db->Execute("SELECT $fields FROM $DBNAME"); 
    $column=strtok($fields,",");
    $Allfields=array();
    while ($column) {
-      if(!(!$id && $column=="id")) {
-         ${$column}[values]= $r->fields[$column];
-         $rb=$db->CacheExecute(2,"SELECT label,datatype,display_table,display_record,associated_table,associated_column,associated_local_key,required FROM $DB_DESNAME WHERE columnname='$column'");
+      if($column!="id") {
+         ${$column}["values"]= $r->fields[$column];
+         $rb=$db->CacheExecute(2,"SELECT label,datatype,display_table,display_record,associated_table,associated_column,associated_local_key,required,link_first,link_last,modifiable FROM $DB_DESNAME WHERE columnname='$column'");
          ${$column}["name"]=$column;
          ${$column}["label"]=$rb->fields["label"];
          ${$column}["datatype"]=$rb->fields["datatype"];
@@ -363,12 +306,52 @@ function getvalues($db,$DBNAME,$DB_DESNAME,$fields,$qfield=false,$field=false) {
          ${$column}["ass_column"]=$rb->fields["associated_column"];
          ${$column}["ass_local_key"]=$rb->fields["associated_local_key"];
          ${$column}["required"]=$rb->fields["required"];
-         if ($rb->fields["datatype"]=="table") {
-            ${$column}["ass_table_desc_name"]=get_cell($db,"tableoftables","table_desc_name","id",$rb->fields["associated_table"]);
-            ${$column}["ass_table_name"]=get_cell($db,"tableoftables","real_tablename","id",$rb->fields["associated_table"]);
-            ${$column}["ass_column_name"]=get_cell($db,${$column}["ass_table_desc_name"],"columnname","id",$rb->fields["associated_column"]);
-            if ($rb->fields["associated_local_key"]) 
-               ${$column}["ass_local_column_name"]=get_cell($db,$DB_DESNAME,"columnname","id",$rb->fields["associated_local_key"]);
+         ${$column}["modifiable"]=$rb->fields["modifiable"];
+         if ($id) {
+            if ($rb->fields["datatype"]=="table") {
+               ${$column}["ass_table_desc_name"]=get_cell($db,"tableoftables","table_desc_name","id",$rb->fields["associated_table"]);
+               ${$column}["ass_table_name"]=get_cell($db,"tableoftables","real_tablename","id",$rb->fields["associated_table"]);
+               ${$column}["ass_column_name"]=get_cell($db,${$column}["ass_table_desc_name"],"columnname","id",$rb->fields["associated_column"]);
+               if ($rb->fields["associated_local_key"]) {
+                  ${$column}["ass_local_column_name"]=get_cell($db,$DB_DESNAME,"columnname","id",$rb->fields["associated_local_key"]);
+                  ${$column}["values"]=get_cell($db,$DBNAME,${$column}["ass_local_column_name"],"id",$id); 
+               }
+               $text=false;
+               if (${$column}["values"])
+                  $text=get_cell($db,${$column}["ass_table_name"],${$column}["ass_column_name"],"id",${$column}["values"]); 
+               if (!$text)
+                  $text="&nbsp;";
+               ${$column}["text"]=$text;
+            }
+            elseif ($rb->fields["datatype"]=="link") {
+               if (${$column}["values"])
+                  ${$column}["text"]="<a href='".${$column}["values"]."' target='_blank'>link</a>";
+            }
+            elseif ($rb->fields["datatype"]=="pulldown") {
+               ${$column}["text"]=get_cell($db,${$column}["ass_t"],"typeshort","id",${$column}["values"]); 
+            }
+            elseif ($rb->fields["datatype"]=="textlong") {
+               if (${$column}["values"]=="")
+                  ${$column}["text"]="no";
+               else 
+                  ${$column}["text"]="yes";
+            }
+            elseif ($rb->fields["datatype"]=="file") {
+               $tbname=get_cell($db,"tableoftables","tablename","id",$tableid);
+               $files=get_files($db,$tbname,$id,3);
+               if ($files) 
+                  for ($i=0;$i<sizeof($files);$i++)
+                     ${$column}["text"].=$files[$i]["link"];
+            }
+            else
+               ${$column}["text"]=${$column}["values"];
+
+            if ($rb->fields["link_first"] && ${$column}["values"]) {
+               ${$column}["text"]="<a href='".$rb->fields["link_first"].${$column}["text"].$rb->fields["link_last"]."'>".${$column}["text"]."</a>\n";
+            }
+ 
+            if (!${$column}["text"])
+               ${$column}["text"]="&nbsp;";
          }
       }
       array_push ($Allfields, ${$column});
@@ -377,19 +360,6 @@ function getvalues($db,$DBNAME,$DB_DESNAME,$fields,$qfield=false,$field=false) {
    return $Allfields;
 }
 
-/////////////////////////////////////////////////
-////
-// !displays the bar between the search header and the records
-function display_midbar($labelcomma) {
-   $labelarray=explode(",",$labelcomma);
-   echo "<tr>\n";
-   foreach($labelarray as $fieldlabel)  {
-      echo "<th><table><tr><td align=left>";
-      echo "<input src='sortdown.png' name='sortby' value='$fieldlabel'></td><th align='center'>$fieldlabel</th></tr></table></th>";
-   }
-   echo "<th>Action</th>\n";
-   echo "</tr>\n";
-}
 
 //////////////////////////////////////////////////////
 ////
@@ -477,12 +447,12 @@ function add_g_form ($db,$fields,$field_values,$id,$USER,$PHP_SELF,$system_setti
    if (!may_write($db,$tableid,$id,$USER)) 
       return false; 
    if ($id) {
-	$Allfields=getvalues($db,$real_tablename,$DB_DESNAME,$fields,id,$id);
+	$Allfields=getvalues($db,$real_tablename,$DB_DESNAME,$tableid,$fields,id,$id);
 	$namein=get_cell($db,$DBNAME,"title","id",$id);		
 	display_add($db,$tableid,$real_tablename,$DB_DESNAME,$Allfields,$id,$namein,$system_settings);
    }    
    else {
-	$Allfields=getvalues($db,$DBNAME,$DB_DESNAME,$fields);
+	$Allfields=getvalues($db,$DBNAME,$DB_DESNAME,$tableid,$fields);
 	display_add($db,$tableid,$real_tablename,$DB_DESNAME,$Allfields,$id,"",$system_settings);
    }
 }
@@ -493,7 +463,7 @@ function show_g($db,$fields,$id,$USER,$system_settings,$tableid,$real_tablename,
    $tablename=get_cell($db,"tableoftables","tablename","id",$tableid);
    if (!may_read($db,$tableid,$id,$USER))
        return false;
-   $Allfields=getvalues($db,$real_tablename,$DB_DESNAME,$fields,id,$id);
+   $Allfields=getvalues($db,$real_tablename,$DB_DESNAME,$tableid,$fields,id,$id);
    display_record($db,$Allfields,$id,$tablename,$real_tablename);
 }
 	
