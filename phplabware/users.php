@@ -187,7 +187,7 @@ function modify ($db, $type) {
 ////
 // !can be called to create (type=create) or modify (type=modify) other users or oneselves (type=me) 
 function show_user_form ($type) {
-   global $userfields, $HTTP_SERVER_VARS, $perms, $USER, $db;
+   global $userfields, $HTTP_SERVER_VARS, $perms, $USER, $db, $system_settings;
 
    include ('includes/defines_inc.php');
  
@@ -232,7 +232,7 @@ function show_user_form ($type) {
       echo "<input type='hidden' name='login' value='$login'>\n";
    }
 
-   if ($USER["permissions"] >= $WRITE) {
+   if ($USER["permissions"] >= $WRITE && $system_settings["authmethod"] <> 2) {
       echo "<tr><td>Password (max. 20 characters):</td><td><input type='password' name='pwd' maxlength=20 size=20 value=''>";
       if ($type=="create")
          echo "<sup style='color:red'>&nbsp(required)</sup></td></tr>\n";
