@@ -467,8 +467,11 @@ echo "${$queryname}.<br>";
    }
 
    //  get a list of all fields that are displayed in the table
-   $Fieldscomma=comma_array_SQL_where($db,$tableinfo->desname,'columnname','display_table','Y');
-   $Labelcomma=comma_array_SQL_where($db,$tableinfo->desname,'label','display_table','Y');
+   //  first check whether the user has its own preferences
+   if (isset($USER['settings']['tablefields']['$tableinfo->name']))
+      $Fieldscomma=$USER['settings']['tablefields']['$tableinfo->name'];
+   else
+      $Fieldscomma=comma_array_SQL_where($db,$tableinfo->desname,'columnname','display_table','Y');
    $Allfields=getvalues($db,$tableinfo,$Fieldscomma,false,false);	
    
    // javascript to automatically execute search when pulling down 
