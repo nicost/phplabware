@@ -79,7 +79,8 @@ function comma_array_SQL($db,$tablein,$column,$where=false)
          $rs->MoveNext();
       }
    }
-   return join(",",$tempa);
+   if ($tempa)
+      return join(",",$tempa);
 }
 
 ////
