@@ -233,7 +233,8 @@ function display_table_info($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr_c
 ///////////////////////////////////////////////////////////
 ////
 // !Display a record in a nice format
-function display_record($db,$Allfields,$id,$tablename,$real_tablename,$backbutton=true) {
+function display_record($db,$Allfields,$id,$tablename,$real_tablename,$backbutton=true) 
+{
    global $PHP_SELF, $md;
 
    echo "&nbsp;<br>\n";
@@ -241,10 +242,11 @@ function display_record($db,$Allfields,$id,$tablename,$real_tablename,$backbutto
    $count=0;
    echo "<tr>\n";
    foreach ($Allfields as $nowfield) {
-      //see if display_table is set
+      //Only show the entry when display_record is set
       if ($nowfield[display_record]=="Y") {
+         // We display the fieldsin two columns
          if ($count && !($count % 2))
-            echo "</tr><tr>\n";
+            echo "</tr>\n<tr>\n";
          if ($nowfield[datatype]=="textlong") {
             $textlarge=nl2br(htmlentities($nowfield[values]));
             echo "<th>$nowfield[label]</th><td colspan=2>$textlarge</td>\n";
@@ -258,7 +260,10 @@ function display_record($db,$Allfields,$id,$tablename,$real_tablename,$backbutto
                   echo " file, ".$files[$i]["size"].")<br>\n";
                }
                echo "<td>\n";
-            }				
+            }
+            // to keep odd and even fields right
+            else
+               $count--;
          }
          // most datatypes are handled in getvalues
          else {
@@ -268,8 +273,9 @@ function display_record($db,$Allfields,$id,$tablename,$real_tablename,$backbutto
          $count++;
       }
    }
-   user_entry($id,$real_tablename);
-   date_entry($id,$real_tablename);
+   //user_entry($id,$real_tablename);
+   //date_entry($id,$real_tablename);
+   echo "</tr>\n";
    make_link($id,$tablename);
    echo "<form method='post' action='$PHP_SELF?tablename=$tablename&".SID."'>\n";
    echo "<input type='hidden' name='md' value='$md'>\n";
@@ -507,13 +513,16 @@ function getvalues($db,$tableinfo,$fields,$qfield=false,$field=false) {
                   for ($i=0;$i<sizeof($files);$i++)
                      ${$column}["text"].=$files[$i]["link"];
             }
-            elseif ($column=="ownerid") {
+            elseif ($rb->fields["datatype"]=="user") {
                $rname=$db->Execute("SELECT firstname,lastname,email FROM users WHERE id=".${$column}["values"]);
                if ($rname && $rname->fields) {
-                  ${$column}["text"]="<a href=mailto:".$rname->fields[email].">".$rname->fields[firstname]." ".$rname->fields[lastname]."</a>\n";
+                  if ($rname->fields[email])
+                     ${$column}["text"]="<a href='mailto:".$rname->fields[email]."'>".$rname->fields[firstname]." ".$rname->fields[lastname]."</a>\n";
+                  else
+                     ${$column}["text"]=$rname->fields[firstname]." ".$rname->fields[lastname]."\n";
                }
             }
-            elseif ($column=="date") {
+            elseif ($rb->fields["datatype"]=="date") {
                $dateformat=get_cell($db,"dateformats","dateformat","id",$system_settings["dateformat"]);
                ${$column}["text"]=date($dateformat,${$column}["values"]);
             }
