@@ -22,8 +22,8 @@
 // $fields is a comma separated list with all column names
 // Fieldvalues must be an associative array containing all the $fields to be added.
 // Fields named 'date' are automatically filled with a Unix timestamp
-function add ($db,$table,$fields,$fieldvalues,$USER) {
-   if (!may_write($db,$table,false,$USER)) {
+function add ($db,$table,$fields,$fieldvalues,$USER,$tableid) {
+   if (!may_write($db,$tableid,false,$USER)) {
       echo "<h3>You are not allowed to do this.<br>";
       return false;
    }
@@ -66,9 +66,7 @@ function add ($db,$table,$fields,$fieldvalues,$USER) {
          return $id;
       else {
          echo "<h3>Database error.  Contact your system administrator.</h3>\n";
-	 $db->debug=true;
          $db->Execute($query);
-	 $db->debug=false;
       }
    }
 }
@@ -81,11 +79,21 @@ function add ($db,$table,$fields,$fieldvalues,$USER) {
 // If a field is not present in $fieldvalues, it will not be changed.  
 // The entry 'id' in $fields will be ignored.
 // Fields lastmodby and lastmoddate will be automatically set
-function modify ($db,$table,$fields,$fieldvalues,$id,$USER) {
-   if (!may_write($db,$table,$id,$USER))
+function modify ($db,$table,$fields,$fieldvalues,$id,$USER,$tableid) {
+   if (!may_write($db,$tableid,$id,$USER))
       return false;
-   $query=" UPDATE $table SET ";
-     $column=strtok($fields,",");
+   // delete all entries in trust related to this record first
+   $db->Execute("DELETE FROM trust WHERE tableid='$tableid' and recordid='$id'");
+   // then add back trusted users entered on the form
+   if (is_array($fieldvalues["trust_read"]))
+      foreach ($fieldvalues["trust_read"] as $userid)
+         $db->Execute("INSERT INTO trust VALUES ('$tableid','$id','$userid','r')");
+   if (is_array($fieldvalues["trust_write"]))
+      foreach ($fieldvalues["trust_write"] as $userid)
+         $db->Execute("INSERT INTO trust VALUES ('$tableid','$id','$userid','w')");
+
+   $query="UPDATE $table SET ";
+   $column=strtok($fields,",");
    while ($column) {
       if (! ($column=="id" || $column=="date" || $column=="ownerid") ) {
          $test=true;
@@ -114,12 +122,10 @@ function modify ($db,$table,$fields,$fieldvalues,$id,$USER) {
 // Returns true on succes, false on failure
 // Checks whether the delete is allowed
 // This is very generic, it is likely that you will need to do more cleanup
-function delete ($db, $table, $id, $USER, $filesonly=false) {
+function delete ($db, $tableid, $id, $USER, $filesonly=false) {
 
-   $tableid=get_cell($db,"tableoftables","id","tablename",$table);
-   if ($tableid > 9999)
-      $table .= "_".$tableid;
-   if (!may_write($db,$table,$id,$USER))
+   $table=get_cell($db,"tableoftables","real_tablename","id",$tableid);
+   if (!may_write($db,$tableid,$id,$USER))
       return false;
 
    // check for associated files
@@ -147,21 +153,18 @@ function delete ($db, $table, $id, $USER, $filesonly=false) {
 // files should be called file[] in HTTP_POST_FILES
 // filetitle in HTTP_POST_VARS will be inserted in the title field of table files
 // returns id of last uploaded file upon succes, false otherwise
-function upload_files ($db,$table,$id,$USER,$system_settings) {
+function upload_files ($db,$tableid,$id,$USER,$system_settings) {
    global $HTTP_POST_FILES,$HTTP_POST_VARS,$system_settings;
 
-   $tablesid=get_cell($db,"tableoftables","id","tablename",$table);
-   if ($tablesid>10000)
-      $real_tablename=$table."_".$tablesid;
-   else
-      $real_tablename=$table;
+   $table=get_cell($db,"tableoftables","tablename","id",$tableid);
+   $real_tablename=get_cell($db,"tableoftables","real_tablename","id",$tableid);
 
-   if (!$db && $tablename && $id) {
-      echo "Error in code: $db, $tablename, or $id is not defined.<br>";
+   if (!($db && $table && $id)) {
+      echo "Error in code: $db, $table, or $id is not defined.<br>";
       return false;
    }
-   if (!may_write($db,$real_tablename,$id,$USER)) {
-      echo "You do not have permission to write to table $real_tablename.<br>";
+   if (!may_write($db,$tableid,$id,$USER)) {
+      echo "You do not have permission to write to table $table.<br>";
       return false;
    }
    if (isset($HTTP_POST_FILES["file"]["name"][0]) && !$filedir=$system_settings["filedir"]) {
@@ -181,7 +184,7 @@ function upload_files ($db,$table,$id,$USER,$system_settings) {
       $type=$HTTP_POST_VARS["filetype"][$i];
       // this works asof php 4.02
       if (move_uploaded_file($HTTP_POST_FILES["file"]["tmp_name"][$i],"$filedir/$fileid"."_"."$originalname")) {
-         $query="INSERT INTO files (id,filename,mime,size,title,tablesfk,ftableid,type) VALUES ($fileid,'$originalname','$mime','$size','$title','$tablesid',$id,'$filestype')";
+         $query="INSERT INTO files (id,filename,mime,size,title,tablesfk,ftableid,type) VALUES ($fileid,'$originalname','$mime','$size','$title','$tableid',$id,'$filestype')";
 	 $db->Execute($query);
       }
    }
@@ -247,10 +250,10 @@ function delete_file ($db,$fileid,$USER) {
    $tableid=get_cell($db,"files","tablesfk","id",$fileid);
    $ftableid=get_cell($db,"files","ftableid","id",$fileid);
    $filename=get_cell($db,"files","filename","id",$fileid);
-   $table=get_cell($db,"tableoftables","tablename","id",$tableid);
+   //$table=get_cell($db,"tableoftables","tablename","id",$tableid);
    if ($tableid > 9999)
       $table = $table ."_".$tableid;
-   if (!may_write($db,$table,$ftableid,$USER))
+   if (!may_write($db,$tableid,$ftableid,$USER))
       return false;
    if (unlink($system_settings["filedir"]."/$fileid"."_$filename")) {
       $db->Execute("DELETE FROM files WHERE id=$fileid");
@@ -258,35 +261,89 @@ function delete_file ($db,$fileid,$USER) {
    }
 }
 
-
+////
+// !Returns a 2D array with id and full name of all users
+// called by show_access
+function user_array ($db) {
+   $r=$db->Execute("SELECT id,firstname,lastname FROM users ORDER BY lastname");
+   while (!$r->EOF){
+      $ua[$i]["id"]=$r->fields["id"];
+      if ($r->fields["firstname"])
+         $ua[$i]["name"]=$r->fields["firstname"]." ".$r->fields["lastname"];
+      else
+         $ua[$i]["name"]=$r->fields["lastname"];
+      $i++;
+      $r->MoveNext();
+   }
+   return $ua;
+}
+ 
 ////
 // !Prints a table with access rights
 // input is string as 'rw-rw-rw-'
 // names are same as used in get_access
-function show_access ($db,$table,$id,$USER,$global_settings) {
+function show_access ($db,$tableid,$id,$USER,$global_settings,$table=false) {
+   global $client;
+   $table=get_cell($db,"tableoftables","tablename","id",$tableid);
    if ($id) {
       $access=get_cell($db,$table,"access","id",$id);
       $ownerid=get_cell($db,$table,"ownerid","id",$id);
       $groupid=get_cell($db,"users","groupid","id",$ownerid);
       $group=get_cell($db,"groups","name","id",$groupid);
+      $rur=$db->Execute("SELECT trusteduserid FROM trust WHERE tableid='$tableid' AND recordid='$id' AND rw='r'");
+      while (!$rur->EOF) {
+         $ur[]=$rur->fields("trusteduserid");
+         $rur->MoveNext();
+      }
+      $ruw=$db->Execute("SELECT trusteduserid FROM trust WHERE tableid='$tableid' AND recordid='$id' AND rw='w'");
+      while (!$ruw->EOF) {
+         $uw[]=$ruw->fields("trusteduserid");
+         $ruw->MoveNext();
+      }
    }
    else {
       $access=$global_settings["access"];
       $group=get_cell($db,"groups","name","id",$USER["groupid"]);
-   }   
+   }
+   $user_array=user_array($db);
    echo "<table border=0>\n";
-   echo "<tr><th>Access:</th><th>$group</th><th>Everyone</th></tr>\n";
+   echo "<tr><th>Access:</th><th>$group</th><th>Everyone</th><th>and also</th></tr>\n";
    echo "<tr><th>Read</th>\n";
    if (substr($access,3,1)=="r") $sel="checked"; else $sel=false;
    echo "<td><input type='checkbox' $sel name='grr' value='&nbsp;'></td>\n";
    if (substr($access,6,1)=="r") $sel="checked"; else $sel=false;
    echo "<td><input type='checkbox' $sel name='evr' value='&nbsp;'></td>\n";
+   // multiple select box for trusted users.  Opera does not like 1 as size
+   if ($client->browser=="Opera")
+      $size=2;
+   else
+       $size=1;
+   echo "<td><select multiple size='$size' name='trust_read[]'>\n";
+   echo "<option>nobody else</option>\n";
+   foreach ($user_array as $user) {
+     if (@in_array($user["id"],$ur))
+         $selected="selected";
+      else
+         $selected="false";
+     echo "<option $selected value=".$user["id"].">".$user["name"]."</option>\n";
+   }
+   echo "</select></td>\n";
    echo "</tr>\n";
    echo "<tr><th>Write</th>\n";
    if (substr($access,4,1)=="w") $sel="checked"; else $sel=false;
    echo "<td><input type='checkbox' $sel name='grw' value='&nbsp;'></td>\n";
    if (substr($access,7,1)=="w") $sel="checked"; else $sel=false;
    echo "<td><input type='checkbox' $sel name='evw' value='&nbsp;'></td>\n";
+   echo "<td><select multiple size='$size' name='trust_write[]'>\n";
+   echo "<option>nobody else</option>\n";
+   foreach ($user_array as $user) {
+     if (@in_array($user["id"],$uw))
+         $selected="selected";
+      else
+         $selected="false";
+      echo "<option $selected value=".$user["id"].">".$user["name"]."</option>\n";
+   }
+   echo "</select></td>\n";
    echo "</tr>\n";
    echo "</table>\n";
 }
@@ -316,7 +373,7 @@ function get_access ($fieldvalues) {
 ////
 // !Returns an SQL SELECT statement with ids of records the user may see
 // Since it uses subqueries it does not work with MySQL
-function may_read_SQL_subselect ($db,$table,$USER,$clause=false) {
+function may_read_SQL_subselect ($db,$table,$tableid,$USER,$clause=false) {
    include ('includes/defines_inc.php');
    $query="SELECT id FROM $table ";
    if ($USER["permissions"] & $SUPER) {
@@ -335,6 +392,8 @@ function may_read_SQL_subselect ($db,$table,$USER,$clause=false) {
       $query .= "OR ($usergroup=CAST( (SELECT groupid FROM users WHERE users.id=$table.ownerid) AS int) AND SUBSTRING (access FROM 4 FOR 1)='r') ";
       // world
       $query .= "OR (SUBSTRING (access FROM 7 FOR 1)='r')";
+      // and also
+      $query .= "OR id IN (SELECT recordid FROM trust WHERE tableid='$tableid' AND trusteduserid='$userid' AND rw='r')";
       $query .=")";
    }
    return $query;
@@ -395,20 +454,21 @@ function may_read_SQL_JOIN ($db,$table,$USER) {
 ////
 // !Generates an SQL query asking for the records that mey be seen by this users
 // Generates a left join for mysql, subselect for postgres
-function may_read_SQL ($db,$table,$USER) {
+function may_read_SQL ($db,$table,$tableid,$USER) {
    global $db_type;
 
    if ($db_type=="mysql")
       return may_read_SQL_JOIN ($db,$table,$USER);
    else
-      return may_read_SQL_subselect ($db,$table,$USER);
+      return may_read_SQL_subselect ($db,$table,$tableid,$USER);
 }
 
 
 ////
 // !determines whether or not the user may read this record
-function may_read ($db,$table,$id,$USER) {
-   $list=may_read_SQL($db,$table,$USER);
+function may_read ($db,$tableid,$id,$USER) {
+   $table=get_cell($db,"tableoftables","real_tablename","id",$tableid);
+   $list=may_read_SQL($db,$table,$tableid,$USER);
    $query="SELECT id FROM $table WHERE $id IN ($list)";
    $r=$db->Execute($query);
    if (!$r)
@@ -421,9 +481,10 @@ function may_read ($db,$table,$id,$USER) {
 
 ////
 // !checks if this user may write/modify/delete these data
-function may_write ($db,$table,$id,$USER) {
+function may_write ($db,$tableid,$id,$USER) {
    include ('includes/defines_inc.php');
    
+   $table=get_cell($db,"tableoftables","real_tablename","id",$tableid);
    if ($USER["permissions"] & $SUPER)
       return true;
    if ( ($USER["permissions"] & $WRITE) && (!$id))
@@ -440,19 +501,24 @@ function may_write ($db,$table,$id,$USER) {
    }
    if ( ($USER["permissions"] & $WRITE) && $id) {
       $userid=$USER["id"];
-      // user write access
+      // 'user' write access
       if ($r=$db->Execute("SELECT * FROM $table WHERE id=$id AND
             ownerid=$userid AND SUBSTRING(access FROM 2 FOR 1)='w'")) 
          if (!$r->EOF)
             return true;
-      // group write access
+      // 'group' write access
       if ($r=$db->Execute("SELECT * FROM $table WHERE id=$id AND
             SUBSTRING(access FROM 5 FOR 1)='w'")) 
          if (!$r->EOF && ($usergroup==$ownergroup) )
             return true;
-      // world write access
+      // 'world' write access
       if ($r=$db->Execute("SELECT * FROM $table WHERE id=$id AND
             SUBSTRING(access FROM 8 FOR 1)='w'") ) 
+         if (!$r->EOF) 
+            return true;
+      // 'and also' write access
+      if ($r=$db->Execute("SELECT * FROM trust WHERE trusteduserid='$userid'
+              AND tableid='$tableid' AND recordid='$id' AND rw='w'"))
          if (!$r->EOF) 
             return true;
    }
@@ -613,13 +679,13 @@ function current_page($curr_page, $sname) {
 
 ////
 // !Assembles the search SQL statement and remembers it in HTTP_SESSION_VARS
-function make_search_SQL($db,$table,$tableshort,$fields,$USER,$search,$searchsort="title") {
+function make_search_SQL($db,$table,$tableshort,$tableid,$fields,$USER,$search,$searchsort="title") {
    global $HTTP_POST_VARS, $HTTP_SESSION_VARS;
 
    $fieldvarsname=$tableshort."_fieldvars";
    global ${$fieldvarsname};
    $queryname=$tableshort."_query";
-   $whereclause=may_read_SQL ($db,$table,$USER);
+   $whereclause=may_read_SQL ($db,$table,$tableid,$USER);
    if ($search=="Search") {
       ${$queryname}=search($table,$fields,$HTTP_POST_VARS," id IN ($whereclause) ORDER BY $searchsort");
       ${$fieldvarsname}=$HTTP_POST_VARS;

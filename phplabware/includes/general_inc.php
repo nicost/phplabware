@@ -64,9 +64,11 @@ function date_entry($id,$DBNAME) {
 ///////////////////////////////////////////////////////////
 //// 
 // !Displays all information within the table
-function display_table_info($db,$tablename,$real_tablename,$DB_DESNAME,$Fieldscomma,$pr_query,$num_p_r,$pr_curr_page) {
+function display_table_info($db,$tableid,$DB_DESNAME,$Fieldscomma,$pr_query,$num_p_r,$pr_curr_page) {
    global $nr_records,$max_menu_length,$USER,$LAYOUT;
 
+   $tablename=get_cell($db,"tableoftables","tablename","id",$tableid);
+   $real_tablename=get_cell($db,"tableoftables","real_tablename","id",$tableid);
    $r=$db->PageExecute($pr_query,$num_p_r,$pr_curr_page);
    $rownr=1;
    // print all entries
@@ -117,7 +119,7 @@ function display_table_info($db,$tablename,$real_tablename,$DB_DESNAME,$Fieldsco
       }	
       echo "<td align='center'>&nbsp;\n";  
       echo "<input type=\"submit\" name=\"view_" . $id . "\" value=\"View\">\n";
-      if (may_write($db,$real_tablename,$id,$USER)) {
+      if (may_write($db,$tableid,$id,$USER)) {
          echo "<input type=\"submit\" name=\"mod_" . $id . "\" value=\"Modify\">\n";
          $delstring = "<input type=\"submit\" name=\"del_" . $id . "\" value=\"Remove\" ";
          $delstring .= "Onclick=\"if(confirm('Are you sure that you want to remove record $title?'))";
@@ -130,7 +132,7 @@ function display_table_info($db,$tablename,$real_tablename,$DB_DESNAME,$Fieldsco
       $rownr+=1;
    }
    // Add Record button
-   if (may_write($db,$real_tablename,false,$USER)) {
+   if (may_write($db,$tableid,false,$USER)) {
       echo "<tr><td colspan=10 align='center'>";
       echo "<input type=\"submit\" name=\"add\" value=\"Add Record\">";
       echo "</td></tr>";
@@ -208,12 +210,12 @@ function make_link($id,$DBNAME) {
 ///////////////////////////////////////////////////////////
 ////
 // !display addition and modification form
-function display_add($db,$tablename,$real_tablename,$tabledesc,$Allfields,$id,$namein,$system_settings)  
-	{
-	global $PHP_SELF, $db_type, $USER;	
+function display_add($db,$tableid,$real_tablename,$tabledesc,$Allfields,$id,$namein,$system_settings) { 
+   global $PHP_SELF, $db_type, $USER;
 
-    $dbstring=$PHP_SELF;$dbstring.="?";$dbstring.="tablename=$tablename&";
-    echo "<form method='post' id='protocolform' enctype='multipart/form-data' action='$dbstring";
+   $tablename=get_cell($db,"tableoftables","tablename","id",$tableid);
+   $dbstring=$PHP_SELF;$dbstring.="?";$dbstring.="tablename=$tablename&";
+   echo "<form method='post' id='protocolform' enctype='multipart/form-data' action='$dbstring";
 	?><?=SID?>'><?php
 
    if (!$magic) $magic=time();
@@ -308,7 +310,7 @@ function display_add($db,$tablename,$real_tablename,$tabledesc,$Allfields,$id,$n
 	
 		}	
 echo "<td colspan=4>";
-show_access($db,$real_tablename,$id,$USER,$system_settings);
+show_access($db,$tableid,$id,$USER,$system_settings,$real_tablename);
 echo "</td></tr>\n"; echo "<tr>";
 if ($id) $value="Modify Record"; 
 else $value="Add Record";
@@ -450,24 +452,25 @@ function check_g_data ($db,&$field_values, $DB_DESNAME) {
 // $fields is a comma-delimited string with column names
 // $field_values is hash with column names as keys
 // $id=0 for a new entry, otherwise it is the id
-function add_g_form ($db,$fields,$field_values,$id,$USER,$PHP_SELF,$system_settings,$real_tablename, $tablename,$DB_DESNAME) {
-   if (!may_write($db,$real_tablename,$id,$USER)) 
+function add_g_form ($db,$fields,$field_values,$id,$USER,$PHP_SELF,$system_settings,$real_tablename, $tableid,$DB_DESNAME) {
+   if (!may_write($db,$tableid,$id,$USER)) 
       return false; 
    if ($id) {
 	$Allfields=getvalues($db,$real_tablename,$DB_DESNAME,$fields,id,$id);
 	$namein=get_cell($db,$DBNAME,"title","id",$id);		
-	display_add($db,$tablename,$real_tablename,$DB_DESNAME,$Allfields,$id,$namein,$system_settings);
+	display_add($db,$tableid,$real_tablename,$DB_DESNAME,$Allfields,$id,$namein,$system_settings);
    }    
    else {
 	$Allfields=getvalues($db,$DBNAME,$DB_DESNAME,$fields);
-	display_add($db,$tablename,$real_tablename,$DB_DESNAME,$Allfields,$id,"",$system_settings);
+	display_add($db,$tableid,$real_tablename,$DB_DESNAME,$Allfields,$id,"",$system_settings);
    }
 }
 
 ////
 // !Shows a page with nice information on the record
-function show_g($db,$fields,$id,$USER,$system_settings,$tablename,$real_tablename,$DB_DESNAME)  {
-   if (!may_read($db,$real_tablename,$id,$USER))
+function show_g($db,$fields,$id,$USER,$system_settings,$tableid,$real_tablename,$DB_DESNAME)  {
+   $tablename=get_cell($db,"tableoftables","tablename","id",$tableid);
+   if (!may_read($db,$tableid,$id,$USER))
        return false;
    $Allfields=getvalues($db,$real_tablename,$DB_DESNAME,$fields,id,$id);
    display_record($db,$Allfields,$id,$tablename,$real_tablename);

@@ -22,6 +22,7 @@ require ("includes/db_inc.php");
 // main global vars
 $httptitle .= "Antibodies";
 $fields="id,access,ownerid,magic,name,type1,type2,type3,type4,type5,antigen,epitope,concentration,buffer,notes,location,source,date";
+$tableid=get_cell($db,"tableoftables","id","tablename","antibodies");
 
 // register variables
 $showid=$HTTP_GET_VARS["showid"];
@@ -59,8 +60,8 @@ function check_ab_data (&$field_values) {
 // $fields is a comma delimited string with column names
 // $field_values is a hash with column names as keys
 // $id=0 for a new entry, otherwise it is the id
-function add_ab_form ($db,$fields,$field_values,$id,$USER,$PHP_SELF,$system_settings) {
-   if (!may_write($db,"antibodies",$id,$USER))
+function add_ab_form ($db,$tableid,$fields,$field_values,$id,$USER,$PHP_SELF,$system_settings) {
+   if (!may_write($db,$tableid,$id,$USER))
       return false;
 
    // get values in a smart way
@@ -148,7 +149,7 @@ function add_ab_form ($db,$fields,$field_values,$id,$USER,$PHP_SELF,$system_sett
    echo "</tr>\n";
    echo "</table></td>\n\n";
    echo "<td colspan=3>";
-   show_access($db,"antibodies",$id,$USER,$system_settings);
+   show_access($db,$tableid,$id,$USER,$system_settings);
    echo "</td></tr>\n";
    
    echo "<tr>";
@@ -166,10 +167,10 @@ function add_ab_form ($db,$fields,$field_values,$id,$USER,$PHP_SELF,$system_sett
 
 ////
 // !Shows a page with nice information on the antibody
-function show_ab ($db,$fields,$id,$USER,$system_settings) {
+function show_ab ($db,$tableid,$fields,$id,$USER,$system_settings) {
    global $PHP_SELF;
 
-   if (!may_read($db,"antibodies",$id,$USER))
+   if (!may_read($db,$tableid,$id,$USER))
       return false;
 
    // get values 
@@ -289,7 +290,7 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
    if (substr($key, 0, 3) == "mod") {
       $modarray = explode("_", $key);
       $r=$db->Execute("SELECT $fields FROM antibodies WHERE id=$modarray[1]"); 
-      add_ab_form ($db,$fields,$r->fields,$modarray[1],$USER,$PHP_SELF,$system_settings);
+      add_ab_form ($db,$tableid,$fields,$r->fields,$modarray[1],$USER,$PHP_SELF,$system_settings);
       printfooter();
       exit();
    }
@@ -302,14 +303,14 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
          echo "<h3 align='center'>Deleted file <i>$filename</i>.</h3>\n";
       else
          echo "<h3 align='center'>Failed to delete file <i>$filename</i>.</h3>\n";
-      add_ab_form ($db,$fields,$HTTP_POST_VARS,$id,$USER,$PHP_SELF,$system_settings);
+      add_ab_form ($db,$tableid,$fields,$HTTP_POST_VARS,$id,$USER,$PHP_SELF,$system_settings);
       printfooter();
       exit();
    }
    // show the record
    if (substr($key, 0, 4) == "view") {
       $modarray = explode("_", $key);
-      show_ab($db,$fields,$modarray[1],$USER,$system_settings);
+      show_ab($db,$tableid,$fields,$modarray[1],$USER,$system_settings);
       printfooter();
       exit();
    }
@@ -351,7 +352,7 @@ if ($edit_type && ($USER["permissions"] & $LAYOUT)) {
 
 // provide a means to hyperlink directly to a record
 if ($showid) {
-   show_ab($db,$fields,$showid,$USER,$system_settings);
+   show_ab($db,$tableid,$fields,$showid,$USER,$system_settings);
    printfooter();
    exit();
 }
@@ -359,19 +360,19 @@ if ($showid) {
 
 // when the 'Add' button has been chosen: 
 if ($add)
-   add_ab_form ($db,$fields,$field_values,0,$USER,$PHP_SELF,$system_settings);
+   add_ab_form ($db,$tableid,$fields,$field_values,0,$USER,$PHP_SELF,$system_settings);
 
 else {
    // first handle addition of a new antibody
    if ($submit == "Add Antibody") {
-      if (! (check_ab_data($HTTP_POST_VARS) && $id=add ($db, "antibodies",$fields,$HTTP_POST_VARS,$USER) ) ){
+      if (! (check_ab_data($HTTP_POST_VARS) && $id=add ($db,"antibodies",$tableid,$fields,$HTTP_POST_VARS,$USER) ) ){
          echo "</caption>\n</table>\n";
-         add_ab_form ($db,$fields,$HTTP_POST_VARS,0,$USER,$PHP_SELF,$system_settings);
+         add_ab_form ($db,$tableid,$fields,$HTTP_POST_VARS,0,$USER,$PHP_SELF,$system_settings);
          printfooter ();
          exit;
       }
       else {  
-	 upload_files($db,"antibodies",$id,$USER,$system_settings);
+	 upload_files($db,$tableid,$id,$USER,$system_settings);
          // to not interfere with search form 
          unset ($HTTP_POST_VARS);
 	 // or we won't see the new record
@@ -380,14 +381,14 @@ else {
    }
    // then look whether it should be modified
    elseif ($submit =="Modify Antibody") {
-      if (! (check_ab_data($HTTP_POST_VARS) && modify ($db,"antibodies",$fields,$HTTP_POST_VARS,$HTTP_POST_VARS["id"],$USER)) ) {
+      if (! (check_ab_data($HTTP_POST_VARS) && modify ($db,"antibodies",$fields,$HTTP_POST_VARS,$HTTP_POST_VARS["id"],$USER,$tableid)) ) {
          echo "</caption>\n</table>\n";
-         add_ab_form ($db,$fields,$HTTP_POST_VARS,$HTTP_POST_VARS["id"],$USER,$PHP_SELF,$system_settings);
+         add_ab_form ($db,$tableid,$fields,$HTTP_POST_VARS,$HTTP_POST_VARS["id"],$USER,$PHP_SELF,$system_settings);
          printfooter ();
          exit;
       }
       else { 
-	 upload_files($db,"antibodies",$HTTP_POST_VARS["id"],$USER,$system_settings);
+	 upload_files($db,$tableid,$HTTP_POST_VARS["id"],$USER,$system_settings);
          // to not interfere with search form 
          unset ($HTTP_POST_VARS);
       }
@@ -401,7 +402,7 @@ else {
       while((list($key, $val) = each($HTTP_POST_VARS))) {
          if (substr($key, 0, 3) == "del") {
             $delarray = explode("_", $key);
-            delete ($db, "antibodies", $delarray[1], $USER);
+            delete ($db,$tableid,$delarray[1],$USER);
          }
       }
    } 
@@ -425,7 +426,7 @@ else {
    $ab_curr_page=current_page($ab_curr_page,"ab");
 
    // prepare SQL search statement, and remember it
-   $ab_query=make_search_SQL($db,"antibodies","ab",$fields,$USER,$search,"name");
+   $ab_query=make_search_SQL($db,"antibodies","ab",$tableid,$fields,$USER,$search,"name");
    // print form
 ?>
 <form name='ab_form' method='post' action='<?php echo $PHP_SELF?>?<?=SID?>'>  
@@ -441,7 +442,7 @@ else {
    $sid=SID;
    if ($sid) $sid="&".$sid;
    echo "<table border=0 width='50%' align='center'>\n<tr>\n";
-   if (may_write($db,"antibodies",false,$USER)) 
+   if (may_write($db,$tableid,false,$USER)) 
       echo "<td align='center'><a href='$PHP_SELF?add=Add Antibody$sid'>Add Antibody</a></td>\n";
    //echo "<td align='center'><a href='$PHP_SELF?search=Show%20All$sid'>Show All</a></td>\n</tr>\n";
    //echo "<td align='center'><button type='submit' name='search' value='Show All'>";
@@ -463,7 +464,7 @@ else {
    $r=$db->Execute($ab_query);
    $lista=make_SQL_csf ($r,false,"id",$nr_records);
    // and a list with all records we may see
-   $listb=may_read_SQL($db,"antibodies",$USER);
+   $listb=may_read_SQL($db,"antibodies",$tableid,$USER);
    // show title we may see, when too many, revert to text box
    if ($name) $list=$listb; else $list=$lista;
    if ($list && ($nr_records < $max_menu_length) ) {
@@ -618,7 +619,7 @@ else {
 
       echo "<td align='center'>&nbsp;\n";
       echo "<input type=\"submit\" name=\"view_" . $id . "\" value=\"View\">\n";
-      if (may_write($db,"antibodies",$id,$USER)) {
+      if (may_write($db,$tableid,$id,$USER)) {
          echo "<input type=\"submit\" name=\"mod_" . $id . "\" value=\"Modify\">\n";
          $delstring = "<input type=\"submit\" name=\"del_" . $id . "\" value=\"Remove\" ";
          $delstring .= "Onclick=\"if(confirm('Are you sure the antibody $name ";
@@ -633,7 +634,7 @@ else {
    }
 
    // Add Antibody button
-   if (may_write($db,"antibodies",false,$USER)) {
+   if (may_write($db,$tableid,false,$USER)) {
       echo "<tr><td colspan=11 align='center'>";
       echo "<input type=\"submit\" name=\"add\" value=\"Add Antibody\">";
       echo "</td></tr>";

@@ -34,14 +34,14 @@ navbar($USER["permissions"]);
 // find id associated with table
 if (!$edit_type) {
    $r=$db->Execute("SELECT id,shortname FROM tableoftables WHERE tablename='$tablename'");
-   $id=$r->fields["id"];
+   $tableid=$r->fields["id"];
    $tableshort=$r->fields["shortname"];
-   if (!$id) {
+   if (!$tableid) {
       echo "<h3 align='center'> Table: <i>$tablename</i> does not exist.</h3>";
       printfooter();
       exit();
    }
-   $real_tablename=$tablename."_".$id;
+   $real_tablename=$tablename."_".$tableid;
    $table_desname=$real_tablename."_desc";
    $queryname=$tableshort."_query";
    $pagename=$tableshort."_curr_page";
@@ -55,7 +55,7 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
    if (substr($key, 0, 3) == "mod") {
       $modarray = explode("_", $key);
       $r=$db->Execute("SELECT $fields FROM $real_tablename WHERE id=$modarray[1]"); 
-      add_g_form($db,$fields,$r->fields,$modarray[1],$USER,$PHP_SELF,$system_settings,$real_tablename,$tablename,$table_desname);
+      add_g_form($db,$fields,$r->fields,$modarray[1],$USER,$PHP_SELF,$system_settings,$real_tablename,$tableid,$table_desname);
       printfooter();
       exit();
    }
@@ -68,14 +68,14 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
          echo "<h3 align='center'>Deleted file <i>$filename</i>.</h3>\n";
       else
          echo "<h3 align='center'>Failed to delete file <i>$filename</i>.</h3>\n";
-      add_g_form ($db,$fields,$HTTP_POST_VARS,$id,$USER,$PHP_SELF,$system_settings,$real_tablename,$tablename,$table_desname);
+      add_g_form ($db,$fields,$HTTP_POST_VARS,$id,$USER,$PHP_SELF,$system_settings,$real_tablename,$tableid,$table_desname);
       printfooter();
       exit();
    }
    // show the record
    if (substr($key, 0, 4) == "view") {
       $modarray = explode("_", $key);
-      show_g($db,$fields,$modarray[1],$USER,$system_settings,$tablename,$real_tablename,$table_desname);
+      show_g($db,$fields,$modarray[1],$USER,$system_settings,$tableid,$real_tablename,$table_desname);
       printfooter();
       exit();
    }
@@ -121,7 +121,7 @@ if ($edit_type && ($USER["permissions"] & $LAYOUT)) {
 
 // provide a means to hyperlink directly to a record
 if ($showid) {
-   show_g($db,$fields,$showid,$USER,$system_settings,$tablename,$real_tablename,$table_desname);
+   show_g($db,$fields,$showid,$USER,$system_settings,$tableid,$real_tablename,$table_desname);
    printfooter();
    exit();
 }
@@ -133,7 +133,7 @@ if ($createnew){create_new_table($db);}
 
 // when the 'Add' button has been chosen: 
 if ($add) {
-   add_g_form($db,$fields,$field_values,0,$USER,$PHP_SELF,$system_settings,$real_tablename,$tablename,$table_desname);
+   add_g_form($db,$fields,$field_values,0,$USER,$PHP_SELF,$system_settings,$real_tablename,$tableid,$table_desname);
    }
 else { 
     // first handle addition of a new record
@@ -141,12 +141,12 @@ else {
       if (!(check_g_data($db, $HTTP_POST_VARS, $table_desname) && 
             $id=add($db,$real_tablename,$fields,$HTTP_POST_VARS,$USER) ) )
       	{
-         add_g_form($db,$fields,$HTTP_POST_VARS,0,$USER,$PHP_SELF,$system_settings,$real_tablename,$tablename, $table_desname);
+         add_g_form($db,$fields,$HTTP_POST_VARS,0,$USER,$PHP_SELF,$system_settings,$real_tablename,$tableid, $table_desname);
          printfooter ();
          exit;
       }
       else {  
-	 $fileid=upload_files($db,$tablename,$id,$USER,$system_settings);
+	 $fileid=upload_files($db,$tableid,$id,$USER,$system_settings);
          // insert stuff to deal with word/html files
          process_file($db,$fileid,$system_settings); 
          // to not interfere with search form 
@@ -157,16 +157,16 @@ else {
    }
    // then look whether it should be modified
    elseif ($submit=="Modify Record") {
-      if (! (check_g_data($db,$HTTP_POST_VARS,$table_desname) && modify($db,$real_tablename,$fields,$HTTP_POST_VARS,$HTTP_POST_VARS["id"],$USER)) ) {
-         add_g_form ($db,$fields,$HTTP_POST_VARS,$HTTP_POST_VARS["id"],$USER,$PHP_SELF,$system_settings,$real_tablename,$tablenmae,$table_desname);
+      if (! (check_g_data($db,$HTTP_POST_VARS,$table_desname) && modify($db,$real_tablename,$fields,$HTTP_POST_VARS,$HTTP_POST_VARS["id"],$USER,$tableid)) ) {
+         add_g_form ($db,$fields,$HTTP_POST_VARS,$HTTP_POST_VARS["id"],$USER,$PHP_SELF,$system_settings,$real_tablename,$tableid,$table_desname);
          printfooter ();
          exit;
       }
       else { 
          if ($HTTP_POST_FILES["file"]["name"][0]) {
             // delete all existing file
-            delete ($db,$tablename,$HTTP_POST_VARS["id"],$USER,true);
-            $fileid=upload_files($db,$tablename,$HTTP_POST_VARS["id"],$USER,$system_settings);
+            delete ($db,$tableid,$HTTP_POST_VARS["id"],$USER,true);
+            $fileid=upload_files($db,$tableid,$HTTP_POST_VARS["id"],$USER,$system_settings);
             process_file($db,$fileid,$system_settings);
          }
          // to not interfere with search form 
@@ -182,7 +182,7 @@ else {
       while((list($key, $val) = each($HTTP_POST_VARS))) {
          if (substr($key, 0, 3) == "del") {
             $delarray = explode("_", $key);
-            delete ($db, $real_tablename, $delarray[1], $USER);
+            delete ($db,$tableid,$delarray[1], $USER);
          }
       }
    } 
@@ -208,7 +208,7 @@ else {
  
    // prepare the search statement and remember it
    $fields="id,".$fields;
-   ${$queryname}=make_search_SQL($db,$real_tablename,$tableshort,$fields,$USER,$search);
+   ${$queryname}=make_search_SQL($db,$real_tablename,$tableshort,$tableid,$fields,$USER,$search);
    // loop through all entries for next/previous buttons
    $r=$db->PageExecute(${$queryname},$num_p_r,${$pagename});
    while (!($r->EOF) && $r) {
@@ -227,7 +227,7 @@ else {
    // Need to put in a singular name
    echo "<table border=0 width='50%' align='center'>\n<tr>\n";
    echo "<td align='center'><B>$tablename</B><br>";
-   if (may_write($db,$real_tablename,false,$USER)) 
+   if (may_write($db,$tableid,false,$USER)) 
       echo "<p><a href='$PHP_SELF?&add=Add&tablename=$tablename&<?=SID?>'>Add Record</a></td>\n"; 
    echo "</tr>\n</table>\n";
    next_previous_buttons($r,true,$num_p_r);
@@ -240,7 +240,7 @@ else {
    $lista=make_SQL_csf ($r,false,"id",$nr_records);
 
    // and a list with all records we may see
-   $listb=may_read_SQL($db,$real_tablename,$USER);
+   $listb=may_read_SQL($db,$real_tablename,$tableid,$USER);
 
    //  get a list of all fields that are displayed in the table
    $Fieldscomma=comma_array_SQL_where($db,$table_desname,"label","display_table","Y");
@@ -304,7 +304,7 @@ else {
 
 
    display_midbar($Fieldscomma);
-   display_table_info($db,$tablename,$real_tablename,$table_desname,$Fieldscomma,${$queryname},$num_p_r,${$pagename});
+   display_table_info($db,$tableid,$table_desname,$Fieldscomma,${$queryname},$num_p_r,${$pagename});
    printfooter($db,$USER);
 }
 ?>
