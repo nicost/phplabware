@@ -669,7 +669,7 @@ function make_SQL_csf ($r,$ids,$field="id",&$column_count) {
 ////
 // !Helper function for search
 // Interprets fields the right way
-function searchhelp ($db,$table,$table_desc,$column,$columnvalues,$query,$wcappend,$and) {
+function searchhelp ($db,$table,$table_desc,$column,&$columnvalues,$query,$wcappend,$and) {
    if ($column=="ownerid") {
       $query[1]=true;
       $r=$db->Execute("SELECT id FROM $table WHERE ownerid=$columnvalues[$column]");
@@ -683,11 +683,11 @@ function searchhelp ($db,$table,$table_desc,$column,$columnvalues,$query,$wcappe
       // should probably do this more upstream for performance gain
       $rc=$db->Execute("SELECT type FROM $table_desc WHERE columnname='$column'");
       if (substr($rc->fields[0],0,3)=="int") {
-         $test=(int)$columnvalues[$column];
+         $columnvalues[$column]=(int)$columnvalues[$column];
          $query[0].="$and $column='$columnvalues[$column]' ";
       }
       elseif (substr($rc->fields[0],0,5)=="float") {
-         $test=(float)$columnvalues[$column];
+         $columnvalues[$column]=(float)$columnvalues[$column];
          $query[0].="$and $column='$columnvalues[$column]' ";
       }
       else {
@@ -709,7 +709,7 @@ function searchhelp ($db,$table,$table_desc,$column,$columnvalues,$query,$wcappe
 // The whereclause should NOT start with WHERE
 // The whereclause should contain the output of may_read_SQL and
 // can also be used for sorting
-function search ($table,$fields,$fieldvalues,$whereclause=false,$wcappend=true) {
+function search ($table,$fields,&$fieldvalues,$whereclause=false,$wcappend=true) {
    global $db;
    $rb=$db->Execute("SELECT table_desc_name FROM tableoftables WHERE real_tablename='$table'");
    $table_desc=$r->fields[0];
