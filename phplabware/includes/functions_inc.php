@@ -229,8 +229,8 @@ function navbar($permissions) {
 	 }
          while (!$records->EOF) {
 	    if (in_array($records->fields["id"],$showtables)) {
-               if (($count%$links_per_row)==0)
-                  echo "</tr><tr bgcolor='eeeeff' align='center'>";
+               if ($count && (($count % $links_per_row)==0))
+                  echo "</tr>\n<tr bgcolor='eeeeff' align='center'>\n";
                $tabname=$records->fields[0];
                $scriptname=$records->fields[1];
                $linkname="";
@@ -238,22 +238,21 @@ function navbar($permissions) {
                   $linkname="general.php?tablename=$tabname&".SID;
                else 
                   $linkname=$scriptname."?".SID;
-               echo "<td style='width: 20%' align='center'><a href=\"$linkname\">$tabname</a></td>";
+               echo "      <td style='width: 20%' align='center'><a href=\"$linkname\">$tabname</a></td>\n";
+               $count++;
 	    }
-            $count++;
             $records->MoveNext(); 
          }		
-         echo"</tr>";
       } 
    }
-   echo "</tr></table>";
+   echo "</tr>\n</table>\n\n";
 
    echo "<table border=0 width=100% cellspacing='0' cellpadding='0'>\n";
-   echo "<tr bgcolor='eeeeff' align='center'>\n";
+   echo "<tr bgcolor='eeeeff' align='center'>";
    if ($permissions & $ADMIN) {
       ?>      
       <td align='center'><a href="users.php?<?=SID?>">users</a></td>
-      <?php
+<?php
    }
    if ($permissions & $SUPER) {
       ?>
@@ -261,16 +260,16 @@ function navbar($permissions) {
       <td align='center'><a href="tablemanage.php?<?=SID?>">tables</a></td>
       <td align='center'><a href="linkbar.php?<?=SID?>">linkbar</a></td>
       <td align='center'><a href="setup.php?<?=SID?>">system</a></td>
-      <?php
+<?php
    }
    if ($permissions) {
       ?>
       <td  align='right'><a href="logout.php?<?=SID?>">logout</a>&nbsp;</td>
-      <?php
+<?php
    }
    else
       echo "<td align='right'><a href='login.php'>login</a></td>";
-   echo "</tr>\n</table><hr>\n";
+   echo "</tr>\n</table>\n<hr>\n";
    echo "<!--************************END OF NAVBAR**********************-->\n";
 }
 
