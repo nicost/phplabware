@@ -215,14 +215,20 @@ else {
          exit;
       }
       else {  
-         $rb=$db->Execute("SELECT id FROM $table_desname WHERE datatype='file'");
-         while (!$rb->EOF) {
-            $columnids[]=$rb->fields["id"];
-            $rb->MoveNext(); 
+         // $id ==-1 when the record was already uploaded
+         if ($id>0) {
+            $rb=$db->Execute("SELECT id FROM $table_desname WHERE datatype='file'");
+            while (!$rb->EOF) {
+               $columnids[]=$rb->fields["id"];
+               $rb->MoveNext(); 
+            }
+       	    $fileid=upload_files($db,$tableid,$id,$columnids,$USER,$system_settings);
+            // insert stuff to deal with word/html files
+            process_file($db,$fileid,$system_settings); 
+            // call plugin code to do something with newly added data
+            if (function_exists("plugin_add"))
+               plugin_add($db,$tableid,$id);
          }
-	 $fileid=upload_files($db,$tableid,$id,$columnids,$USER,$system_settings);
-         // insert stuff to deal with word/html files
-         process_file($db,$fileid,$system_settings); 
          // to not interfere with search form 
          unset ($HTTP_POST_VARS);
 	 // or we won't see the new record
