@@ -190,6 +190,18 @@ function plugin_check_data($db,&$field_values,$table_desc,$modify=false)
    return true;
 }
 
+
+/**
+ * Extracts host and getstring from a url
+ */
+function get_host_getstring($link,&$host,&$getstring) 
+{
+   preg_match("/^(http:\/\/)?([^\/]+)/i", $link, $matches);
+   $host = $matches[2];
+   $getstring=substr($link,strlen($matches[0]));
+}
+
+
 /**
  * Reads data from a http connection (webserver)
  * 
@@ -197,7 +209,7 @@ function plugin_check_data($db,&$field_values,$table_desc,$modify=false)
  *
  * Returns the website as an array with 'header' and 'body' as members
  */
-function read_web_page($host,$getstring,&$body,$headersonly=false,&$header,$timeout=5) 
+function read_web_page($host,$getstring,&$header,&$body,$headersonly=false,$timeout=5) 
 {
    $fp=fsockopen($host,80,$errno,$errstr,$timeout);
    if ($fp) {
@@ -218,6 +230,7 @@ function read_web_page($host,$getstring,&$body,$headersonly=false,&$header,$time
    }
    return false;
 }
+
 
 /**
  * Finds the journal link through eutils elink
@@ -246,16 +259,87 @@ function fetch_pdf($pmid,$journal)
       }
        
       foreach($links as $link) {
-         // grep the base of the url and handle all know cases accordingly.
-         // This is where we'll have to write grabbers for each journal
-         preg_match("/^(http:\/\/)?([^\/]+)/i", $link, $matches);
-         $host = $matches[2];
-         $getstring=substr($link,strlen($matches[0]));
+         /**
+          * grep the base of the url and handle all know cases accordingly.
+          * This is where we'll have to write grabbers for each journal
+          */
+         get_host_getstring($link,&$host,&$getstring); 
 //echo "host: $host, getstring: $getstring.<br>";
+         /**
+          * Some links immediately link through to other (journal) sites
+          * We better resolve these first before parsing out all the individual
+          * sites
+          * In this part we change the host and getstring before going into
+          * the major switch statement
+          */
          switch ($host) {
+         case 'dx.doi.org':
+            /** 
+             * This leads to at the very least the Nature journals
+             */
+            if ($website=read_web_page($host,$getstring,$header,$body,true,5)) {
+               if (substr($header,0,41)=='HTTP/1.1 302 Moved Temporarily
+Location: ') {
+                  $journallink=strtok(substr($header,41),"\n");
+               }
+//echo substr($header,0,41).".<br>\n";
+//echo "$journallink.<br>\n";
+               preg_match("/^(http:\/\/)?([^\/]+)/i", $journallink, $matches);
+               $host = $matches[2];
+               $getstring=substr($journallink,strlen($matches[0]));
+//echo "host: $host, getstring: $getstring.<br>";
+            }
+         break;
+         }
+         /**
+          * Here comes the part specific to each website/journal/organization
+          * These will break anytime a website changes its organization
+          */
+         switch ($host) {
+         case 'www.nature.com':
+            /**
+             * This should resolve most nature journals
+             * The first link gives a redirect that we can create ourselves:
+             */
+            $getstring='/cgi-bin/doifinder.pl?URL='.$getstring;
+            if ($website=read_web_page($host,$getstring,$header,$body,true,5)) { 
+               /**
+                * if we get a redirect find the new host and location
+                */
+//echo "$header.<br>\n";
+                $line=strtok($header,"\n");
+                while ($line) {
+//echo "$line<br>";
+                   $keyvalue=explode(": ",$line);
+//print_r($keyvalue);
+                   if ($keyvalue[0]=='Location') {
+                      $linktopdf=$keyvalue[1];
+                   }
+                   $line=strtok("\n");
+                }
+//echo "LINKTOPDF: $linktopdf.<br>\n";
+                get_host_getstring($linktopdf,&$pdfhost,&$pdfgetstring); 
+                /**
+                 * It seems that we can now find the link to the pdf by taking
+                 * the part after DynaPage.taf?file= up to the first _
+                 * Also replace 'abs' with 'pdf'
+                 */
+                 $pdfgetstring=str_replace('abs','pdf',$pdfgetstring);
+                 $start=strpos($pdfgetstring,'DynaPage.taf?file=')+18;
+                 $end=strpos($pdfgetstring,'_');
+                 $pdfgetstring=substr($pdfgetstring,$start,$end-$start).'.pdf';
+                 if (do_pdf_download($pdfhost,$pdfgetstring,'file')) {
+                     return true;
+                 }
+            }
+         break;
+
          case 'linkinghub.elsevier.com':
-            // elsevier offers the choise between science direct and journal specific links.  For now, explore science direct:
-            if ($website=read_web_page($host,$getstring,$body,false,$header,5)) { 
+            /**
+             * elsevier offers the choise between science direct and journal 
+             * specific links.  For now, explore science direct:
+             */
+            if ($website=read_web_page($host,$getstring,$header,$body,false,5)) { 
                // find the sciencedirect link in the page we just downloaded
                $line=strtok($body,"\n");
                while ($line) {
@@ -273,7 +357,7 @@ function fetch_pdf($pmid,$journal)
                   // Now follow a 'Moved Permanently in the header
                   $host='www.sciencedirect.com';
                   unset($header);
-                  if (read_web_page($host,$sdirect,$dummy,true,$header,5)) { 
+                  if (read_web_page($host,$sdirect,$header,$dummy,true,5)) { 
 //echo "$host.<br>";
 //echo "$out.<br>";
 //echo $header;
@@ -291,7 +375,7 @@ function fetch_pdf($pmid,$journal)
                      unset($header);
                      unset($body);
                      // we finally get to the page with the link to the pdf
-                     if (isset($pdflink) && read_web_page($host,$pdflink,$body,false,$header,5) ) {
+                     if (isset($pdflink) && read_web_page($host,$pdflink,$header,$body,false,5) ) {
                         // This one is tricky. Easiest way seems to be to spot the first part of the link.  The link is also split over mulitple lines
                         $line=strtok($body,"\n");
                         while ($line) {
@@ -310,7 +394,7 @@ echo "PDFLINK2: $pdflink2.<br>";
                        // if we have it we can do the real download
                         if (do_pdf_download($host,$pdflink2,'file')) {
                            return true;
-             /          }
+                        }
                      }
                   }
                }
@@ -381,6 +465,7 @@ function do_pdf_download ($host,$url,$fieldname)
 {
    global $HTTP_POST_FILES, $system_settings;
 
+//echo "$host/$url<br>";
    // download the pdf, using a netsocket so that we can use the header
    $fp=fsockopen($host,80,$errno,$errstr,5);
    if ($fp) {
@@ -409,7 +494,7 @@ function do_pdf_download ($host,$url,$fieldname)
             $mime=$content[1];
          }
       }
-//echo "Mime; $mime.<br>"; 
+//echo "Mime: $mime.<br>"; 
       if ($mime!='application/pdf') {
          fclose($fp);
          return false;
@@ -426,7 +511,7 @@ function do_pdf_download ($host,$url,$fieldname)
       fclose($fp);
       fclose($fout);
    }
-  // set:
+  // set relevant keys in $_POST:
    $HTTP_POST_FILES[$fieldname]['tmp_name'][0]=$tmpfile;
    $HTTP_POST_FILES[$fieldname]['name'][0]='pdf.pdf';
    $HTTP_POST_FILES[$fieldname]['type'][0]='application/pdf';
