@@ -237,7 +237,7 @@ echo "<td><input type='text' name='newtable_sortkey' value=''></td>\n";
 echo "<td></td>\n";
 echo "<td align='center'><input type='submit' name='addtable' value='Add'></td></tr>\n";
  
-$query = "SELECT id,tablename,Display,sortkey,Custom FROM tableoftables where Display='Y' or Display='N' ORDER BY sortkey";
+$query = "SELECT id,tablename,display,sortkey,custom FROM tableoftables where Display='Y' or Display='N' ORDER BY sortkey";
 $r=$db->Execute($query);
 $rownr=0;
 
