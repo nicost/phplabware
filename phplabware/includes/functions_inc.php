@@ -284,27 +284,31 @@ function navbar($permissions) {
       $count=0;
       if ($records && $USER) {
          $query="SELECT tableid FROM groupxtable_display WHERE (groupid='".$USER["group_array"][0]."' ";
-         for ($i=1;$i<sizeof($USER["group_array"]);$i++)
-            $query.="OR groupid='".$USER["group_array"][$i]."' ";
-         $query.=")";
+         for ($i=1;$i<sizeof($USER['group_array']);$i++)
+            $query.="OR groupid='".$USER['group_array'][$i]."' ";
+         $query.=')';
          $rb=$db->Execute($query);
          while ($rb && !$rb->EOF) {
-            $showtables[]=$rb->fields["tableid"];
+            $showtables[]=$rb->fields['tableid'];
             $rb->MoveNext();
          }
          $tablemenu="<select name='tablemenu' onchange='linkmenu(this)'>\n";
          $tablemenu.="<option value=''>--Databases--</option>\n";
          while (!$records->EOF) {
-            if (in_array($records->fields["id"],$showtables)) {
+            if (in_array($records->fields['id'],$showtables)) {
                $tabname=$records->fields[0];
                $scriptname=$records->fields[1];
-               $label=$records->fields["label"];
-               $linkname="";
-               if ($scriptname=="")
+               $label=$records->fields['label'];
+               $linkname='';
+               if ($scriptname=='')
                   $linkname="general.php?tablename=$tabname&amp;".SID;
                else 
-                  $linkname=$scriptname."?".SID;
-               $tablemenu.="   <option value='$linkname'>$label</option>\n";    
+                  $linkname=$scriptname.'?'.SID;
+               // Allow use of separators, everything that starts with three dashes will not result in a link
+               if (substr($label,0,3)=='---')
+                  $tablemenu.="   <option value=''>$label</option>\n";    
+               else
+                  $tablemenu.="   <option value='$linkname'>$label</option>\n";    
             }
             $records->MoveNext(); 
          }
@@ -443,12 +447,12 @@ function printheader($title,$head=false, $jsfile=false) {
 
    // let Netscape 4 users use their back button
    // all others should not cache
-   if ($client->browser != "Netscape 4") {
-      header("Cache-Control: private, no-cache, must-revalidate");
-      header("Expires: Mon, 26 Jul 1997 05:00:00 GMT");
-      header("Pragma: no-cache");
+   if ($client->browser != 'Netscape 4') {
+      header('Cache-Control: private, no-cache, must-revalidate');
+      header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
+      header('Pragma: no-cache');
    }
-   header ("Content-Type: text/html; charset=ISO-8859-1");
+   header ('Content-Type: text/html; charset=ISO-8859-1');
 
 ?>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 TRANSITIONAL//EN"
@@ -457,18 +461,18 @@ function printheader($title,$head=false, $jsfile=false) {
 <HEAD>
 <?php 
 echo $head;
-if ($HTTP_SESSION_VARS["javascript_enabled"] && $USER["settings"]["menustyle"]) {
+if ($HTTP_SESSION_VARS['javascript_enabled'] && $USER['settings']['menustyle']) {
    echo "\n<script language='Javascript'>\n<!--\n";
    if ($jsfile && is_readable($jsfile))
       readfile($jsfile);
    readfile("includes/js/linkmenu.js");
    echo "\n// End Javascript -->\n</script>\n\n";
-   $mode="menu";
+   $mode='menu';
 } 
-if ($mode<>"menu") {
+if ($mode<>'menu') {
       $links_per_row=5;
       $r=$db->Execute("select display from tableoftables where tablename ='linkbar'");
-      if ($r->fields[0]=="1") {
+      if ($r->fields[0]=='1') {
          $linkr=$db->Execute("select label,linkurl,target from linkbar where display ='Y' ORDER by sortkey");
          if ($linkr) {
             while (!$linkr->EOF) {
@@ -476,7 +480,7 @@ if ($mode<>"menu") {
                  $linkbar.="</tr><tr bgcolor='333388' align='center'>";
                $Tlinkname=$linkr->fields[0];
                $urlname=$linkr->fields[1];
-               if ($linkr->fields[2]=="S")
+               if ($linkr->fields[2]=='S')
                   $targetstr="target='_TOP'";
                else 
                   $targetstr="target='_BLANK'";
@@ -499,14 +503,14 @@ if ($mode<>"menu") {
 <tr class='header' bgcolor="333388">
 <?php
    // get the time
-   $today = date("F j, Y, g:i a");
+   $today = date('F j, Y, g:i a');
    // first display the linkbar if activated
    // only show linkbar when we have been authenticated
    if ($active) {
-      echo "<td>";
-      if ($mode<>"menu")
+      echo '<td>';
+      if ($mode<>'menu')
          echo "$linkbar";
-      echo "</td>";
+      echo '</td>';
    }
 
    ?>
