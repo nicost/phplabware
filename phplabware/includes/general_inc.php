@@ -244,7 +244,7 @@ function display_table_info($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr_c
 // !Display a record in a nice format
 function display_record($db,$Allfields,$id,$tableinfo,$backbutton=true) 
 {
-   global $PHP_SELF, $md;
+   global $PHP_SELF, $md,$USER;
 
    echo "&nbsp;<br>\n";
    echo "<table border=0 align='center'>\n";
@@ -294,12 +294,16 @@ function display_record($db,$Allfields,$id,$tableinfo,$backbutton=true)
    } 
    echo "<form method='post' action='$PHP_SELF?tablename=".$tableinfo->name."&".SID."'>\n";
    echo "<input type='hidden' name='md' value='$md'>\n";
+   // provide a modify button 
+   if (may_write($db,$tableinfo->id,$id,$USER)) {
+         $modifybutton= "<input type=\"submit\" name=\"mod_" . $id . "\" value=\"Modify\">\n";
+   }
    if ($backbutton) {
       echo "<tr>\n<td colspan=8 align='center'>";
-      echo "<input type='submit' name='submit' value='Back'></td>\n</tr>\n";
+      echo "$modifybutton<input type='submit' name='submit' value='Back'></td>\n</tr>\n";
    }
    else
-      echo "<tr><td colspan=8 align='center'>&nbsp;<br><button onclick='self.close();window.opener.focus();' name='Close' value='close'>Close</button></td></tr>\n";
+      echo "<tr><td colspan=8 align='center'>&nbsp;<br>$modifybutton<button onclick='self.close();window.opener.focus();' name='Close' value='close'>Close</button></td></tr>\n";
    echo "</table>";
 }
 
