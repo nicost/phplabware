@@ -47,7 +47,7 @@ navbar($USER["permissions"]);
 //$db->debug=true;
 
 // find id associated with table
-if (!$edit_type) {
+//if (!$edit_type) {
    $r=$db->Execute("SELECT id,shortname,tablename,real_tablename FROM tableoftables WHERE tablename='$tablename'");
    $tableid=$r->fields["id"];
    if (!$tableid) {
@@ -64,7 +64,7 @@ if (!$edit_type) {
    // $fields_label=comma_array_SQL($db,$table_desname,label);
    $fields=comma_array_SQL($db,$table_desname,columnname);
    $fields_table=comma_array_SQL($db,$table_desname,columnname,"WHERE display_table='Y'");
-}
+//
 
 # check wether user may see this table
 if (!may_see_table($db,$USER,$tableid)) {
@@ -357,7 +357,7 @@ else {
       elseif ($nowfield["datatype"]== "pulldown") {
          echo "<td style='width: 10%'>";
          if ($USER["permissions"] & $LAYOUT)  {
-            echo "<a href='$PHP_SELF?tablename=$tablename&edit_type=$nowfield[ass_t]&<?=SID?>";
+            echo "<a href='$PHP_SELF?tablename=$tablename&edit_type=$nowfield[ass_t]&".SID;
             echo "'>Edit $nowfield[label]</a><br>\n";
          }	 		 			
          $r=$db->Execute("SELECT $nowfield[name] FROM $real_tablename WHERE id IN ($list)");
