@@ -980,11 +980,18 @@ function datetoSQL ($searchterm,$column,$and) {
          if ($time>0)
             $sql .= "($column>=$time) ";
       }
-      if ($timerange[0]{0} == '<') {
+      elseif ($timerange[0]{0} == '<') {
          $time=strtotime(substr($timerange[0],1));
          if ($time>0)
             $sql .= "($column<=$time) ";
       }
+      else { // we give a search range of one day
+         $searchrange=86400;
+         $starttime=strtotime($timerange[0]);
+         $endtime=$starttime+$searchrange;
+            $sql .= "($column>=$starttime AND $column<=$endtime) ";
+      }
+
    }
    if (sizeof($timerange) == 2) {
       $starttime=strtotime($timerange[0]);
