@@ -222,8 +222,9 @@ function display_table_change($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr
       } else {
          echo "<tr class='row_odd' align='center'>\n";
       }
-      $js="onChange='document.g_form.chgj_".$id.".value=\"Change\";document.g_form.submit()'";
+      // $js="onChange='document.g_form.chgj_".$id.".value=\"Change\";document.g_form.submit()'";
       foreach($Allfields as $nowfield) {
+         $js="onchange='submit_changes($tableinfo->id,$id,\"{$nowfield['name']}\",document.g_form.{$nowfield['name']}_$id.value)'";
          if ($nowfield['required']=='Y')
             $thestar="<sup style='color:red'>&nbsp;*</sup>";
          else
