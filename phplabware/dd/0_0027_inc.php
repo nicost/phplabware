@@ -18,7 +18,7 @@
 
 // Avoid clashes between user generated and 'system' tables
 // ids up to 9999 are reserved for system tables
-$id=$db->GenID("tableoftables"."_gen_id_seq",10000);
+$id=$db->GenID("tableoftables_gen_id_seq",10000);
 $db->Execute("INSERT INTO tableoftables (id,sortkey,tablename,shortname,Display,Permission,Custom) VALUES($id,'0','files','fi','Y','Users','')");
 $db->Execute("CREATE TABLE files_$id (
 		id int PRIMARY KEY,

@@ -41,6 +41,6 @@ $db->Execute("Create table linkbar (
 	target char(1))");
 // Avoid clashes between user generated and 'system' tables
 // ids up to 9999 are reserved for system tables
-$id=$db->GenID("tableoftables"."_gen_id_seq",10000);
+$id=$db->GenID("tableoftables_gen_id_seq",10000);
 $db->Execute("INSERT INTO tableoftables (id,sortkey,tablename,shortname,Display,Permission,Custom) VALUES($id,'0','linkbar','li','0','System','System')");
 ?>
