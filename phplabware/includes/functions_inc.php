@@ -45,6 +45,45 @@ class cl_client {
 }      
 
 ////
+// !returns a string with a 'nice' representation of the input number of bytes
+function nice_bytes ($bytes) {
+   $last = $bytes[strlen($bytes)-1];
+   $bytes = (float) $bytes;
+   if (!is_float($bytes) ) return false;
+   if ($last == "M") $bytes = $bytes*1048576;
+   if ($bytes==0) return "0 bytes";
+   elseif ($bytes==1) return "1 byte";
+   elseif ($bytes < 1024) return "$bytes byte";
+   elseif ($bytes < 16384) {
+      $bytes = $bytes/1024;
+      $bytes = number_format($bytes,1);
+      return "$bytes kb";
+   }
+   elseif ($bytes < 1048576) {
+      $bytes = $bytes/1024;
+      $bytes = number_format($bytes,0);
+      return "$bytes kb";
+   }
+   elseif ($bytes < 16777216) {
+      $bytes = $bytes/1048576;
+      $bytes = number_format($bytes,1);
+      return "$bytes Mb";
+   }   
+   elseif ($bytes < 1073741824){
+      $bytes = $bytes/1048576; 
+      $bytes = number_format($bytes,0);
+      return "$bytes Mb";      
+   }
+   elseif ($bytes >= 1073741824) {
+      $bytes = $bytes/1073741824;
+      $bytes = number_format($bytes,1);
+      return "$bytes Gb";
+   }        
+   else return "$bytes byte";
+}
+
+
+////
 // !function that checks if user is allowed to view page
 // This function should be called before a printheader() call
 function allowonly($required, $current) {
