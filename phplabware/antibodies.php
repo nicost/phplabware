@@ -20,7 +20,7 @@ allowonly($READ, $USER["permissions"]);
 
 // main global vars
 $title .= "Antibodies";
-$fields="id,access,ownerid,name,type1,type2,type3,type4,type5,species,antigen,epitope,concentration,buffer,notes,location,source,date";
+$fields="id,access,ownerid,name,type1,type2,type3,type4,type5,species,antigen,epitope,concentration,buffer,notes,location,source,date,filename,mime";
 
 // register variables
 $get_vars = "id,";
@@ -607,7 +607,7 @@ else {
    $text=$r->GetMenu2("type2",$type2,true,false,0,"style='width: 80%'");
    echo "<td style='width: 10%'>$text</td>\n";
 
-   $r=$db->Execute("SELECT typeshort,id FROM ab_type3");
+   $r=$db->Execute("SELECT typeshort,id FROM ab_type3 ORDER BY SORTKEY");
    $text=$r->GetMenu2("type3",$type3,true,false,0,"style='width: 80%'");
    echo "<td style='width: 10%'>$text</td>\n";
 
