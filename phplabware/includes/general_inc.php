@@ -416,7 +416,7 @@ function display_table_info($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr_c
 ///////////////////////////////////////////////////////////
 ////
 // !Display a record in a nice format
-function display_record($db,$Allfields,$id,$tableinfo,$backbutton=true,$previousid=false,$nextid=false) 
+function display_record($db,$Allfields,$id,$tableinfo,$backbutton=true,$previousid=false,$nextid=false,$viewid=false) 
 {
    global $PHP_SELF, $md,$USER;
 
@@ -431,9 +431,10 @@ function display_record($db,$Allfields,$id,$tableinfo,$backbutton=true,$previous
    echo "<table border=0 align='center'>\n";
    $count=0;
    echo "<tr>\n";
+   // if viewid is defined we will over-ride display record with values from the view settings
    foreach ($Allfields as $nowfield) {
       //Only show the entry when display_record is set
-      if ($nowfield[display_record]=="Y") {
+      if ($nowfield[display_record]=='Y') {
          // We display the fieldsin two columns
          if ($count && !($count % 2))
             echo "</tr>\n<tr>\n";
@@ -1020,11 +1021,11 @@ function add_g_form ($db,$tableinfo,$field_values,$id,$USER,$PHP_SELF,$system_se
 
 ////
 // !Shows a page with nice information on the record
-function show_g($db,$tableinfo,$id,$USER,$system_settings,$backbutton=true,$previousid=false,$nextid=false)  {
+function show_g($db,$tableinfo,$id,$USER,$system_settings,$backbutton=true,$previousid=false,$nextid=false,$viewid=false)  {
    if (!may_read($db,$tableinfo,$id,$USER))
        return false;
    $Allfields=getvalues($db,$tableinfo,$tableinfo->fields,id,$id);
-   display_record($db,$Allfields,$id,$tableinfo,$backbutton,$previousid,$nextid);
+   display_record($db,$Allfields,$id,$tableinfo,$backbutton,$previousid,$nextid,$viewid);
 }
 	
 ////
