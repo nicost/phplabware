@@ -14,9 +14,9 @@
   \**************************************************************************/
 
 /// main include thingies
-require("include.php");
-require("includes/db_inc.php");
-require("includes/general_inc.php");
+require('include.php');
+require('includes/db_inc.php');
+require('includes/general_inc.php');
 
 $tableinfo=new tableinfo($db);
 
@@ -28,21 +28,21 @@ if (!$tableinfo->id) {
    exit();
 }
 
-$tableinfo->queryname=$queryname=$tableinfo->short."_query";
-$tableinfo->pagename=$pagename=$tableinfo->short."_curr_page";
+$tableinfo->queryname=$queryname=$tableinfo->short.'_query';
+$tableinfo->pagename=$pagename=$tableinfo->short.'_curr_page';
 
 // read all fields in from the description file
 $fields_table=comma_array_SQL($db,$tableinfo->desname,columnname,"WHERE display_table='Y'");
 
 // load plugin php code if it has been defined 
-$plugin_code=get_cell($db,"tableoftables","plugin_code","id",$tableinfo->id);
+$plugin_code=get_cell($db,'tableoftables','plugin_code','id',$tableinfo->id);
 if ($plugin_code)
    @include($plugin_code);
 
 // register variables
-$get_vars="tablename,md,showid,edit_type,add,jsnewwindow";
+$get_vars='tablename,md,showid,edit_type,add,jsnewwindow';
 globalize_vars($get_vars, $HTTP_GET_VARS);
-$post_vars = "add,md,edit_type,submit,search,searchj,serialsortdirarray";
+$post_vars = 'add,md,edit_type,submit,search,searchj,serialsortdirarray';
 globalize_vars($post_vars, $HTTP_POST_VARS);
 
 $httptitle .=$tableinfo->label;
@@ -50,7 +50,7 @@ $httptitle .=$tableinfo->label;
 // this shows a record entry in a new window, called through javascript
 if ($jsnewwindow && $showid && $tableinfo->name) {
    printheader($httptitle);
-   if (function_exists("plugin_show")){
+   if (function_exists('plugin_show')){
       plugin_show($db,$tableinfo,$showid,$USER,$system_settings,false);
    }   
    else {
@@ -62,13 +62,13 @@ if ($jsnewwindow && $showid && $tableinfo->name) {
 }
 
 // Mode can be changed through a get var and is perpetuated through post vars
-if ($HTTP_GET_VARS["md"])
-   $md=$HTTP_GET_VARS["md"];
+if ($HTTP_GET_VARS['md'])
+   $md=$HTTP_GET_VARS['md'];
 foreach($HTTP_POST_VARS as $key =>$value) {
    // for table links, search in the linked table instead of the current one
    if (substr($key, 0, 3) == 'max') {
       $cname=substr($key,4);
-      $field=strtok($cname,"_");
+      $field=strtok($cname,'_');
       $value=$HTTP_POST_VARS["$cname"];
       // we need to replace this value with an id if appropriate
       if ($value)
@@ -76,25 +76,25 @@ foreach($HTTP_POST_VARS as $key =>$value) {
    }
    // check if sortup or sortdown arrow was been pressed
    else {
-      list($testkey,$testvalue)=explode("_",$key);
-      if ($testkey=="sortup"){
+      list($testkey,$testvalue)=explode('_',$key);
+      if ($testkey=='sortup'){
          $sortup=$testvalue;
       }
-      if ($testkey=="sortdown") {
+      if ($testkey=='sortdown') {
          $sortdown=$testvalue;
       }
    }
 } 
 reset ($HTTP_POST_VARS);
 if ($searchj || $sortup || $sortdown)
-   $search="Search";
+   $search='Search';
 
 /*****************************BODY*******************************/
 
-// check wether user may see this table
+// check whether user may see this table
 if (!may_see_table($db,$USER,$tableinfo->id)) {
    printheader($httptitle);
-   navbar($USER["permissions"]);
+   navbar($USER['permissions']);
    echo "<h3 align='center'>These data are not for you.  Sorry;(</h3>\n";
    printfooter();
    exit();
@@ -358,7 +358,7 @@ else {
    // when search fails we'll revert to Show All after showing an error message
    if (!$r) {
       echo "<h3 align='center'>The server encountered an error executing your search.  Showing all records instead.</h3><br>\n";
-      $num_p_r=$HTTP_POST_VARS["num_p_r"];
+      $num_p_r=$HTTP_POST_VARS['num_p_r'];
       unset ($HTTP_POST_VARS);
       ${$pagename}=1;
       unset (${$queryname});
@@ -404,15 +404,15 @@ else {
    $modetext="<a href='$PHP_SELF?tablename=$tableinfo->name&md=";
  
    $may_write=may_write($db,$tableinfo->id,false,$USER);
-   if ($md=="edit") {
-      $tabletext="Edit Table ";
+   if ($md=='edit') {
+      $tabletext='Edit Table ';
       if ($may_write)
          $modetext.="view&".SID."'>(to view mode)</a>\n";
       else
          $modetext="";
    }
    else {
-      $tabletext="View Table ";
+      $tabletext='View Table ';
       $modetext.="edit'>(to edit mode)</a>\n";
    }
    echo "<td align='center'>$tabletext <B>$tableinfo->label</B> $modetext<br>";
@@ -426,14 +426,14 @@ else {
 
    // get a list with ids we may see, $listb has all the ids we may see
    //$r=$db->CacheExecute(2,${$queryname});
-   if ($db_type=="mysql") {
-      $lista=make_SQL_csf ($r,false,"id",$nr_records);
+   if ($db_type=='mysql') {
+      $lista=make_SQL_csf ($r,false,'id',$nr_records);
       if (!$lista)
          $lista="-1";
       $lista=" id IN ($lista) ";
    }
    else {
-      make_temp_table($db,"tempa",$r);
+      make_temp_table($db,'tempa',$r);
       $lista= " ($tableinfo->realname.id=tempa.uniqueid) ";
    }
 
@@ -448,7 +448,6 @@ else {
    // row with search form
    echo "<tr align='center'>\n";
    echo "<input type='hidden' name='searchj' value=''>\n";
-
 
    foreach($Allfields as $nowfield)  {
       if ($HTTP_POST_VARS[$nowfield[name]]) {
@@ -478,7 +477,7 @@ else {
    echo "<th>Action</th>\n";
    echo "</tr>\n\n";
 
-   if ($md=="edit")
+   if ($md=='edit')
       display_table_change($db,$tableinfo,$Fieldscomma,${$queryname},$num_p_r,${$pagename},$rp,$r);
    else
       display_table_info($db,$tableinfo,$Fieldscomma,${$queryname},$num_p_r,${$pagename},$rp,$r);
