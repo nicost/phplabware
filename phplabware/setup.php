@@ -12,7 +12,7 @@
   *  option) any later version.                                              *
   \**************************************************************************/                                                                             
 
-$version_code=0.3;
+$version_code=0.3001;
 $localdir=exec("pwd");
 include ('includes/functions_inc.php');
 if (!file_exists("includes/config_inc.php")) {
@@ -196,6 +196,10 @@ if ($version) {
       if ($version<0.2004) {
          // adds Ethan's ordering table
          include ("dd/ordertable.php");
+      }
+      if ($version<0.3001) {
+         // add tables viewnames and tableviews
+         include ("dd/0_3001_inc.php");
       }
 
       $query="UPDATE settings SET version='$version_code' WHERE id=1";
