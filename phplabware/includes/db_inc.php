@@ -473,7 +473,7 @@ function may_read_SQL_subselect ($db,$table,$tableid,$USER,$clause=false) {
 }
 
 ////
-// !returns an comma-separated list of quoted values from a SQL search
+// !returns a comma-separated list of quoted values from a SQL search
 // helper function for may_read_SQL
 function make_SQL_ids ($r,$ids,$field="id") {
    if (!$r || $r->EOF)
@@ -530,14 +530,36 @@ function may_read_SQL_JOIN ($db,$table,$USER) {
 ////
 // !Generates an SQL query asking for the records that mey be seen by this users
 // Generates a left join for mysql, subselect for postgres
-function may_read_SQL ($db,$table,$tableid,$USER) {
+function may_read_SQL ($db,$table,$tableid,$USER,$temptable="tempa") {
    global $db_type;
-   if ($db_type=="mysql")
-      return may_read_SQL_JOIN ($db,$table,$USER);
-   else
-      return may_read_SQL_subselect ($db,$table,$tableid,$USER);
+   if ($db_type=="mysql") {
+      $list=may_read_SQL_JOIN ($db,$table,$USER);
+      $result["sql"]= " id IN ($list) ";
+      $result["numrows"]=substr_count($list,",");
+   }
+   else {
+      //return may_read_SQL_subselect ($db,$table,$tableid,$USER);
+      $r=$db->Execute(may_read_SQL_subselect ($db,$table,$tableid,$USER));
+      $result["numrows"]=$r->NumRows();
+      make_temp_table($db,$temptable,$r); 
+      $result["sql"] = " ($table.id = $temptable.uniqueid) ";
+   }
+   return $result;
 }
 
+////
+// Generates a temporary table from given recordset
+function make_temp_table ($db,$temptable,$r) {
+   $rc=$db->Execute("CREATE TEMPORARY TABLE $temptable (
+                     uniqueid int PRIMARY KEY)");
+   if ($rc) {
+      $r->MoveFirst();
+      while (!$r->EOF) {
+         $ri=$db->Execute("INSERT INTO $temptable VALUES (".$r->fields["id"].")");
+         $r->MoveNext();
+      }
+   }
+}
 
 ////
 // !determines whether or not the user may read this record
@@ -677,6 +699,23 @@ function search ($table,$fields,$fieldvalues,$whereclause=false,$wcappend=true) 
    return $query[0];
 }
 
+
+////
+// ! sets AtFirstPage and AtLastPage
+function first_last_page (&$r,&$current_page,$r_p_p,$numrows) {
+   if ($current_page < 2)
+      $r->AtFirstPage=true;
+   else
+      $r->AtFirstPage=false;
+   if ( ($current_page * $r_p_p) >= $numrows)
+      $r->AtLastPage=true;
+   else
+      $r->AtLastPage=false;
+   // protect against pushing the reload button while at the last page
+   if ( (($current_page-1) * $r_p_p) >= $numrows)
+      $current_page -=1;
+}
+
 ////
 // !Displays the next and previous buttons
 // $r is the result of a $db->Execute query used to display the table with records
@@ -777,7 +816,7 @@ function make_search_SQL($db,$table,$tableshort,$tableid,$fields,$USER,$search,$
    if (!$whereclause)
       $whereclause=-1;
    if ($search=="Search") {
-      ${$queryname}=search($table,$fields,$HTTP_POST_VARS," id IN ($whereclause) ORDER BY $searchsort");
+      ${$queryname}=search($table,$fields,$HTTP_POST_VARS," $whereclause ORDER BY $searchsort");
       ${$fieldvarsname}=$HTTP_POST_VARS;
    }
    elseif (session_is_registered ($queryname) && isset($HTTP_SESSION_VARS[$queryname])) {
@@ -785,7 +824,7 @@ function make_search_SQL($db,$table,$tableshort,$tableid,$fields,$USER,$search,$
       ${$fieldvarsname}=$HTTP_SESSION_VARS[$fieldvarsname];
    }
    else {
-      ${$queryname} = "SELECT $fields FROM $table WHERE id IN ($whereclause) ORDER BY date DESC";
+      ${$queryname} = "SELECT $fields FROM $table WHERE $whereclause ORDER BY date DESC";
       ${$fieldvarsname}=$HTTP_POST_VARS;
    }
    $HTTP_SESSION_VARS[$queryname]=${$queryname};   
