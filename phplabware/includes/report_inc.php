@@ -32,6 +32,8 @@ function make_xml ($db,$data,$tableinfo) {
 function make_report ($db,$template,$data,$tableinfo,$counter=false) {
    foreach ($data as $column) {
       if ($column['name']) {
+         // give a chance to replace with value only
+         $template=str_replace("%".$column['name'],$column['values'],$template);
          if ($column['datatype']=='textlong') {
             $textlarge=nl2br(htmlentities($column['values']));
             $template=str_replace("$".$column['name'],$textlarge,$template);
@@ -49,7 +51,7 @@ function make_report ($db,$template,$data,$tableinfo,$counter=false) {
          elseif ($column['link'])
             $template=str_replace("$".$column['name'],$column['link'],$template);
          else   
-            $template=str_replace("$".$column["name"],$column["text"],$template);
+            $template=str_replace("$".$column['name'],$column['text'],$template);
       }
    }
    // Replace $counter with current sequence number
