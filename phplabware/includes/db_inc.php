@@ -962,6 +962,40 @@ function numerictoSQL ($searchterm,$column,$type,$and) {
    return "$and ($sql) ";
 }
 
+
+
+////
+// !Converts a (textual) date range into a meaningfull SQL statement
+// Start and end are separated with '-'
+// dates can be in current local (12/24/03), or textual (today, last month,etcc.)
+// Alternatively, a single date can be preceded with a '<' or '>'
+// I am not sure how strtotime deals with US versus European standards...
+
+function datetoSQL ($searchterm,$column,$and) {
+   $timerange=explode('-',$searchterm);
+   if (sizeof($timerange) < 2) {
+      // we have only one searchterm
+      if ($timerange[0]{0} == '>') {
+         $time=strtotime(substr($timerange[0],1));
+         if ($time>0)
+            $sql .= "($column>=$time) ";
+      }
+      if ($timerange[0]{0} == '<') {
+         $time=strtotime(substr($timerange[0],1));
+         if ($time>0)
+            $sql .= "($column<=$time) ";
+      }
+   }
+   if (sizeof($timerange) == 2) {
+      $starttime=strtotime($timerange[0]);
+      $endtime=strtotime($timerange[1]);
+      if ($starttime > 0 && $endtime > 0)
+         $sql .= "($column>=$starttime AND $column<=$endtime) ";
+   }
+   return "$and ($sql) ";
+}
+
+
 ////
 // !Helper function for search
 // Interprets fields the right way
@@ -1017,7 +1051,7 @@ function searchhelp ($db,$tableinfo,$column,&$columnvalues,$query,$wcappend,$and
          }
          // no search results so give an impossible clause
          else
-            $query[0].="$and $column='0' ";
+            $query[0].="$and $column='-1' ";
       }
       // there are some (old) cases where pulldowns are of type text...
       elseif ($rc->fields[1]=='pulldown') {
@@ -1078,6 +1112,9 @@ function searchhelp ($db,$tableinfo,$column,&$columnvalues,$query,$wcappend,$and
          else // nothing found, make sure we do not crash the search statement
             $query[0].="$and id IN (-1) ";
             
+      }
+      elseif ($rc->fields[1]=='date') {
+         $query[0].= datetoSQL($columnvalues[$column],$column,$and);
       }
       elseif (substr($rc->fields[0],0,3)=='int') {
          $query[0].=numerictoSQL ($columnvalues[$column],$column,"int",$and); 

@@ -65,7 +65,7 @@ function date_entry($id,$real_tablename) {
 
 ////
 // !Displays searchbar in table view
-// For data of type table, recursive calls ar used
+// For data of type table, recursive calls are used
 // The ugly stuff with HTTP_POST_VARS could be done better
 // it would also be nicer if a string was returned instead of writing directly
 function searchfield ($db,$tableinfo,$nowfield,$HTTP_POST_VARS,$jscript) {
@@ -78,9 +78,11 @@ function searchfield ($db,$tableinfo,$nowfield,$HTTP_POST_VARS,$jscript) {
    }
    if ($nowfield['datatype']== 'link')
       echo "<td style='width: 10%'>&nbsp;</td>\n";
+/*
    // datatype of column date is text (historical oversight...)
    elseif ($nowfield['name']=='date') 
       echo "<td style='width: 10%'>&nbsp;</td>\n";
+*/
    // datatype of column ownerid is text (historical oversight...)
    elseif ($nowfield['name']=='ownerid') {
        //if ($list) {
