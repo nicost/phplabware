@@ -4,12 +4,6 @@
   // auth_inc.php - author: Nico Stuurman  
   /***************************************************************************
   *                                                                          *
-  * class cl_client                                                          *
-  * function allowonly($utype)                                               *
-  * function groupname($groupid)                                             *
-  * function randomImage($imagedir)                                          *
-  * function loginscreen ($message)                                          *
-  *                                                                          *
   * Author: Nico Stuurman                                                    *
   * email: nicos@itsa.ucsf.edu                                               *
   * Copyright (c) 2000, 2001 by Nico Stuurman                                *
@@ -54,6 +48,7 @@ class cl_client {
 function allowonly($required, $current) {
    if (! ($required & $current)) {
       printheader("Not Allowed");
+      navbar(1);
       echo "&nbsp;<br><h3 align='center'>Sorry, but this page is not for you!";
       echo "</hr><br>&nbsp;\n";
       printfooter();
@@ -61,19 +56,6 @@ function allowonly($required, $current) {
    }
 }
 
-////
-// !function that returns the groupname, given a groupid
-function groupname($groupid) {
-   $db_query = "SELECT groupname FROM groups WHERE groupid='$groupid'";
-   $db_result = db_exec($db_query);
-   $db_rows = db_numrows($db_result);
-   if ($db_rows == 1):
-      $db_row_result = db_fetch_array($db_result, 0);
-      return $db_row_result["groupname"];
-   else:
-      return "Group with that groupid does not exist!";
-   endif;
-}
 
 ////
 // returns a link to a randomly selected image from the designated directory
