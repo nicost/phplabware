@@ -225,18 +225,19 @@ else {
             // upload files
             $rb=$db->Execute("SELECT id,columnname,associated_table FROM ".$tableinfo->desname." WHERE datatype='file'");
             while (!$rb->EOF) {
-       	       $fileid=upload_files($db,$tableinfo->id,$id,$rb->fields["id"],$rb->fields["columnname"],$USER,$system_settings);
+       	       $fileid=upload_files($db,$tableinfo->id,$id,$rb->fields['id'],$rb->fields['columnname'],$USER,$system_settings);
                // try to convert word files into html files
-               $htmlfileid=process_file($db,$fileid,$system_settings); 
+               if ($fileid)
+                  $htmlfileid=process_file($db,$fileid,$system_settings); 
                $rb->MoveNext(); 
             }
             // upload images
             $rc=$db->Execute("SELECT id,columnname,associated_table,thumb_x_size FROM ".$tableinfo->desname." WHERE datatype='image'");
             while (!$rc->EOF) {
-       	       $imageid=upload_files($db,$tableinfo->id,$id,$rc->fields["id"],$rc->fields["columnname"],$USER,$system_settings);
-	       process_image($db,$imageid,$rc->fields["thumb_x_size"]);
+       	       $imageid=upload_files($db,$tableinfo->id,$id,$rc->fields['id'],$rc->fields['columnname'],$USER,$system_settings);
                // make thumbnails and do image specific stuff 
-               process_image($db,$imageid,$rc->fields["thumb_x_size"]);
+               if ($imageid)
+                  process_image($db,$imageid,$rc->fields['thumb_x_size']);
                $rc->MoveNext(); 
             }
             // call plugin code to do something with newly added data
@@ -266,15 +267,16 @@ else {
                // delete all existing files
                delete_column_file ($db,$tableinfo->id,$rc->fields["id"],$HTTP_POST_VARS["id"],$USER);
                // store the file uploaded by the user
-               $fileid=upload_files($db,$tableinfo->id,$HTTP_POST_VARS["id"],$rc->fields["id"],$rc->fields["columnname"],$USER,$system_settings);
-               if ($rc->fields["datatype"]=="file") {
+               $fileid=upload_files($db,$tableinfo->id,$HTTP_POST_VARS['id'],$rc->fields['id'],$rc->fields['columnname'],$USER,$system_settings);
+               if ($rc->fields['datatype']=='file') {
                   // try to convert it to an html file
-                  $htmlfileid=process_file($db,$fileid,$system_settings);
+                  if ($fileid)
+                     $htmlfileid=process_file($db,$fileid,$system_settings);
                }
-               elseif ($rc->fields["datatype"]=="image"){
+               elseif ($rc->fields['datatype']=='image'){
                   // make thumbnails and do image specific stuff
-	          // process_image($db,$imageid,$rc->fields["thumb_x_size"]);
-                  process_image($db,$fileid,$rc->fields["thumb_x_size"]);
+                  if ($fileid)
+                     process_image($db,$fileid,$rc->fields["thumb_x_size"]);
                }
             }
             $rc->MoveNext(); 
