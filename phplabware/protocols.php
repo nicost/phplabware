@@ -290,7 +290,7 @@ function process_file($db,$fileid,$system_settings) {
       $filepath=file_path($db,$fileid);
       $converted_file=uniqid("file");
       $temp=$system_settings["tmpdir"]."/$converted_file";
-      $command= "$word2html $filepath $temp";
+      $command= "$word2html \"$filepath\" $temp";
       $result=exec($command);
       // wvHtml version 0.7 and up are called differently:
       if (!@is_readable($temp)) {
