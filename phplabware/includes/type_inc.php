@@ -33,8 +33,8 @@ function update_opener_js ($db,$table) {
       $r->MoveNext();
    }
    $result.="\n )\n)\n";
-   $form=$HTTP_GET_VARS["formname"];
-   $select=$HTTP_GET_VARS["selectname"];
+   $form=$HTTP_GET_VARS['formname'];
+   $select=$HTTP_GET_VARS['selectname'];
    $result.="fillSelectFromArray(opener.document.$form.$select,typeinfo[0])\n";
    $result.="// End of Javascript -->\n</script>\n";
    return $result;
@@ -47,7 +47,7 @@ function update_opener_js ($db,$table) {
 function show_type ($db,$table,$name, $tablename=false) {
    global $HTTP_POST_VARS,$PHP_SELF,$HTTP_GET_VARS;
 
-   $dbstring=$PHP_SELF."?";
+   $dbstring=$PHP_SELF.'?';
    if ($tablename)
       $dbstring.="tablename=$tablename&"; 
    $dbstring.="edit_type=$table&";
@@ -86,10 +86,10 @@ function show_type ($db,$table,$name, $tablename=false) {
    while (!($r->EOF) && $r) {
  
       // get results of each row
-      $id = $r->fields["id"];
-      $type = $r->fields["type"];
-      $typeshort = $r->fields["typeshort"];
-      $sortkey = $r->fields["sortkey"];
+      $id = $r->fields['id'];
+      $type = $r->fields['type'];
+      $typeshort = $r->fields['typeshort'];
+      $sortkey = $r->fields['sortkey'];
  
       // print start of row of selected group
       if ($rownr % 2)
@@ -137,7 +137,7 @@ function show_type ($db,$table,$name, $tablename=false) {
 function del_type ($db,$table,$index,$tableinfo) {
    global $HTTP_POST_VARS, $HTTP_GET_VARS;
 
-   $id=$HTTP_POST_VARS["type_id"][$index]; 
+   $id=$HTTP_POST_VARS['type_id'][$index]; 
    if ($tableinfo->realname) {
       $recordref=get_cell($db,$tableinfo->desname,"columnname","associated_table",$table);
       if ($id) {
@@ -154,7 +154,7 @@ function del_type ($db,$table,$index,$tableinfo) {
    }	   
    else { 
       if ($id) {
-         $table_array=explode("_",$table);
+         $table_array=explode('_',$table);
       	 $r=$db->Execute("UPDATE $tableinfo->realname SET ".$table_array[1]."='' WHERE ".
                        $table_array[1]."=$id");
       	 if ($r) // keep database structure intact
@@ -178,10 +178,10 @@ function del_type ($db,$table,$index,$tableinfo) {
 function mod_type ($db,$table,$index) {
    global $HTTP_POST_VARS;
    
-   $id=$HTTP_POST_VARS["type_id"][$index]; 
-   $type=$HTTP_POST_VARS["type_type"][$index]; 
-   $typeshort=$HTTP_POST_VARS["type_typeshort"][$index]; 
-   $sortkey=(int) $HTTP_POST_VARS["type_sortkey"][$index];
+   $id=$HTTP_POST_VARS['type_id'][$index]; 
+   $type=$HTTP_POST_VARS['type_type'][$index]; 
+   $typeshort=$HTTP_POST_VARS['type_typeshort'][$index]; 
+   $sortkey=(int) $HTTP_POST_VARS['type_sortkey'][$index];
    if ($type && $typeshort && is_int($sortkey)) {
       $r=$db->Execute("UPDATE $table SET type='$type',typeshort='$typeshort',sortkey=$sortkey WHERE id=$id"); 
       if ($r) {
@@ -201,10 +201,10 @@ function mod_type ($db,$table,$index) {
 function add_type ($db,$table) {
    global $HTTP_POST_VARS;
 
-   $id=$db->GenId($table."_id_seq");
-   $type=$HTTP_POST_VARS["newtype_type"]; 
-   $typeshort=$HTTP_POST_VARS["newtype_typeshort"]; 
-   $sortkey=(int) $HTTP_POST_VARS["newtype_sortkey"];
+   $id=$db->GenId($table.'_id_seq');
+   $type=$HTTP_POST_VARS['newtype_type']; 
+   $typeshort=$HTTP_POST_VARS['newtype_typeshort']; 
+   $sortkey=(int) $HTTP_POST_VARS['newtype_sortkey'];
    if ($type && $typeshort && is_int($sortkey)) {
        $r=$db->query("INSERT INTO $table (id,type,typeshort,sortkey) 
                       VALUES ($id,'$type','$typeshort',$sortkey)");
