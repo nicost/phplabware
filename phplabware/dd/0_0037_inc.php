@@ -170,16 +170,21 @@ if ($r) {
    if ($failed)
       echo "Failed";
    else {
-      echo "Succes!";
-      $db->Execute("DROP TABLE pdfs");
-      $db->execute("DROP TABLE pdfs_id_seq");
-      $db->Execute("DROP SEQUENCE pdfs_id_seq");
-      $db->Execute("DROp TABLE pd_type1");
-      $db->Execute("DROp TABLE pd_type1_id_seq");
-      $db->Execute("DROp SEQUENCE pd_type1_id_seq");
-      $db->Execute("DROp TABLE pd_type2");
-      $db->Execute("DROp TABLE pd_type2_id_seq");
-      $db->Execute("DROp SEQUENCE pd_type2_id_seq");
+      echo "Succes!<br>";
+      $rpdn=$db->Execute("SELECT * FROM $newtable_realname");
+      if ($rpdn->Numrows==$rcb->Numrows) {
+         $db->Execute("DROP TABLE pdfs");
+         $db->execute("DROP TABLE pdfs_id_seq");
+         $db->Execute("DROP SEQUENCE pdfs_id_seq");
+         $db->Execute("DROp TABLE pd_type1");
+         $db->Execute("DROp TABLE pd_type1_id_seq");
+         $db->Execute("DROp SEQUENCE pd_type1_id_seq");
+         $db->Execute("DROp TABLE pd_type2");
+         $db->Execute("DROp TABLE pd_type2_id_seq");
+         $db->Execute("DROp SEQUENCE pd_type2_id_seq");
+      }
+      else
+         echo "Failed to copy contents of old table pdfs to new table pdfs.<br>";
    }
 }
 ?>

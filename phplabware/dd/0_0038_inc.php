@@ -147,20 +147,25 @@ if ($r) {
       $rcc->MoveNext();
    }
    if ($failed)
-      echo "Failed";
+      echo "Failed copying contents of table protocols<br>";
    else {
-      echo "Succes!";
+      echo "Succes!<br>";
       // delete the old tables
-      $db->Execute("DROP TABLE protocols");
-      $db->Execute("DROP TABLE protocols_id_seq");
-      $db->Execute("DROP SEQUENCE protocols_id_seq");
-      $db->Execute("DROP TABLE pr_type1"); 
-      $db->Execute("DROP TABLE pr_type1_id_seq"); 
-      $db->Execute("DROP SEQUENCE pr_type1_id_seq"); 
-      $db->Execute("DROP TABLE pr_type2"); 
-      $db->Execute("DROP TABLE pr_type2_id_seq"); 
-      $db->Execute("DROP SEQUENCE pr_type2_id_seq"); 
-      $db->Execute("DELETE FROM tableoftables WHERE tablename='protocols'");
+      $rnt=$db->Execute("SELECT * FROM $newtable_realname");
+      if ($rnt->Numrows==$rcb->Numrows) {
+         $db->Execute("DROP TABLE protocols");
+         $db->Execute("DROP TABLE protocols_id_seq");
+         $db->Execute("DROP SEQUENCE protocols_id_seq");
+         $db->Execute("DROP TABLE pr_type1"); 
+         $db->Execute("DROP TABLE pr_type1_id_seq"); 
+         $db->Execute("DROP SEQUENCE pr_type1_id_seq"); 
+         $db->Execute("DROP TABLE pr_type2"); 
+         $db->Execute("DROP TABLE pr_type2_id_seq"); 
+         $db->Execute("DROP SEQUENCE pr_type2_id_seq"); 
+         $db->Execute("DELETE FROM tableoftables WHERE tablename='protocols'");
+      }
+      else
+         echo "Problems copying the content of table protocols to the new table protocols.<br>";
    }
 }
 
