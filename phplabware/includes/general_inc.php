@@ -577,9 +577,9 @@ function display_record($db,$Allfields,$id,$tableinfo,$backbutton=true,$previous
  */
 function make_link($id,$DBNAME) {
    global $PHP_SELF,$system_settings;
-   echo "<tr><th>Link:</th><td colspan=7><a href='$PHP_SELF?tablename=$DBNAME&showid=$id&".SID;
+   echo "<tr><th>Link:</th><td colspan=7><a href='$PHP_SELF?tablename=$DBNAME&amp;showid=$id&amp;".SID;
    //echo "'>".$system_settings["baseURL"].getenv("SCRIPT_NAME")."?tablename=$DBNAME&showid=$id</a></td></tr>\n";
-   echo "'>".$system_settings["baseURL"].$PHP_SELF."?tablename=$DBNAME&showid=$id</a></td></tr>\n";
+   echo "'>".$system_settings['baseURL'].$PHP_SELF."?tablename=$DBNAME&amp;showid=$id</a></td></tr>\n";
 }
 
 
@@ -651,13 +651,13 @@ function display_add($db,$tableinfo,$Allfields,$id,$namein,$system_settings) {
    echo "<input type='hidden' name='md' value='$md'>\n";
    echo "<table border=0 align='center'>\n";   
    if ($id) {
-      echo "<tr><td colspan=5 align='center'><h3>Modify ".$tableinfo->label." entry <i>$namein</i></h3>\n";
+      echo "<tr><td align='center'><h3>Modify ".$tableinfo->label." entry <i>$namein</i></h3>\n";
       echo "<input type='hidden' name='id' value='$id'></td></tr>\n";
    }
    else {
-      echo "<tr><td colspan=5 align='center'><h3>New ".$tableinfo->label." entry</h3></td></tr>\n";
+      echo "<tr><td align='center'><h3>New ".$tableinfo->label." entry</h3></td></tr>\n";
    }
-   echo "<table border=0 align='center'>\n<tr>\n<td colspan=2></td>\n";
+   echo "<tr><td>\n<table border=0 align='center'>\n";
    
    foreach ($Allfields as $nowfield) {
       // give plugin a chance to modify data
@@ -687,16 +687,16 @@ function display_add($db,$tableinfo,$Allfields,$id,$namein,$system_settings) {
             if ($nowfield['datatype']=='text') {
                //$size=60;
                // mike likes this to be a textlong field, let's try
-     	       echo "<td><textarea name='{$nowfield['name']}' rows='2' cols='100%' value='{$nowfield['values']}'>{$nowfield['values']}</textarea>";
+     	       echo "<td><textarea name='{$nowfield['name']}' rows='2'cols=80>{$nowfield['values']}</textarea>";
             }
             // for dates we have to dsiplay the test and not the value
             elseif ($nowfield['datatype']=='date') {
                $size=10;
-     	       echo "<td><input type='text' name='{$nowfield['name']}' value='{$nowfield['text']}' $size>";
+     	       echo "<td><input type='text' name='{$nowfield['name']}' value='{$nowfield['text']}' size='$size'>";
             }
             else {
                $size=10;
-     	       echo "<td><input type='text' name='{$nowfield['name']}' value='{$nowfield['values']}' $size>";
+     	       echo "<td><input type='text' name='{$nowfield['name']}' value='{$nowfield['values']}' size='$size'>";
             }
          }
 	 elseif ($nowfield['datatype']=='sequence') {
@@ -717,19 +717,19 @@ function display_add($db,$tableinfo,$Allfields,$id,$namein,$system_settings) {
                echo "<td>$newseq";
 	    }
 	    else
-     	       echo "<td><input type='text' name='$nowfield[name]' value='$newseq' 10>";
+     	       echo "<td><input type='text' name='$nowfield[name]' value='$newseq' size='10'>";
 	 }
          elseif ($nowfield['datatype']=='textlong') {
             echo "<tr><th>$nowfield[label]:";
             if ($nowfield['required']=='Y') 
                echo "<sup style='color:red'>&nbsp;*</sup>";
-     	    echo "<td><textarea name='$nowfield[name]' rows='5' cols='100%' value='$nowfield[values]'>$nowfield[values]</textarea>";
+     	    echo "<td><textarea name='$nowfield[name]' rows='5' cols='80' value='$nowfield[values]'>$nowfield[values]</textarea>";
          }
          elseif ($nowfield['datatype']=='link') {
             echo "<tr><th>$nowfield[label] (http link):";
             if ($nowfield['required']=='Y')
                echo "<sup style='color:red'>&nbsp;*</sup>";
-            echo "<td><input type='text' name='$nowfield[name]' value='$nowfield[values]' size=60>";
+            echo "<td><input type='text' name='$nowfield[name]' value='$nowfield[values]' size='60'>";
          }
          elseif ($nowfield['datatype']=='pulldown') {
             // get previous value	
@@ -783,10 +783,6 @@ function display_add($db,$tableinfo,$Allfields,$id,$namein,$system_settings) {
 	       echo "&nbsp;&nbsp;(<i>".$files[$i]['name']."</i>, ".$files[$i]['type']." file)</td>\n";
 	       echo "<td><input type='submit' name='def_".$files[$i]["id"]."' value='Delete' Onclick=\"if(confirm('Are you sure the file ".$files[$i]["name"]." should be removed?')){return true;}return false;\"></td></tr>\n";
 	    }
-/*            if ($files)
-	        echo '<tr><th>Replace '.$nowfield['datatype']."(s) with</th>\n";
-            else
-*/
             echo '<tr><th>Upload '.$nowfield['datatype']."</th>\n";
 	    echo "<td>&nbsp;</td><td><input type='file' name='".$nowfield[name]."[]' value='$filename'></td>\n";
 	    echo "</tr></table><br>\n\n";
@@ -814,23 +810,23 @@ function display_add($db,$tableinfo,$Allfields,$id,$namein,$system_settings) {
       }
       if (function_exists('plugin_display_add'))
          plugin_display_add($db,$tableinfo->id,$nowfield);
-      echo "</td></tr>\n";
   
 	
    }	
+   echo "</table>\n</td>\n</tr>\n";
    /* Call to a function that runs at the end when adding a new record*/   
    if ((function_exists("plugin_display_add_post")) && (!($id))){
       plugin_display_add_post($db,$tableinfo->id);
    }
          
-   echo "<td colspan=4>";
+   echo "<tr><td colspan=4>";
    show_access($db,$tableinfo->id,$id,$USER,$system_settings);
    echo "</td></tr>\n"; echo "<tr>";
    if ($id) $value="Modify Record"; 
    else $value="Add Record";
 
    // submit and clear buttons
-   echo "<td colspan=7 align='center'>\n";
+   echo "<td align='center'>\n";
    if ($HTTP_SESSION_VARS['javascript_enabled']) {
       echo "<input type='hidden' name='subm' value=''>\n";
       //echo "<input type='button' name='sub' value='$value' onclick='document.subform.subm.value=\"$value\"; document.subform.submit(); window.opener.document.g_form.search.value=\"Search\"; setTimeout(\"window.opener.document.g_form.submit(); window.opener.focus(); self.close()\",300);'>\n";
@@ -843,13 +839,8 @@ function display_add($db,$tableinfo,$Allfields,$id,$namein,$system_settings) {
       echo "<input type='submit' name='submit' value='Cancel'></td>\n";
    }
    echo "</tr>\n</table>\n</form>\n";
-
-   //end of table
-   $dbstring=$PHP_SELF;$dbstring.="?";$dbstring.="tablename=$tableinfo[name]&";
-   echo "<form method='post' id='protocolform' enctype='multipart/form-data' action='$dbstring";
-?><?=SID?>'><?php
-
 }
+
 
 /**
  * *
@@ -931,7 +922,7 @@ function getvalues($db,$tableinfo,$fields,$qfield=false,$field=false)
                      $text=$tmpvalue[0];
                      $values=$text;
                   }
-                  ${$column}['link']="<a target=_ href=\"general.php?tablename={$asstableinfo->name}&showid=".${$column}['values']."\">{${$column}['nested']['text']}</a>\n";
+                  ${$column}['link']="<a target=_ href=\"general.php?tablename={$asstableinfo->name}&amp;showid=".${$column}['values']."\">{${$column}['nested']['text']}</a>\n";
                }
                $text=${$column}['nested']['text'];
                if (!$text)
