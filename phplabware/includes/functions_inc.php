@@ -159,8 +159,9 @@ function loginscreen ($message="<h3>Login to PhpLabWare</h3>") {
       $addres=$PHP_SELF;
    $addres=url_get_string($addres);
    printheader ("Login to PhpLabWare");
-   echo "<form name='loginform' method='post' action=$addres>\n";
+   echo "<form name='loginform' method='post' action='$addres' onSubmit='this.javascript_enabled.value=\"true\"'>\n";
    echo "<input type='hidden' name='logon' value='true'>\n";
+   echo "<input type='hidden' name='javascript_enabled' value='0'>\n";
    echo "<table align=center>\n";
    echo "<tr><td colspan=2 align='center'>$message</td>\n";
    $imstring = randomimage("frontims");
@@ -173,14 +174,14 @@ function loginscreen ($message="<h3>Login to PhpLabWare</h3>") {
    echo "<td><input type='password' name='pwd' size=10 value=''></td></tr>\n";
    echo "<tr><td colspan=2 align='center'>";
    if ($system_settings["secure_server"]) {
-      echo "<input type='checkbox' name='ssl'>Keep a secure connection";
+      echo "<input type='checkbox' name='ssl' selected>Keep a secure connection";
    }
    echo "</td></tr>\n";
    echo "<tr><td colspan=2 align='center'>";
    echo "<input type='submit' name='submit' value='Login'></td></tr>\n";
    echo "<tr><td colspan=2 align='center'>";
    //echo "Note:  Cookies must be enabled beyond this point</td></tr>\n";
-   echo "</table>\n";
+   echo "</form>\n</table>\n";
    printfooter();
 }
 
@@ -246,14 +247,103 @@ function get_person_link ($db,$id) {
 // !Prints a table with usefull links 
 function navbar($permissions) {
    include ('includes/defines_inc.php');
-   global $db, $USER; 
+   global $db, $USER, $HTTP_SESSION_VARS; 
 
+   if ($HTTP_SESSION_VARS["javascript_enabled"] && $USER["settings"]["menustyle"]) 
+      $mode="menu";
+   if ($mode=="menu") { 
+      // construct link menu
+      if ($permissions) {
+         $r=$db->Execute("select display from tableoftables where tablename ='linkbar'");
+         if ($r->fields[0]=="1") {
+            $linkr=$db->Execute("select label,linkurl,target from linkbar where display ='Y' ORDER by sortkey");
+            if ($linkr) {
+               $linkmenu="<select name='themenu' onchange='linkmenu(this)'>\n";
+               $linkmenu.="<option value=''>--Links--</option>\n";
+               while (!$linkr->EOF) {
+                 $Tlinkname=$linkr->fields[0];
+                  $urlname=$linkr->fields[1];
+                  if ($linkr->fields[2]=="S")
+                     $targetstr="target='_TOP'";
+                  else 
+                     $targetstr="target='_BLANK'";
+                  $linkmenu.="<option value='$urlname'>$Tlinkname</option>\n";    
+                  $linkr->MoveNext(); 
+               }
+               $linkmenu.="</select>\n";
+            }  
+         }
+         else
+            $linkmenu="&nbsp;";
+      }
+
+      // construct Table menu
+      $records=$db->Execute("select tablename,custom,id,label from tableoftables where display='Y' and permission='Users' ORDER by sortkey");
+      $count=0;
+      if ($records && $USER) {
+         $query="SELECT tableid FROM groupxtable_display WHERE (groupid='".$USER["group_array"][0]."' ";
+         for ($i=1;$i<sizeof($USER["group_array"]);$i++)
+            $query.="OR groupid='".$USER["group_array"][$i]."' ";
+         $query.=")";
+         $rb=$db->Execute($query);
+         while ($rb && !$rb->EOF) {
+            $showtables[]=$rb->fields["tableid"];
+            $rb->MoveNext();
+         }
+         $tablemenu="<select name='tablemenu' onchange='linkmenu(this)'>\n";
+         $tablemenu.="<option value=''>--Tables--</option>\n";
+         while (!$records->EOF) {
+            if (in_array($records->fields["id"],$showtables)) {
+               $tabname=$records->fields[0];
+               $scriptname=$records->fields[1];
+               $label=$records->fields["label"];
+               $linkname="";
+               if ($scriptname=="")
+                  $linkname="general.php?tablename=$tabname&".SID;
+               else 
+                  $linkname=$scriptname."?".SID;
+               $tablemenu.="   <option value='$linkname'>$label</option>\n";    
+            }
+            $records->MoveNext(); 
+         }
+         $tablemenu .="</select>\n";
+      }	
+
+      // construct system menu
+      $systemmenu="<select name='systemmenu' onchange='linkmenu(this)'>\n";
+      $systemmenu.="<option value=''>--System--</option>\n";
+      if (SID)
+         $SID="?".SID;
+      if ($permissions & $ADMIN)
+         $systemmenu.="   <option value='users.php$SID'>users</a>\n";
+      if ($permissions & $SUPER) {
+         $systemmenu.="   <option value='groups.php$SID'>groups</a>\n";
+         $systemmenu.="   <option value='tablemanage.php$SID'>tables</a>\n";
+         $systemmenu.="   <option value='linkbar.php$SID'>linkbar</a>\n";
+         $systemmenu.="   <option value='setup.php$SID'>setup</a>\n";
+      }
+      if ($permissions) {
+         $systemmenu.="   <option value='logout.php$SID'>logout</a>\n";
+         $systemmenu .="</select>\n";
+      }
+      else
+         $systemmenu="<a href='login.php'>login</a>\n";
+
+      echo "<table border=0 width=100% cellspacing='0' cellpadding='0' bgcolor='eeeeff'>\n";
+      echo "<tr>\n<form name='menubar'>\n";
+      echo "<td width='7%'>&nbsp;</td>\n";
+      echo "<td width='8%'>$linkmenu</td>\n";
+      echo "<td width='10%'>$tablemenu</td>\n";
+      echo "<td width='10%'>$systemmenu</td>\n";
+      echo "<td width='65%'>&nbsp;</td>\n";
+      echo "</tr>\n</form>\n</table>\n";
+   }
+   else {
    $links_per_row=6;
    
    if ($permissions & $ACTIVE) {
 				
       echo "<table border=0 width=100% cellspacing='0' cellpadding='0' bgcolor='eeeeff'>\n";
-      //echo "<tr bgcolor='eeeeff' align='center'>\n";
       $records=$db->Execute("select tablename,custom,id,label from tableoftables where display='Y' and permission='Users' ORDER by sortkey");
       $count=0;
       if ($records) {
@@ -318,6 +408,7 @@ function navbar($permissions) {
    else
       echo "<td align='right'><a href='login.php'>login</a></td>";
    echo "</tr>\n</table>\n<hr>\n";
+   }
    echo "<!--************************END OF NAVBAR**********************-->\n";
 }
 
@@ -333,7 +424,7 @@ function add_js ($script) {
 ////
 // !Prints initial part of webpage
 function printheader($title,$head=false, $jsfile=false) {
-   global $client, $db,$version, $active;
+   global $client,$db,$version,$active,$USER,$HTTP_SESSION_VARS;
 
    // let Netscape 4 users use their back button
    // all others should not cache
@@ -347,12 +438,40 @@ function printheader($title,$head=false, $jsfile=false) {
 	"http://www.w3.org/TR/html4/loose.dtd">
 <HTML>
 <HEAD>
-<?php echo $head;
-if ($jsfile && is_readable($jsfile)) {
+<?php 
+echo $head;
+if ($HTTP_SESSION_VARS["javascript_enabled"] && $USER["settings"]["menustyle"]) {
    echo "\n<script language='Javascript'>\n<!--\n";
-   readfile($jsfile);
+   if ($jsfile && is_readable($jsfile))
+      readfile($jsfile);
+   readfile("includes/js/linkmenu.js");
    echo "\n// End Javascript -->\n</script>\n\n";
-} ?> 
+   $mode="menu";
+} 
+if ($mode<>"menu") {
+      $links_per_row=5;
+      $r=$db->Execute("select display from tableoftables where tablename ='linkbar'");
+      if ($r->fields[0]=="1") {
+         $linkr=$db->Execute("select label,linkurl,target from linkbar where display ='Y' ORDER by sortkey");
+         if ($linkr) {
+            while (!$linkr->EOF) {
+               if ($count && (($count%$links_per_row)==0) )
+                 $linkbar.="</tr><tr bgcolor='333388' align='center'>";
+               $Tlinkname=$linkr->fields[0];
+               $urlname=$linkr->fields[1];
+               if ($linkr->fields[2]=="S")
+                  $targetstr="target='_TOP'";
+               else 
+                  $targetstr="target='_BLANK'";
+               $linkbar.="<td style='width: 20%' align='center'><a href=\"$urlname\" $targetstr><font color='#ffffff'>$Tlinkname</font></a></td>\n";
+               $count++;
+               $linkr->MoveNext(); 
+            }
+         } 
+      }
+   }
+
+?> 
 <TITLE><?php echo "$title" ?></TITLE>
 <LINK rel="STYLESHEET" type="text/css" href="phplabware.css">
 </HEAD>
@@ -365,26 +484,10 @@ if ($jsfile && is_readable($jsfile)) {
    // first display the linkbar if activated
    // only show linkbar when we have been authenticated
    if ($active) {
-      $links_per_row=5;
-      $r=$db->Execute("select display from tableoftables where tablename ='linkbar'");
-      if ($r->fields[0]=="1") {
-         $linkr=$db->Execute("select label,linkurl,target from linkbar where display ='Y' ORDER by sortkey");
-         if ($linkr) {
-            while (!$linkr->EOF) {
-               if ($count && (($count%$links_per_row)==0) )
-                 echo "</tr><tr bgcolor='333388' align='center'>";
-               $Tlinkname=$linkr->fields[0];
-               $urlname=$linkr->fields[1];
-               if ($linkr->fields[2]=="S")
-                  $targetstr="target='_TOP'";
-               else 
-                  $targetstr="target='_BLANK'";
-               echo "<td style='width: 20%' align='center'><a href=\"$urlname\" $targetstr><font color='#ffffff'>$Tlinkname</font></a></td>\n";
-               $count++;
-               $linkr->MoveNext(); 
-            }
-         } 
-      }
+      echo "<td>";
+      if ($mode<>"menu")
+         echo "$linkbar";
+      echo "</td>";
    }
 
    ?>
@@ -400,7 +503,6 @@ if ($jsfile && is_readable($jsfile)) {
 <!--************************END OF PRINTHEADER**************************-->
 
 <?php
-
 }
 
 ////
