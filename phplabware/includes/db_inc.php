@@ -421,8 +421,8 @@ function upload_files ($db,$tableid,$id,$columnid,$columnname,$USER,$system_sett
 {
    global $HTTP_POST_FILES,$HTTP_POST_VARS,$system_settings;
 
-   $table=get_cell($db,"tableoftables","tablename","id",$tableid);
-   $real_tablename=get_cell($db,"tableoftables","real_tablename","id",$tableid);
+   $table=get_cell($db,'tableoftables','tablename','id',$tableid);
+   $real_tablename=get_cell($db,'tableoftables','real_tablename','id',$tableid);
 
    if (!($db && $table && $id)) {
       echo "Error in code: $db, $table, or $id is not defined.<br>";
@@ -432,30 +432,30 @@ function upload_files ($db,$tableid,$id,$columnid,$columnname,$USER,$system_sett
       echo "You do not have permission to write to table $table.<br>";
       return false;
    }
-   if (isset($HTTP_POST_FILES["$columnname"]["name"][0]) && !$filedir=$system_settings["filedir"]) {
+   if (isset($HTTP_POST_FILES["$columnname"]['name'][0]) && !$filedir=$system_settings['filedir']) {
       echo "<h3><i>Filedir</i> was not set.  The file was not uploaded. Please contact your system administrator</h3>";
       return false;
    }
-   for ($i=0;$i<sizeof($HTTP_POST_FILES["$columnname"]["name"]);$i++) {
+   for ($i=0;$i<sizeof($HTTP_POST_FILES["$columnname"]['name']);$i++) {
       if (!$fileid=$db->GenID("files_id_seq"))
          return false;
-      $originalname=$HTTP_POST_FILES["$columnname"]["name"][$i];
-      $mime=$HTTP_POST_FILES["$columnname"]["type"][$i];
+      $originalname=$HTTP_POST_FILES["$columnname"]['name'][$i];
+      $mime=$HTTP_POST_FILES["$columnname"]['type'][$i];
       // sometimes mime types are not set properly, let's try to fix those
-      if (substr($originalname,-4,4)==".pdf")
-         $mime="application/pdf";
+      if (substr($originalname,-4,4)=='.pdf')
+         $mime='application/pdf';
       // work around php bug??  
       $mime=strtok ($mime,";");
       $filestype=substr(strrchr($mime,"/"),1);
-      $size=$HTTP_POST_FILES["$columnname"]["size"][$i];
-      $title=$HTTP_POST_VARS["filetitle"][$i];
+      $size=$HTTP_POST_FILES["$columnname"]['size'][$i];
+      $title=$HTTP_POST_VARS['filetitle'][$i];
       if (!$title)
-         $title="NULL"; 
+         $title='NULL'; 
       else
          $title="'$title'";
-      $type=$HTTP_POST_VARS["filetype"][$i];
+      $type=$HTTP_POST_VARS['filetype'][$i];
       // this works asof php 4.02
-      if (move_uploaded_file($HTTP_POST_FILES["$columnname"]["tmp_name"][$i],"$filedir/$fileid"."_"."$originalname")) {
+      if (move_uploaded_file($HTTP_POST_FILES["$columnname"]['tmp_name'][$i],"$filedir/$fileid"."_"."$originalname")) {
          $query="INSERT INTO files (id,filename,mime,size,title,tablesfk,ftableid,ftablecolumnid,type) VALUES ($fileid,'$originalname','$mime','$size',$title,'$tableid',$id,'$columnid','$filestype')";
 	 $db->Execute($query);
       }
@@ -1141,6 +1141,25 @@ function next_previous_buttons($r,$paging=false,$num_p_r=false,$numrows=false,$p
       echo "Records per page</td>\n";
    }
    echo "<td align='right'>";
+// start to add direct links to pages
+/*
+   if ($pagenr) {
+      echo "Goto: ";
+      if ($pagenr < 5 )
+         $start=1;
+      else $start=$pagenr-5;
+// we als need to know the last possible page here
+// and we need a fast forward/fast backward button
+      for ($i=$start; $i<$start+10; $i++) {
+         if ($pagenr==$i)
+            echo "<b>$i </b>";
+         else
+// try using links with javascript converting it into post variables
+            echo "<input type=\"submit\" name=\"pagenr\" value=\"$i\">";
+      }
+   }
+*/
+     
    if (function_exists($r->AtLastPage))
       $r->AtLastPage=$r->AtLastPage();
    if ($r && !$r->AtLastPage)
@@ -1162,12 +1181,12 @@ function next_previous_buttons($r,$paging=false,$num_p_r=false,$numrows=false,$p
 function paging ($num_p_r,&$USER) {
    global $HTTP_POST_VARS;
    if (!$num_p_r)
-      $num_p_r=$USER["settings"]["num_p_r"];
-   if (isset($HTTP_POST_VARS["num_p_r"]))
-      $num_p_r=$HTTP_POST_VARS["num_p_r"];
+      $num_p_r=$USER['settings']['num_p_r'];
+   if (isset($HTTP_POST_VARS['num_p_r']))
+      $num_p_r=$HTTP_POST_VARS['num_p_r'];
    if (!isset($num_p_r))
      $num_p_r=10;
-   $USER["settings"]["num_p_r"]=$num_p_r;
+   $USER['settings']['num_p_r']=$num_p_r;
    return $num_p_r;
 }
 
@@ -1177,15 +1196,15 @@ function paging ($num_p_r,&$USER) {
 // The variable name is formed using the short name for the table
 function current_page($curr_page, $sname) {
    global $HTTP_POST_VARS, $HTTP_SESSION_VARS;
-   $varname=$sname."_curr_page";
+   $varname=$sname.'_curr_page';
    ${$varname}=$curr_page;
 
    if (!isset($$varname))
       ${$varname}=$HTTP_SESSION_VARS[$varname];
-   if (isset($HTTP_POST_VARS["next"])) {
+   if (isset($HTTP_POST_VARS['next'])) {
       ${$varname}+=1;
    }
-   if (isset($HTTP_POST_VARS["previous"]))
+   if (isset($HTTP_POST_VARS['previous']))
       $$varname-=1;
    if ($$varname<1)
       $$varname=1;
@@ -1200,15 +1219,15 @@ function make_search_SQL($db,$tableinfo,$fields,$USER,$search,$searchsort="title
    global $HTTP_POST_VARS, $HTTP_SESSION_VARS;
 
    if (!$searchsort)
-      $searchsort="title";
-   $fieldvarsname=$tableinfo->short."_fieldvars";
+      $searchsort='title';
+   $fieldvarsname=$tableinfo->short.'_fieldvars';
    global ${$fieldvarsname};
-   $queryname=$tableinfo->short."_query";
+   $queryname=$tableinfo->short.'_query';
    if (!$whereclause)
       $whereclause=may_read_SQL ($db,$tableinfo,$USER);
    if (!$whereclause)
       $whereclause=-1;
-   if ($search=="Search") {
+   if ($search=='Search') {
       ${$queryname}=search($db,$tableinfo,$fields,$HTTP_POST_VARS," $whereclause ORDER BY $searchsort");
       ${$fieldvarsname}=$HTTP_POST_VARS;
    }
@@ -1227,13 +1246,13 @@ function make_search_SQL($db,$tableinfo,$fields,$USER,$search,$searchsort="title
    $HTTP_SESSION_VARS[$fieldvarsname]=${$fieldvarsname};   
    session_register($fieldvarsname);
 
-   if ($search !="Show All") {
+   if ($search !='Show All') {
       // globalize HTTP_POST_VARS 
-      $column=strtok($fields,",");
+      $column=strtok($fields,',');
       while ($column) {
          global ${$column};
          ${$column}=$HTTP_POST_VARS[$column];
-         $column=strtok(",");
+         $column=strtok(',');
       }
       // extract variables from session
       globalize_vars ($fields, ${$fieldvarsname});
@@ -1249,9 +1268,9 @@ function make_search_SQL($db,$tableinfo,$fields,$USER,$search,$searchsort="title
 function may_see_table($db,$USER,$tableid) {
    include ('includes/defines_inc.php');
    // Sysadmin may see it all
-   if ($USER["permissions"] & $SUPER)
+   if ($USER['permissions'] & $SUPER)
       return true;
-   $group_list=$USER["group_list"];
+   $group_list=$USER['group_list'];
    $r=$db->Execute ("SELECT tableid FROM groupxtable_display WHERE groupid IN ($group_list) AND tableid='$tableid'");
    if ($r && !$r->EOF)
       return true;
