@@ -53,7 +53,7 @@ function plugin_search($query,$fieldvalues,$existing_clause)
 // $allfields is a 2-D array containing the field names of the table in the first dimension
 // and name,columnid,label,datatype,display_table,display_record,ass_t,ass_column,
 // ass_local_key,required,modifiable,text,values in the 2nd D
-function plugin_getvalues($db,&$allfields) 
+function plugin_getvalues($db,&$allfields,$id,$tableid) 
 {
 }
 
