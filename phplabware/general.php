@@ -5,7 +5,7 @@
   /***************************************************************************
   * This script displays a table with protocols in phplabware.               *
   *                                                                          *
-  * Copyright (c) 2001 by Nico Stuurman                                      *
+  * Copyright (c) 2002 by Ethan Garner,Nico Stuurman<nicost@sf.net           *
   * ------------------------------------------------------------------------ *
   *  This program is free software; you can redistribute it and/or modify it *
   *  under the terms of the GNU General Public License as published by the   *
@@ -273,8 +273,9 @@ else {
 
    //  get a list of all fields that are displayed in the table
    $Fieldscomma=comma_array_SQL_where($db,$table_desname,"columnname","display_table","Y");
+//   $Fieldscomma .= ",id ";
    $Labelcomma=comma_array_SQL_where($db,$table_desname,"label","display_table","Y");
-   $Allfields=getvalues($db,$real_tablename,$table_desname,$Fieldscomma);	
+   $Allfields=getvalues($db,$real_tablename,$table_desname,$tablied,$Fieldscomma);	
    
    // javascript to automatically execute search when pulling down 
    $jscript="onChange='document.g_form.searchj.value=\"Search\"; document.g_form.submit()'";
@@ -289,6 +290,8 @@ else {
       else 
          $list=$lista;   
       if ($nowfield[datatype]== "link")
+         echo "<td style='width: 10%'>&nbsp;</td>\n";
+      elseif ($nowfield[datatype]== "alink")
          echo "<td style='width: 10%'>&nbsp;</td>\n";
       elseif ($nowfield[datatype]== "text") {
          // show titles we may see, when too many, revert to text box
