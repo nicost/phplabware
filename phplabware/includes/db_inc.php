@@ -677,7 +677,6 @@ function search ($table,$fields,$fieldvalues,$whereclause=false,$wcappend=true) 
    return $query[0];
 }
 
-
 ////
 // !Displays the next and previous buttons
 // $r is the result of a $db->Execute query used to display the table with records
@@ -685,7 +684,9 @@ function search ($table,$fields,$fieldvalues,$whereclause=false,$wcappend=true) 
 // $num_p_r holds the (global) records per page variable
 function next_previous_buttons($r,$paging=false,$num_p_r=false,$numrows=false,$pagenr=false) {
    echo "<table border=0 width=100%>\n<tr width=100%>\n<td align='left'>";
-   if ($r && !$r->AtFirstPage())
+   if (function_exists($r->AtFirstPage))
+      $r->AtFirstPage=$r->AtFirstPage();
+   if ($r && !$r->AtFirstPage)
       echo "<input type=\"submit\" name=\"previous\" value=\"Previous\"></td>\n";
    else
       if ($paging)
@@ -709,7 +710,9 @@ function next_previous_buttons($r,$paging=false,$num_p_r=false,$numrows=false,$p
       echo "Records per page</td>\n";
    }
    echo "<td align='right'>";
-   if ($r && !$r->AtLastPage())
+   if (function_exists($r->AtLastPage))
+      $r->AtLastPage=$r->AtLastPage();
+   if ($r && !$r->AtLastPage)
       echo "<input type=\"submit\" name=\"next\" value=\"Next\"></td>\n";
    else
       if ($paging)
