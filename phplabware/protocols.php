@@ -34,10 +34,17 @@ if ($searchj)
 ////
 // !Checks input data.
 // returns false if something can not be fixed
-function check_pr_data (&$field_values) {
+function check_pr_data ($db,&$field_values) {
    if (!$field_values["title"]) {
       echo "<h3>Please enter a title for the protocol.</h3>";
       return false;
+   }
+   // When a new author was entered
+   if ($field_values["firstname"] || $field_values["lastname"]) {
+      $id=$db->GenID("pr_type2_id_seq");
+      $db->Execute("INSERT INTO pr_type2 (id,type,typeshort) VALUES ('$id','".
+           $field_values["firstname"]."','".$field_values["lastname"]."')");
+      $field_values["type2"]=$id;
    }
    return true;
 }
@@ -49,6 +56,7 @@ function check_pr_data (&$field_values) {
 function add_pr_form ($db,$fields,$field_values,$id,$USER,$PHP_SELF,$system_settings) {
    if (!may_write($db,"protocols",$id,$USER))
       return false;
+   global $db_type;
 
    // get values in a smart way
    $column=strtok($fields,",");
@@ -81,7 +89,17 @@ function add_pr_form ($db,$fields,$field_values,$id,$USER,$PHP_SELF,$system_sett
    $r=$db->Execute("SELECT type,id FROM pr_type1 ORDER BY sortkey");
    $text=$r->GetMenu2("type1",$type1,true);
    echo "<td></td>\n<td>$text</td>\n";
-   
+   echo "</tr>\n";
+
+   echo "<tr>\n";
+   if ($db_type=="mysql") // mysql does not use the ansi SQL || operator
+      $r=$db->Execute("SELECT CONCAT(type, ' ', typeshort),id  from pr_type2 ORDER by typeshort");
+   else
+      $r=$db->Execute("SELECT type || ' ' || typeshort,id  from pr_type2 ORDER by typeshort");
+   $text=$r->GetMenu2("type2",$type2,true,false,0,"style='width: 80%'");
+   echo "<th>Author:</th>\n<td>$text ";
+   echo "Or: First<input type='text' size=8 name='firstname' value='$firstname'>\n";
+   echo "Last<input type='text' size=12 name='lastname' value='$lastname'></td>\n";
    echo "</tr>\n";
 
    echo "<tr>";
@@ -146,21 +164,25 @@ function show_pr ($db,$fields,$id,$USER,$system_settings) {
    echo "<td></td><td></td>\n<th>Category</th>\n";
    echo "</tr>\n";
    echo "<tr>\n";
-   echo "<th>Title: <sup style='color:red'>&nbsp;*</sup></th>\n";
+   echo "<th>Title: </th>\n";
    echo "<td colspan=2>$title</td>\n";
-   
    $text=get_cell($db,"pr_type1","type","id",$type1);
-   echo "<td></td><td align='center'>$text</td>\n";
+   echo "<td></td><td align='center'>$text</td></tr>\n";
    
+   echo "<tr>\n";
+   echo "<th>Author: </th>\n";
+   $r=$db->Execute("SELECT type,typeshort FROM pr_type2 WHERE id=$type2");
+   echo "<td colspan=2>".$r->fields["type"]." ".$r->fields["typeshort"]."</td></tr>\n";
+
    echo "<tr>";
    $query="SELECT firstname,lastname,email FROM users WHERE id=$ownerid";
    $r=$db->Execute($query);
    if ($r->fields["email"]) {
-      echo "<th>Author: </th><td><a href='mailto:".$r->fields["email"]."'>";
+      echo "<th>Submitted by: </th><td><a href='mailto:".$r->fields["email"]."'>";
       echo $r->fields["firstname"]." ".$r->fields["lastname"]."</a></td>\n";
    }
    else {
-      echo "<th>Author: </th><td>".$r->fields["firstname"]." ";
+      echo "<th>Submitted by: </th><td>".$r->fields["firstname"]." ";
       echo $r->fields["lastname"] ."</td>\n";
    }
    echo "<td>&nbsp;</td>";
@@ -290,7 +312,7 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
       $table=$modarray[1]."_".$modarray[2];
       include("includes/type_inc.php");
       add_type($db,$table);
-      show_type($db,$table,"Category");
+      show_type($db,$table,"");
       printfooter();
       exit();
    }
@@ -299,7 +321,7 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
       $table=$modarray[1]."_".$modarray[2];
       include("includes/type_inc.php");
       mod_type($db,$table,$modarray[3]);
-      show_type($db,$table,"Category");
+      show_type($db,$table,"");
       printfooter();
       exit();
    }
@@ -308,7 +330,7 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
       $table=$modarray[1]."_".$modarray[2];
       include("includes/type_inc.php");
       del_type($db,$table,$modarray[3],"protocols");
-      show_type($db,$table,"Category");
+      show_type($db,$table,"");
       printfooter();
       exit();
    }
@@ -316,7 +338,7 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
 
 if ($edit_type && ($USER["permissions"] & $LAYOUT)) {
    include("includes/type_inc.php");
-   show_type($db,$edit_type,"Category");
+   show_type($db,$edit_type,"");
    printfooter();
    exit();
 }
@@ -338,7 +360,7 @@ else {
    echo "<caption>\n";
    // first handle addition of a new protocol
    if ($submit == "Add Protocol") {
-      if (! (check_pr_data($HTTP_POST_VARS) && $id=add ($db, "protocols",$fields,$HTTP_POST_VARS,$USER) ) ){
+      if (! (check_pr_data($db, $HTTP_POST_VARS) && $id=add ($db, "protocols",$fields,$HTTP_POST_VARS,$USER) ) ){
          echo "</caption>\n</table>\n";
          add_pr_form ($db,$fields,$HTTP_POST_VARS,0,$USER,$PHP_SELF,$system_settings);
          printfooter ();
@@ -356,7 +378,7 @@ else {
    }
    // then look whether it should be modified
    elseif ($submit=="Modify Protocol") {
-      if (! (check_pr_data($HTTP_POST_VARS) && modify ($db,"protocols",$fields,$HTTP_POST_VARS,$HTTP_POST_VARS["id"],$USER)) ) {
+      if (! (check_pr_data($db,$HTTP_POST_VARS) && modify ($db,"protocols",$fields,$HTTP_POST_VARS,$HTTP_POST_VARS["id"],$USER)) ) {
          echo "</caption>\n</table>\n";
          add_pr_form ($db,$fields,$HTTP_POST_VARS,$HTTP_POST_VARS["id"],$USER,$PHP_SELF,$system_settings);
          printfooter ();
@@ -436,22 +458,31 @@ else {
    }
    else
       echo "<td><input type='text' name='title' value='$title' size=8></td>\n";
-   // show a list with users having stuff we may see
-   if ($ownerid) $list=$listb; else $list=$lista;
-   $r=$db->Execute("SELECT ownerid FROM protocols WHERE id IN ($list)");
-   $list2=make_SQL_ids($r,false,"ownerid");
+
+   // show a list with authors having stuff we may see
+   echo "<td style='width: 10%'>\n";
+   if ($USER["permissions"] & $LAYOUT) {
+      echo "<a href='$PHP_SELF?edit_type=pr_type2&";
+      echo SID;
+      echo "'>Edit Authors</a><br>\n";
+   }
+   if ($type2) $list=$listb; else $list=$lista;
+   $r=$db->Execute("SELECT type2 FROM protocols WHERE id IN ($list)");
+   $list2=make_SQL_ids($r,false,"type2");
    if ($list2) {
       if ($db_type=="mysql") // mysql does not use the ansi SQL || operator
-         $r=$db->Execute("SELECT CONCAT(firstname, ' ', lastname),id  from users WHERE id IN ($list2) ORDER by login");
+         $r=$db->Execute("SELECT CONCAT(type, ' ', typeshort),id  from pr_type2 WHERE id IN ($list2) ORDER by typeshort");
       else
-         $r=$db->Execute("SELECT firstname || ' ' || lastname,id  from users WHERE id IN ($list2) ORDER by login");
-      $text=$r->GetMenu2("ownerid",$ownerid,true,false,0,"style='width: 80%' $jscript");
+         $r=$db->Execute("SELECT type || ' ' || typeshort,id  from pr_type2 WHERE id IN ($list2) ORDER by typeshort");
+      $text=$r->GetMenu2("type2",$type2,true,false,0,"style='width: 80%' $jscript");
    }
    else
       $text="&nbsp;";
-   echo "<td style='width: 10%'>$text</td>\n";
+   echo "$text</td>\n";
+
    echo "<td><input type='text' name='notes' value='$notes' size=8></td>\n";
-   // print links to edit 'type' tables
+
+   // print link to edit table 'Categories'
    echo "<td style='width: 10%'>";
    if ($USER["permissions"] & $LAYOUT) {
       echo "<a href='$PHP_SELF?edit_type=pr_type1&";
@@ -521,9 +552,9 @@ else {
          echo "<tr class='row_even' align='center'>\n";
 
       echo "<td>$title</td>\n";
-      $owner=get_cell($db,"users","firstname","id",$r->fields["ownerid"]);
-      $owner.= " ".get_cell($db,"users","lastname","id",$r->fields["ownerid"]);
-      echo "<td>$owner</td>\n";
+      $author=get_cell($db,"pr_type2","type","id",$r->fields["type2"]);
+      $author.= "&nbsp;".get_cell($db,"pr_type2","typeshort","id",$r->fields["type2"]);
+      echo "<td>$author</td>\n";
       if ($notes)
          echo "<td>yes</td>\n";
       else
