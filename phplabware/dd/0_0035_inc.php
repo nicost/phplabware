@@ -19,6 +19,7 @@
 $r=$db->Execute("SELECT real_tablename FROM tableoftables WHERE table_desc_name IS NOT NULL");
 while (!$r->EOF) {
    $real_tablename=$r->fields["real_tablename"];
+   echo "$real_tablename\n";
    $db->Execute("CREATE INDEX $real_tablename"."_id_index ON $real_tablename (id)");
    $db->Execute("CREATE INDEX $real_tablename"."_title_index ON $real_tablename (title)");
    $db->Execute("CREATE INDEX $real_tablename"."_title_index ON $real_tablename (title(10))");
