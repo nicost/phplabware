@@ -210,23 +210,15 @@ else {
 
    // print form;
    $dbstring=$PHP_SELF."?"."tablename=$tablename&";
-   echo "<form method='post' id='protocolform' enctype='multipart/form-data' action='$dbstring";
+   echo "<form name=g_form method='post' id='generalform' enctype='multipart/form-data' action='$dbstring";
 	?><?=SID?>'><?php
 
    // row with action links
    $sid=SID;
    if ($sid) $sid="&".$sid;
    if ($tablename) $sid.="&tablename=$tablename";
-/*   
 
-   // get a list with ids we may see
-   $r=$db->Execute($p_query);
-   $lista=make_SQL_csf ($r,false,"id",$nr_records);
 
-   // and a list with all records we may see
-   $listb=may_read_SQL($db,$real_tablename,$USER);
-   if ($title) $list=$listb; else $list=$lista;   
-*/   
    // Need to put in a singular name
    echo "<table border=0 width='50%' align='center'>\n<tr>\n";
    echo "<td align='center'><B>$tablename</B><br>";
@@ -239,13 +231,20 @@ else {
    echo "<table border='1' align='center'>\n";
 
 
+   // get a list with ids we may see
+   $r=$db->Execute($p_query);
+   $lista=make_SQL_csf ($r,false,"id",$nr_records);
 
-//   get a list of all fields that are displayed in the table
-$Fieldscomma=comma_array_SQL_where($db,$table_desname,"label","display_table","Y");
-$Allfields=getvalues($db,$real_tablename,$table_desname,$Fieldscomma,display_table,"Y");	
-display_tablehead($db,$tablename,$real_tablename,$table_desname,$Allfields,$list);
-display_midbar($Fieldscomma);
-display_table_info($db,$tablename,$real_tablename,$table_desname,$Fieldscomma,$p_query,$num_p_r,$p_curr_page);
-printfooter($db,$USER);
+   // and a list with all records we may see
+   $listb=may_read_SQL($db,$real_tablename,$USER);
+   if ($title) $list=$listb; else $list=$lista;   
+
+   //  get a list of all fields that are displayed in the table
+   $Fieldscomma=comma_array_SQL_where($db,$table_desname,"label","display_table","Y");
+   $Allfields=getvalues($db,$real_tablename,$table_desname,$Fieldscomma,display_table,"Y");	
+   display_tablehead($db,$tablename,$real_tablename,$table_desname,$Allfields,$list);
+   display_midbar($Fieldscomma);
+   display_table_info($db,$tablename,$real_tablename,$table_desname,$Fieldscomma,$p_query,$num_p_r,$p_curr_page);
+   printfooter($db,$USER);
 }
 ?>
