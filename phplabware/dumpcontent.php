@@ -133,7 +133,7 @@ foreach ($headers as $header) {
 fwrite ($fp,"\n");
 
 $r=$db->Execute("SELECT $fields FROM ".$tableinfo->realname);
-while ($r->fields["id"] && !$r->EOF) {
+while ($r->fields['id'] && !$r->EOF) {
    $rowvalues=getvalues($db,$tableinfo,$fields,'id',$r->fields['id']);
    foreach ($rowvalues as $row) {
       if (is_array($row)) {
@@ -147,7 +147,7 @@ while ($r->fields["id"] && !$r->EOF) {
                fwrite ($ff,++$filenr."\t".$files[$i]['name']."\t".$files[$i]['mime']."\t".$files[$i]['size']."\t".$files[$i]['type']."\n");
                fwrite ($fp,$filenr.',');
                $path=file_path($db,$files[$i]['id']);
-               $cpstr="cp $path {$filedir}{$files[$i]['name']}";
+               $cpstr="cp $path {$filedir}{$filenr}_{$files[$i]['name']}";
               `$cpstr`;
             }
             fwrite ($fp,$post_seperator);
