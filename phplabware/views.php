@@ -40,8 +40,10 @@ if (!($r && $r->fields[0]))
 // Delete
 if ($HTTP_POST_VARS['delete']=='Remove' && $viewid) {
    // do a check for userid to be sure nobody deletes someone elses views
-   if ($db->Execute ("DELETE FROM tableviews WHERE viewnameid=$viewid AND userid={$USER['id']}"))
+   if ($db->Execute ("DELETE FROM tableviews WHERE viewnameid=$viewid AND userid={$USER['id']}")) {
       $db->Execute ("DELETE FROM viewnames WHERE viewnameid=$viewid");
+      unset ($viewid);
+   }
 }
 // Create new views
 if ($HTTP_POST_VARS['Create']=='Create' && $HTTP_POST_VARS['newview']) {
