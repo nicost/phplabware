@@ -26,7 +26,6 @@ while (!$r->EOF) {
    $db->Execute("UPDATE tableoftables SET label='$tablename' WHERE id='$tableid'");
    if ($tableid>10000) {
       $table_desc_name=$real_tablename."_desc";
-	echo "$table_desc_name\n";
       $db->Execute("UPDATE tableoftables SET table_desc_name='$table_desc_name' WHERE id='$tableid'");
       $db->Execute("ALTER TABLE $table_desc_name ADD COLUMN columnname text");
       $db->Execute("ALTER TABLE $table_desc_name ADD COLUMN associated_local_key int");
