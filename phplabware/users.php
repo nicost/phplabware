@@ -81,7 +81,7 @@ function delete_user ($db, $id) {
    if ($tables) {
       $table=strtok($tables,",");
       while ($table) {
-         $query="DELETE FROM $table WHERE userid='$id'";
+         $query="DELETE FROM $table WHERE ownerid='$id'";
          if (!$db->Execute($query))
             $test=false;
          $table=strtok (",");
@@ -136,7 +136,7 @@ function modify ($db, $type) {
       echo "You are not allowed to do this. <br>";
       return false;
    }
-   
+
    // log some info
    $theid=$USER["id"];
    $theip=getenv("REMOTE_ADDR");
@@ -245,7 +245,8 @@ function show_user_form ($type) {
    }
 
    if ($USER["permissions"] >= $WRITE && ($system_settings["authmethod"] <> 2
-         || ($type=="me" && $HTTP_SESSION_VARS["authmethod"]=="sql") ) ) {
+         || ($type=="me" && $HTTP_SESSION_VARS["authmethod"]=="sql") 
+         || $type=="create") ) {
       echo "<tr><td>Password (max. 20 characters):</td><td><input type='password' name='pwd' maxlength=20 size=20 value=''>";
       if ($type=="create")
          echo "<sup style='color:red'>&nbsp(required)</sup></td></tr>\n";
@@ -254,6 +255,8 @@ function show_user_form ($type) {
          echo "<sup style='color:red'>&nbsp(required)</sup></td></tr>\n";
       if ($type=="modify" || $type=="me")
          echo "<tr><td colspan=2 align='center'>Leave the password fields blank to keep the current password</td></tr>\n";
+      if ($type=="create" && $system_settings["authmethod"]==2)
+         echo "<tr><td colspan=2 align='center'>Leave the password fields blank to force PAM-based authentification</td></tr>\n";
    }
 
    if ($USER["permissions"] & $SUPER) {
