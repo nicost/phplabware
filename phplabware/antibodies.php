@@ -270,13 +270,11 @@ function show_ab ($db,$fields,$id,$USER,$system_settings) {
 printheader($title);
 navbar($USER["permissions"]);
 
-// check if something should be modified or shown
+// check if something should be modified, deleted or shown
 while((list($key, $val) = each($HTTP_POST_VARS))) {
    if (substr($key, 0, 3) == "mod") {
       $modarray = explode("_", $key);
-      //$ADODB_FETCH_MODE=ADODB_FETCH_ASSOC;
       $r=$db->Execute("SELECT $fields FROM antibodies WHERE id=$modarray[1]"); 
-      //$ADODB_FETCH_MODE=ADODB_FETCH_NUM;
       add_ab_form ($db,$fields,$r->fields,$modarray[1],$USER,$PHP_SELF,$system_settings);
       printfooter();
       exit();
@@ -360,6 +358,7 @@ else {
 
    if ($search=="Show All") {
       unset ($HTTP_POST_VARS);
+      $curr_page=1;
       session_unregister("query");
    }
    $column=strtok($fields,",");
@@ -424,19 +423,23 @@ else {
    session_register("query");
 
    // paging stuff
-   session_register('num_p_r');
+   $num_p_r=$USER["settings"]["num_p_r"];
    if (isset($HTTP_POST_VARS["num_p_r"]))
       $num_p_r=$HTTP_POST_VARS["num_p_r"];
    if (!isset($num_p_r))
       $num_p_r=10;
-   session_register('curr_page');
+   $USER["settings"]["num_p_r"]=$num_p_r;
+   if (!isset($curr_page))
+      $curr_page=$HTTP_SESSION_VARS["curr_page"];
    if (isset($HTTP_POST_VARS["next"]))
       $curr_page+=1;
    if (isset($HTTP_POST_VARS["previous"]))
       $curr_page-=1;
    if ($curr_page<1)
       $curr_page=1;
-      
+   $HTTP_SESSION_VARS["curr_page"]=$curr_page; 
+   session_register("curr_page");
+
    $r=$db->PageExecute($query,$num_p_r,$curr_page);
    $rownr=1;
    // print all entries
@@ -504,7 +507,7 @@ else {
       echo "</td></tr>";
    }
 
-   // next/prvious buttons
+   // next/previous buttons
    echo "<tr><td colspan=2 align='center'>";
    if (!$r->AtFirstPage())
       echo "<input type=\"submit\" name=\"previous\" value=\"Previous\"></td>\n";
@@ -525,6 +528,6 @@ else {
 
 }
 
-printfooter();
+printfooter($db,$USER);
 
 ?>
