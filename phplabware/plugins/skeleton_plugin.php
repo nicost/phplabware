@@ -19,6 +19,15 @@ the terms of the GNU General Public License as published by the Free Software Fo
 
 
 ////
+// !This function is called after a record has been modified
+/*
+function plugin_modify ($db,$tableid,$id) 
+{
+}
+*/
+
+
+////
 // !This function is called after a record has been added
 // As an example, it is used to write some data concerning the 
 // new record to a file for inclusion in a webpage
