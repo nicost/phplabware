@@ -716,14 +716,18 @@ function mod_table($db,$id,$tablename,$tablesort,$tabledisplay)
 // !adds a general column entry
 function add_columnecg($db,$tablename2,$colname2,$datatype,$Rdis,$Tdis,$req,$sort)
 	{
+	global $string;
+	// find the id of the table and therewith the tablename
+	$r=$db->Execute("SELECT id FROM tableoftables WHERE tablename='$tablename2'");
+	$id=$r->fields["id"];
 	$search=array("' '","','","';'","'\"'");
 	$replace=array("_","_","","");
 	$colname = preg_replace ($search,$replace, $colname2);
 	$tablename = preg_replace ($search,$replace, $tablename2); 
-	
-	global $string;
+	$real_tablename=$id."_$tablename";
+
 	$fieldstring="label,sortkey, display_table, display_record,required, type, datatype, associated_table, associated_sql"; 
-	$desc=$tablename; $desc.="_desc";
+	$desc=$real_tablename . "_desc";
 	if ($colname==""){$string="Please enter all values";}
 	else
 		{
@@ -731,7 +735,7 @@ function add_columnecg($db,$tablename2,$colname2,$datatype,$Rdis,$Tdis,$req,$sor
 			{ 
 			// create an associated table, not overwriting old ones, using a max number
 			$ALLTABLES=$db->MetaTables();  
-			$tablestr=$tablename;$tablestr.="ass";
+			$tablestr=$real_tablename;$tablestr.="ass";
 			$tables=array();
 			$tables=preg_grep("/$tablestr/",$ALLTABLES); 
 			$tables2=array_values($tables);
@@ -748,18 +752,19 @@ function add_columnecg($db,$tablename2,$colname2,$datatype,$Rdis,$Tdis,$req,$sor
 			$tablestr.="_$newnum";	
 			$r=$db->Execute("INSERT INTO $desc ($fieldstring) Values('$colname','$sort','$Tdis','$Rdis','$req','text','$datatype','$tablestr','$colname from $tablestr where ')");
 			$rs=$db->Execute("CREATE TABLE $tablestr (id int PRIMARY KEY, sortkey int, type text, typeshort text)");
-			$rsss=$db->Execute("ALTER table $tablename add column $colname text");
-			if (($r)&&($rs)&&($rsss)&&(!($colname==""))) {$string="Added column $colname into $tablename";}
+			$rsss=$db->Execute("ALTER table $real_tablename add column $colname text");
+			if (($r)&&($rs)&&($rsss)&&(!($colname==""))) {$string="Added column $colname into table <i>$tablename</i>";}
 			else {$string="Please enter all values";}	
 			}				
 		else
 			{  
 			$r=$db->Execute("INSERT INTO $desc ($fieldstring) Values('$colname','$sort','$Tdis','$Rdis','$req','text','$datatype','','')");
-			$rsss=$db->Execute("ALTER table $tablename add column $colname text");
-			if (($r)&&$rsss&&(!($colname==""))) {$string="Added column $colname into $tablename";}
+			$rsss=$db->Execute("ALTER table $real_tablename add column $colname text");
+			if (($r)&&$rsss&&(!($colname==""))) {$string="Added column $colname into table: <i>$tablename</i>";}
 			else {$string="Please enter all values";}	
 			}
 		}
+		$db->debug=false;
 	}
 
 /////////////////////////////////////////////////////////////////////////
