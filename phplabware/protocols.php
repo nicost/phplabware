@@ -283,7 +283,7 @@ function process_file($db,$fileid,$system_settings) {
       $temp=$system_settings["tmpdir"]."/".uniqid("file");
       $command= "$word2html $filepath $temp";
       $result=exec($command);
-      if (is_readable($temp)) {
+      if (@is_readable($temp)) {
          unset ($HTTP_POST_FILES);
          $r=$db->query ("SELECT filename,mime,title,tablesfk,ftableid FROM files WHERE id=$fileid");
          if ($r && !$r->EOF) {
@@ -398,9 +398,9 @@ else {
          exit;
       }
       else {  
-	     $fileid=upload_files($db,$tableid,$id,$USER,$system_settings);
-	     if ($system_settings["protocols_file"])
-	        report_protocol_addition ($db,$id,$system_settings);
+	 $fileid=upload_files($db,$tableid,$id,$USER,$system_settings);
+	 if ($system_settings["protocols_file"])
+	    report_protocol_addition ($db,$id,$system_settings);
          // insert stuff to deal with word/html files
          process_file($db,$fileid,$system_settings); 
          // to not interfere with search form 
@@ -441,8 +441,6 @@ else {
          }
       }
    } 
-
-
 
 
    if ($search=="Show All") {
