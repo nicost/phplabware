@@ -690,6 +690,9 @@ function get_access ($fieldvalues,$column) {
 function may_read_SQL_subselect ($db,$table,$tableid,$USER,$clause=false) {
    include_once ('includes/defines_inc.php');
    $query="SELECT id FROM $table ";
+   // don't know why, but variables defined in defines_in.php are not know here
+   // bug in my php version?
+   $SUPER=64;
 
    if ($USER['permissions'] & $SUPER) {
       if ($clause)
