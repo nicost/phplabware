@@ -353,6 +353,8 @@ Location: ') {
          case 'www.jbc.org':
          case 'www.jcb.org':
          case 'www.genetics.org':
+         case 'hmg.oupjournals.org':
+         case 'www.bloodjournal.org':
              $website=read_web_page($host,$getstring,$header,$body,true,5); 
              $link=get_location($header);
              $link=str_replace('content/full','reprint',$link);
