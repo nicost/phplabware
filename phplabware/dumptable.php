@@ -66,11 +66,59 @@ fwrite ($fp, 'if ($r) {
       link_last text,
       modifiable char(1) )");
    if ($rb) {
-      '
+      ');
+$desc_fields="sortkey,label,columnname,display_table,display_record,required,type,datatype,associated_table,associated_column,thumb_x_size,thumb_y_size,link_first,link_last,modifiable";
+$ADODB_FETCH_MODE=ADODB_FETCH_NUM;
+$s=$db->Execute("SELECT $desc_fields FROM $table_desc");
+while (!$s->EOF) {
+   fwrite ($fp,'$newid=$db->GenID("newtable_desc_name"."_id");');
+   fwrite ($fp,'
+      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid');
+   // rewrite types to standard SQL
+   $value=$s->fields[6];
+   if (substr ($value,0,3)=="int")
+      $s->fields[6]="int";
+   //elseif (substr ($value,0,7)=="varchar")
+   for ($i=0; $i<sizeof($s->fields);$i++) {
+      $value=$s->fields[$i];
+      fwrite ($fp,",'$value'");
+   }
+   fwrite ($fp,')");
+      ');
+   $s->MoveNext();
+}
 
-);
+fwrite ($fp,'// and finally create the table
+      $rc=$db->Execute(" CREATE TABLE $newtable_realname (
+');
+$s->MoveFirst();
+$fieldname=$s->fields[2];
+$fieldtype=$s->fields[6];
+if (substr ($fieldtype,0,3)=="int")
+   $fieldtype="int";
+if ($fieldname=="id")
+   $extra=" NOT NULL";
+fwrite ($fp,"         $fieldname $fieldtype $extra");
+$s->MoveNext();
+while (!$s->EOF) {
+   unset ($extra);
+   $fieldname=$s->fields[2];
+   $fieldtype=$s->fields[6];
+   if (substr ($fieldtype,0,3)=="int")
+      $fieldtype="int";
+   if ($fieldname=="id")
+      $extra=" NOT NULL";
+   fwrite ($fp,",\n         $fieldname $fieldtype $extra");
+   $s->MoveNext();
+}
+fwrite ($fp,' ) ");
+');   
 
-
+$ADODB_FETCH_MODE=ADODB_FETCH_BOTH;
+fwrite($fp,"
+   }
+}
+");
 
 
 fwrite ($fp,"?>");
