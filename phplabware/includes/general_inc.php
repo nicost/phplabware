@@ -82,7 +82,7 @@ function display_table_change($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr
       // Get required ID and title
       $id=$r->fields["id"];
       $title=$r->fields["title"];		
-      $Allfields=getvalues($db,$tableinfo->realname,$tableinfo->desname,$tableinfo->id,$Fieldscomma,id,$id);
+      $Allfields=getvalues($db,$tableinfo,$Fieldscomma,id,$id);
       $may_write=may_write($db,$tableinfo->id,$id,$USER);
 
       // print start of row of selected record
@@ -190,7 +190,7 @@ function display_table_info($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr_c
       // Get required ID and title
       $id=$r->fields["id"];
       $title=$r->fields["title"];		
-      $Allfields=getvalues($db,$tableinfo->realname,$tableinfo->desname,$tableinfo->id,$Fieldscomma,id,$id);
+      $Allfields=getvalues($db,$tableinfo,$Fieldscomma,id,$id);
       // print start of row of selected group
       if ($current_record % 2) echo "<tr class='row_odd' align='center'>\n";
          else echo "<tr class='row_even' align='center'>\n";
@@ -439,10 +439,10 @@ function display_add($db,$tableinfo,$Allfields,$id,$namein,$system_settings) {
 // !Get all description table values out for a display
 // Returns an array with lots of information on every column
 // If qfield is set, database values for that record will be returned as well
-function getvalues($db,$DBNAME,$DB_DESNAME,$tableid,$fields,$qfield=false,$field=false) {
+function getvalues($db,$tableinfo,$fields,$qfield=false,$field=false) {
    if ($qfield) {
-      $r=$db->Execute("SELECT $fields FROM $DBNAME WHERE $qfield=$field"); 
-      $rid=$db->Execute("SELECT id FROM $DBNAME WHERE $qfield=$field");
+      $r=$db->Execute("SELECT $fields FROM $tableinfo->realname WHERE $qfield=$field"); 
+      $rid=$db->Execute("SELECT id FROM $tableinfo->realname WHERE $qfield=$field");
       $id=$rid->fields["id"];
    }
    $column=strtok($fields,",");
@@ -451,7 +451,7 @@ function getvalues($db,$DBNAME,$DB_DESNAME,$tableid,$fields,$qfield=false,$field
       if($column!="id") {
          if ($r)
             ${$column}["values"]= $r->fields[$column];
-         $rb=$db->CacheExecute(2,"SELECT id,label,datatype,display_table,display_record,associated_table,associated_column,associated_local_key,required,link_first,link_last,modifiable FROM $DB_DESNAME WHERE columnname='$column'");
+         $rb=$db->CacheExecute(2,"SELECT id,label,datatype,display_table,display_record,associated_table,associated_column,associated_local_key,required,link_first,link_last,modifiable FROM $tableinfo->desname WHERE columnname='$column'");
          ${$column}["name"]=$column;
          ${$column}["columnid"]=$rb->fields["id"];
          ${$column}["label"]=$rb->fields["label"];
@@ -471,8 +471,8 @@ function getvalues($db,$DBNAME,$DB_DESNAME,$tableid,$fields,$qfield=false,$field
          if ($id) {
             if ($rb->fields["datatype"]=="table") {
                if ($rb->fields["associated_local_key"]) {
-                  ${$column}["ass_local_column_name"]=get_cell($db,$DB_DESNAME,"columnname","id",$rb->fields["associated_local_key"]);
-                  ${$column}["values"]=get_cell($db,$DBNAME,${$column}["ass_local_column_name"],"id",$id); 
+                  ${$column}["ass_local_column_name"]=get_cell($db,$tableinfo->desname,"columnname","id",$rb->fields["associated_local_key"]);
+                  ${$column}["values"]=get_cell($db,$tableinfo->realname,${$column}["ass_local_column_name"],"id",$id); 
                }
                $text=false;
                if (${$column}["values"])
@@ -495,7 +495,7 @@ function getvalues($db,$DBNAME,$DB_DESNAME,$tableid,$fields,$qfield=false,$field
                   ${$column}["text"]="yes";
             }
             elseif ($rb->fields["datatype"]=="file") {
-               $tbname=get_cell($db,"tableoftables","tablename","id",$tableid);
+               $tbname=get_cell($db,"tableoftables","tablename","id",$tableinfo->id);
                $files=get_files($db,$tbname,$id,${$column}["columnid"],3);
                if ($files) 
                   for ($i=0;$i<sizeof($files);$i++)
@@ -516,7 +516,7 @@ function getvalues($db,$DBNAME,$DB_DESNAME,$tableid,$fields,$qfield=false,$field
       $column=strtok(",");
    }		
    if (function_exists("plugin_getvalues"))
-      plugin_getvalues($db,$Allfields,$id,$tableid);
+      plugin_getvalues($db,$Allfields,$id,$tableinfo->id);
    return $Allfields;
 }
 
@@ -610,12 +610,12 @@ function add_g_form ($db,$tableinfo,$field_values,$id,$USER,$PHP_SELF,$system_se
       return false; 
    if ($id) {
    echo $nowfield["id"].".<br>";
-	$Allfields=getvalues($db,$tableinfo->realname,$tableinfo->desname,$tableinfo->id,$tableinfo->fields,id,$id);
+	$Allfields=getvalues($db,$tableinfo,$tableinfo->fields,id,$id);
 	$namein=get_cell($db,$tableinfo->desname,"title","id",$id);		
 	display_add($db,$tableinfo,$Allfields,$id,$namein,$system_settings);
    }    
    else {
-	$Allfields=getvalues($db,$tableinfo->realname,$tableinfo->desname,$tableinfo->id,$tableinfo->fields);
+	$Allfields=getvalues($db,$tableinfo,$tableinfo->fields);
 	display_add($db,$tableinfo,$Allfields,$id,"",$system_settings);
    }
 }
@@ -626,7 +626,7 @@ function show_g($db,$tableinfo,$id,$USER,$system_settings,$backbutton=true)  {
    //$tablename=get_cell($db,"tableoftables","tablename","id",$tableid);
    if (!may_read($db,$tableinfo->id,$id,$USER))
        return false;
-   $Allfields=getvalues($db,$tableinfo->realname,$tableinfo->desname,$tableinfo->id,$tableinfo->fields,id,$id);
+   $Allfields=getvalues($db,$tableinfo,$tableinfo->fields,id,$id);
    display_record($db,$Allfields,$id,$tableinfo->name,$tableinfo->realname,$backbutton);
 }
 	
