@@ -1129,6 +1129,13 @@ function search ($db,$tableinfo,$fields,&$fieldvalues,$whereclause=false,$wcappe
 ////
 // ! sets AtFirstPage and AtLastPage
 function first_last_page (&$r,&$current_page,$r_p_p,$numrows) {
+   // protect against pushing the reload button while at the last page
+   if ( (($current_page-1) * $r_p_p) >= $numrows)
+      $current_page -=1;
+   // if we are still outof range, this must be a new search statement and we can go to page 1
+   if ( (($current_page-1) * $r_p_p) >= $numrows)
+      $current_page =1;
+
    if ($current_page < 2)
       $r->AtFirstPage=true;
    else
@@ -1137,9 +1144,6 @@ function first_last_page (&$r,&$current_page,$r_p_p,$numrows) {
       $r->AtLastPage=true;
    else
       $r->AtLastPage=false;
-   // protect against pushing the reload button while at the last page
-   if ( (($current_page-1) * $r_p_p) >= $numrows)
-      $current_page -=1;
 }
 
 ////
@@ -1239,13 +1243,16 @@ function paging ($num_p_r,&$USER) {
 // !Returns current page
 // current page is table specific, therefore
 // The variable name is formed using the short name for the table
-function current_page($curr_page, $sname) {
+function current_page($curr_page, $sname, $num_p_r, $numrows) {
    global $HTTP_POST_VARS, $HTTP_SESSION_VARS;
    $varname=$sname.'_curr_page';
    ${$varname}=$curr_page;
 
    if (!isset($$varname))
       ${$varname}=$HTTP_SESSION_VARS[$varname];
+   // if the current page is out of bound, we'll reset it to 1
+   if (${$varname} > ($numrows/$num_p_r))
+      ${$varname}=1;
    // the page number can be set directly or by clicking the next/previous buttons (see function next_previous_buttons)
    if ($HTTP_POST_VARS[$varname]) {
       ${$varname}=$HTTP_POST_VARS[$varname];

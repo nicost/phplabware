@@ -367,11 +367,9 @@ else {
    $sortdirarray=unserialize(stripslashes($serialsortdirarray));
    $sortstring=sortstring($sortdirarray,$sortup,$sortdown);
 
-   // paging stuff
+   // set the number of records per page
    $num_p_r=paging($num_p_r,$USER);
 
-   // get current page
-   ${$pagename}=current_page(${$pagename},$tableinfo->short);
    // get a list with all records we may see, create temp table tempb
    $listb=may_read_SQL($db,$tableinfo,$USER,'tempb');
 
@@ -380,6 +378,12 @@ else {
 
    ${$queryname}=make_search_SQL($db,$tableinfo,$fields_table,$USER,$search,$sortstring,$listb['sql']);
    $r=$db->Execute(${$queryname});
+
+   // set variables needed for paging
+   $numrows=$r->RecordCount();
+
+   // set the current page to what the user ordered
+   ${$pagename}=current_page(${$pagename},$tableinfo->short,$num_p_r,$numrows);
 
    // when search fails we'll revert to Show All after showing an error message
    if (!$r) {
@@ -395,25 +399,11 @@ else {
       $r=$db->Execute(${$queryname});
    }
 
-   // set variables needed for paging
-   $numrows=$r->RecordCount();
    // work around bug in adodb/mysql
    $r->Move(1);
-   // protect against pushing the reload button while at the last page
-   if ( ((${$pagename}-1) * $num_p_r) >=$numrows)
-      ${$pagename} -=1; 
-   // if we are still outof range, this must be a new search statement and we can go to page 1
-   if ( ((${$pagename}-1) * $num_p_r) >$numrows) {
-      ${$pagename} =1; 
-   }
-   if (${$pagename} < 2)
-      $rp->AtFirstPage=true;
-   else
-      $rp->AtFirstPage=false;
-   if ( ( (${$pagename}) * $num_p_r) >= $numrows)
-      $rp->AtLastPage=true;
-   else
-      $rp->AtLastPage=false;
+
+   // set $rp->AtFirstPage and $rp->AtLastPage, will be used in nex-Previous buttons
+   first_last_page ($rp,${$pagename},$num_p_r,$numrows);
 
    // get variables for links 
    $sid=SID;
