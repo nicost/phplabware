@@ -135,11 +135,11 @@ function plugin_check_data($db,&$field_values,$table_desc,$modify=false)
       if ($r && $r->fields("id"))
          $field_values["journal"]=$r->fields("id");
       else {
-         $tid=$db->GenID("$journaltable_id_seq");
+         $tid=$db->GenID("$journaltable"."_id_seq");
 	 if ($tid) {
 	    $r=$db->Execute("INSERT INTO $journaltable (id,type,typeshort,sortkey) VALUES ($tid,'$journal','$journal',0)");
 	    if ($r)
-	       $field_values["type1"]=$tid;
+	       $field_values["journal"]=$tid;
 	 }
       }
    }
