@@ -126,14 +126,14 @@ function delete_user ($db, $id) {
 function modify ($db, $type) {
    global $HTTP_POST_VARS, $USER, $perms, $post_vars;
 
-   $id=$HTTP_POST_VARS["id"];
-   $login=$HTTP_POST_VARS["login"];
-   $pwd=$HTTP_POST_VARS["pwd"];
-   $user_group=$HTTP_POST_VARS["user_group"];
-   $user_add_groups=$HTTP_POST_VARS["user_add_groups"];
-   $firstname=$HTTP_POST_VARS["firstname"];
-   $lastname=$HTTP_POST_VARS["lastname"];
-   $email=$HTTP_POST_VARS["email"];
+   $id=$HTTP_POST_VARS['id'];
+   $login=$HTTP_POST_VARS['login'];
+   $pwd=$HTTP_POST_VARS['pwd'];
+   $user_group=$HTTP_POST_VARS['user_group'];
+   $user_add_groups=$HTTP_POST_VARS['user_add_groups'];
+   $firstname=$HTTP_POST_VARS['firstname'];
+   $lastname=$HTTP_POST_VARS['lastname'];
+   $email=$HTTP_POST_VARS['email'];
 
    if($perms)
       for ($i=0; $i<sizeof($perms); $i++)
@@ -160,9 +160,8 @@ function modify ($db, $type) {
    $theid=$USER["id"];
    $theip=getenv("REMOTE_ADDR");
    $thedate=time();
-   
-   //if (!($status)) $status = $USER; 
-   if ($type=="modify"  && $id) {
+
+   if ($type=='modify'  && $id) {
       $query = "UPDATE users SET login='$login', firstname='$firstname', 
                      lastname='$lastname',  
                      groupid='$user_group', email='$email',  
@@ -222,6 +221,13 @@ function modify ($db, $type) {
          else
             $USER["settings"]["menustyle"]=0;
          $result.= "Your settings have been modified.<br>\n";
+         // superuser can do whatever he please also with herself
+         if ($USER['permissions'] & $SUPER) {
+            $db->Execute ("DELETE FROM usersxgroups WHERE usersid=$id");
+	    if ($user_add_groups)
+	       foreach ($user_add_groups AS $add_groupid)
+	          $db->Execute("INSERT INTO usersxgroups VALUES ('$id','$add_groupid')");
+         }
       }
       else
          $result.="Failed to modify you settings.<br>\n";
