@@ -753,8 +753,7 @@ function getvalues($db,$tableinfo,$fields,$qfield=false,$field=false) {
                if (!$text)
                   $text="&nbsp;";
                ${$column}['text']=$text;
-               if ($values)
-                  ${$column}['values']=$values;
+               ${$column}['values']=$values;
                if ($datatype)
                   ${$column}['datatype']=$datatype;
             }
