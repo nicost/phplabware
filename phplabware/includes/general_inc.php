@@ -111,7 +111,7 @@ function searchfield ($db,$tableinfo,$nowfield,$HTTP_POST_VARS,$jscript) {
     elseif ($nowfield['datatype']== 'pulldown' || $nowfield['datatype']=='mpulldown') {
        echo "<td style='width: 10%'>";
        if ($USER['permissions'] & $LAYOUT)  {
-          $jscript2=" onclick='MyWindow=window.open (\"general.php?tablename=".$tableinfo->name."&edit_type=$nowfield[ass_t]&jsnewwindow=true&formname=$formname&selectname=$nowfield[name]".SID."\",\"type\",\"scrollbar=yes,resizable=yes,width=600,height=400\")'";
+          $jscript2=" onclick='MyWindow=window.open (\"general.php?tablename=".$tableinfo->name."&edit_type=$nowfield[ass_t]&jsnewwindow=true&formname=$formname&selectname=$nowfield[name]".SID."\",\"type\",\"scrollbars,resizable,toolbar,status,menubar,width=600,height=400\");MyWindow.focus()'";
           echo "<input type='button' name='edit_button' value='Edit $nowfield[label]' $jscript2><br>\n";
        }	 		 			
        $rpull=$db->Execute("SELECT typeshort,id from $nowfield[ass_t] ORDER by sortkey,typeshort");
@@ -233,7 +233,7 @@ function display_table_change($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr
 
       echo "<td align='center'>&nbsp;\n";  
       if ($HTTP_SESSION_VARS['javascript_enabled']) {
-         $jscript=" onclick='MyWindow=window.open (\"general.php?tablename=".$tableinfo->name."&showid=$id&jsnewwindow=true\",\"view\",\"scrollbar=yes,resizable=yes,width=600,height=400\")'";
+         $jscript=" onclick='MyWindow=window.open (\"general.php?tablename=".$tableinfo->name."&showid=$id&jsnewwindow=true\",\"view\",\"scrollbars,resizable,toolbar,status,menubar,width=600,height=400\");MyWindow.focus()'";
          echo "<input type=\"button\" name=\"view_" . $id . "\" value=\"View\" $jscript>\n";
       }
       else
@@ -305,7 +305,8 @@ function display_table_info($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr_c
 
       echo "<td align='center'>&nbsp;\n";  
       if ($HTTP_SESSION_VARS['javascript_enabled']) {
-         $jscript=" onclick='MyWindow=window.open (\"general.php?tablename=".$tableinfo->name."&showid=$id&jsnewwindow=true\",\"view\",\"scrollbar=yes,resizable=yes,width=600,height=400\")'";
+         //$jscript=" onclick='MyWindow=window.open (\"general.php?tablename=".$tableinfo->name."&showid=$id&jsnewwindow=true\",\"view\",\"status,menubar,scrollbar,resizable,width=600,height=400\");MyWindow.focus()'";
+         $jscript=" onclick='MyWindow=window.open (\"general.php?tablename=".$tableinfo->name."&showid=$id&jsnewwindow=true\",\"view\",\"status,menubar,toolbar,scrollbars,resizable,titlebar,width=700,height=500\");MyWindow.focus()'";
          echo "<input type=\"button\" name=\"view_" . $id . "\" value=\"View\" $jscript>\n";
       }
       else
@@ -313,7 +314,7 @@ function display_table_info($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr_c
       if (may_write($db,$tableinfo->id,$id,$USER)) {
 /* this works, but how do you go back from the modify window to this one???
          if ($HTTP_SESSION_VARS['javascript_enabled']) {
-            $jscript="onclick='MyWindow=window.open (\"general.php?tablename=".$tableinfo->name."&jsnewwindow=true&modify=true&mod_".$id."=Modify\",\"modify\",\"scrollbar=yes,resizable=yes,width=600,height=400\")'";
+            $jscript="onclick='MyWindow=window.open (\"general.php?tablename=".$tableinfo->name."&jsnewwindow=true&modify=true&mod_".$id."=Modify\",\"modify\",\"scrollbars,resizable,status,menubar,toolbar,width=600,height=400\")'";
             echo "<input type=\"button\" name=\"mod_" . $id . "\" value=\"Modify\" $jscript>\n";
          }
          else
@@ -408,9 +409,9 @@ function display_record($db,$Allfields,$id,$tableinfo,$backbutton=true,$previous
    // for organizational purpose, define buttons here:
    // next and previous buttons
    if ($previousid)
-      $previousbutton="<input type=\"button\" name=\"view_".$previousid."\" value=\"Previous\" onClick='MyWindow=window.open(\"general.php?tablename={$tableinfo->name}&showid=$previousid&jsnewwindow=true\",\"view\",\"scrollbar=yes,resizable=yes,width=600,height=400\")'>\n";
+      $previousbutton="<input type=\"button\" name=\"view_".$previousid."\" value=\"Previous\" onClick='MyWindow=window.open(\"general.php?tablename={$tableinfo->name}&showid=$previousid&jsnewwindow=true\",\"view\",\"scrollbars,resizable,toolbar,width=600,height=400\")'>\n";
    if ($nextid)
-      $nextbutton="<input type=\"button\" name=\"view_".$nextid."\" value=\"Next\" onClick='MyWindow=window.open(\"general.php?tablename={$tableinfo->name}&showid=$nextid&jsnewwindow=true\",\"view\",\"scrollbar=yes,resizable=yes,width=600,height=400\")'>\n";
+      $nextbutton="<input type=\"button\" name=\"view_".$nextid."\" value=\"Next\" onClick='MyWindow=window.open(\"general.php?tablename={$tableinfo->name}&showid=$nextid&jsnewwindow=true\",\"view\",\"scrollbars,resizable,toolbar,width=600,height=400\")'>\n";
    // closebutton
    $closebutton="<input type=\"button\" onclick='self.close();window.opener.focus();' name='Close' value='Close'>\n";
    if ($backbutton) {
@@ -581,7 +582,7 @@ function display_add($db,$tableinfo,$Allfields,$id,$namein,$system_settings) {
                echo"<sup style='color:red'>&nbsp;*</sup>";
             echo "</th>\n<td>";
             if ($USER['permissions'] & $LAYOUT) {
-               $jscript=" onclick='MyWindow=window.open (\"general.php?tablename=".$tableinfo->name."&edit_type=$nowfield[ass_t]&jsnewwindow=true&formname=form&selectname=$nowfield[name]".SID."\",\"type\",\"scrollbar=yes,resizable=yes,width=600,height=400\");MyWindow.focus()'";
+               $jscript=" onclick='MyWindow=window.open (\"general.php?tablename=".$tableinfo->name."&edit_type=$nowfield[ass_t]&jsnewwindow=true&formname=form&selectname=$nowfield[name]".SID."\",\"type\",\"scrollbars,resizable,toolbar,status,width=700,height=500\");MyWindow.focus()'";
                echo "<input type='button' name='edit_button' value='Edit $nowfield[label]' $jscript><br>\n";
             }
             echo "$text<br>";
@@ -643,7 +644,7 @@ function display_add($db,$tableinfo,$Allfields,$id,$namein,$system_settings) {
                echo"<sup style='color:red'>&nbsp;*</sup>";
             echo "</th>\n<td>";
             if ($USER['permissions'] & $LAYOUT) {
-               $jscript=" onclick='MyWindow=window.open (\"general.php?tablename=".$tableinfo->name."&edit_type=$nowfield[ass_t]&jsnewwindow=true&formname=form&selectname=$nowfield[name]".SID."\",\"type\",\"scrollbar=yes,resizable=yes,width=600,height=400\");MyWindow.focus()'";
+               $jscript=" onclick='MyWindow=window.open (\"general.php?tablename=".$tableinfo->name."&edit_type=$nowfield[ass_t]&jsnewwindow=true&formname=form&selectname=$nowfield[name]".SID."\",\"type\",\"scrollbars,resizable,toolbar,status,width=700,height=500\");MyWindow.focus()'";
                echo "<input type='button' name='edit_button' value='Edit $nowfield[label]' $jscript><br>\n";
             }
             echo "$text<br>";
@@ -761,7 +762,7 @@ function getvalues($db,$tableinfo,$fields,$qfield=false,$field=false) {
                   ${$column}['text']='';
                else 
                   //${$column}['text']='Click on View';
-                  ${$column}['text']="<input type=\"button\" name=\"view_$id\" value=\"View\" onclick='MyWIndow=window.open(\"general.php?tablename={$tableinfo->name}&showid=$id&jsnewwindow=true\",\"view\",\"scrollbar=yes,resizable=yes,width=600,height=400\")'>\n";
+                  ${$column}['text']="<input type=\"button\" name=\"view_$id\" value=\"View\" onclick='MyWIndow=window.open(\"general.php?tablename={$tableinfo->name}&showid=$id&jsnewwindow=true\",\"view\",\"scrollbars,resizable,width=600,height=400\")'>\n";
             }
             elseif ($rb->fields['datatype']=='file' || $rb->fields['datatype']=='image') {
                $tbname=get_cell($db,'tableoftables','tablename','id',$tableinfo->id);
