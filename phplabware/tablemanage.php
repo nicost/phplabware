@@ -130,7 +130,7 @@ if ($editfield)	{
    $currdesc=$r->fields["table_desc_name"];
    //$currdesc=$editfield."_".$id."_desc";
    echo "<h3 align='center'>$string</h3>";
-   echo "<h3 align='center'>Edit columns of $editfield</h3><br>";
+   echo "<h3 align='center'>Edit columns of table <i>$editfield</i></h3><br>";
   // echo "<table align='center'>\n";
 
    echo "<form method='post' id='coledit' enctype='multipart/form-data' ";
@@ -270,19 +270,6 @@ if ($editfield)	{
                echo "$delstring</td>\n";
  	 echo "</tr>\n";
       }
-		/* Don't know what we need this for (Nico)
-   	else 
-   		{
-	   	echo "<input type='hidden' name='column_id[]' value='$id'>\n";	
-	   	echo "<input type='hidden' name='column_sort[]' value='$sort'>\n";	
-	   	echo "<input type='hidden' name='column_name[]' value='$label'>\n";
-		   if($display_table=="Y"){echo "<input type='hidden' name='column_dtable[]'' value=$display_table>";}
-		   else{echo "<td><input type='hidden' value='Y' name='column_dtable[]'>\n";}
-		   if($display_record=="Y"){echo "<input type='hidden' name='column_drecord[]'' value=$display_record  >\n";}
-		   else{echo "<input type='hidden' value='Y' name='column_drecord[]'></td>\n";}
-	       echo "<input type='hidden' name='column_datatype[]' value='$datatype'>\n";
-		   }	
-		   */
       $r->MoveNext();
       $rownr+=1;		
 	
