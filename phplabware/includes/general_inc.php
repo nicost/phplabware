@@ -15,10 +15,11 @@
   \**************************************************************************/
 
 //// 
-// !get the user who made the entry
-function user_entry($id,$DBNAME) {
+// !Displays information on the record's owner
+// needs to be called within a table
+function user_entry($id,$real_tablename) {
    global $db;
-   $ownerid=get_cell($db,"$DBNAME","ownerid","id","$id");
+   $ownerid=get_cell($db,"$real_tablename","ownerid","id","$id");
    $r=$db->Execute("SELECT firstname,lastname,email FROM users WHERE id=$ownerid");
    if ($r->fields["email"])  {
       echo "<tr><th>Submitted by: </th><td><a href='mailto:".$r->fields["email"]."'>";
@@ -35,10 +36,10 @@ function user_entry($id,$DBNAME) {
 //// 
 // !Prints name and date
 // Needs to be called within a table
-function date_entry($id,$DBNAME) {
+function date_entry($id,$real_tablename) {
    global $db,$system_settings;
 
-   $date=get_cell($db,$DBNAME,"date","id","$id");
+   $date=get_cell($db,$real_tablename,"date","id","$id");
    $dateformat=get_cell($db,"dateformats","dateformat","id",$system_settings["dateformat"]);
    $date=date($dateformat,$date);
    echo "<th>Date entered: </th><td colspan=3>$date</td></tr>\n";
@@ -408,6 +409,8 @@ function display_add($db,$tableid,$real_tablename,$tabledesc,$Allfields,$id,$nam
 ///////////////////////////////////////////////////////////////////////
 ////
 // !Get all description table values out for a display
+// Returns an array with lots of information on every column
+// If qfield is set, database values for that record will be returned as well
 function getvalues($db,$DBNAME,$DB_DESNAME,$tableid,$fields,$qfield=false,$field=false) {
    if ($qfield) {
       $r=$db->Execute("SELECT $fields FROM $DBNAME WHERE $qfield=$field"); 
@@ -544,7 +547,7 @@ function check_g_data ($db,&$field_values, $DB_DESNAME) {
       }
       $rs->MoveNext();
    }
-   // make sures ints and floats are correct
+   // make sure ints and floats are correct
    $rs = $db->Execute("select columnname,datatype from $DB_DESNAME where datatype IN ('int','float')");
    while ($rs && !$rs->EOF) {
       $fieldA=$rs->fields[0];
@@ -556,6 +559,11 @@ function check_g_data ($db,&$field_values, $DB_DESNAME) {
       }
       $rs->MoveNext();
    }
+
+   // Hooray, the first call to a plugin function!!
+   if (function_exists("plugin_check_data"))
+      plugin_check_data($db,$field_values,$DB_DESNAME);
+
    return true;
 }
 
@@ -592,8 +600,8 @@ function show_g($db,$fields,$id,$USER,$system_settings,$tableid,$real_tablename,
 	
 ////
 // !Tries to convert a MsWord file into html 
-// It calls wvHtml.  This does not work with wvHtml version 0.7-0.72
-// Version 0.67 is fine....
+// It calls wvHtml.  
+// Version >= 0.70 have to be called differently
 // When succesfull, the file is added to the database
 function process_file($db,$fileid,$system_settings) {
    global $HTTP_POST_FILES,$HTTP_POST_VARS;
@@ -604,6 +612,11 @@ function process_file($db,$fileid,$system_settings) {
       $temp=$system_settings["tmpdir"]."/".uniqid("file");
       $command= "$word2html $filepath $temp";
       $result=exec($command);
+      // version of wvHtml >= 0.7 have to be called differently:
+      if (@is_readable($temp) || filesize($temp) < 1) {
+         $command="$word2html --targetdir=".$system_settings["tmpdir"]." \"$filepath\" $converted_file";
+         $result=exec($command);
+      } 
       if (@is_readable($temp) && filesize($temp)) {
          unset ($HTTP_POST_FILES);
          $r=$db->query ("SELECT filename,mime,title,tablesfk,ftableid FROM files WHERE id=$fileid");
