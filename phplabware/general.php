@@ -280,7 +280,7 @@ else {
    $num_p_r=paging($num_p_r,$USER);
 
    // get current page
-   ${$pagename}=current_page(${$pagename},$tableshort);
+   ${$pagename}=current_page(${$pagename},$tableinfo->short);
    // get a list with all records we may see, create temp table tempb
    $listb=may_read_SQL($db,$tableinfo,$USER,"tempb");
 
