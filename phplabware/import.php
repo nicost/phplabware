@@ -130,6 +130,8 @@ function get_quote ($quote,$quote_type) {
 // checks for ints and floats, quotes text
 function check_input ($tableinfo, &$fields, $to_fields, $field_types, $field_datatypes, $nrfields)
 {
+   global $db;
+
    for ($i=0;$i<$nrfields;$i++) {
       if ($fields[$i]) {
          // strip quotes semi-inteligently  Can not use trim when php <4.1
@@ -138,9 +140,13 @@ function check_input ($tableinfo, &$fields, $to_fields, $field_types, $field_dat
             $fields[$i]=substr($fields[$i],1,-1);
          if ($field_datatypes[$i]=='pulldown') {
             // see if we have this value already, otherwise make a new entry in the type table....
-             $rasslk=$db->Execute("SELECT columnname FROM {$tableinfo->desname} WHERE id={$to_fields["$i"]}");
-             $Allfields=getvalues($db,$tableinfo,$rasslk->fields[0]);
+             $Allfields=getvalues($db,$tableinfo,$to_fields[$i]);
+             $rtemp=$db->Execute("SELECT id FROM {$Allfields[0]['ass_t']} WHERE typeshort='{$fields[$i]}'");
+             if ($rtemp)
+                $fields[$i]=$rtemp->fields[0];
          }
+         // for mpulldowns we have a problem since we do not have the new id yet
+
          if ($field_types[$i]=='int'){
             $fields[$i]=(int)$fields[$i];
          }
@@ -191,7 +197,7 @@ if ($HTTP_POST_VARS['assign']=='Import Data') {
    //$table=$r->fields[1];
    //$table_label=$r->fields[2];
    //$table_custom=$r->fields[3];
-   $desc=$tableinfo->desc;
+   $desc=$tableinfo->desname;
    $table=$tableinfo->realname;
    $table_label=$tableinfo->name;
 
@@ -233,7 +239,6 @@ if ($HTTP_POST_VARS['assign']=='Import Data') {
              }
              if ($line)
                 $db->Execute($db->GetInsertSQL(&$rs,$row));
-             print_r($column);
          }
       }
    }
