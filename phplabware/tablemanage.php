@@ -157,6 +157,7 @@ if ($editfield)	{
    echo "<option value='textlong'>textlong</option>\n";
    echo "<option value='int'>int</option>\n";
    echo "<option value='float'>float</option>\n";
+   echo "<option value='sequence'>sequence</option>\n";
    echo "<option value='table'>table</option>\n";
    echo "<option value='pulldown'>pulldown</option>\n";
    echo "<option value='link'>weblink</option>\n";

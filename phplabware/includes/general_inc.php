@@ -249,8 +249,6 @@ function display_record($db,$Allfields,$id,$tablename,$real_tablename,$backbutto
          if ($nowfield[datatype]=="textlong") {
             $textlarge=nl2br(htmlentities($nowfield[values]));
             echo "<th>$nowfield[label]</th><td colspan=2>$textlarge</td>\n";
-            //echo "<tr><th>$nowfield[label]</th><td colspan=6>$textlarge</td>\n";
-            //echo "</tr>\n";
          }
          elseif ($nowfield[datatype]=="file") {
             $files=get_files($db,$tablename,$id,$nowfield["columnid"]);
@@ -261,13 +259,10 @@ function display_record($db,$Allfields,$id,$tablename,$real_tablename,$backbutto
                   echo " file, ".$files[$i]["size"].")<br>\n";
                }
                echo "<td>\n";
-               //echo "<td></tr>\n";
             }				
          }
          // most datatypes are handled in getvalues
          else {
-            //echo "<tr><th>$nowfield[label]</th>\n";
-            //echo "<td colspan=2>$nowfield[text]</td></tr>\n";
             echo "<th>$nowfield[label]</th>\n";
             echo "<td colspan=2>$nowfield[text]</td>\n";
          }
@@ -323,7 +318,7 @@ function display_add($db,$tableid,$real_tablename,$tabledesc,$Allfields,$id,$nam
    foreach ($Allfields as $nowfield) {
       //see if display_record is set
       if ( (($nowfield["display_record"]=="Y") || ($nowfield["display_table"]=="Y")) ) {
-         if ($nowfield["modifiable"]=="N") {
+         if ($nowfield["modifiable"]=="N" && $nowfield["datatype"]!="sequence") {
             echo "<input type='hidden' name='$nowfield[name]' value='$nowfield[values]'>\n";
             if ($nowfield[text] && $nowfield[text]!="" && $nowfield[text]!=" ") {
                echo "<tr><th>$nowfield[label]:</th>"; 
@@ -336,12 +331,28 @@ function display_add($db,$tableid,$real_tablename,$tabledesc,$Allfields,$id,$nam
                echo "<sup style='color:red'>&nbsp;*</sup>";
             }
             echo "</th>\n";
-            if ($nowfiel[datatype]=="text")
+            if ($nowfield[datatype]=="text")
                $size=60;
             else
                $size=10;
      	    echo "<td><input type='text' name='$nowfield[name]' value='$nowfield[values]' $size>";
          }
+	 elseif ($nowfield["datatype"]=="sequence") {
+	    if (!$nowfield["text"]) {
+	       // find the highest sequence and return that plus one
+	       $rmax=$db->Execute("SELECT MAX ($nowfield[column]) AS $nowfield[column] FROM real_tablename");
+	       $newseq=$rmax->fields[0]+1;
+	    }
+	    else
+	       $newseq=$nowfield["text"];
+            echo "<input type='hidden' name='$nowfield[name]' value='$newseq'>\n";
+            echo "<tr><th>$nowfield[label]:</th>"; 
+            if ($nowfield["modifiable"]=="N") {
+               echo "<td>$newseq";
+	    }
+	    else
+     	       echo "<td><input type='text' name='$nowfield[name]' value='$newseq' 10>";
+	 }
          elseif ($nowfield[datatype]=="textlong") {
             echo "<tr><th>$nowfield[label]:";
             if ($nowfield[required]=="Y") 
