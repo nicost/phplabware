@@ -19,7 +19,7 @@ require ("includes/db_inc.php");
 
 // main global vars
 $title .= "Protocols";
-$fields="id,access,ownerid,magic,name,type1,type2,notes,date,lastmodby,lastmoddate";
+$fields="id,access,ownerid,magic,title,type1,type2,notes,date,lastmodby,lastmoddate";
 
 // register variables
 $showid=$HTTP_GET_VARS["showid"];
@@ -33,7 +33,7 @@ globalize_vars ($post_vars, $HTTP_POST_VARS);
 // !Checks input data.
 // returns false if something can not be fixed
 function check_pr_data (&$field_values) {
-   if (!$field_values["name"]) {
+   if (!$field_values["title"]) {
       echo "<h3>Please enter a title for the protocol.</h3>";
       return false;
    }
@@ -63,7 +63,7 @@ function add_pr_form ($db,$fields,$field_values,$id,$USER,$PHP_SELF,$system_sett
    echo "<input type='hidden' name='magic' value='$magic'>\n";
    echo "<table border=0 align='center'>\n";
    if ($id) {
-      echo "<tr><td colspan=5 align='center'><h3>Modify Protocol <i>$name</i></h3></td></tr>\n";
+      echo "<tr><td colspan=5 align='center'><h3>Modify Protocol <i>$title</i></h3></td></tr>\n";
       echo "<input type='hidden' name='id' value='$id'>\n";
    }
    else
@@ -73,8 +73,8 @@ function add_pr_form ($db,$fields,$field_values,$id,$USER,$PHP_SELF,$system_sett
    echo "<th>Category</th>\n<th>Keyword</th>\n";
    echo "</tr>\n";
    echo "<tr>\n";
-   echo "<th>Name: <sup style='color:red'>&nbsp;*</sup></th>\n";
-   echo "<td><input type='text' name='name' value='$name'></td>\n";
+   echo "<th>Title: <sup style='color:red'>&nbsp;*</sup></th>\n";
+   echo "<td><input type='text' name='title' value='$title'></td>\n";
 
    $r=$db->Execute("SELECT type,id FROM pr_type1 ORDER BY sortkey");
    $text=$r->GetMenu2("type1",$type1,false);
@@ -147,8 +147,8 @@ function show_pr ($db,$fields,$id,$USER,$system_settings) {
    echo "<td></td>\n<th>Category</th>\n<th>Keywords</th>\n";
    echo "</tr>\n";
    echo "<tr>\n";
-   echo "<th>Name: <sup style='color:red'>&nbsp;*</sup></th>\n";
-   echo "<td>$name</td>\n";
+   echo "<th>Title: <sup style='color:red'>&nbsp;*</sup></th>\n";
+   echo "<td>$title</td>\n";
    
    $r=$db->Execute("SELECT type,id FROM pr_type1 ORDER BY sortkey");
    $text=get_cell($db,"pr_type5","type","id",$type1);
@@ -374,7 +374,14 @@ else {
 
    // row with search form
    echo "<tr align='center'>\n";
-   echo "<td><input type='text' name='name' value='$name' size=8></td>\n";
+   echo "<td><input type='text' name='title' value='$title' size=8></td>\n";
+   // show a list with users having stuff we may see
+   $list=may_read_SQL($db,"protocols",$USER);
+   $r=$db->Execute("SELECT ownerid FROM protocols WHERE id IN ($list)");
+   $list2=make_SQL_ids($r,false,"ownerid");
+   $r=$db->Execute("SELECT login,id from users WHERE id IN ($list2) ORDER by login");
+   $text=$r->GetMenu2("ownerid",$ownerid,true,false,0,"style='width: 80%'");
+   echo "<td style='width: 10%'>$text</td>\n";
    echo "<td><input type='text' name='notes' value='$notes' size=8></td>\n";
    $r=$db->Execute("SELECT typeshort,id FROM pr_type1");
    $text=$r->GetMenu2("type1",$type1,true,false,0,"style='width: 80%'");
@@ -390,7 +397,8 @@ else {
    echo "</tr>\n";
 
    echo "<tr>\n";
-   echo "<th>Name</th>";
+   echo "<th>Title</th>";
+   echo "<th>Author</th>";
    echo "<th>Notes</th>\n";
    echo "<th>Category</th>\n";
    echo "<th>Keyword</th>\n";
@@ -401,7 +409,7 @@ else {
    // retrieve all protocols and their info from database
    $whereclause=may_read_SQL ($db,"protocols",$USER);
    if ($search=="Search")
-      $pr_query=search("protocols",$fields,$HTTP_POST_VARS," id IN ($whereclause) ORDER BY name");
+      $pr_query=search("protocols",$fields,$HTTP_POST_VARS," id IN ($whereclause) ORDER BY title");
    elseif (session_is_registered ("pr_query") && isset($HTTP_SESSION_VARS["pr_query"]))
       $pr_query=$HTTP_SESSION_VARS["pr_query"];
    else
@@ -435,7 +443,7 @@ else {
  
       // get results of each row
       $id = $r->fields["id"];
-      $name = $r->fields["name"];
+      $title = $r->fields["title"];
       $at1=get_cell($db,"pr_type1","type","id",$r->fields["type1"]);
       $at2=get_cell($db,"pr_type2","type","id",$r->fields["type2"]);
       $notes = $r->fields["notes"];
@@ -446,7 +454,9 @@ else {
       else
          echo "<tr class='row_even' align='center'>\n";
 
-      echo "<td>$name</td>\n";
+      echo "<td>$title</td>\n";
+      $owner=get_cell($db,"users","login","id",$r->fields["ownerid"]);
+      echo "<td>$owner</td>\n";
       if ($notes)
          echo "<td>yes</td>\n";
       else
@@ -467,7 +477,7 @@ else {
       if (may_write($db,"protocols",$id,$USER)) {
          echo "<input type=\"submit\" name=\"mod_" . $id . "\" value=\"Modify\">\n";
          $delstring = "<input type=\"submit\" name=\"del_" . $id . "\" value=\"Remove\" ";
-         $delstring .= "Onclick=\"if(confirm('Are you sure the protocol $name ";
+         $delstring .= "Onclick=\"if(confirm('Are you sure the protocol $title ";
          $delstring .= "should be removed?')){return true;}return false;\">";                                           
          echo "$delstring\n";
       }
@@ -480,7 +490,7 @@ else {
 
    // Add Protocol button
    if (may_write($db,"protocols",false,$USER)) {
-      echo "<tr><td colspan=6 align='center'>";
+      echo "<tr><td colspan=7 align='center'>";
       echo "<input type=\"submit\" name=\"add\" value=\"Add Protocol\">";
       echo "</td></tr>";
    }
@@ -491,7 +501,7 @@ else {
       echo "<input type=\"submit\" name=\"previous\" value=\"Previous\"></td>\n";
    else
       echo "&nbsp;</td>\n";
-   echo "<td colspan=4 align='center'>";
+   echo "<td colspan=5 align='center'>";
    echo "<input type='text' name='num_p_r' value='$num_p_r' size=3>";
    echo "Records per page</td>\n";
    echo "<td colspan=1 align='center'>";
