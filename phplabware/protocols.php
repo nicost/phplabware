@@ -379,8 +379,12 @@ else {
    $list=may_read_SQL($db,"protocols",$USER);
    $r=$db->Execute("SELECT ownerid FROM protocols WHERE id IN ($list)");
    $list2=make_SQL_ids($r,false,"ownerid");
-   $r=$db->Execute("SELECT login,id from users WHERE id IN ($list2) ORDER by login");
-   $text=$r->GetMenu2("ownerid",$ownerid,true,false,0,"style='width: 80%'");
+   if ($list2) {
+      $r=$db->Execute("SELECT login,id from users WHERE id IN ($list2) ORDER by login");
+      $text=$r->GetMenu2("ownerid",$ownerid,true,false,0,"style='width: 80%'");
+   }
+   else
+      $text="&nbsp;";
    echo "<td style='width: 10%'>$text</td>\n";
    echo "<td><input type='text' name='notes' value='$notes' size=8></td>\n";
    $r=$db->Execute("SELECT typeshort,id FROM pr_type1");
