@@ -47,7 +47,7 @@ header("Connection: close");
 header("Content-Type: $mime");
 header("Content-Length: $filesize");
 header("Content-Disposition-type: attachment");
-header("Content-Disposition: attachment; filename=\"$filename\"");
+header("Content-Disposition: attachment; filename=$filename");
 readfile("$filedir/$id"."_".$filename);   
 
 ?>
