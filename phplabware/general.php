@@ -319,7 +319,7 @@ else {
                $rc->MoveNext(); 
             }
             // call plugin code to do something with newly added data
-            if (function_exists("plugin_add"))
+            if (function_exists('plugin_add'))
                plugin_add($db,$tableinfo->id,$id);
          }
          // to not interfere with search form 
