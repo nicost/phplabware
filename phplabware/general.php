@@ -18,6 +18,10 @@ require('./include.php');
 require('./includes/db_inc.php');
 require('./includes/general_inc.php');
 
+// turn on adodb logging:
+//$db->LogSQL();
+
+
 $tableinfo=new tableinfo($db);
 
 if (!$tableinfo->id) {
@@ -486,6 +490,7 @@ else {
        echo "<td>&nbsp;</td>\n";
    echo "<td align='center'>$tabletext <B>$tableinfo->label</B> $modetext</td>";
    echo "<td align='center'>".viewmenu($db,$tableinfo,$viewid,false)."</td>\n";
+   echo "<td align='center'><a href=import.php?tableid={$tableinfo->id}>Import Data</a></td>\n";
    echo "</tr>\n</table>\n";
    next_previous_buttons($rp,true,$num_p_r,$numrows,${$pagename},$db,$tableinfo);
 
@@ -546,6 +551,10 @@ else {
       display_table_change($db,$tableinfo,$Fieldscomma,${$queryname},$num_p_r,${$pagename},$rp,$r);
    else
       display_table_info($db,$tableinfo,$Fieldscomma,${$queryname},$num_p_r,${$pagename},$rp,$r,$viewid);
+
+// stop adodb logging:
+//$db->LogSQL(false);
+
    printfooter($db,$USER);
 }
 ?>
