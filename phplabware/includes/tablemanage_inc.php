@@ -459,7 +459,7 @@ function test_report($db,$offset,$tablename) {
    $tp=@fopen($system_settings["templatedir"]."/$reportid.tpl","r");
    if ($tp) {
       while (!feof($tp))
-         $template.=fgets($tp);
+         $template.=fgets($tp,64000);
       fclose($tp);
    }
    require("includes/report_inc.php");
