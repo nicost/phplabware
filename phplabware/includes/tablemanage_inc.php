@@ -402,7 +402,7 @@ function mod_columnECG($db,$sort,$offset) {
 ////
 // !Modifies an entry for a report
 function mod_report($db,$offset) {
-   global $HTTP_POST_VARS,$HTTP_GET_VARS;
+   global $HTTP_POST_VARS,$HTTP_GET_VARS,$HTTP_POST_FILES,$system_settings;
 
    $id=$HTTP_POST_VARS["report_id"][$offset];
    $label=$HTTP_POST_VARS["report_label"][$offset];
@@ -410,19 +410,34 @@ function mod_report($db,$offset) {
    $sortkey=(int)$sortkey;
    if (!$sortkey)
       $sortkey="NULL";
-   $template=$HTTP_POST_VARS["report_template"][$offset];
-
-   $r=$db->Execute("UPDATE reports SET label='$label', sortkey=$sortkey, template='$template' WHERE id='$id'");    
+   $templatedir=$system_settings["templatedir"];
+   if (isset($HTTP_POST_FILES["report_template"][$offset][0]) && !$templatedir) {
+      echo "<h3 align='center'>Templatedir is not set.  Please correct this first.</h3>";
+      exit;
+   }
+   // Upload file, if any
+   $fileuploaded=move_uploaded_file($HTTP_POST_FILES["report_template"]["tmp_name"][$offset],"$templatedir/$id.tpl");
+   if ($fileuploaded) {
+      $filesize=$HTTP_POST_FILES["report_template"]["size"][$offset];
+      if (!$filesize)
+         $filesize="NULL";
+   }
+   // Write changes to database
+   if ($filesize)
+      $r=$db->Execute("UPDATE reports SET label='$label', sortkey=$sortkey, filesize=$filesize WHERE id='$id'");    
+   else
+      $r=$db->Execute("UPDATE reports SET label='$label', sortkey=$sortkey WHERE id='$id'");    
 }
 
 /////////////////////////////////////////////////////////////////////////
 ////
 // !Deletes an entry for a report
 function rm_report($db,$offset) {
-   global $HTTP_POST_VARS,$HTTP_GET_VARS;
+   global $HTTP_POST_VARS,$HTTP_GET_VARS,$system_settings;
 
    $id=$HTTP_POST_VARS["report_id"][$offset];
    $r=$db->Execute("DELETE FROM reports WHERE id=$id");
+   @unlink ($system_settings["templatedir"]."/$id.tpl");
 }
 
 /////////////////////////////////////////////////////////////////////////
@@ -440,8 +455,19 @@ function add_report($db) {
    $sortkey=(int)$sortkey;
    if (!$sortkey)
       $sortkey="NULL";
-   $template=$HTTP_POST_VARS["addrep_template"];
-   $db->Execute("INSERT INTO reports (id,label,tableid,sortkey,template) VALUES ($id,'$label',$tableid,$sortkey,'$template')");
+
+   // checks on input
+   if (!$label) {
+      return "<h3 align='center'>Please provide a template name!</h3>\n";
+   }
+
+   $fileuploaded=move_uploaded_file($HTTP_POST_FILES["addrep_template"]["tmp_name"][$offset],"$templatedir/$id.tpl");
+   if ($fileuploaded) 
+      $filesize=$HTTP_POST_FILES["addrep_template"]["size"][$offset];
+   if (!$filesize)
+      $filesize="NULL";
+   $db->Execute("INSERT INTO reports (id,label,tableid,sortkey,filesize) VALUES ($id,'$label',$tableid,$sortkey,$filesize)");
+$db->debug=false;
 
 }
 
