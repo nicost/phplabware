@@ -19,14 +19,14 @@
 // needs to be called within a table
 function user_entry($id,$real_tablename) {
    global $db;
-   $ownerid=get_cell($db,"$real_tablename","ownerid","id","$id");
+   $ownerid=get_cell($db,$real_tablename,'ownerid','id',$id);
    $r=$db->Execute("SELECT firstname,lastname,email FROM users WHERE id=$ownerid");
-   if ($r->fields["email"])  {
+   if ($r->fields['email'])  {
       echo "<tr><th>Submitted by: </th><td><a href='mailto:".$r->fields["email"]."'>";
-      echo $r->fields["firstname"]." ".$r->fields["lastname"]."</a></td>\n";
+      echo $r->fields['firstname']." ".$r->fields['lastname']."</a></td>\n";
    }
    else {
-      echo "<tr><th>Submitted by: </th><td>".$r->fields["firstname"]." ";
+      echo "<tr><th>Submitted by: </th><td>".$r->fields['firstname']." ";
       echo $r->fields["lastname"] ."</td>\n";
    }
    echo "<td>&nbsp;</td>";
@@ -829,8 +829,12 @@ function getvalues($db,$tableinfo,$fields,$qfield=false,$field=false)
 
    if ($qfield) {
       $r=$db->Execute("SELECT $fields FROM $tableinfo->realname WHERE $qfield=$field"); 
-      $rid=$db->Execute("SELECT id FROM $tableinfo->realname WHERE $qfield=$field");
-      $id=$rid->fields['id'];
+      if ($qfield=='id') {
+         $id=$field;
+      } else {
+         $rid=$db->Execute("SELECT id FROM $tableinfo->realname WHERE $qfield=$field");
+         $id=$rid->fields['id'];
+      }
    }
 
    $columns=split(',',$fields);
