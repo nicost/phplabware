@@ -224,11 +224,16 @@ function delete ($db, $tableid, $id, $USER, $filesonly=false) {
 // files should be called file[] in HTTP_POST_FILES
 // filetitle in HTTP_POST_VARS will be inserted in the title field of table files
 // returns id of last uploaded file upon succes, false otherwise
-function upload_files ($db,$tableid,$id,$USER,$system_settings) {
+function upload_files ($db,$tableid,$id,$columnid,$USER,$system_settings) {
    global $HTTP_POST_FILES,$HTTP_POST_VARS,$system_settings;
 
    $table=get_cell($db,"tableoftables","tablename","id",$tableid);
    $real_tablename=get_cell($db,"tableoftables","real_tablename","id",$tableid);
+
+   if (!is_array($columnid)) {
+      $carray[0]=$columnid;
+      $columnid=$carray;
+   }
 
    if (!($db && $table && $id)) {
       echo "Error in code: $db, $table, or $id is not defined.<br>";
@@ -255,7 +260,7 @@ function upload_files ($db,$tableid,$id,$USER,$system_settings) {
       $type=$HTTP_POST_VARS["filetype"][$i];
       // this works asof php 4.02
       if (move_uploaded_file($HTTP_POST_FILES["file"]["tmp_name"][$i],"$filedir/$fileid"."_"."$originalname")) {
-         $query="INSERT INTO files (id,filename,mime,size,title,tablesfk,ftableid,type) VALUES ($fileid,'$originalname','$mime','$size','$title','$tableid',$id,'$filestype')";
+         $query="INSERT INTO files (id,filename,mime,size,title,tablesfk,ftableid,ftablecolumnid,type) VALUES ($fileid,'$originalname','$mime','$size','$title','$tableid',$id,'$columnid[$i]','$filestype')";
 	 $db->Execute($query);
       }
    }
@@ -264,11 +269,11 @@ function upload_files ($db,$tableid,$id,$USER,$system_settings) {
 
 
 ////
-// !returns an array with id,name,title,and hyperlink to all
+// !returns an array with id,name,title,size, and hyperlink to all
 // files associated with the given record
-function get_files ($db,$table,$id,$format=1) {
+function get_files ($db,$table,$id,$columnid,$format=1) {
    $tableid=get_cell($db,"tableoftables","id","tablename",$table);
-   $r=$db->Execute("SELECT id,filename,title,mime,type,size FROM files WHERE tablesfk=$tableid AND ftableid=$id");
+   $r=$db->Execute("SELECT id,filename,title,mime,type,size FROM files WHERE tablesfk=$tableid AND ftableid=$id AND ftablecolumnid='$columnid'");
    if ($r && !$r->EOF) {
       $i=0;
       $sid=SID;
@@ -322,9 +327,6 @@ function delete_file ($db,$fileid,$USER) {
    $tableid=get_cell($db,"files","tablesfk","id",$fileid);
    $ftableid=get_cell($db,"files","ftableid","id",$fileid);
    $filename=get_cell($db,"files","filename","id",$fileid);
-   //$table=get_cell($db,"tableoftables","tablename","id",$tableid);
-   if ($tableid > 9999)
-      $table = $table ."_".$tableid;
    if (!may_write($db,$tableid,$ftableid,$USER))
       return false;
    if (unlink($system_settings["filedir"]."/$fileid"."_$filename")) {

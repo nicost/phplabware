@@ -177,7 +177,7 @@ function add_pd_form ($db,$tableid,$fields,$field_values,$id,$USER,$PHP_SELF,$sy
    echo "<th>Notes: </th><td colspan=5><textarea name='notes' rows='5' cols='100%'>$notes</textarea></td>\n";
    echo "</tr>\n";
    
-   $files=get_files($db,"pdfs",$id);
+   $files=get_files($db,"pdfs",$id,1);
    echo "<tr>";
    echo "<th>Files: </th>\n";
    echo "<td colspan=1>\n   <table border=0>\n";
@@ -304,7 +304,7 @@ function show_pd ($db,$tableid,$fields,$id,$USER,$system_settings) {
    echo "<th>Notes: </th><td>$notes</td>\n";
    echo "</tr>\n";
 
-   $files=get_files($db,"pdfs",$id);
+   $files=get_files($db,"pdfs",$id,1);
    if ($files) {
       echo "<tr><th>Files:</th>\n<td>";
       for ($i=0;$i<sizeof($files);$i++) {
@@ -433,7 +433,7 @@ else {
       }
       else {  
          $HTTP_POST_FILES["file"]["name"][0]=$HTTP_POST_VARS["pmid"].".pdf";
-	 $fileid=upload_files($db,$tableid,$id,$USER,$system_settings);
+	 $fileid=upload_files($db,$tableid,$id,1,$USER,$system_settings);
 	 if ($system_settings["pdfs_file"])
 	    report_pdf_addition ($db,$id,$system_settings,$PHP_SELF);
          // to not interfere with search form 
@@ -454,7 +454,7 @@ else {
          if ($HTTP_POST_FILES["file"]["name"][0]) {
             // delete all existing file
             delete ($db,$tableid,$HTTP_POST_VARS["id"],$USER,true);
-            $fileid=upload_files($db,$tableid,$HTTP_POST_VARS["id"],$USER,$system_settings);
+            $fileid=upload_files($db,$tableid,$HTTP_POST_VARS["id"],1,$USER,$system_settings);
          }
          // to not interfere with search form 
          unset ($HTTP_POST_VARS);
@@ -654,7 +654,7 @@ else {
       echo "<td>$journal</td>\n";
       echo "<td>$volume</td>\n";
       echo "<td>$fpage</td>\n";
-      $files=get_files($db,"pdfs",$id,3);
+      $files=get_files($db,"pdfs",$id,1,3);
       echo "<td>";
       if ($files) 
          for ($i=0;$i<sizeof($files);$i++)

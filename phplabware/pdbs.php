@@ -234,7 +234,7 @@ function show_pb ($db,$tableid,$fields,$id,$USER,$system_settings) {
    echo "<th>Notes: </th><td>$notes</td>\n";
    echo "</tr>\n";
 
-   $files=get_files($db,"pdbs",$id);
+   $files=get_files($db,"pdbs",$id,1);
    if ($files) {
       echo "<tr><th>Files:</th>\n<td>";
       for ($i=0;$i<sizeof($files);$i++) {
@@ -375,7 +375,7 @@ else {
       }
       else {  
          if ($id>0)
-	    $fileid=upload_files($db,$tableid,$id,$USER,$system_settings);
+	    $fileid=upload_files($db,$tableid,$id,1,$USER,$system_settings);
          // to not interfere with search form 
          unset ($HTTP_POST_VARS);
 	 // or we won't see the new record
@@ -394,7 +394,7 @@ else {
          if ($HTTP_POST_FILES["file"]["name"][0]) {
             // delete all existing file
             delete ($db,$tableid,$HTTP_POST_VARS["id"],$USER,true);
-            $fileid=upload_files($db,$tableid,$HTTP_POST_VARS["id"],$USER,$system_settings);
+            $fileid=upload_files($db,$tableid,$HTTP_POST_VARS["id"],1,$USER,$system_settings);
          }
          // to not interfere with search form 
          unset ($HTTP_POST_VARS);
@@ -548,7 +548,7 @@ else {
       echo "<td>$owner</td>\n";
       echo "<td>$Pdblink</td>\n";
       echo "<td>$Webmollink</td>\n";
-      $files=get_files($db,"pdbs",$id,3);
+      $files=get_files($db,"pdbs",$id,1,3);
       echo "<td>";
       if ($files) 
          for ($i=0;$i<sizeof($files);$i++)

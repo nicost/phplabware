@@ -126,7 +126,7 @@ function display_record($db,$Allfields,$id,$tablename,$real_tablename) {
             echo "</tr>\n";
          }
          elseif ($nowfield[datatype]=="file") {
-            $files=get_files($db,$tablename,$id);
+            $files=get_files($db,$tablename,$id,$nowfield["id"]);
             if ($files) { 
                echo "<tr><th>Files:</th>\n<td colspan=5>";
                for ($i=0;$i<sizeof($files);$i++)  {
@@ -245,7 +245,7 @@ function display_add($db,$tableid,$real_tablename,$tabledesc,$Allfields,$id,$nam
 	    echo "</th><td colspan=6><textarea name='$nowfield[name]' rows='5' cols='100%'>$nowfield[values]</textarea></td></tr>\n";
 	 }
 	 if ($nowfield[datatype]=="file") {
-	    $files=get_files($db,$real_tablename,$id);
+	    $files=get_files($db,$real_tablename,$id,$nowfield["id"]);
 	    echo "<tr>";
 	    echo "<th>File:";
 	    echo "</th>\n";
@@ -296,8 +296,9 @@ function getvalues($db,$DBNAME,$DB_DESNAME,$tableid,$fields,$qfield=false,$field
    while ($column) {
       if($column!="id") {
          ${$column}["values"]= $r->fields[$column];
-         $rb=$db->CacheExecute(2,"SELECT label,datatype,display_table,display_record,associated_table,associated_column,associated_local_key,required,link_first,link_last,modifiable FROM $DB_DESNAME WHERE columnname='$column'");
+         $rb=$db->CacheExecute(2,"SELECT id,label,datatype,display_table,display_record,associated_table,associated_column,associated_local_key,required,link_first,link_last,modifiable FROM $DB_DESNAME WHERE columnname='$column'");
          ${$column}["name"]=$column;
+         ${$column}["columnid"]=$rb->fields["id"];
          ${$column}["label"]=$rb->fields["label"];
          ${$column}["datatype"]=$rb->fields["datatype"];
          ${$column}["display_table"]=$rb->fields["display_table"];
@@ -338,7 +339,7 @@ function getvalues($db,$DBNAME,$DB_DESNAME,$tableid,$fields,$qfield=false,$field
             }
             elseif ($rb->fields["datatype"]=="file") {
                $tbname=get_cell($db,"tableoftables","tablename","id",$tableid);
-               $files=get_files($db,$tbname,$id,3);
+               $files=get_files($db,$tbname,$id,${$column}["columnid"],3);
                if ($files) 
                   for ($i=0;$i<sizeof($files);$i++)
                      ${$column}["text"].=$files[$i]["link"];

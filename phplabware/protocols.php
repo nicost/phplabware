@@ -128,7 +128,7 @@ function add_pr_form ($db,$tableid,$fields,$field_values,$id,$USER,$PHP_SELF,$sy
    echo "<th>Notes: </th><td colspan=6><textarea name='notes' rows='5' cols='100%'>$notes</textarea></td>\n";
    echo "</tr>\n";
    
-   $files=get_files($db,"protocols",$id);
+   $files=get_files($db,"protocols",$id,1);
    echo "<tr>";
    echo "<th>Files: </th>\n";
    echo "<td colspan=4><table border=0>";
@@ -236,7 +236,7 @@ function show_pr ($db,$tableid,$fields,$id,$USER,$system_settings) {
    echo "<th>Notes: </th><td colspan=6>$notes</td>\n";
    echo "</tr>\n";
 
-   $files=get_files($db,"protocols",$id);
+   $files=get_files($db,"protocols",$id,1);
    if ($files) {
       echo "<tr><th>Files:</th>\n<td colspan=5>";
       for ($i=0;$i<sizeof($files);$i++) {
@@ -413,7 +413,7 @@ else {
          exit;
       }
       else {  
-	 $fileid=upload_files($db,$tableid,$id,$USER,$system_settings);
+	 $fileid=upload_files($db,$tableid,$id,1,$USER,$system_settings);
 	 if ($system_settings["protocols_file"])
 	    report_protocol_addition ($db,$id,$system_settings);
          // insert stuff to deal with word/html files
@@ -436,7 +436,7 @@ else {
          if ($HTTP_POST_FILES["file"]["name"][0]) {
             // delete all existing file
             delete ($db,$tableid,$HTTP_POST_VARS["id"],$USER,true);
-            $fileid=upload_files($db,$tableid,$HTTP_POST_VARS["id"],$USER,$system_settings);
+            $fileid=upload_files($db,$tableid,$HTTP_POST_VARS["id"],1,$USER,$system_settings);
             process_file($db,$fileid,$system_settings);
          }
          // to not interfere with search form 
@@ -618,7 +618,7 @@ else {
       else
          echo "<td>no</td>\n";
       echo "<td>&nbsp;$at1</td>\n";
-      $files=get_files($db,"protocols",$id,3);
+      $files=get_files($db,"protocols",$id,1,3);
       echo "<td>";
       if ($files) 
          for ($i=0;$i<sizeof($files);$i++)
