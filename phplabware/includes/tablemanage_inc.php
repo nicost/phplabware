@@ -102,13 +102,16 @@ function del_table($db,$tablename,$id,$USER) {
          if ($r->fields["associated_table"]) {
             $db->Execute("DROP TABLE ".$r->fields["associated_table"]);
             $db->Execute("DROP TABLE ".$r->fields["associated_table"]."_id_seq");
+            $db->Execute("DROP SEQUENCE ".$r->fields["associated_table"]."_id_seq");
          }
          $r->MoveNext();
       }
    }
    $r=$db->Execute("DROP TABLE $real_tablename");
-   $r=$db->Execute("DROP TABLE $real_tablename"."_id");
-   $r=$db->Execute("DROP SEQUENCE $real_tablename"."_id");
+   $r=$db->Execute("DROP TABLE $real_tablename"."ass");
+   $r=$db->Execute("DROP SEQUENCE $real_tablename"."ass");
+   $r=$db->Execute("DROP TABLE $real_tablename"."_id_seq");
+   $r=$db->Execute("DROP SEQUENCE $real_tablename"."_id_seq");
    $r=$db->Execute("DROP TABLE $desc");
    $r=$db->Execute("DROP TABLE $desc"."_id");
    $r=$db->Execute("DROP SEQUENCE $desc"."_id");
@@ -320,7 +323,7 @@ function add_columnecg($db,$tablename2,$colname2,$label,$datatype,$Rdis,$Tdis,$r
          $assid=$db->GenID($tablestr,20);
 	 $tablestr.="_$assid";	
 
-	 $r=$db->Execute("INSERT INTO $desc ($fieldstring) Values($fieldid,'$colname','$label','$sort','$Tdis','$Rdis','$req','$modifiable','text','$datatype','$tablestr','')");
+	 $r=$db->Execute("INSERT INTO $desc ($fieldstring) Values($fieldid,'$colname','$label','$sort','$Tdis','$Rdis','$req','$modifiable','int','$datatype','$tablestr','')");
 	 $rs=$db->Execute("CREATE TABLE $tablestr (id int PRIMARY KEY, sortkey int, type text, typeshort text)");
 	 $rsss=$db->Execute("ALTER table $real_tablename add column $colname int");
 	 if (($r)&&($rs)&&($rsss)&&(!($colname==""))) 
