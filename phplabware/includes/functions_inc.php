@@ -484,14 +484,14 @@ if ($mode<>"menu") {
          } 
       }
    }
+  //TOPMARGIN="0" LEFTMARGIN="0" 
+  //MARGINWIDTH="0" MARGINHEIGHT="0">
 
 ?> 
 <TITLE><?php echo "$title" ?></TITLE>
 <LINK rel="STYLESHEET" type="text/css" href="phplabware.css">
 </HEAD>
-<BODY BGCOLOR="#ffffff"
-  TOPMARGIN="0" LEFTMARGIN="0" 
-  MARGINWIDTH="0" MARGINHEIGHT="0">
+<BODY BGCOLOR="#ffffff">
 <table width="100%" rules="none" border="0" cellspacing="0" cellpadding="0" bgcolor="333388">
 <tr class='header' bgcolor="333388">
 <?php
