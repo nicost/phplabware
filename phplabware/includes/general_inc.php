@@ -619,6 +619,8 @@ function process_file($db,$fileid,$system_settings) {
                unlink($temp); 
          }    
       }
+      else
+         @unlink($temp);
    }
 }
 
