@@ -159,6 +159,7 @@ function mod_type ($db,$table,$index) {
 //
 function add_type ($db,$table) {
    global $HTTP_POST_VARS;
+
    $id=$db->GenId($table."_id_seq");
    $type=$HTTP_POST_VARS["newtype_type"]; 
    $typeshort=$HTTP_POST_VARS["newtype_typeshort"]; 
