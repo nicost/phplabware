@@ -31,7 +31,7 @@ $tablename=$HTTP_GET_VARS["tablename"];
 $tableid=get_cell($db,"tableoftables","id","tablename",$tablename);
 if (!$tableid) {
    echo "<h3>This script will create a php file with code that will re-create the table you selected in phplabware.  Only the table structure, not its content will be re-created</h3>";
-   $r=$db->execute("SELECT id,tablename FROM tableoftables");
+   $r=$db->Execute('SELECT id,tablename FROM tableoftables');
    if ($r) {
       echo "<table align='center'>\n";
       echo "<tr><td><h3>Select one of the following tables:</h3></td></tr>\n";
@@ -47,10 +47,18 @@ if (!$tableid) {
 $table_desc=get_cell($db,"tableoftables","table_desc_name","tablename",$tablename);
 $table_label=get_cell($db,"tableoftables","label","tablename",$tablename);
 $table_plugin=get_cell($db,"tableoftables","plugin_code","tablename",$tablename);
-//echo "$table_plugin";
+
+// Check for associated tables:
+unset($r);
+$r=$db->Execute("SELECT DISTINCT associated_table FROM $table_desc WHERE associated_column !=''");
+while ($r && !$r->EOF) {
+   $asstable=get_cell($db,'tableoftables','tablename','id',$r->fields[0]);
+   echo "Please make sure that you also export table <i>$asstable</i>, and restore table $asstable before restoring table <i>$table_label</i>, since the latter containes links to the former.<br>";
+   $r->MoveNext();
+}
 
 // open file to write output to
-$outfile=$system_settings["tmpdir"]."/dumptable.php";
+$outfile=$system_settings["tmpdir"]."/$tablename.php";
 $fp=fopen($outfile,"w");
 if (!$fp) {
    echo "<h3 align='center'>Failed to open <i>$outfile</i> for output</h3>\n";
@@ -99,6 +107,7 @@ fwrite ($fp, 'if ($r) {
       associated_table text,
       associated_column text,
       associated_local_key text,
+      key_table text,
       thumb_x_size int,
       thumb_y_size int,
       link_first text,
@@ -106,7 +115,7 @@ fwrite ($fp, 'if ($r) {
       modifiable char(1) )");
    if ($rb) {
       ');
-$desc_fields="sortkey,label,columnname,display_table,display_record,required,type,datatype,associated_table,associated_column,associated_local_key,thumb_x_size,thumb_y_size,link_first,link_last,modifiable";
+$desc_fields="sortkey,label,columnname,display_table,display_record,required,type,datatype,associated_table,associated_column,associated_local_key,key_table,thumb_x_size,thumb_y_size,link_first,link_last,modifiable";
 $ADODB_FETCH_MODE=ADODB_FETCH_NUM;
 $s=$db->Execute("SELECT $desc_fields FROM $table_desc");
 while (!$s->EOF) {
@@ -138,8 +147,16 @@ while (!$s->EOF) {
       ');
    }
    // destroy links to tables, since those will fail
-   elseif ($s->fields[7]=="table") {
-      fwrite ($fp,'$db->Execute("UPDATE $newtable_desc_name SET associated_table=NULL,associated_column=NULL WHERE id=$newid");
+   elseif ($s->fields[7]=='table') {
+      $asstable_name=get_cell($db,'tableoftables','tablename','id',$s->fields[8]);
+      $asstable_descname=get_cell($db,'tableoftables','table_desc_name','id',$s->fields[8]);
+      $asscolumnname=get_cell($db,$asstable_descname,'columnname','id',$s->fields[9]);
+// also do associated local column
+
+      fwrite($fp,'$asstable_id=get_cell($db,"tableoftables","id","tablename",'.$asstable_name.')');
+      fwrite($fp,'$asstable_desc=get_cell($db,"tableoftables","table_desc_name","tablename",'.$asstable_name.')');
+      fwrite($fp,'$asscolumn_id=get_cell($db,"$asstable_desc","id","columnname",'.$asscolumnname.')');
+      fwrite ($fp,'$db->Execute("UPDATE $newtable_desc_name SET associated_table=asstable_id,associated_column=$asscolumn_id,key_table=NULL WHERE id=$newid");
       ');
    }
    $s->MoveNext();
