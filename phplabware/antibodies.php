@@ -443,7 +443,8 @@ function show_ab ($db,$fields,$id,$USER,$settings) {
    echo "</tr>\n";
    
    echo "<tr>";
-   echo "<th>Notes: </th><td colspan=6><textarea name='notes' rows='5' cols='100%'>$notes</textarea></td>\n";
+   $notes=nl2br(htmlentities($notes));
+   echo "<th>Notes: </th><td colspan=6>$notes</td>\n";
    echo "</tr>\n";
    
    echo "<form method='post' id='antibodyview action='$PHP_SELF'>\n"; 
