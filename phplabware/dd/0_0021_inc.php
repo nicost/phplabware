@@ -137,11 +137,8 @@ if (!$db->Execute($query)) $test=false;
 $query="INSERT INTO ab_type5 VALUES (9,0,'None','None')";
 if (!$db->Execute($query)) $test=false;
 
-$query="CREATE TABLE antibodiesxfiles
-        (antibodiesid int,
-         filesid int)"; 
+$tablesid=$db->GenID("tables_id_seq");
+$query="INSERT INTO tables VALUES ($tablesid,100,'antibodies')";
 if (!$db->Execute($query)) $test=false;
-$db->Execute("CREATE INDEX abxfiles_antibodiesid_index ON antibodiesxfiles (antibodiesid)");
-$db->Execute("CREATE INDEX abxfiles_filesid_index ON antibodiesxfiles (filesid)");
 
 ?>
