@@ -409,7 +409,7 @@ else {
     	    echo  " <td style='width: 10%'><input type='text' name='$nowfield[name]' value='".${$nowfield[name]}."'size=8></td>\n";
       }
       elseif ($nowfield[datatype]== "text")
-    	    echo  " <td style='width: 10%'><input type='text' name='$nowfield[name]' value='".${$nowfield[name]}."'size=8></td>\n";
+    	    echo  " <td style='width: 25%'><input type='text' name='$nowfield[name]' value='".${$nowfield[name]}."'size=8></td>\n";
       elseif ($nowfield[datatype]== "textlong")
     	    echo  " <td style='width: 10%'><input type='text' name='$nowfield[name]' value='".${$nowfield[name]}."'size=8></td>\n";
       elseif ($nowfield["datatype"]== "pulldown") {
@@ -418,16 +418,17 @@ else {
             echo "<a href='$PHP_SELF?tablename=$tablename&edit_type=$nowfield[ass_t]&".SID;
             echo "'>Edit $nowfield[label]</a><br>\n";
          }	 		 			
-         $rpull=$db->Execute("SELECT $nowfield[name] FROM $real_tablename WHERE $list");
-         $list2=make_SQL_ids($rpull,false,"$nowfield[name]");
-         if ($list2) { 
-            $rpull=$db->Execute("SELECT typeshort,id from $nowfield[ass_t] WHERE id IN ($list2) ORDER by typeshort");
+         //$rpull=$db->Execute("SELECT $nowfield[name] FROM $real_tablename WHERE $list");
+         //$list2=make_SQL_ids($rpull,false,"$nowfield[name]");
+         //if ($list2) { 
+         //    $rpull=$db->Execute("SELECT typeshort,id from $nowfield[ass_t] WHERE id IN ($list2) ORDER by typeshort");
+             $rpull=$db->Execute("SELECT typeshort,id from $nowfield[ass_t] ORDER by sortkey");
             if ($rpull)
 	       $text=$rpull->GetMenu2("$nowfield[name]",${$nowfield[name]},true,false,0,"style='width: 80%' $jscript");   
 	    else
 	       $text="&nbsp;";
     	    echo "$text</td>\n";
-         }  
+         //}  
       }
       elseif ($nowfield["datatype"]== "table") {
          echo "<td style='width: 10%'>";
@@ -450,7 +451,7 @@ else {
       elseif ($nowfield[datatype] == "table")
          echo "<td style='width: 10%'>&nbsp;</td>";
    }	 
-   echo "<td><input type=\"submit\" name=\"search\" value=\"Search\">&nbsp;";
+   echo "<td style='width: 5%'><input type=\"submit\" name=\"search\" value=\"Search\">&nbsp;";
    echo "<input type=\"submit\" name=\"search\" value=\"Show All\"></td>";
    echo "</tr>\n\n";
 
