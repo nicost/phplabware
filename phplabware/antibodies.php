@@ -18,158 +18,88 @@ require("include.php");
 
 allowonly($READ, $USER["permissions"]);
 
-// register variables
-$get_vars = "mod,groupid,groupname,";
-globalize_vars ($get_vars,$HTTP_GET_VARS);
-$post_vars = "add,groupid,groupname,submit,";
-globalize_vars ($post_vars, $HTTP_POST_VARS);
-
 // main global vars
 $title .= "Antibodies";
 $fields="name,id,type1,type2,type3,species,antigen,epitope,concentration,buffer,notes,location,source,date";
 
-////
-// Adds group to database and dir with groupname in archive dir.
-// An error string is returned when problems occur 
-function add_new_group ($db,$groupname) {
-   global $archive_dir;
+// register variables
+$get_vars = "id,";
+globalize_vars ($get_vars,$HTTP_GET_VARS);
+$post_vars = $fields . "add,submit,search,";
+globalize_vars ($post_vars, $HTTP_POST_VARS);
 
-   // check if a groupname is entered
-   if ($groupname) {
-      $query = "SELECT * FROM groups WHERE name='$groupname'";
-      $r = $db->Execute($query);
-      // test if a result is found
-      if (!$r->EOF) {
-          return "groupname already exists; please try again";
-      }
-      else {
-         $id=$db->GenID("groups_id_seq");
-         if ($db->Execute("INSERT INTO groups(id,name) VALUES('$id','$groupname') ") ) {
-            echo "Group <b>$groupname</b> added,";
-         }
-         else 
-            echo "Group was not added<br>";
-      }      
-   }
-   else
-      return "Please enter a groupname!";
+
+/****************************FUNCTIONS***************************/
+
+////
+// !Inserts $fields with $fieldvalues into $table
+// Returns the id of inserted record on succes, false otherwise.
+// Fieldvalues must be an associative array containing all the $fields to be added.
+function add ($db, $table,$fields,$fieldvalues){
 }
 
 ////
-// Change that groupname.  On error, it returns an error string
-function modify_group ($db, $groupid, $new_name) {
-   // Only change the name when there is a new one provided
-   if (!$new_name)
-      return "Please enter a groupname!";
-
-   // check whether a group with the new name already exists
-   $r = $db->Execute ("SELECT id FROM groups WHERE 
-                   (name='$new_name' AND NOT id='$groupid');");
-   if (!$r->EOF)
-      return "Groupname <b>$new_name</b> already exists, please select another name";     
-   // now change the name
-   else {
-      // get the old name
-      $old_name = get_cell($db,"groups","name","id",$groupid);
-      $query = "UPDATE groups SET name='$new_name' WHERE id='$groupid';";
-      if ($db->Execute($query))
-         echo "New groupname is <b>$new_name</b><br><br>";
-   }
+// !Modifies $fields in $table with values $fieldvalues where id=$id
+// Returns true on succes, false on failure
+// Fieldvalues must be an associative array containing all the $fields to be added.
+// If a field is not present in $fieldvalues, it will not be changed.  
+// The entry 'id' in $fields will be ignored.
+function modify ($db, $table,$fields,$fieldvalues,$id) {
 }
 
 
 ////
-// delete given group
-function delete_group ($db, $groupid) {
-
-   // check if a groupname is entered
-   if (!$groupid) 
-      return false;
- 
-   $query = "SELECT name FROM groups WHERE id='$groupid'";
-   $r = $db->Execute($query);
- 
-   // just in case, test if a result has been found
-   if ($r->EOF)
-      echo "Group does not exists; Nothing to delete.";
-   else {
-      // get groupname from database result
-      $groupname = $r->fields["name"];
- 
-      // test if group has no more users
-      $users_query = "SELECT id FROM users WHERE groupid='$groupid'";
-      $r2 = $db->Execute($users_query);
-      if (!$r2->EOF) {
-         echo "Group <b>$groupname</b> can not be removed since it still has users!!<br>";
-         echo "First delete all users, then remove the group.<br>";
-      }
-      else { 
-         // remove given group entry from database
-         $db_remove_query = "DELETE FROM groups WHERE id=$groupid";
-         if ($db->Execute($db_remove_query))
-            echo "Group <b>$groupname</b> has been deleted.";
-         else
-            echo "Failed to remove group <b>$groupname</b>.";
-      }
-   }
+// !Deletes the etry with id=$id
+// Returns true on succes, false on failure
+// This is very generic, it is likely that you will need to do more cleanup
+function delete ($db, $table, $id) {
 }
-
 
 ////
-// displays form which allows groupname to be changed
-// if groupid is given this is to modify, otherwise add a new group
-function group_form ($groupid, $groupname) {
-   global $PHP_SELF;
-
-   echo "<form method='post' action='$PHP_SELF'>\n";
-   if ($groupid)
-      echo "<input type='hidden' name='groupid' value='$groupid'>\n";
-   echo "<table align='center'>\n";
-   echo "<tr><td>New Group Name:</td>\n";
-   echo "<td><input type='text' name='groupname' value='$groupname'></td></tr>\n";
-   echo "<tr><td colspan=2 align='center'>";
-   if ($groupid)
-      echo "<input type='submit' name='submit' value='Modify Group'>";
-   else
-      echo "<input type='submit' name='submit' value='Add Group'>";
-   echo "</td></tr>\n";
-   echo "</table>\n";
-   echo "</form>\n";
- 
+// !Prints a form with antibody stuff
+// $id=0 for a new entry, otherwise it is the id
+function add_ab_form ($db, $fields,$field_values,$id) {
 }
-/****************************************************************/
+
+////
+// !Shows a page with nice information on the antibody
+function show_ab ($id) {
+}
+
+/*****************************BODY*******************************/
 
 printheader($title);
 navbar($USER["permissions"]);
 
-// when the 'Add a new Group' button has been chosen: 
+// when the 'Add' button has been chosen: 
 if ($add)
-   group_form ("","");
+   add_ab_form ($db,$fields,$field_values,0);
 
 // when modify has been pressed:
 elseif ($mod == "true")
-   group_form ($groupid, $groupname);
+   add_ab_form ($db,$fields,$fieldvalues,$id);
 
+elseif ($id)
+   show_ab ($id);
+   
 else {
    // print header of table
    echo "<table border=\"1\" align=center >\n";
    echo "<caption>\n";
-   // first handle addition of a new group
-   if ($submit == "Add Group") {
-      if ($test = add_new_group ($db, $groupname) ) {
+   // first handle addition of a new antibody
+   if ($submit == "Add Antibody") {
+      if (! $test = add ($db, "antibodies",$fields,$fieldvalues) ) {
          echo "</caption>\n</table>\n";
-         echo "<table align='center'><caption>$test</caption></table>";
-         group_form ("",$groupname);
+         add_ab_form ($fields,$field_values,0);
          printfooter ();
          exit;
       }
    }
    // then look whether groupname should be modified
-   elseif ($submit =="Modify Group") {
-      if ($test = modify_group ($db,$groupid, $groupname)) {
+   elseif ($submit =="Modify Antibody") {
+      if (! $test = modify ($db,"antibodies",$fields,$fieldvalues,$id)) {
          echo "</caption>\n</table>\n";
-         echo "<table align='center'><caption>$test</caption></table>";
-         group_form ($groupid, $groupname);
+         add_ab_form ($fields,$fieldvalues,$id);
          printfooter ();
          exit;
       }
@@ -179,12 +109,12 @@ else {
       while((list($key, $val) = each($HTTP_POST_VARS))) {
          if (substr($key, 0, 3) == "del") {
             $delarray = explode("_", $key);
-            delete_group($db, $delarray[1]);
+            delete ($db, "antibodies", $delarray[1]);
          }
          if (substr($key, 0, 3) == "mod") {
             $modarray = explode("_", $key);
             echo "</caption>\n</table>\n";
-            group_form($modarray[1],get_cell($db,"groups","name","id",$modarray[1]) );
+            add_ab_form ($fields,$fieldvalues,$id);
             printfooter();
             exit();
          }
@@ -196,87 +126,60 @@ else {
    echo "<form name='form' method='post' action='$PHP_SELF'>\n";  
 
    echo "<tr>\n";
-   echo "<th>Group</th>";
-//   echo "<th>Used space</th>\n";
-   echo "<th>Admins</th>";
-   echo "<th>Users</th>";
+   echo "<th>Name</th>";
+   echo "<th>Primary/Secundary</th>\n";
+   echo "<th>Mono-/Polyclonal</th>\n";
+   echo "<th>Host</th>\n";
+   echo "<th>Antigen</th>\n";
+   echo "<th>Location</th>\n";
    echo "<th colspan=\"2\">Action</th>\n";
    echo "</tr>\n";
-$db->debug=true;
-   // retrieve all groups and their info from database
-   $query = "SELECT $fields FROM antibodies ORDER BY date DESCENDING";
+
+//$db->debug=true;
+
+   // retrieve all antibodies and their info from database
+   $query = "SELECT $fields FROM antibodies ORDER BY date DESC";
    $r=$db->Execute($query);
-   // print all group admins per group in table cells
+   // print all entries
    while (!($r->EOF)) {
  
       // get results of each row
-      $groupid = $r->fields["id"];
-      $groupname = $r->fields["name"];
-      $adminid = $r->fields["adminid"];
-
+      $id = $r->fields["id"];
+      $name = $r->fields["name"];
+      $at1=get_cell($db,"ab_type1","type","id",$r->fields["ab_type1"]);
+      $at2=get_cell($db,"ab_type2","type","id",$r->fields["ab_type2"]);
+      $at3=get_cell($db,"ab_type3","type","id",$r->fields["ab_type2"]);
+      
       // print start of row of selected group
       echo "<tr>\n";
-      echo "<td>$groupname</td>\n";
-
-      // get names of admins belonging to selected group
-      $query2="SELECT firstname,lastname,id,login FROM users WHERE groupid='$groupid' 
-               AND (permissions >= $ADMIN)";
-      $r2=$db->Execute($query2);
-      // if number of rows greater than zero then print found results
-      if (!$r2->EOF) { 
-         echo "<td>";
-         while (!$r2->EOF) {
-            $username = $r2->fields["firstname"]." ".$r2->fields["lastname"];
-            if ($username==" ")
-               $username=$r2->fields["login"];
-            echo "<b>".$username."</b><br>";
-            $r2->MoveNext();
-         }
-         echo "</td>\n";
-      }
-      else
-         echo "<td>&nbsp;</td>\n";
-
-      // get names of users belonging to selected group
-      $query2="SELECT firstname,lastname,id,login FROM users WHERE groupid='$groupid' 
-               AND (permissions < $ADMIN)";
-      $r2=$db->Execute($query2);
-      // if number of rows greater than zero then print found results
-      if (!$r2->EOF) { 
-         echo "<td>";
-         while (!$r2->EOF) {
-            $username = $r2->fields["firstname"]." ".$r2->fields["lastname"];
-            if ($username==" ")
-               $username=$r2->fields["login"];
-            echo "<b>".$username."</b><br>";
-            $r2->MoveNext();
-         }
-         echo "</td>\n";
-      }
-      else
-         echo "<td>&nbsp;</td>\n";
-
-
+// DEAL WITH SID HERE
+?>
+<td><a href="antibodies.php?id=<?php echo $id;?>&<?=SID?>"><?php echo $name;?></td>
+<?php
+      echo "<td>$at1</td>\n";
+      echo "<td>$at2</td>\n";
+      echo "<td>$at3</td>\n";
+      echo "<td>$antigen</td>\n";
+      echo "<td>$location</td>\n";
+      
+      
       // print last columns with links to adjust group
-      $modstring = "<input type=\"submit\" name=\"mod_" . $groupid . "\" value=\"Modify\">";
+      $modstring = "<input type=\"submit\" name=\"mod_" . $id . "\" value=\"Modify\">";
       echo "<td align='center'>$modstring</td>\n";
-      //echo "<td><a href='$PHP_SELF?mod=true&groupid=$groupid&groupname=$groupname'>Modify</a></td>\n";
-      $delstring = "<input type=\"submit\" name=\"del_" . $groupid . "\" value=\"Remove\" ";
-      $delstring .= "Onclick=\"if(confirm('Are you sure the group $groupname ";
+      $delstring = "<input type=\"submit\" name=\"del_" . $id . "\" value=\"Remove\" ";
+      $delstring .= "Onclick=\"if(confirm('Are you sure the antibody $name ";
       $delstring .= "should be removed?')){return true;}return false;\">";                                           
       echo "<td align='center'>$delstring</td>\n";
-      //echo "<td><a href='$PHP_SELF?del=true&groupid=$db_row_groupid'>Delete</a></td>\n";
       echo "</tr>\n";
    
       $r->MoveNext();
    }
 
    // print footer of table
-   echo "<tr><td colspan=5 align='center'>";
-   echo "<input type=\"submit\" name=\"add\" value=\"Add Group\">";
+   echo "<tr><td colspan=8 align='center'>";
+   echo "<input type=\"submit\" name=\"add\" value=\"Add Antibody\">";
    echo "</td></tr>";
-// <a href=\"$PHP_SELF?add=true\">";
-//   echo "Add a Group</a></td></tr>";
+
    echo "</table>\n";
    echo "</form>\n";
 
