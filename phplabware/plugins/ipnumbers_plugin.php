@@ -18,6 +18,7 @@ the terms of the GNU General Public License as published by the Free Software Fo
 */
 
 
+/*
 
 ////
 // !Change/calculate/check values just before they are added/modified
@@ -40,7 +41,7 @@ function plugin_search($query,$fieldvalues,$existing_clause)
 {
    return $query;
 }
-
+*/
 
 ////
 // !Extends function getvalues
