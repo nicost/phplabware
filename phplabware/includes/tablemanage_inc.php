@@ -127,10 +127,10 @@ function add_table ($db,$tablename,$sortkey) {
    
    //check to ensure that duplicate table or database does not exist
    $r=$db->Execute("SELECT tablename FROM tableoftables");
-   $ALLTABLES=$r->GetArray();
-   foreach($ALLTABLES as $table1) {
-      if ("$tablename" == "$table1")
-         $isbad=true; 
+   while ($r && !$r->EOF) {
+      if ($tablename==$r->fields["tablename"])
+         $isbad=true;
+      $r->MoveNext();
    }
    if ($tablename=="")
       $string="Please enter a title for the table!";
