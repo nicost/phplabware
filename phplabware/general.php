@@ -30,17 +30,30 @@ if (!$tableinfo->id) {
 
 $tableinfo->queryname=$queryname=$tableinfo->short.'_query';
 $tableinfo->pagename=$pagename=$tableinfo->short.'_curr_page';
-if ($HTTP_GET_VARS['viewid'])
+
+// Acquire active view from settings or get/post vars
+if (isset($USER['settings']['view']["$tableinfo->name"]))
+   $viewid=$USER['settings']['view']["$tableinfo->name"];
+if (isset($HTTP_GET_VARS['viewid']))
    $viewid=$HTTP_GET_VARS['viewid'];
 else
-   $viewid=$HTTP_POST_VARS['viewid'];
+   if (isset($HTTP_POST_VARS['viewid']))
+      $viewid=$HTTP_POST_VARS['viewid'];
 
-if ($viewid) 
+// Activate selected view or default
+if ($viewid) {
    // get list from preferences in table tableviews
    $Fieldscomma=viewlist($db,$tableinfo,$viewid); 
-else
+   // write viewid back to user preferences
+   $USER['settings']['view']["$tableinfo->name"]=$viewid;
+}   
+else {
    // read all fields in from the description file
    $Fieldscomma=comma_array_SQL($db,$tableinfo->desname,columnname,"WHERE display_table='Y'");
+   // release viewid we remembered
+   unset($USER['settings']['view']["$tableinfo->name"]);
+}
+   
 
 // load plugin php code if it has been defined 
 $plugin_code=get_cell($db,'tableoftables','plugin_code','id',$tableinfo->id);
