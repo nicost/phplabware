@@ -1,7 +1,7 @@
 BODY  
 {
 	background-color : White;
-	font-family : Arial, Helvetica, sans-serif;
+	font-family : Arial, Helvetica, Symbol, Heisi Mincho W3, sans-serif;
 	font-size : 10pt;
         margin : 0;
 }
@@ -29,7 +29,6 @@ A:Visited
 
 Table, P, DIV, H5, A, OL, TD, UL 
 {
-	font-family : Arial, Helvetica, sans-serif;
 	font-size : 9pt;
 	
 }
@@ -53,7 +52,6 @@ TR.row_even
 
 TH  
 {
-	font-family : Arial, Helvetica, sans-serif;
 	font-size : 7pt;
 	color: #FFFFFF;
 	background-color : #000000;
@@ -95,7 +93,6 @@ Col.center
 TEXTAREA.read_only
 {
 	background-color : Red;
-	font-family : Arial, Helvetica, sans-serif;
 	font-size : 9pt;
 }
 .nav
