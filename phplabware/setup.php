@@ -186,6 +186,7 @@ if ($version) {
       }
       if ($version<0.2002) {
          // fill columns gw,gr,ew,er with values from column access
+         // Moves column access to columns gw,gr,ew,er
          include ("dd/0_2002_inc.php");
       }
 
