@@ -137,6 +137,7 @@ function modify ($db, $type) {
       return false;
    }
    
+   // log some info
    $theid=$USER["id"];
    $theip=getenv("REMOTE_ADDR");
    $thedate=time();
@@ -173,7 +174,10 @@ function modify ($db, $type) {
    elseif ($type=="me"  && $id) {
       $query = "UPDATE users SET firstname='$firstname', 
                      lastname='$lastname',  
-                     email='$email'";  
+                     email='$email',
+		     modbyid='$theid',
+		     moddate='$thedate',
+		     modbyip='$theip'";  
       if ($pwd) {
           $pwd=md5($pwd);
           // require at least write permissions to change the password
@@ -441,9 +445,12 @@ else {
    echo "<th>Write</th>\n";
    echo "<th>Read</th>\n";
    echo "<th>Active</th>\n";
+   echo "<th>Created</th>\n";
+   echo "<th>Modified</th\n";
    echo "<th colspan=\"2\">Action</th>\n";
    echo "</tr>\n";
 
+   $dateformat=get_cell($db,"dateformats","dateformat","id",$system_settings["dateformat"]);
 
    // get result and number of rows in result
    $r = $db->Execute($db_query);
@@ -474,6 +481,18 @@ else {
       for ($i=0;$i<4;$i++)
          echo "<td align=\"center\">$stat[$i]</td>\n";
 
+      if ($r->fields["createddate"])
+         $createddate=date($dateformat,$r->fields["createddate"]);
+      else
+         $createddate="&nbsp;";
+	 
+      echo "<td>$createddate</td>\n";
+      if ($r->fields["moddate"])
+         $moddate=date($dateformat,$r->fields["moddate"]);
+      else
+         $moddate="&nbsp;";
+      echo "<td>$moddate</td>\n";
+
       // don't delete/modify yourself, and, except for sysadmin, 
       // do not let admins fool around with other admins in group
       $id = $r->fields["id"];
@@ -494,7 +513,7 @@ else {
       $r->MoveNext();
    }
 
-   echo "<tr border=0><td colspan=9 align='center'>";
+   echo "<tr border=0><td colspan=11 align='center'>";
    echo "<INPUT align='center' TYPE='submit' NAME='user_add' VALUE='Add User'></INPUT>\n";
    echo "</td></tr>\n";
    echo "</form>\n";
