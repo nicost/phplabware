@@ -22,7 +22,7 @@ $tableinfo=new tableinfo($db);
 
 if (!$tableinfo->id) {
    printheader($httptitle);
-   navbar($USER["permissions"]);
+   navbar($USER['permissions']);
    echo "<h3 align='center'> Table: <i>$HTTP_GET_VARS[tablename]</i> does not exist.</h3>";
    printfooter();
    exit();
