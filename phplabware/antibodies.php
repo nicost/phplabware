@@ -282,7 +282,7 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
    // delete file and show antibody form
    if (substr($key, 0, 3) == "def") {
       $modarray = explode("_", $key);
-      $filename=delete_file($db,$modarray[1],$USER,$system_settings);
+      $filename=delete_file($db,$modarray[1],$USER);
       $id=$HTTP_POST_VARS["id"];
       if ($filename)
          echo "<h3 align='center'>Deleted file <i>$filename</i>.</h3>\n";
