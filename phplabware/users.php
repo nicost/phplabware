@@ -320,6 +320,9 @@ if ($type=="me") {
    exit();
 }
 if ($me=="Change Settings") {
+   $title.="Change Settings";
+   printheader($title);
+   navbar ($USER["permissions"]);
    modify ($db, "me");
    show_user_form("me");
    printfooter();
