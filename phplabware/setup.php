@@ -214,86 +214,91 @@ if ($version) {
 	    date int)";
 	 if (!$db->Execute($query)) $test=false;
          $query="CREATE TABLE ab_type1 
-            (id int PRIMARY KEY, 
+            (id int PRIMARY KEY,
+             sortkey int,
 	     type text,
-             sortkey int)";
+             typeshort text)";
 	 if (!$db->Execute($query)) $test=false;
-	 $query="INSERT INTO ab_type1 VALUES (1,'Prim.',10)";
+	 $query="INSERT INTO ab_type1 VALUES (1,10,'Primary','1')";
 	 if (!$db->Execute($query)) $test=false;
-	 $query="INSERT INTO ab_type1 VALUES (2,'Second.',20)";
+	 $query="INSERT INTO ab_type1 VALUES (2,20,'Secondary','2')";
 	 if (!$db->Execute($query)) $test=false;
-	 $query="INSERT INTO ab_type1 VALUES (3,'other',30)";
+	 $query="INSERT INTO ab_type1 VALUES (3,30,'other','-')";
 	 if (!$db->Execute($query)) $test=false;
          $query="CREATE TABLE ab_type2 
             (id int PRIMARY KEY, 
-	     type text)";
+	     type text,
+             typeshort text)";
 	 if (!$db->Execute($query)) $test=false;
-	 $query="INSERT INTO ab_type2 VALUES (1,'monocl.')";
+	 $query="INSERT INTO ab_type2 VALUES (1,'monoclonal','mono')";
 	 if (!$db->Execute($query)) $test=false;
-	 $query="INSERT INTO ab_type2 VALUES (2,'polycl.')";
+	 $query="INSERT INTO ab_type2 VALUES (2,'polyclonal','poly')";
 	 if (!$db->Execute($query)) $test=false;
          $query="CREATE TABLE ab_type3 
             (id int PRIMARY KEY,
 	     sortkey int,
-	     type text)";
+	     type text,
+             typeshort text)";
 	 if (!$db->Execute($query)) $test=false;
 	 $query="INSERT INTO ab_type3 VALUES (1,10,'?')";
 	 if (!$db->Execute($query)) $test=false;
-	 $query="INSERT INTO ab_type3 VALUES (2,20,'human')";
+	 $query="INSERT INTO ab_type3 VALUES (2,50,'human','human')";
 	 if (!$db->Execute($query)) $test=false;
-	 $query="INSERT INTO ab_type3 VALUES (3,30,'mouse')";
+	 $query="INSERT INTO ab_type3 VALUES (3,20,'mouse','mouse')";
 	 if (!$db->Execute($query)) $test=false;
-	 $query="INSERT INTO ab_type3 VALUES (4,40,'rabbit')";
+	 $query="INSERT INTO ab_type3 VALUES (4,10,'rabbit','rabbit')";
 	 if (!$db->Execute($query)) $test=false;
-	 $query="INSERT INTO ab_type3 VALUES (5,50,'rat')";
+	 $query="INSERT INTO ab_type3 VALUES (5,30,'rat','rat')";
 	 if (!$db->Execute($query)) $test=false;
-	 $query="INSERT INTO ab_type3 VALUES (6,60,'goat')";
+	 $query="INSERT INTO ab_type3 VALUES (6,40,'goat','goat')";
 	 if (!$db->Execute($query)) $test=false;
-	 $query="INSERT INTO ab_type3 VALUES (7,1000,'other')";
+	 $query="INSERT INTO ab_type3 VALUES (7,1000,'other','other')";
 	 if (!$db->Execute($query)) $test=false;
          $query="CREATE TABLE ab_type4 
             (id int PRIMARY KEY,
 	     sortkey int,
-	     type text)";
+	     type text,
+             typeshort text)";
 	 if (!$db->Execute($query)) $test=false;
-	 $query="INSERT INTO ab_type4 VALUES (1,100,'IgG')";
+	 $query="INSERT INTO ab_type4 VALUES (1,100,'IgG','IgG')";
 	 if (!$db->Execute($query)) $test=false;
-	 $query="INSERT INTO ab_type4 VALUES (2,200,'IgM')";
+	 $query="INSERT INTO ab_type4 VALUES (2,200,'IgM','IgM')";
 	 if (!$db->Execute($query)) $test=false;
-	 $query="INSERT INTO ab_type4 VALUES (3,300,'IgG1')";
+	 $query="INSERT INTO ab_type4 VALUES (3,300,'IgG1','IgG1')";
 	 if (!$db->Execute($query)) $test=false;
-	 $query="INSERT INTO ab_type4 VALUES (4,400,'IgG2a')";
+	 $query="INSERT INTO ab_type4 VALUES (4,400,'IgG2a','IgG2a')";
 	 if (!$db->Execute($query)) $test=false;
-	 $query="INSERT INTO ab_type4 VALUES (5,500,'IgG2b')";
+	 $query="INSERT INTO ab_type4 VALUES (5,500,'IgG2b','IgG2b')";
 	 if (!$db->Execute($query)) $test=false;
-	 $query="INSERT INTO ab_type4 VALUES (6,600,'IgE')";
+	 $query="INSERT INTO ab_type4 VALUES (6,600,'IgE','IgE')";
 	 if (!$db->Execute($query)) $test=false;
-	 $query="INSERT INTO ab_type4 VALUES (7,20,'mix')";
+	 $query="INSERT INTO ab_type4 VALUES (7,20,'mix','mix')";
 	 if (!$db->Execute($query)) $test=false;
-	 $query="INSERT INTO ab_type4 VALUES (8,10,'?')";
+	 $query="INSERT INTO ab_type4 VALUES (8,10,'unknown','?')";
 	 if (!$db->Execute($query)) $test=false;
          $query="CREATE TABLE ab_type5 
             (id int PRIMARY KEY,
 	     sortkey int,
-	     type text)";
+	     type text,
+             typeshort text)";
 	 if (!$db->Execute($query)) $test=false;
-	 $query="INSERT INTO ab_type5 VALUES (1,100,'Alk. Phos.')";
+	 $query="INSERT INTO ab_type5 VALUES (1,100,'Alkaline Phosph.','AP')";
 	 if (!$db->Execute($query)) $test=false;
-	 $query="INSERT INTO ab_type5 VALUES (2,200,'H. Per.')";
+	 $query="INSERT INTO ab_type5 VALUES (2,200,'Horseradish Perox.','HP')";
 	 if (!$db->Execute($query)) $test=false;
-	 $query="INSERT INTO ab_type5 VALUES (3,300,'FITC')";
+	 $query="INSERT INTO ab_type5 VALUES (3,300,'FITC','FITC')";
 	 if (!$db->Execute($query)) $test=false;
-	 $query="INSERT INTO ab_type5 VALUES (4,400,'Rhodamine')";
+	 $query="INSERT INTO ab_type5 VALUES (4,400,'Rhodamine','Rhod.')";
 	 if (!$db->Execute($query)) $test=false;
-	 $query="INSERT INTO ab_type5 VALUES (5,500,'Cy3')";
+	 $query="INSERT INTO ab_type5 VALUES (5,500,'Cy3','Cy3')";
 	 if (!$db->Execute($query)) $test=false;
-	 $query="INSERT INTO ab_type5 VALUES (6,600,'Cy5')";
+	 $query="INSERT INTO ab_type5 VALUES (6,600,'Cy5','Cy5')";
 	 if (!$db->Execute($query)) $test=false;
-	 $query="INSERT INTO ab_type5 VALUES (7,700,'Alexa-488')";
+	 $query="INSERT INTO ab_type5 VALUES (7,700,'Alexa-488','Alex488')";
 	 if (!$db->Execute($query)) $test=false;
-	 $query="INSERT INTO ab_type5 VALUES (8,2000,'Beads')";
+	 $query="INSERT INTO ab_type5 VALUES (8,2000,'Beads','Beads')";
 	 if (!$db->Execute($query)) $test=false;
-	 $query="INSERT INTO ab_type5 VALUES (9,0,'None')";
+	 $query="INSERT INTO ab_type5 VALUES (9,0,'None','None')";
 	 if (!$db->Execute($query)) $test=false;
       }
       
