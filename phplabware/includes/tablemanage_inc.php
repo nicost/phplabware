@@ -246,7 +246,7 @@ function mod_table($db,$id,$offset) {
       $label="NULL";
    $tablesort=(int) $HTTP_POST_VARS["table_sortkey"][$offset];
    $tabledisplay= $HTTP_POST_VARS["table_display"][$offset];
-   $tablegroups= $HTTP_POST_VARS["tablexgroups"][$offset];
+   $tablegroups= $HTTP_POST_VARS["tablexgroups"][$id];
    if ($HTTP_POST_VARS["table_plugincode"][$offset])
       $plugincode="'".$HTTP_POST_VARS["table_plugincode"][$offset]."'";
    else

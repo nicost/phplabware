@@ -343,7 +343,7 @@ while (!($r->EOF) && $r) {
    if ($Custom=="")
       echo "<td><input type='text' name='table_plugincode[]' value='$plugincode'></td>\n";
    else
-      echo "<td>&nbsp;</td>\n";
+      echo "<td>&nbsp;<input type='hidden' name='table_plugincode[]' value=''></td>\n";
    if ($Custom=="")
       echo "<td>Yes</td>\n";
    else
