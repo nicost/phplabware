@@ -348,10 +348,10 @@ function display_table_info($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr_c
          else echo "<tr class='row_even' align='center'>\n";
   
       foreach($Allfields as $nowfield) {
-         // we explode nested table links to the current world:
+         // nested table links to the current world:
          if (isset($nowfield['nested'])) {
             $nowfield['text']=$nowfield['nested']['text'];
-            $nowfield['value']=$nowfield['nested']['value'];
+            $nowfield['values']=$nowfield['nested']['values'];
             $nowfield['datatype']=$nowfield['nested']['datatype'];
             $nowfield['fileids']=$nowfield['nested']['fileids'];
          }
@@ -441,7 +441,7 @@ function display_record($db,$Allfields,$id,$tableinfo,$backbutton=true,$previous
          $r->MoveNext();
       }
    }
-//print_r($viewlist);
+
    foreach ($Allfields as $nowfield) {
 
       // decide whether this field will be shown
@@ -456,7 +456,14 @@ function display_record($db,$Allfields,$id,$tableinfo,$backbutton=true,$previous
       }
       
       if ($thisfield) {
-         // We display the fields in two columns
+         // explode nested table links to the current world:
+         if (isset($nowfield['nested'])) {
+            $nowfield['text']=$nowfield['nested']['text'];
+            $nowfield['values']=$nowfield['nested']['values'];
+            $nowfield['datatype']=$nowfield['nested']['datatype'];
+            $nowfield['fileids']=$nowfield['nested']['fileids'];
+         }
+         // display the fields in two columns
          if ($count && !($count % 2))
             echo "</tr>\n<tr>\n";
          if ($nowfield['datatype']=='textlong') {
