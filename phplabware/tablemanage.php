@@ -6,15 +6,16 @@ include ('includes/defines_inc.php');
 
 $editfield=$HTTP_GET_VARS["editfield"];
 $string="";
-global $HTTP_POST_VARS,$PHP_SELF,$DBNAME,$string;
-globalize_vars($post_vars, $HTTP_POST_VARS,$DBNAME,$DB_DESNAME,$system_settings);
+$post_vars="newtable_name,newtable_sortkey,addtable,table_id,table_name,table_display";
+globalize_vars($post_vars, $HTTP_POST_VARS);
+
 $permissions=$USER["permissions"];
 printheader($httptitle);
 
 if (!($permissions & $ADMIN))
 	{
 	navbar($USER["permissions"]);
-	echo "<center><h3><b>Sorry, this page is not for you</B></h3></center>";
+	echo "<h3 align='center'><b>Sorry, this page is not for you</B></h3>";
 	printfooter($db,$USER);
 	exit;
 	}
@@ -105,8 +106,8 @@ if ($editfield)
 	navbar($USER["permissions"]);
 	$currdesc=$editfield;
 	$currdesc.="_desc";
-	echo "<center><h3>$string</h3>";
-	echo "<center><h3>Edit columns of $editfield</center></h3><br>";
+	echo "<h3 align='center'>$string</h3>";
+	echo "<h3 align='center'>Edit columns of $editfield</h3><br>";
 	echo "<table align='center'>\n";
 
 	echo "<form method='post' id='coledit' enctype='multipart/form-data' ";
@@ -122,7 +123,7 @@ if ($editfield)
     echo "<th>Action</th>\n";
 	echo "</tr>\n";
 	echo "<input type='hidden' name='table_name' value='$editfield'>\n";
-	echo "<center><tr align='center' ><td><input type='text' name='addcol_name' value=''></td>\n";
+	echo "<tr align='center' ><td><input type='text' name='addcol_name' value=''></td>\n";
 	echo "<td><input type='text' name='addcol_sort' value=''></td>\n";
 	echo "<td><input type='radio' name='addcol_dtable' checked value='Y'>yes<input type='radio' name='addcol_dtable'  value='N'>no</td>\n";
 	echo "<td><input type='radio' name='addcol_drecord' checked value='Y'>yes<input type='radio' name='addcol_drecord'  value='N'>no</td>\n";
@@ -214,8 +215,8 @@ if ($editfield)
 	}
 
 navbar($USER["permissions"]);
-echo "<center><h3>$string</center></h3>";
-echo "<center><caption><h3>Edit Tables</h3></caption></center>\n";
+echo "<h3 align='center'>$string</h3>";
+echo "<h3 align='center'>Edit Tables</h3>\n";
 echo "<form method='post' id='tablemanage' enctype='multipart/form-data' ";
 $dbstring=$PHP_SELF;echo "action='$dbstring?".SID."'>\n"; 
 echo "<table align='center'>\n";
@@ -281,7 +282,7 @@ while (!($r->EOF) && $r) {
 echo "<hr><table align='center'>\n";
 $rr=$db->Execute("SELECT Display FROM tableoftables where tablename='linkbar'");
 $linkdis=$rr->fields["Display"];
-echo "<center><h3>Edit Linkbar</h3></center>\n";
+echo "<h3 align='center'>Edit Linkbar</h3>\n";
 echo "<tr><th>Linkbar Display</th>";
 if($linkdis=="1")
 	{echo "<td><input type='radio' checked value='1' name='link_display'>yes<input type='radio' value='0' name='link_display'>no</td>\n";}
