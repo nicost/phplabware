@@ -218,9 +218,9 @@ if ($version) {
 	     type text,
              sortkey int)";
 	 if (!$db->Execute($query)) $test=false;
-	 $query="INSERT INTO ab_type1 VALUES (1,'Primary',10)";
+	 $query="INSERT INTO ab_type1 VALUES (1,'Prim.',10)";
 	 if (!$db->Execute($query)) $test=false;
-	 $query="INSERT INTO ab_type1 VALUES (2,'Secondary',20)";
+	 $query="INSERT INTO ab_type1 VALUES (2,'Second.',20)";
 	 if (!$db->Execute($query)) $test=false;
 	 $query="INSERT INTO ab_type1 VALUES (3,'other',30)";
 	 if (!$db->Execute($query)) $test=false;
@@ -228,16 +228,16 @@ if ($version) {
             (id int PRIMARY KEY, 
 	     type text)";
 	 if (!$db->Execute($query)) $test=false;
-	 $query="INSERT INTO ab_type2 VALUES (1,'monoclonal')";
+	 $query="INSERT INTO ab_type2 VALUES (1,'monocl.')";
 	 if (!$db->Execute($query)) $test=false;
-	 $query="INSERT INTO ab_type2 VALUES (2,'polyclonal')";
+	 $query="INSERT INTO ab_type2 VALUES (2,'polycl.')";
 	 if (!$db->Execute($query)) $test=false;
          $query="CREATE TABLE ab_type3 
             (id int PRIMARY KEY,
 	     sortkey int,
 	     type text)";
 	 if (!$db->Execute($query)) $test=false;
-	 $query="INSERT INTO ab_type3 VALUES (1,10,'unknown')";
+	 $query="INSERT INTO ab_type3 VALUES (1,10,'?')";
 	 if (!$db->Execute($query)) $test=false;
 	 $query="INSERT INTO ab_type3 VALUES (2,20,'human')";
 	 if (!$db->Execute($query)) $test=false;
@@ -270,16 +270,16 @@ if ($version) {
 	 if (!$db->Execute($query)) $test=false;
 	 $query="INSERT INTO ab_type4 VALUES (7,20,'mix')";
 	 if (!$db->Execute($query)) $test=false;
-	 $query="INSERT INTO ab_type4 VALUES (8,10,'unknown')";
+	 $query="INSERT INTO ab_type4 VALUES (8,10,'?')";
 	 if (!$db->Execute($query)) $test=false;
          $query="CREATE TABLE ab_type5 
             (id int PRIMARY KEY,
 	     sortkey int,
 	     type text)";
 	 if (!$db->Execute($query)) $test=false;
-	 $query="INSERT INTO ab_type5 VALUES (1,100,'Phosphatase (Alk.)')";
+	 $query="INSERT INTO ab_type5 VALUES (1,100,'Alk. Phos.')";
 	 if (!$db->Execute($query)) $test=false;
-	 $query="INSERT INTO ab_type5 VALUES (2,200,'Peroxidase (H.)')";
+	 $query="INSERT INTO ab_type5 VALUES (2,200,'H. Per.')";
 	 if (!$db->Execute($query)) $test=false;
 	 $query="INSERT INTO ab_type5 VALUES (3,300,'FITC')";
 	 if (!$db->Execute($query)) $test=false;
