@@ -27,32 +27,32 @@ globalize_vars($post_vars, $HTTP_POST_VARS);
 if ($searchj)  $search="Search";
 $httptitle .=$tablename;
 
-// read all fields in from the description file
-$fields=comma_array_SQL($db,$table_desname,label);
-
 /*****************************BODY*******************************/
 printheader($httptitle);
 navbar($USER["permissions"]);
 
 
-// find is associated with table
-$r=$db->Execute("SELECT id FROM tableoftables WHERE tablename='$tablename'");
-$id=$r->fields["id"];
-if (!$id) {
-   echo "<h3 align='center'> Table: <i>$tablename</i> does not exist.</h3>";
-   printfooter();
-   exit();
+// find id associated with table
+if (!$edit_type) {
+   $r=$db->Execute("SELECT id FROM tableoftables WHERE tablename='$tablename'");
+   $id=$r->fields["id"];
+   if (!$id) {
+      echo "<h3 align='center'> Table: <i>$tablename</i> does not exist.</h3>";
+      printfooter();
+      exit();
+   }
+   $real_tablename=$tablename."_".$id;
+   $table_desname=$real_tablename."_desc";
+   // read all fields in from the description file
+   $fields=comma_array_SQL($db,$table_desname,label);
 }
-$real_tablename=$id."_$tablename";
-$table_desname=$real_tablename."_desc";
-
 // check if something should be modified, deleted or shown
 while((list($key, $val) = each($HTTP_POST_VARS))) {	
    // display form with information regarding the record to be changed
    if (substr($key, 0, 3) == "mod") {
       $modarray = explode("_", $key);
       $r=$db->Execute("SELECT $fields FROM $real_tablename WHERE id=$modarray[1]"); 
-      add_g_form($db,$fields,$r->fields,$modarray[1],$USER,$PHP_SELF,$system_settings,$real_tablename,$table_desname);
+      add_g_form($db,$fields,$r->fields,$modarray[1],$USER,$PHP_SELF,$system_settings,$real_tablename,$tablename,$table_desname);
       printfooter();
       exit();
    }
@@ -65,7 +65,7 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
          echo "<h3 align='center'>Deleted file <i>$filename</i>.</h3>\n";
       else
          echo "<h3 align='center'>Failed to delete file <i>$filename</i>.</h3>\n";
-      add_g_form ($db,$fields,$HTTP_POST_VARS,$id,$USER,$PHP_SELF,$system_settings,$real_tablename,$table_desname);
+      add_g_form ($db,$fields,$HTTP_POST_VARS,$id,$USER,$PHP_SELF,$system_settings,$real_tablename,$tablename,$table_desname);
       printfooter();
       exit();
    }
@@ -80,10 +80,10 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
 ////////////This is the modification of the type variables
    if (substr($key, 0, 7) == "addtype") {
       $modarray = explode("_", $key);
-      $table=$modarray[1]."_".$modarray[2];
+      $table=$modarray[1]."_".$modarray[2]."_".$modarray[3];
       include("includes/type_inc.php");
       add_type($db,$table);
-      show_type($db,$table,"");	
+      show_type($db,$table,"",$tablename);	
       printfooter();
       exit();
    }
@@ -92,7 +92,7 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
       $table=$modarray[1]."_".$modarray[2];
       include("includes/type_inc.php");
       mod_type($db,$table,$modarray[3]);
-      show_type($db,$table,"");
+      show_type($db,$table,"",$tablename);
       printfooter();
       exit();
    }
@@ -101,7 +101,7 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
       $table=$modarray[1]."_".$modarray[2];
       include("includes/type_inc.php");
       del_type($db,$table,$modarray[3],$real_tablename);
-      show_type($db,$table,"");
+      show_type($db,$table,"",$tablename);
       printfooter();
       exit();
    }
@@ -110,7 +110,7 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
 if ($edit_type && ($USER["permissions"] & $LAYOUT)) {
    include("includes/type_inc.php");
    $assoc_name=get_cell($db,$table_desname,label,associated_table,$edit_type);
-   show_type($db,$edit_type,$assoc_name);
+   show_type($db,$edit_type,$assoc_name,$tablename);
    printfooter();
    exit();
 
@@ -123,19 +123,19 @@ if ($showid) {
    exit();
 }
 
-// when the create new table has been chosen
+// when create new table has been chosen
 if ($createnew){create_new_table($db);}
-echo "$real_tablename.<br>";
 // when the 'Add' button has been chosen: 
-if ($add) 
-   add_g_form($db,$fields,$field_values,0,$USER,$PHP_SELF,$system_settings,$real_tablename,$table_desname);
+if ($add) {
+   add_g_form($db,$fields,$field_values,0,$USER,$PHP_SELF,$system_settings,$real_tablename,$tablename,$table_desname);
+   }
 else { 
     // first handle addition of a new record
-   if ($submit == "Add Record") 
-   	{
-      if (!(check_g_data($db, $HTTP_POST_VARS, $table_desname) && $id=add($db,$real_tablename,$fields,$HTTP_POST_VARS,$USER) ) )
+   if ($submit == "Add Record") {
+      if (!(check_g_data($db, $HTTP_POST_VARS, $table_desname) && 
+            $id=add($db,$real_tablename,$fields,$HTTP_POST_VARS,$USER) ) )
       	{
-         add_g_form($db,$fields,$HTTP_POST_VARS,0,$USER,$PHP_SELF,$system_settings,$real_tablename,$table_desname);
+         add_g_form($db,$fields,$HTTP_POST_VARS,0,$USER,$PHP_SELF,$system_settings,$real_tablename,$tablename, $table_desname);
          printfooter ();
          exit;
       }
@@ -146,13 +146,13 @@ else {
          // to not interfere with search form 
          unset ($HTTP_POST_VARS);
 	 // or we won't see the new record
-	 unset ($HTTP_SESSION_VARS["pr_query"]);
+	 unset ($HTTP_SESSION_VARS["p_query"]);
       }
    }
    // then look whether it should be modified
    elseif ($submit=="Modify Record") {
       if (! (check_g_data($db,$HTTP_POST_VARS) && modify($db,$real_tablename,$fields,$HTTP_POST_VARS,$HTTP_POST_VARS["id"],$USER)) ) {
-         add_g_form ($db,$fields,$HTTP_POST_VARS,$HTTP_POST_VARS["id"],$USER,$PHP_SELF,$system_settings,$real_tablename,$table_desname);
+         add_g_form ($db,$fields,$HTTP_POST_VARS,$HTTP_POST_VARS["id"],$USER,$PHP_SELF,$system_settings,$real_tablename,$tablenmae,$table_desname);
          printfooter ();
          exit;
       }
@@ -184,8 +184,8 @@ else {
    if ($search=="Show All") {
       $num_p_r=$HTTP_POST_VARS["num_p_r"];
       unset ($HTTP_POST_VARS);
-      $pr_curr_page=1;
-      session_unregister("pr_query");
+      $p_curr_page=1;
+      session_unregister("p_query");
    }
    $column=strtok($fields,",");
    while ($column) {
@@ -197,19 +197,19 @@ else {
    $num_p_r=paging($num_p_r,$USER);
 
    // get current page
-   $pr_curr_page=current_page($pr_curr_page,"pr");
+   $p_curr_page=current_page($p_curr_page,"p");
  
    // prepare the search statement and remember it
-   $pr_query=make_search_SQL($db,$real_tablename,$short_tablename,$fields,$USER,$search);
-echo "$pr_query.<br>";
+   $fields="id,".$fields;
+   $p_query=make_search_SQL($db,$real_tablename,$short_tablename,$fields,$USER,$search);
    // loop through all entries for next/previous buttons
-   $r=$db->PageExecute($pr_query,$num_p_r,$pr_curr_page);
+   $r=$db->PageExecute($p_query,$num_p_r,$p_curr_page);
    while (!($r->EOF) && $r) {
       $r->MoveNext();
    }
 
    // print form;
-   $dbstring=$PHP_SELF;$dbstring.="?";$dbstring.="tablename=$tablename&";
+   $dbstring=$PHP_SELF."?"."tablename=$tablename&";
    echo "<form method='post' id='protocolform' enctype='multipart/form-data' action='$dbstring";
 	?><?=SID?>'><?php
 
@@ -221,7 +221,7 @@ echo "$pr_query.<br>";
    if (may_write($db,$real_tablename,false,$USER)) 
 
    // get a list with ids we may see
-   $r=$db->Execute($pr_query);
+   $r=$db->Execute($p_query);
    $lista=make_SQL_csf ($r,false,"id",$nr_records);
 
    // and a list with all records we may see
@@ -240,11 +240,10 @@ echo "$pr_query.<br>";
 
 //   get a list of all fields that are displayed in the table
 $Fieldscomma=comma_array_SQL_where($db,$table_desname,"label","display_table","Y");
-echo "$Fieldscomma.<br>";
 $Allfields=getvalues($db,$real_tablename,$table_desname,$Fieldscomma,display_table,"Y");	
-display_tablehead($Allfields,$list);
+display_tablehead($db,$tablename,$table_desname,$Allfields,$list);
 display_midbar($Fieldscomma);
-display_table_info($Fieldscomma,$pr_query,$num_p_r,$pr_curr_page);
+display_table_info($db,$tablename,$real_tablename,$table_desname,$Fieldscomma,$p_query,$num_p_r,$p_curr_page);
 printfooter($db,$USER);
 }
 ?>

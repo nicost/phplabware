@@ -13,11 +13,12 @@
   *  option) any later version.                                              *
   \**************************************************************************/
 
-function show_type ($db,$table,$name) {
-   global $HTTP_POST_VARS,$PHP_SELF,$HTTP_GET_VARS, $tablname;
+function show_type ($db,$table,$name, $tablename) {
+   global $HTTP_POST_VARS,$PHP_SELF,$HTTP_GET_VARS;
 
-   $dbstring=$PHP_SELF;$dbstring.="?";
-   if ($DBNAME){$dbstring.="tablename=$tablename&";} 
+   $dbstring=$PHP_SELF."?";
+   if ($tablename)
+      $dbstring.="tablename=$tablename&"; 
    $dbstring.="edit_type=$table&";
    if($HTTP_POST_VARS[type_name]) {$name=$HTTP_POST_VARS[type_name];}
    echo "<form method='post' id='typeform' enctype='multipart/form-data' ";
@@ -74,9 +75,16 @@ function show_type ($db,$table,$name) {
       $rownr+=1;
    }
 
+   echo "</form>\n";
    // Back button
    echo "<tr><td colspan=4 align='center'>\n";
+   $dbstring=$PHP_SELF."?";
+   if ($tablename)
+      $dbstring.="tablename=$tablename&";
+   echo "<form method='post' id='typeform' enctype='multipart/form-data' ";
+   echo "action='$dbstring".SID."'>\n"; 
    echo "<input type='submit' name='submit' value='Back'>\n";
+   echo "</form>\n";
    echo "</td></tr>\n";
 
    echo "</table>\n";

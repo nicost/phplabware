@@ -48,9 +48,9 @@ function date_entry($id)// Get the date the entry was made
 	}
 //////////////////////////////////////////////////////////////////////////////	
 ///Displays all information within a table in the headers for easy searching
-function display_tablehead($Allfields,$list)  
+function display_tablehead($db,$DBNAME,$DB_DESNAME,$Allfields,$list)  
 {
-	global $db,$DBNAME,$DB_DESNAME,$nr_records,$max_menu_length,$USER,$LAYOUT,$db_type;
+	global $nr_records,$max_menu_length,$USER,$LAYOUT,$db_type;
    // row with search form
    echo "<tr align='center'>\n";
    echo "<input type='hidden' name='searchj' value=''>\n";
@@ -106,11 +106,13 @@ function display_tablehead($Allfields,$list)
    echo "<input type=\"submit\" name=\"search\" value=\"Show All\"></td>";
    echo "</tr>\n";
 }
+
 ///////////////////////////////////////////////////////////
-// Displays all information within the table
-function display_table_info($Fieldscomma,$pr_query,$num_p_r,$pr_curr_page)
+//// 
+// !Displays all information within the table
+function display_table_info($db,$tablename,$real_tablename,$DB_DESNAME,$Fieldscomma,$pr_query,$num_p_r,$pr_curr_page)
 {
-	global $db,$DBNAME,$DB_DESNAME,$nr_records,$max_menu_length,$USER,$LAYOUT;
+	global $nr_records,$max_menu_length,$USER,$LAYOUT;
 	$r=$db->PageExecute($pr_query,$num_p_r,$pr_curr_page);
 	$rownr=1;
 	// print all entries
@@ -119,12 +121,12 @@ function display_table_info($Fieldscomma,$pr_query,$num_p_r,$pr_curr_page)
        // Get required ID and title
        $id=$r->fields["id"];
        $title=$r->fields["title"];		
-       $Allfields=getvalues($db,$DBNAME,$DB_DESNAME,$Fieldscomma,id,$id);
+       $Allfields=getvalues($db,$real_tablename,$DB_DESNAME,$Fieldscomma,id,$id);
        // print start of row of selected group
        if ($rownr % 2)echo "<tr class='row_odd' align='center'>\n";
        else echo "<tr class='row_even' align='center'>\n";
   
-   	foreach($Allfields as $nowfield)  	// read in all entries into variables
+       foreach($Allfields as $nowfield)  	// read in all entries into variables
    		{
 		   if ($nowfield[datatype] =="text") {echo "<td>$nowfield[values]</td>\n";} 
   		 if ($nowfield[datatype] =="link") 
@@ -141,7 +143,7 @@ function display_table_info($Fieldscomma,$pr_query,$num_p_r,$pr_curr_page)
 			   }
 			if ($nowfield[datatype] == "file")
 				{   	
-                $files=get_files($db,$DBNAME,$id,3);
+                $files=get_files($db,$tablename,$id,3);
       		  echo "<td>";
   		      if ($files) 
          	   for ($i=0;$i<sizeof($files);$i++)
@@ -151,7 +153,7 @@ function display_table_info($Fieldscomma,$pr_query,$num_p_r,$pr_curr_page)
 				}
 			}	
       echo "<td align='center'>&nbsp;\n";  echo "<input type=\"submit\" name=\"view_" . $id . "\" value=\"View\">\n";
-      if (may_write($db,$DBNAME,$id,$USER)) 
+      if (may_write($db,$real_tablename,$id,$USER)) 
       	{
          echo "<input type=\"submit\" name=\"mod_" . $id . "\" value=\"Modify\">\n";
          $delstring = "<input type=\"submit\" name=\"del_" . $id . "\" value=\"Remove\" ";
@@ -165,7 +167,7 @@ function display_table_info($Fieldscomma,$pr_query,$num_p_r,$pr_curr_page)
       $rownr+=1;
    	}
    // Add Record button
-   if (may_write($db,$DBNAME,false,$USER)) {
+   if (may_write($db,$real_tablename,false,$USER)) {
       echo "<tr><td colspan=10 align='center'>";
       echo "<input type=\"submit\" name=\"add\" value=\"Add Record\">";
       echo "</td></tr>";
@@ -246,11 +248,11 @@ function make_link($id)
 ///////////////////////////////////////////////////////////
 ////
 // !display addition and modification form
-function display_add($Allfields,$id,$namein)  
+function display_add($db,$tablename,$real_tablename,$tabledesc,$Allfields,$id,$namein)  
 	{
 	global $db, $DBNAME, $DB_DESNAME, $db_type, $USER;	
 
-    $dbstring=$PHP_SELF;$dbstring.="?";$dbstring.="tablename=$DBNAME&";
+    $dbstring=$PHP_SELF;$dbstring.="?";$dbstring.="tablename=$tablename&";
     echo "<form method='post' id='protocolform' enctype='multipart/form-data' action='$dbstring";
 	?><?=SID?>'><?php
 
@@ -259,10 +261,10 @@ function display_add($Allfields,$id,$namein)
    echo "<table border=0 align='center'>\n";   
    if ($id) 
  	  	{
- 	      echo "<tr><td colspan=5 align='center'><h3>Modify $DBNAME entry <i>$namein</i></h3></td></tr>\n";
+ 	      echo "<tr><td colspan=5 align='center'><h3>Modify $tablename entry <i>$namein</i></h3></td></tr>\n";
  	      echo "<input type='hidden' name='id' value='$id'>\n";
  	      }
-    else{echo "<tr><td colspan=5 align='center'><h3>New $DBNAME entry</h3></td></tr>\n";}
+    else{echo "<tr><td colspan=5 align='center'><h3>New $tablename entry</h3></td></tr>\n";}
     echo "<table border=0 align='center'>\n<tr align='center'>\n<td colspan=2></td>\n";
 	foreach ($Allfields as $nowfield) 
 		{
@@ -305,7 +307,7 @@ function display_add($Allfields,$id,$namein)
      		   echo "<tr><th>$nowfield[name]";
      		   if ($USER["permissions"] && $LAYOUT)
      		   	{
-     		   	echo "<a href='$PHP_SELF?tablename=$DBNAME&edit_type=$nowfield[ass_t]&<?=SID?>'>";
+     		   	echo "<a href='$PHP_SELF?tablename=$tablename&edit_type=$nowfield[ass_t]&<?=SID?>'>";
      		   	echo "<FONT size=1 color='#00ff00'> <small>(edit)</small></font></a>";
      		   	}
      		   if ($nowfield[required]=="Y"){echo"<sup style='color:red'>&nbsp;*</sup>";}
@@ -325,7 +327,7 @@ function display_add($Allfields,$id,$namein)
 				}
 			if ($nowfield[datatype]=="file")
 				{
-				$files=get_files($db,$DBNAME,$id);
+				$files=get_files($db,$real_tablename,$id);
 				echo "<tr>";
 				echo "<th>File:";
 				echo "</th>\n";
@@ -346,7 +348,7 @@ function display_add($Allfields,$id,$namein)
 	
 		}	
 echo "<td colspan=4>";
-show_access($db,$DBNAME,$id,$USER,$system_settings);
+show_access($db,$real_tablename,$id,$USER,$system_settings);
 echo "</td></tr>\n"; echo "<tr>";
 if ($id) $value="Modify Record"; 
 else $value="Add Record";
@@ -358,7 +360,7 @@ echo "</tr>\n";
 echo "</table></form>\n";
 
 //end of table
-$dbstring=$PHP_SELF;$dbstring.="?";$dbstring.="tablename=$DBNAME&";
+$dbstring=$PHP_SELF;$dbstring.="?";$dbstring.="tablename=$tablename&";
 echo "<form method='post' id='protocolform' enctype='multipart/form-data' action='$dbstring";
 ?><?=SID?>'><?php
 
@@ -367,8 +369,11 @@ echo "<form method='post' id='protocolform' enctype='multipart/form-data' action
 ///////////////////////////////////////////////////////////////////////
 ////
 // !Get all description table values out for a display
-function getvalues($db,$DBNAME,$DB_DESNAME,$fields,$qfield,$field) {
-	$r=$db->Execute("SELECT $fields FROM $DBNAME WHERE $qfield=$field"); 
+function getvalues($db,$DBNAME,$DB_DESNAME,$fields,$qfield=false,$field=false) {
+	if ($qfield)
+	   $r=$db->Execute("SELECT $fields FROM $DBNAME WHERE $qfield=$field"); 
+	else
+	   $r=$db->Execute("SELECT $fields FROM $DBNAME"); 
 	$column=strtok($fields,",");
 	$Allfields=array();
 	while ($column) 
@@ -425,9 +430,7 @@ return $out;
 //////////////////////////////////////////////////////
 ////
 // !SQL search (entrire column) that returns a comma delimited string
-function comma_array_SQL($db,$tablein,$column)
-	{
-	global $db;
+function comma_array_SQL($db,$tablein,$column) {
 	$tempa=array();
 	$rs = $db->Execute("select $column from $tablein");
 	if ($rs)
@@ -495,24 +498,19 @@ function check_g_data ($db,&$field_values, $DB_DESNAME) {
 // $fields is a comma-delimited string with column names
 // $field_values is hash with column names as keys
 // $id=0 for a new entry, otherwise it is the id
-function add_g_form ($db,$fields,$field_values,$id,$USER,$PHP_SELF,$system_settings,$DBNAME,$DB_DESNAME) 
+function add_g_form ($db,$fields,$field_values,$id,$USER,$PHP_SELF,$system_settings,$real_tablename, $tablename,$DB_DESNAME) 
 	{
-	if (!may_write($db,$DBNAME,$id,$USER)) return false; 
-	if ($id)
-		{
-    	if ($r->EOF) {echo "<h3>Could not find this record in the database</h3>";return false;}		
-		$Allfields=getvalues($db,$DBNAME,$DB_DESNAME,$fields,id,$id);
-		echo "$Allfields.<br>";
+	if (!may_write($db,$$real_tablename,$id,$USER)) return false; 
+	if ($id) {
+		$Allfields=getvalues($db,$real_tablename,$DB_DESNAME,$fields,id,$id);
 		$namein=get_cell($db,$DBNAME,"title","id",$id);		
-		display_add($Allfields,$id,$namein);
-		}    
-	else 
-		{
-		echo "$fields.<br>";
-		$Allfields=getvalues($db,$DBNAME,$DB_DESNAME,$fields,blank,blank);display_add($Allfields,$id,"");
-		print_r ($Allfields);
-		}
+		display_add($db,$tablename,$real_tablename,$DB_DESNAME,$Allfields,$id,$namein);
+	}    
+	else {
+		$Allfields=getvalues($db,$DBNAME,$DB_DESNAME,$fields);
+		display_add($db,$tablename,$real_tablename,$DB_DESNAME,$Allfields,$id,"");
 	}
+}
 
 ////
 // !Shows a page with nice information on the record
@@ -770,7 +768,6 @@ function add_columnecg($db,$tablename2,$colname2,$datatype,$Rdis,$Tdis,$req,$sor
    if ($colname=="")
       $string="Please enter a columnname";
    else {
-$db->debug=true;
       if ($datatype=="pulldown") {
          // create an associated table, not overwriting old ones, using a max number
          $ALLTABLES=$db->MetaTables();  
@@ -832,7 +829,6 @@ function rm_columnecg($db,$tablename,$id,$colname,$datatype) {
 	$fieldid=$r->fields["id"];
 	$real_tablename=$tablename."_".$fieldid;
 	$desc=$real_tablename."_desc";
-$db->debug=true;
 	$r=$db->Execute("ALTER TABLE $real_tablename DROP COLUMN $colname");
 	$rv=$db->Execute("select associated_table from $desc where id ='$id'");
     $tempTAB=array();
