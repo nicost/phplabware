@@ -625,15 +625,22 @@ function may_write ($db,$tableid,$id,$USER) {
 function make_SQL_csf ($r,$ids,$field="id",&$column_count) {
    if (!$r || $r->EOF)
       return false;
-   $id=$r->fields[$field];
-   $ids .="$id";
-   $r->MoveNext();
-   $column_count=1;
-   while (!$r->EOF) {
+   while (!$id && !$r->EOF) {
       $id=$r->fields[$field];
-      $ids .=",'$id'";
+      $ids .="$id";
       $r->MoveNext();
-      $column_count+=1;
+   }
+   $column_count=1;
+   unset ($id);
+   while (!$r->EOF) {
+      while (!$id && !$r->EOF) {
+         $id=$r->fields[$field];
+         $r->MoveNext();
+      }
+      if ($id) {
+         $ids .=",$id";
+         $column_count+=1;
+      }
    }
    return ($ids);
 }
