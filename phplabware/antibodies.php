@@ -18,7 +18,7 @@ require("include.php");
 require ("includes/db_inc.php");
 
 // main global vars
-$title .= "Antibodies";
+$httptitle .= "Antibodies";
 $fields="id,access,ownerid,magic,name,type1,type2,type3,type4,type5,antigen,epitope,concentration,buffer,notes,location,source,date";
 
 // register variables
@@ -278,7 +278,7 @@ function show_ab ($db,$fields,$id,$USER,$system_settings) {
 
 /*****************************BODY*******************************/
 
-printheader($title);
+printheader($httptitle);
 navbar($USER["permissions"]);
 
 // check if something should be modified, deleted or shown

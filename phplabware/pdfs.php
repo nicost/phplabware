@@ -18,7 +18,7 @@ require("include.php");
 require ("includes/db_inc.php");
 
 // main global vars
-$title .= "PDFs";
+$httptitle .= "PDFs";
 $fields="id,access,ownerid,magic,pmid,title,author,type1,type2,notes,date,lastmodby,lastmoddate,volume,fpage,lpage,abstract,year";
 
 // register variables
@@ -286,7 +286,7 @@ function show_pd ($db,$fields,$id,$USER,$system_settings) {
 
 /*****************************BODY*******************************/
 
-printheader($title);
+printheader($httptitle);
 navbar($USER["permissions"]);
 
 // check if something should be modified, deleted or shown

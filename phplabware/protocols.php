@@ -18,7 +18,7 @@ require("include.php");
 require ("includes/db_inc.php");
 
 // main global vars
-$title .= "Protocols";
+$httptitle .= "Protocols";
 $fields="id,access,ownerid,magic,title,type1,type2,notes,date,lastmodby,lastmoddate";
 
 // register variables
@@ -286,7 +286,7 @@ function process_file($db,$fileid,$system_settings) {
 
 /*****************************BODY*******************************/
 
-printheader($title);
+printheader($httptitle);
 navbar($USER["permissions"]);
 
 // check if something should be modified, deleted or shown
