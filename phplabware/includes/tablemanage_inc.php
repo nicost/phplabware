@@ -339,7 +339,7 @@ function add_columnecg($db,$tablename2,$colname2,$label,$datatype,$Rdis,$Tdis,$r
 	    $string="Problems creating this column.";
       }
       else {
-         if ($datatype=="int" || $datatype=="sequence" || $datatype="date")
+         if ($datatype=="int" || $datatype=="sequence" || $datatype=="date")
             $sqltype="int";
          elseif ($datatype=="float")
             $sqltype="float";
