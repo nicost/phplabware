@@ -87,7 +87,7 @@ function create_new_table($db){
 function del_table($db,$tablename,$id,$USER) {
    global $HTTP_POST_VARS, $string;
 
-   $real_tablename=$tablename."_".$id;
+   $real_tablename=get_cell($db,"tableoftables","real_tablename","id",$id);
    $desc=$real_tablename."_desc";
    // delete files owned by this table
    $r=$db->Execute("SELECT id FROM files WHERE tablesfk='$id'");
@@ -244,7 +244,7 @@ function add_columnecg($db,$tablename2,$colname2,$datatype,$Rdis,$Tdis,$req,$sor
    $search=array("' '","','","';'","'\"'");
    $replace=array("_","_","","");
    $colname = preg_replace ($search,$replace, $colname2);
-   $real_tablename=$tablename2."_".$id;
+   $real_tablename=get_cell($db,"tableoftables","real_tablename","id",$id);
 
    $fieldstring="id,label,sortkey, display_table, display_record,required, type, datatype, associated_table, associated_sql"; 
    $desc=$real_tablename . "_desc";
