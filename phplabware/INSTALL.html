@@ -35,7 +35,7 @@
 <li>Make a backup of your database (for postgres: pg_dump phplabware > backupfile, for mysql mysqldump --opt phplabware > backupfile).</li>
 <li>Did you make a backup of the database?</li>
 <li>Unpack and decompress the phplabware folder: <i>tar -zxvf phplabware_x.xxx.tar.gz</i> (where x.xxx indicates the version number), 'over' your existing phplabware folder (replacing all the existing php files).</li>
-<li>Login as sysadmin and run the script 'setup.php' (untill you do so the scripts and database are outof sync).</li>
+<li>Login as sysadmin and run the script '<a href='setup.php'>setup.php</a>' (untill you do so the scripts and database are outof sync).</li>
 </ul>
 
 
@@ -50,7 +50,7 @@
 	<li>Enter a password for the 'sysadmin' and submit the form.</li>
 	<li>login as user 'sysadmin' with the password you just entered.</li>
 	<li>Check the form with system settings.  Most defaults should be fine.  You can change these later too.</li>
-	<li>To convert uploaded MSWord documents into html you can use the library <a href="wvware.sf.net">wvHtml</a>.</li>  
+	<li>To convert uploaded MSWord documents into html you can use the library <a href="http://wvware.sf.net">wvHtml</a>.</li>  
 	<li>For security reasons you might want to make sure that 'includes/config_inc.php' can only be read by your webdaemon, and that all files in directory phplabware are owned by root, readable by the webdaemon and not writeable by anyone but root.  Make sure, however, that the webdaemon can write to directory <i>files</i>.</li>
 	<li>You can customize the welcome page by adding image files to the directory <i>frontims</i>.</li>
 </ul>
