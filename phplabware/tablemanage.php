@@ -22,7 +22,7 @@ require("includes/tablemanage_inc.php");
 include ('includes/defines_inc.php');
 
 $editfield=$HTTP_GET_VARS["editfield"];
-$post_vars="newtable_name,newtable_label,newtable_sortkey,addtable,table_id,table_name,table_display,addcol_name,addcol_label,addcol_sort,addcol_dtable,addcol_drecord,addcol_required,addcol_datatype";
+$post_vars="newtable_name,newtable_label,newtable_sortkey,addtable,table_id,table_name,table_display,addcol_name,addcol_label,addcol_sort,addcol_dtable,addcol_drecord,addcol_required,addcol_modifiable,addcol_datatype";
 globalize_vars($post_vars, $HTTP_POST_VARS);
 
 $permissions=$USER["permissions"];
@@ -69,16 +69,10 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
       break;
    }
    elseif ($key == "addcolumn") {  
-      $result=add_columnECG($db,$table_name,$addcol_name,$addcol_label,$addcol_datatype,$addcol_drecord,$addcol_dtable,$addcol_required,$addcol_sort);
+      $result=add_columnECG($db,$table_name,$addcol_name,$addcol_label,$addcol_datatype,$addcol_drecord,$addcol_dtable,$addcol_required,$addcol_modifiable,$addcol_sort);
       if ($addcol_datatype=="table" && $result) {
          navbar($USER["permissions"]);
          show_table_column_page($db,$table_name,$addcol_name,$addcol_label);
-         printfooter();
-         exit();
-      }
-      elseif ($addcol_datatype=="alink" && $result) {
-         navbar($USER["permissions"]);
-         show_active_link_page($db,$table_name,$addcol_name,$addcol_label);
          printfooter();
          exit();
       }
@@ -95,15 +89,8 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
       $Tdis=$HTTP_POST_VARS["column_dtable"][$modarray[1]];
       $sort=$HTTP_POST_VARS["column_sort"][$modarray[1]];
       $req=$HTTP_POST_VARS["column_required"][$modarray[1]];
-      if (mod_columnECG($db,$id,$sort,$tablename,$colname,$collabel,$datatype,$Rdis,$Tdis,$req) && $datatype=="alink") {
-         navbar($USER["permissions"]);
-         $table_desc=get_cell($db,"tableoftables","table_desc_name","tablename",$tablename);
-         $link_a=get_cell($db,$table_desc,"link_first","id",$id);
-         $link_b=get_cell($db,$table_desc,"link_last","id",$id);
-         show_active_link_page($db,$table_name,$colname,$collabel,$link_a,$link_b);
-         printfooter();
-         exit();
-      }
+      $modif=$HTTP_POST_VARS["column_modifiable"][$modarray[1]];
+      mod_columnECG($db,$id,$sort,$tablename,$colname,$collabel,$datatype,$Rdis,$Tdis,$req,$modif);
       break;
    }   	
    elseif (substr($key, 0, 9) == "delcolumn") { 
@@ -113,6 +100,23 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
       $colname=$HTTP_POST_VARS["column_name"][$modarray[1]];
       $datatype=$HTTP_POST_VARS["column_datatype"][$modarray[1]];
       rm_columnecg($db,$tablename,$id,$colname,$datatype);
+      break;
+   }
+   elseif (substr($key, 0, 11) == "alinkcolumn") { 
+      $modarray = explode("_", $key);
+      $tablename=$HTTP_POST_VARS["table_name"];
+      $id=$HTTP_POST_VARS["column_id"][$modarray[1]]; 
+      $colname=$HTTP_POST_VARS["column_name"][$modarray[1]];
+      $collabel=$HTTP_POST_VARS["column_label"][$modarray[1]];
+      $datatype=$HTTP_POST_VARS["column_datatype"][$modarray[1]];
+      $table_desc=get_cell($db,"tableoftables","table_desc_name","tablename",$tablename);
+      $link_a=get_cell($db,$table_desc,"link_first","id",$id);
+      $link_b=get_cell($db,$table_desc,"link_last","id",$id);
+      navbar($USER["permissions"]);
+      show_active_link_page($db,$tablename,$colname,$collabel,$link_a,$link_b);
+//      rm_columnecg($db,$tablename,$id,$colname,$datatype);
+      printfooter();
+      exit();
       break;
    }
 }
@@ -140,30 +144,33 @@ if ($editfield)	{
    echo "<th>Table display</th>";
    echo "<th>Record display</th>\n";
    echo "<th>Required </th>\n";
+   echo "<th>Modifiable </th>\n";
    echo "<th>Datatype</th>\n";
    echo "<th>Ass. Table/Column</th>\n";
+   echo "<th>Active Link</th>\n";
    echo "<th>Action</th>\n";
    echo "</tr>\n";
    echo "<input type='hidden' name='table_name' value='$editfield'>\n";
-   echo "<tr align='center' ><td><input type='text' name='addcol_name' value=''></td>\n";
-   echo "<td><input type='text' name='addcol_label' value=''></td>\n";
-   echo "<td><input type='text' name='addcol_sort' value=''></td>\n";
+   echo "<tr align='center' ><td><input type='text' name='addcol_name' value='' size='10'></td>\n";
+   echo "<td><input type='text' name='addcol_label' value='' size='10'></td>\n";
+   echo "<td><input type='text' name='addcol_sort' value='' size='5'></td>\n";
    echo "<td><input type='radio' name='addcol_dtable' checked value='Y'>yes<input type='radio' name='addcol_dtable'  value='N'>no</td>\n";
    echo "<td><input type='radio' name='addcol_drecord' checked value='Y'>yes<input type='radio' name='addcol_drecord'  value='N'>no</td>\n";
    echo "<td><input type='radio' name='addcol_required'  value='Y'>yes<input type='radio' name='addcol_required' checked value='N'>no</td>\n";
+   echo "<td><input type='radio' name='addcol_modifiable' checked value='Y'>yes<input type='radio' name='addcol_modifiable' value='N'>no</td>\n";
    echo "<td><select name='addcol_datatype'>\n";
    echo "<option value='text'>text</option>\n";
    echo "<option value='textlong'>textlong</option>\n";
    echo "<option value='table'>table</option>\n";
    echo "<option value='pulldown'>pulldown</option>\n";
    echo "<option value='link'>weblink</option>\n";
-   echo "<option value='alink'>active weblink</option>\n";
    echo "<option value='file'>file</option>\n";
    echo "</select></td>\n";
    echo "<td>&nbsp;</td>\n";
+   echo "<td>&nbsp;</td>\n";
    echo "<td align='center'><input type='submit' name='addcolumn' value='Add'></td></tr>\n\n";
    
-   $query = "SELECT id,sortkey,columnname,label,display_table,display_record,required,datatype,associated_table,associated_column,associated_local_key FROM $currdesc order by sortkey,label";
+   $query = "SELECT id,sortkey,columnname,label,display_table,display_record,required,datatype,associated_table,associated_column,associated_local_key,link_first,modifiable FROM $currdesc order by sortkey,label";
    $r=$db->Execute($query);
    $rownr=0;
    // print all entries
@@ -175,6 +182,8 @@ if ($editfield)	{
       $display_record = $r->fields["display_record"];
       $display_required= $r->fields["required"];
       $datatype = $r->fields["datatype"];
+      $modifiable = $r->fields["modifiable"];
+      $link_first = $r->fields["link_first"];
       $sort = $r->fields["sortkey"];
       unset ($ass_table);
       unset($ass_column);
@@ -197,8 +206,8 @@ if ($editfield)	{
   	 else 
 	     echo "<tr class='row_even' align='center'>\n";         
  	 echo "<input type='hidden' name='column_name[$rownr]' value='$columnname'>\n";echo "<td>$columnname</td>\n";  
-	 echo "<td><input type='text' name='column_label[$rownr]' value='$label'></td>\n";
-	 echo "<td><input type='text' name='column_sort[$rownr]' value='$sort'></td>\n";
+	 echo "<td><input type='text' name='column_label[$rownr]' value='$label' size='10'></td>\n";
+	 echo "<td><input type='text' name='column_sort[$rownr]' value='$sort' size='5'></td>\n";
 	 if($display_table=="Y") {
             echo "<td><input type='radio' name='column_dtable[$rownr]' value='Y' CHECKED >yes";
 	    echo "<input type='radio' name='column_dtable[$rownr]' value='N'>no</td>\n";
@@ -207,40 +216,58 @@ if ($editfield)	{
             echo "<td><input type='radio' name='column_dtable[$rownr]' value='Y'>yes";
             echo" <input type='radio' name='column_dtable[$rownr]' value='N' CHECKED >no</td>";
          }
-         if($display_record=="Y")
-	  		{echo "<td><input type='radio' name='column_drecord[$rownr]' value='Y' CHECKED>yes";
-	  		echo" <input type='radio' name='column_drecord[$rownr]' value='N'> no </td>\n";}
-	  	else{
-	  		echo "<td><input type='radio' name='column_drecord[$rownr]' value='Y'>yes";
-	  		echo" <input type='radio' name='column_drecord[$rownr]' checked value='N'> no </td>\n";}
+         if($display_record=="Y") {
+            echo "<td><input type='radio' name='column_drecord[$rownr]' value='Y' CHECKED>yes";
+            echo" <input type='radio' name='column_drecord[$rownr]' value='N'> no </td>\n";
+         }
+         else {
+            echo "<td><input type='radio' name='column_drecord[$rownr]' value='Y'>yes";
+            echo" <input type='radio' name='column_drecord[$rownr]' checked value='N'> no </td>\n";
+         }
 	  	
-	  	if($display_required=="Y")
-	  		{echo "<td><input type='radio' name='column_required[$rownr]' value='Y' CHECKED>yes";
-	  		echo" <input type='radio' name='column_required[$rownr]' value='N'> no </td>\n";}
-	  	else {
-	  		echo "<td><input type='radio' name='column_required[$rownr]' value='Y'>yes";
-	  		echo" <input type='radio' name='column_required[$rownr]' checked value='N'> no </td>\n";
-                }
+         if($display_required=="Y") {
+            echo "<td><input type='radio' name='column_required[$rownr]' value='Y' CHECKED>yes";
+            echo" <input type='radio' name='column_required[$rownr]' value='N'> no </td>\n";
+         }
+         else {
+            echo "<td><input type='radio' name='column_required[$rownr]' value='Y'>yes";
+            echo" <input type='radio' name='column_required[$rownr]' checked value='N'> no </td>\n";
+         }
 	  		 		
-      	echo "<input type='hidden' name='column_datatype[]' value='$label'>\n";
-        echo "<td>$datatype</td>\n";
-        if ($ass_table || $ass_column) {
-           echo "<td>";
-           if (! $r->fields["associated_local_key"])
-              echo "<b>primary key</b><br>";
-           echo "$ass_table<br>$ass_column</td>\n";
-        }
-        else
-           echo "<td>&nbsp;</td>\n";
-	$modstring = "<input type='submit' name='modcolumn"."_$rownr' value='Modify'>";
+         if($modifiable=="Y") {
+            echo "<td><input type='radio' name='column_modifiable[$rownr]' value='Y' CHECKED>yes";
+            echo" <input type='radio' name='column_modifiable[$rownr]' value='N'> no </td>\n";
+         }
+         else {
+            echo "<td><input type='radio' name='column_modifiable[$rownr]' value='Y'>yes";
+            echo" <input type='radio' name='column_modifiable[$rownr]' checked value='N'> no </td>\n";
+         }
+	  		 		
+      	 echo "<input type='hidden' name='column_datatype[]' value='$label'>\n";
+         echo "<td>$datatype</td>\n";
+         if ($ass_table || $ass_column) {
+            echo "<td>";
+            if (! $r->fields["associated_local_key"])
+               echo "<b>primary key</b><br>";
+            echo "$ass_table<br>$ass_column</td>\n";
+         }
+         else
+            echo "<td>&nbsp;</td>\n";
+         if ($link_first)
+            echo "<td>Y</td>\n";
+         else
+            echo "<td>N</td>\n";
+	 $modstring = "<input type='submit' name='modcolumn"."_$rownr' value='Modify'>";
+	 $alinkstring = "<input type='submit' name='alinkcolumn"."_$rownr' value='Active Link'>";
          $delstring = "<input type='submit' name='delcolumn"."_$rownr' value='Remove' ";
-   	   $delstring .= "Onclick=\"if(confirm('Are you absolutely sure that the column $label should be removed? (No undo possible!)')){return true;}return false;\">";  
-   	   echo "<td align='center'>$modstring";
-   	   $candel=1;
-   	   foreach($nodel as $checkme){if ($label==$checkme){$candel=0;}}
- 		if ($candel==1){echo "$delstring</td>\n";}		
- 	 	echo "</tr>\n";
-   		}
+         $delstring .= "Onclick=\"if(confirm('Are you absolutely sure that the column $label should be removed? (No undo possible!)')){return true;}return false;\">";  
+   	 echo "<td align='center'>$modstring".$alinkstring;
+   	 $candel=1;
+   	 foreach($nodel as $checkme){if ($label==$checkme){$candel=0;}}
+            if ($candel==1)
+               echo "$delstring</td>\n";
+ 	 echo "</tr>\n";
+      }
 		/* Don't know what we need this for (Nico)
    	else 
    		{
