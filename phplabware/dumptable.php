@@ -35,6 +35,7 @@ $tableid=get_cell($db,"tableoftables","id","tablename",$tablename);
 if (!$tableid) {
    echo "<h3 align='center'>Table <i>$tablename</i> does not exist.</h3>\n";
    printfooter($d, $USER);
+   exit();
 }
 
 $table_desc=get_cell($db,"tableoftables","table_desc_name","tablename",$tablename);
@@ -48,6 +49,7 @@ $fp=fopen($outfile,"w");
 if (!$fp) {
    echo "<h3 align='center'>Failed to open <i>$outfile</i> for output</h3>\n";
    printfooter($db, $USER);
+   exit();
 }
 
 $header="<?php\n\n\n\n\n";
