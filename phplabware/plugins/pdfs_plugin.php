@@ -390,9 +390,17 @@ Location: ') {
                               $line=strtok("\n");
                            }
                        }
-echo "PDFLINK2: $pdflink2.<br>";
+                       get_host_getstring($pdflink2,$pdfhost,$pdfgetstring);
+                       /**
+                        * Sometimes we have a quote at the end
+                        */
+                       if (substr($pdfgetstring,strlen($pdfgetstring)-1,1)=='"') {
+                          $pdfgetstring=substr($pdfgetstring,0,-1);
+                       }
+//echo "PDFLINK2: $pdfgetstring.<br>";
+
                        // if we have it we can do the real download
-                        if (do_pdf_download($host,$pdflink2,'file')) {
+                        if (do_pdf_download($pdfhost,$pdfgetstring,'file')) {
                            return true;
                         }
                      }
@@ -438,7 +446,6 @@ echo "PDFLINK2: $pdflink2.<br>";
                foreach($searchid->parser->content as $hit) {
                   if (isset($hit['eLinkResult']['LinkSet']['LinkSetDb']['Link']['Id'])) {
                      $artid=$hit['eLinkResult']['LinkSet']['LinkSetDb']['Link']['Id'];
-// echo ">Artid=$artid.<br>";
                      if (is_numeric($artid)) { 
                         $url="/picrender.fcgi?artid=$artid&action=stream&blobtype=pdf";
                         if (do_pdf_download($host,$url,'file')) {
@@ -503,21 +510,37 @@ function do_pdf_download ($host,$url,$fieldname)
        * Construct tmp filename, it would be best to put the file in the upload_temp_dir, but we can not always reliably determine what that is
        */
       $tmpfile=$system_settings['tmpdir'].'/'.uniqid('file');
-      $fout=fopen ($tmpfile,'w');
-      
-      while ($fout && !feof($fp)) {
-         fwrite($fout,fgets($fp,2048));
+      /**
+       * reading from sockets seems unreliable in php < 4.3, use curl instead
+       */
+      if (version_compare(phpversion(),'4.3','<')) {
+         $command="curl \"http://$host$url\" -o $tmpfile";
+//echo "$command.<br>";
+         `$command`;
+         //`curl $host$url -o $tmpfile`; 
+      } else {
+         $fout=fopen ($tmpfile,'w');
+         while ($fout && !feof($fp)) {
+            fwrite($fout,fgets($fp,2048));
+         }
+         fclose($fout);
       }
       fclose($fp);
-      fclose($fout);
+   } else { // Could not open socket
+      return false;
    }
-  // set relevant keys in $_POST:
+
+   // set relevant keys in $_POST:
    $HTTP_POST_FILES[$fieldname]['tmp_name'][0]=$tmpfile;
    $HTTP_POST_FILES[$fieldname]['name'][0]='pdf.pdf';
    $HTTP_POST_FILES[$fieldname]['type'][0]='application/pdf';
    $HTTP_POST_FILES[$fieldname]['size'][0]=filesize($tmpfile);
    $HTTP_POST_FILES[$fieldname]['error'][0]=0;
 
+   /**
+    * If we made it here we are doing OK
+    */
+   return true;
 }
 
 
