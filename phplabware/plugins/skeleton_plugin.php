@@ -25,7 +25,8 @@ the terms of the GNU General Public License as published by the Free Software Fo
 // Any changes you make in the values of $fieldvalues will result in 
 // changes in the database. 
 // You could, for instance, calculate a value of a field based on other fields
-function plugin_check_data($db,&$fieldvalues,$table_desc) {
+function plugin_check_data($db,&$fieldvalues,$table_desc) 
+{
 }
 
 
@@ -35,8 +36,19 @@ function plugin_check_data($db,&$fieldvalues,$table_desc) {
 // $fieldvalues is an array with the column names as key.
 // if there is an $existing_clause (boolean) you should prepend your additions
 // with ' AND' or ' OR', otherwise you should not
-function plugin_search($query,$fieldvalues,$existing_clause) {
+function plugin_search($query,$fieldvalues,$existing_clause) 
+{
    return $query;
+}
+
+
+////
+// !Extends function getvalues
+// $allfields is a 2-D array containing the field names of the table in the first dimension
+// and name,columnid,label,datatype,display_table,display_record,ass_t,ass_column,
+// ass_local_key,required,modifiable,text,values in the 2nd D
+function plugin_getvalues($db,&$allfields) 
+{
 }
 
 ?>
