@@ -25,6 +25,7 @@ $query="CREATE TABLE pdfs (
 	title text,
         author text,
 	type1 int,
+	type2 int,
         volume int,
         fpage int,
         lpage int,
@@ -51,6 +52,7 @@ $query="CREATE TABLE pd_type1
 if (!$db->Execute($query)) $test=false;
 $db->Execute("CREATE INDEX pd_type1_id_index ON pd_type1 (id)");
 $db->Execute("CREATE INDEX pd_type1_sortkey_index ON pd_type1 (sortkey)");
+// for keywords?
 $query="CREATE TABLE pd_type2 
 	(id int PRIMARY KEY,
          sortkey int, 
