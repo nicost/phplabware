@@ -1021,17 +1021,52 @@ function searchhelp ($db,$tableinfo,$column,&$columnvalues,$query,$wcappend,$and
             $query[0].="$and $column='$columnvalues[$column]' ";
       }
       elseif ($rc->fields[1]=='mpulldown') {
+         // emulate a logical AND between values selected in a mpulldown
          unset ($id_list);
-         $rmp=$db->Execute("SELECT recordid FROM {$rc->fields[3]} WHERE typeid='{$columnvalues[$column]}'");
-         if ($rmp) {
-            $id_list=$rmp->fields[0];
-            $rmp->MoveNext();
-            while (!$rmp->EOF) {
-               $id_list.=",{$rmp->fields[0]}";
-               $rmp->MoveNext();
+         // keep the code to deal with single selects and multiple selects
+         if (is_array($columnvalues)) {
+            unset($id_list);
+            $j=0;
+            // read in values from types tables and arrange in groups
+            foreach($columnvalues[$column] as $typeid) {
+               $rl=$db->Execute("SELECT recordid FROM {$rc->fields[3]} WHERE typeid=$typeid");
+               while ($rl && !$rl->EOF) {
+                  $id_list[$j].=$rl->fields[0].',';
+                  $rl->MoveNext();
+               }
+               $id_list[$j]=substr($id_list[$j],0,-1);
+               // if nothing is found we'll pass an impossible id value
+               if (strlen($id_list[$j]) <1)
+                  $id_list[$j]='-1';
+               $j++;
             }
          }
-         if ($id_list)
+         else {  // for 'single' selects
+            $rmp=$db->Execute("SELECT recordid FROM {$rc->fields[3]} WHERE typeid='{$columnvalues[$column]}'");
+            if ($rmp) {
+               $id_list=$rmp->fields[0];
+               $rmp->MoveNext();
+               while (!$rmp->EOF) {
+                  $id_list.=",{$rmp->fields[0]}";
+                  $rmp->MoveNext();
+               }
+            }
+         }
+         // pass the multiple lists to the main query
+         if (is_array($id_list)) {
+            foreach ($id_list as $list) {
+               if (!$listfound) {
+                  $query[0].="$and id IN ($list) ";
+                  $listfound=true;
+               }
+               else
+                  $query[0].="AND id IN ($list) ";
+            }
+            // we should not be able to get here:
+            if (!$listfound)
+               $query[0].="$and id IN (-1) ";
+         }
+         elseif ($id_list) // for 'single' selects
             $query[0].="$and id IN ($id_list) ";
          else // nothing found, make sure we do not crash the search statement
             $query[0].="$and id IN (-1) ";

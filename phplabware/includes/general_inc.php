@@ -109,17 +109,20 @@ function searchfield ($db,$tableinfo,$nowfield,$HTTP_POST_VARS,$jscript) {
     elseif ($nowfield['datatype']== 'textlong')
        echo  " <td style='width: 10%'><input type='text' name='$nowfield[name]' value='".${$nowfield[name]}."'size=8></td>\n";
     elseif ($nowfield['datatype']== 'pulldown' || $nowfield['datatype']=='mpulldown') {
-       echo "<td style='width: 10%'>";
-       if ($USER['permissions'] & $LAYOUT)  {
+      echo "<td style='width: 10%'>";
+      if ($USER['permissions'] & $LAYOUT)  {
           $jscript2=" onclick='MyWindow=window.open (\"general.php?tablename=".$tableinfo->name."&edit_type=$nowfield[ass_t]&jsnewwindow=true&formname=$formname&selectname=$nowfield[name]".SID."\",\"type\",\"scrollbars,resizable,toolbar,status,menubar,width=600,height=400\");MyWindow.focus()'";
           echo "<input type='button' name='edit_button' value='Edit $nowfield[label]' $jscript2><br>\n";
-       }	 		 			
-       $rpull=$db->Execute("SELECT typeshort,id from $nowfield[ass_t] ORDER by sortkey,typeshort");
-       if ($rpull)
-   $text=$rpull->GetMenu2("$nowfield[name]",${$nowfield[name]},true,false,0,"style='width: 80%' $jscript");   
-   else
-     $text="&nbsp;";
-     echo "$text</td>\n";
+      }	 		 			
+      $rpull=$db->Execute("SELECT typeshort,id from $nowfield[ass_t] ORDER by sortkey,typeshort");
+      if ($rpull)
+         if ($nowfield['datatype']=='mpulldown')
+            $text=$rpull->GetMenu2("$nowfield[name]",${$nowfield[name]},true,true,0,"style='width: 80%' ");   
+         else 
+            $text=$rpull->GetMenu2("$nowfield[name]",${$nowfield[name]},true,false,0,"style='width: 80%' $jscript");   
+      else
+          $text="&nbsp;";
+      echo "$text</td>\n";
    }
    elseif ($nowfield['datatype']== 'table') {
        $ass_tableinfo=new tableinfo ($db,$nowfield['ass_table_name'],false);
