@@ -153,17 +153,19 @@ function globalize_vars ($var_string, $type) {
 // Returns false if no or multiple rows have requested value 
 function get_cell ($db, $table, $column, $column2, $value) {
    $query="SELECT $column FROM $table WHERE $column2='$value'";
-   $result=@$db->Execute($query);
+   $result=$db->Execute($query);
    if ($result) {
       $out=$result->fields[$column];
    }
-   else
+   else {
       return false;
+   }
    $result->MoveNext();
    if ($result->EOF)
       return $out;
-   else
+   else {
       return false;
+   }
 }
 
 
