@@ -402,12 +402,12 @@ function display_record($db,$Allfields,$id,$tableinfo,$backbutton=true,$previous
       $modifybutton= "<input type=\"submit\" name=\"mod_" . $id . "\" value=\"Modify\">\n";
    }
 
-   // and now diaply the buttons
+   // and now display the buttons
    echo "</table>\n";
    echo "<table border=0 align='center' width='100%'>\n";
    if ($backbutton) {
       echo "<tr>\n<td align='left'>";
-      echo " $previousbutton>/td><td align='center'>$modifybutton $backbutton</td><td align='right'>$nextbutton </td>\n</tr>\n";
+      echo " $previousbutton</td><td align='center'>$modifybutton $backbutton</td><td align='right'>$nextbutton </td>\n</tr>\n";
    }
    else
       echo "<tr><td align='left'>$previousbutton &nbsp;</td><td align='center'> $modifybutton $closebutton </td><td align='right'>$nextbutton &nbsp;</td></tr>\n";
