@@ -40,7 +40,15 @@ function check_pr_data ($db,&$field_values) {
       return false;
    }
    // When a new author was entered
-   if ($field_values["firstname"] || $field_values["lastname"]) {
+   $firstname=$field_values["firstname"];
+   $lastname=$field_values["lastname"];
+   if ($firstname || $lastname) {
+      // check if this entry exists already
+      $r=$db->Execute("SELECT id FROM pr_type2 WHERE type='$firstname' AND typeshort='$lastname'");
+      if ($r && !$r->EOF) {
+         $field_values["type2"]=$r->fields["id"];
+         return true;
+      }
       $id=$db->GenID("pr_type2_id_seq");
       $db->Execute("INSERT INTO pr_type2 (id,type,typeshort) VALUES ('$id','".
            $field_values["firstname"]."','".$field_values["lastname"]."')");
@@ -97,7 +105,7 @@ function add_pr_form ($db,$fields,$field_values,$id,$USER,$PHP_SELF,$system_sett
    else
       $r=$db->Execute("SELECT type || ' ' || typeshort,id  from pr_type2 ORDER by typeshort");
    $text=$r->GetMenu2("type2",$type2,true,false,0,"style='width: 80%'");
-   echo "<th>Author:</th>\n<td>$text ";
+   echo "<th>Author:</th>\n<td>$text<br>";
    echo "Or: First<input type='text' size=8 name='firstname' value='$firstname'>\n";
    echo "Last<input type='text' size=12 name='lastname' value='$lastname'></td>\n";
    echo "</tr>\n";
