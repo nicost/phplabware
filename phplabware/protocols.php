@@ -454,7 +454,7 @@ else {
       $pr_curr_page+=1;
    if (isset($HTTP_POST_VARS["previous"]))
       $pr_curr_page-=1;
-   if ($curr_page<1)
+   if ($pr_curr_page<1)
       $pr_curr_page=1;
    $HTTP_SESSION_VARS["pr_curr_page"]=$pr_curr_page; 
    session_register("pr_curr_page");
