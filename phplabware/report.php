@@ -51,11 +51,12 @@ if (!may_read($db,$tableinfo,$recordid,$USER)) {
 $fields=comma_array_SQL($db,$tableinfo->desname,"columnname");
 $Allfields=getvalues($db,$tableinfo,$fields,"id",$recordid);
 
-$db->debug=true;
-$tp=fopen($system_settings["templatedir"]."/$reportid.tpl","r");
-while (!feof($tp))
-   $template.=fgets($tp);
-fclose($tp);
+$tp=@fopen($system_settings["templatedir"]."/$reportid.tpl","r");
+if ($tp) {
+   while (!feof($tp))
+      $template.=fgets($tp);
+   fclose($tp);
+}
  
 if (!$template) {
    printheader($httptitle);
@@ -66,7 +67,6 @@ if (!$template) {
 }
 
 $report=make_report($template,$Allfields);
-//echo $template;
 echo $report;
 
 ?>
