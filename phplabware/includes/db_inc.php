@@ -311,14 +311,14 @@ function may_read_SQL_subselect ($db,$table,$USER,$clause=false) {
 ////
 // !returns an comma-separated list of quoted values from a SQL search
 // helper function for may_read_SQL
-function make_SQL_ids ($r,$ids) {
-   $id=$r->fields["id"];
+function make_SQL_ids ($r,$ids,$field="id") {
+   $id=$r->fields[$field];
    if (!$id)
       return false;
    $ids .="'$id'";
    $r->MoveNext();
    while (!$r->EOF) {
-      $id=$r->fields["id"];
+      $id=$r->fields[$field];
       $ids .=",'$id'";
       $r->MoveNext();
    }
@@ -357,7 +357,8 @@ function may_read_SQL_JOIN ($db,$table,$USER) {
 
 
 ////
-// !To deal with differences in databases
+// !Generates an SQL query asking for the records that mey be seen by this users
+// Generates a left join for mysql, subselect for postgres
 function may_read_SQL ($db,$table,$USER) {
    global $db_type;
 
@@ -422,53 +423,66 @@ function may_write ($db,$table,$id,$USER) {
 }
 
 ////
+// !Helper function for search
+// Interprets fields the right way
+function searchhelp ($db,$table,$column,$columnvalues,$query) {
+   if ($column=="ownerid") {
+      $r=$db->Execute("SELECT id FROM $table WHERE ownerid=$columnvalues[$column]");
+      $list=make_SQL_ids($r,false);
+      if ($list) 
+         $query[1] = "id IN ($list) ";
+   }
+   else {
+      $query[2]=true;
+      if (is_string($columnvalues[$column])) {
+         $columnvalue=$columnvalues[$column];
+         $columnvalue=str_replace("*","%",$columnvalue);
+         if ($wcappend)
+            $columnvalue="%$columnvalue%";
+         else
+            $columnvalue="% $columnvalue %";
+         $query[0].="$column LIKE '$columnvalue' ";
+      }
+      else
+         $query[0].="$column='$columnvalues[$column]' ";
+   }
+   return $query;
+}
+
+////
 // !Returns an SQL search statement
 // The whereclause should NOT start with WHERE
 // The whereclause should contain the output of may_read_SQL and
 // can also be used for sorting
 function search ($table,$fields,$fieldvalues,$whereclause=false,$wcappend=true) {
+   global $db;
    $columnvalues=$fieldvalues;
-   $query="SELECT $fields FROM $table WHERE ";
+   $query[0]="SELECT $fields FROM $table WHERE ";
+   $query[1]=$query[2]=false;
    $column=strtok($fields,",");
    while ($column && !$columnvalues[$column])
       $column=strtok (",");
    if ($column && $columnvalues[$column]) {
-      $test=true;
-      if (is_string($columnvalues[$column])) {
-         $columnvalue=$columnvalues[$column];
-         $columnvalue=str_replace("*","%",$columnvalue);
-	 if ($wcappend)
-	    $columnvalue="%$columnvalue%";
-	 else
-	    $columnvalue="% $columnvalue %";
-         $query.="$column LIKE '$columnvalue' ";
-      }
-      else
-         $query.="$column='$columnvalues[$column]' ";
+      $query=searchhelp ($db,$table,$column,$columnvalues,$query);
    }
    $column=strtok (",");
    while ($column) { 
       if ($column && $columnvalues[$column]) {
-         if (is_string($columnvalues[$column])) {
-            $columnvalue=$columnvalues[$column];
-            $columnvalue=str_replace("*","%",$columnvalue);
-            if ($wcappend)
-	       $columnvalue="%$columnvalue%";
-	    else
-	       $columnvalue="% $columnvalue %";
-            $query.="$column LIKE '$columnvalue' ";
-         }
-         else
-            $query.="$column='$columnvalues[$column]' ";
+         $query=searchhelp ($db,$table,$column,$columnvalues,$query);
       }
       $column=strtok (",");
    }
-   if ($whereclause)
-      if ($test)
-         $query .= "AND $whereclause";
+   if ($query[1])
+      if ($query[2])
+         $query[0] .= "AND $query[1] ";
       else
-         $query .= $whereclause;
-   return $query;
+         $query[0] .= "$query[1] ";
+   if ($whereclause)
+      if ($query[2] ||$query[1])
+         $query[0] .= "AND $whereclause";
+      else
+         $query[0] .= $whereclause;
+   return $query[0];
 }
 
 
