@@ -108,7 +108,7 @@ function modify ($db,$table,$fields,$fieldvalues,$id,$USER) {
 // Returns true on succes, false on failure
 // Checks whether the delete is allowed
 // This is very generic, it is likely that you will need to do more cleanup
-function delete ($db, $table, $id, $USER) {
+function delete ($db, $table, $id, $USER, $filesonly=false) {
    if (!may_write($db,$table,$id,$USER))
       return false;
    // check for associated files
@@ -120,10 +120,14 @@ function delete ($db, $table, $id, $USER) {
       $r->MoveNext();
    }
    // and now delete for real
-   if ($db->Execute("DELETE FROM $table WHERE id=$id"))
-      return true;
+   if (!$filesonly) {
+      if ($db->Execute("DELETE FROM $table WHERE id=$id"))
+         return true;
+      else
+         return false;
+   }
    else
-      return false;
+      return true;
 }
 
 
@@ -150,13 +154,14 @@ function upload_files ($db,$table,$id,$USER,$system_settings) {
       $mime=$HTTP_POST_FILES["file"]["type"][$i];
       // work around php bug??  
       $mime=strtok ($mime,";");
+      $filestype=substr(strrchr($mime,"/"),1);
       $size=$HTTP_POST_FILES["file"]["size"][$i];
       $title=$HTTP_POST_VARS["filetitle"][$i];
       $type=$HTTP_POST_VARS["filetype"][$i];
       // this works asof php 4.02
       if (move_uploaded_file($HTTP_POST_FILES["file"]["tmp_name"][$i],"$filedir/$fileid"."_"."$originalname")) {
          $tablesid=get_cell($db,"tableoftables","id","tablename",$table);
-         $query="INSERT INTO files (id,filename,mime,size,title,tablesfk,ftableid) VALUES ($fileid,'$originalname','$mime','$size','$title','$tablesid',$id)";
+         $query="INSERT INTO files (id,filename,mime,size,title,tablesfk,ftableid,type) VALUES ($fileid,'$originalname','$mime','$size','$title','$tablesid',$id,'$filestype')";
 	 $db->Execute($query);
       }
    }
@@ -169,7 +174,7 @@ function upload_files ($db,$table,$id,$USER,$system_settings) {
 // files associated with the given record
 function get_files ($db,$table,$id,$format=1) {
    $tableid=get_cell($db,"tableoftables","id","tablename",$table);
-   $r=$db->Execute("SELECT id,filename,title,mime FROM files WHERE tablesfk=$tableid AND ftableid=$id");
+   $r=$db->Execute("SELECT id,filename,title,mime,type FROM files WHERE tablesfk=$tableid AND ftableid=$id");
    if ($r && !$r->EOF) {
       $i=0;
       $sid=SID;
@@ -177,8 +182,8 @@ function get_files ($db,$table,$id,$format=1) {
          $filesid=$files[$i]["id"]=$r->fields("id");
          $filesname=$files[$i]["name"]=$r->fields("filename");
          $filestitle=$files[$i]["title"]=$r->fields("title");
-         $temp=$r->fields("mime");
-         $filestype=$files[$i]["type"]=substr(strrchr($temp,"/"),1);
+         $files[$i]["mime"]=$r->fields("mime");
+         $filestype=$files[$i]["type"]=$r->fields("type");
 	 if ($format==1) {
             if ($filestitle)
                $text=$filestitle;
@@ -189,6 +194,10 @@ function get_files ($db,$table,$id,$format=1) {
 	    $text="file_$i";
 	 else
 	    $text=$filesname;
+         $text.="<br>\n";
+         $icon="icons/$filestype.jpg";
+         if (is_readable($icon))
+            $text="<img src='$icon'>";
          $files[$i]["link"]="<a href='showfile.php?id=$filesid&name=$filesname&$sid'>$text</a>\n";
          $r->MoveNext();
          $i++;
@@ -425,7 +434,7 @@ function may_write ($db,$table,$id,$USER) {
 ////
 // !Helper function for search
 // Interprets fields the right way
-function searchhelp ($db,$table,$column,$columnvalues,$query) {
+function searchhelp ($db,$table,$column,$columnvalues,$query,$wcappend) {
    if ($column=="ownerid") {
       $r=$db->Execute("SELECT id FROM $table WHERE ownerid=$columnvalues[$column]");
       $list=make_SQL_ids($r,false);
@@ -435,6 +444,7 @@ function searchhelp ($db,$table,$column,$columnvalues,$query) {
    else {
       $query[2]=true;
       if (is_string($columnvalues[$column])) {
+         $columnvalues[$column]=trim($columnvalues[$column]);
          $columnvalue=$columnvalues[$column];
          $columnvalue=str_replace("*","%",$columnvalue);
          if ($wcappend)
@@ -463,12 +473,12 @@ function search ($table,$fields,$fieldvalues,$whereclause=false,$wcappend=true) 
    while ($column && !$columnvalues[$column])
       $column=strtok (",");
    if ($column && $columnvalues[$column]) {
-      $query=searchhelp ($db,$table,$column,$columnvalues,$query);
+      $query=searchhelp ($db,$table,$column,$columnvalues,$query,$wcappend);
    }
    $column=strtok (",");
    while ($column) { 
       if ($column && $columnvalues[$column]) {
-         $query=searchhelp ($db,$table,$column,$columnvalues,$query);
+         $query=searchhelp ($db,$table,$column,$columnvalues,$query,$wcappend);
       }
       $column=strtok (",");
    }
