@@ -30,7 +30,7 @@ if ($adodb_version<1.71) {
    exit();
 }
 
-$post_vars="access,action,authmethod,baseURL,homeURL,checkpwd,dateformat,filedir,pwd,protocols_file,pdfs_file,pdfget,secure_server_new,submit,tmpdir,tmpdirpsql,word2html,gs";
+$post_vars="access,action,authmethod,baseURL,homeURL,checkpwd,convert,dateformat,filedir,gs,pwd,protocols_file,pdfs_file,pdfget,secure_server_new,smallthumbsize,submit,tmpdir,tmpdirpsql,word2html";
 globalize_vars($post_vars, $HTTP_POST_VARS);
 
 if ($set_local) {
@@ -172,6 +172,10 @@ if ($version) {
       if ($access)
          if (strlen($access)==9 && strlen(count_chars($access,3))<4)
             $system_settings["access"]=$access;
+      if ((int)$smallthumbsize)
+         $system_settings["smallthumbsize"]=(int)$smallthumbsize;
+      else
+         $system_settings["smallthumbsize"]=72;
       if ($dateformat)
          $system_settings["dateformat"]=$dateformat;
       if ($filedir) 
@@ -230,6 +234,17 @@ if ($version) {
 	    echo "<h3 align='center'>Ghostscript was not found at '$gs'.</h3>";
       }
 
+      // Imagemagick convert
+      $convert=trim($convert);
+      if (isset($convert) && @is_readable($convert)) {
+         $system_settings["convert"]=$convert;
+      }
+      else {
+         unset($system_settings["convert"]);
+	 if (isset($convert))
+	    echo "<h3 align='center'>Imagemagick's convert was not found at '$convert'.</h3>";
+      }
+
       if ($baseURL)
          $system_settings["baseURL"]=$baseURL;
       $system_settings["homeURL"]=$homeURL;
@@ -286,8 +301,14 @@ if ($version) {
 
    echo "<tr><td colspan='2' align='center'><i>Defaults</i></th></tr>\n";
    echo "<tr><td>Default access rights.  A 9 character string using the UNIX access method:</td>\n";
-   if (!$system_settings["access"]) $system_settings["access"]="rw-r-----";
+   if (!$system_settings["access"]) 
+      $system_settings["access"]="rw-r-----";
    echo "<td><input type='text' name='access' value='".$system_settings["access"]."'></td></tr>\n";
+
+   echo "<tr><td>Default size of thumbnail in table view (in pixels):</td>\n";
+   if (!$system_settings["smallthumbsize"]) 
+      $system_settings["smallthumbsize"]="72";
+   echo "<td><input type='text' name='smallthumbsize' value='".$system_settings["smallthumbsize"]."'></td></tr>\n";
 
    echo "<tr><td colspan='2' align='center'><i>Directories and URLs</i></th></tr>\n";
 
@@ -333,7 +354,7 @@ if ($version) {
    echo "<td><input type='text' name='pdfs_file' value='".$system_settings["pdfs_file"]."'></td></tr>\n";
    
    echo "<tr><td colspan='2' align='center'><i>Helper Applications</i></th></tr>\n";
-   echo "<tr><td>wvHtml:</td>\n";
+   echo "<tr><td>wvHtml (used to convert MSWord files into HTML):</td>\n";
    if (!$system_settings["word2html"]) { 
       $temp=`which wvHtml`;
       $tok=strtok($temp," ");
@@ -350,6 +371,15 @@ if ($version) {
          $system_settings["gs"]=$tok;
    }
    echo "<td><input type='text' name='gs' value='".$system_settings["gs"]."'></td></tr>\n";
+
+   echo "<tr><td>Imagemagick's convert (convert, needed for images):</td>\n";
+   if (!$system_settings["convert"]) { 
+      $temp=`which convert`;
+      $tok=strtok($temp," ");
+      if (!strtok(" "))
+         $system_settings["convert"]=$tok;
+   }
+   echo "<td><input type='text' name='convert' value='".$system_settings["convert"]."'></td></tr>\n";
 
 
    echo "<tr><td colspan='2' align='center'><i>Localization</i></th></tr>\n";
