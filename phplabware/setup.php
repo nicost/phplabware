@@ -63,7 +63,7 @@ if (! ($version || $pwd) ) {
    // This must be the first time, ask for a sysadmin password
    printheader("Ready to install the database");
 ?>
-<form enctype='multipart/form-data' method='post' action='<?php echo $PHP_SELF?>?<?=SID?>'>"
+<form enctype='multipart/form-data' method='post' action='<?php echo $PHP_SELF?>?<?=SID?>'>
 <?php
    echo "<h3>After submitting the following form the phplabware database will ";
    echo "be created and you will be asked to login.<br>";
@@ -135,15 +135,32 @@ CREATE TABLE settings
 	indir text,
 	outdir text)");
    if (!$result) $test=false;
-   $result=$db->Execute("CREATE TABLE groups 
+   
+   if (!$db->Execute("CREATE INDEX users_id_pkey ON users (id)"))
+      $test=false;
+   if (!$db->Execute("CREATE INDEX users_login_key ON users (login)"))
+      $test=false;
+   if (!$db->Execute("CREATE INDEX users_pwd_key ON users (pwd)"))
+      $test=false;
+
+$result=$db->Execute("CREATE TABLE groups 
 	(id int PRIMARY KEY, 
 	name text, 
 	description text)");
    if (!$result) $test=false;
+   if (!$db->Execute("CREATE INDEX groups_id_pkey ON groups (id)"))
+      $test=false;
+   if (!$db->Execute("CREATE INDEX groups_name_pkey ON groups (name)"))
+      $test=false;
+
    $result=$db->Execute("CREATE TABLE usersxgroups
 	(usersid int,
 	groupsid int)");
    if (!$result) $test=false;
+   if (!$db->Execute("CREATE INDEX usersxgroups_usersid_pkey ON usersxgroups (usersid)"))
+      $test=false;
+   if (!$db->Execute("CREATE INDEX usersxgroups_groupsid_pkey ON usersxgroups (groupsid)"))
+      $test=false;
    // insert sysadmin and admin group
    $pass= md5($pwd);
    $id=$db->GenID("users_id_seq");
