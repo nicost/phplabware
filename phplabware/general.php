@@ -43,7 +43,7 @@ if (!$edit_type) {
    }
    $real_tablename=$tablename."_".$id;
    $table_desname=$real_tablename."_desc";
-   $queryname=$tableshort."_query_";
+   $queryname=$tableshort."_query";
    $pagename=$tableshort."_curr_page";
    // read all fields in from the description file
    $fields=comma_array_SQL($db,$table_desname,label);
@@ -191,6 +191,7 @@ else {
       $num_p_r=$HTTP_POST_VARS["num_p_r"];
       unset ($HTTP_POST_VARS);
       ${$pagename}=1;
+      unset ($HTTP_SESSION_VARS[$queryname]);
       session_unregister($queryname);
    }
    $column=strtok($fields,",");
