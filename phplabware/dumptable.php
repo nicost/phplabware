@@ -31,7 +31,7 @@ $tablename=$HTTP_GET_VARS['tablename'];
 $tableid=get_cell($db,'tableoftables','id','tablename',$tablename);
 if (!$tableid) {
    echo "<h3>This script will create a php file with code that will re-create the table you selected in phplabware.  Only the table structure, not its content will be re-created</h3>";
-   $r=$db->Execute('SELECT id,tablename FROM tableoftables');
+   $r=$db->Execute('SELECT id,tablename FROM tableoftables ORDER By tablename');
    if ($r) {
       echo "<table align='center'>\n";
       echo "<tr><td><h3>Select one of the following tables:</h3></td></tr>\n";
@@ -65,7 +65,7 @@ unset($r);
 $r=$db->Execute("SELECT DISTINCT associated_table FROM $table_desc WHERE associated_column !='' AND datatype='table'");
 while ($r && !$r->EOF) {
    $asstable=get_cell($db,'tableoftables','tablename','id',$r->fields[0]);
-   echo "Please make sure that you also export table <i>$asstable</i>, and restore table $asstable before restoring table <i>$table_label</i>, since the latter containes links to the former.<br>";
+   echo "Please make sure that you also export table <i>$asstable</i>, and restore table $asstable before restoring table <i>$table_label</i>, since the latter contains links to the former.<br>";
    fwrite($fp,'unset($asstableid);'."\n");
    fwrite ($fp,'$asstableid=get_cell($db,"tableoftables","tablename","tablename","'.$asstable."\");\n");
    fwrite ($fp,'if (!$asstableid) {
