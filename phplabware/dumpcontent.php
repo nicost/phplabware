@@ -12,8 +12,10 @@
   *  This program is free software; you can redistribute it and/or modify it *
   *  under the terms of the GNU General Public License as published by the   *
   *  Free Software Foundation; either version 2 of the License, or (at your  *
-  *  option) any later version.                                              *
+*  option) any later version.                                              *
   \**************************************************************************/                                                                                     
+// this may take a long time.  Simply kill me if I hang
+ini_set("max_execution_time","0");
 
 require ("include.php");
 require ("includes/db_inc.php");
@@ -53,7 +55,8 @@ if (!$fp) {
    printfooter($db, $USER);
 }
 
-$fields=comma_array_SQL($db,$tableinfo->desname,'columnname');
+// 
+$fields="id,".comma_array_SQL($db,$tableinfo->desname,'columnname');
 $headers=getvalues($db,$tableinfo,$fields);
 
 foreach ($headers as $header) {
@@ -63,7 +66,6 @@ foreach ($headers as $header) {
       fwrite ($fp,$pre_seperator."id".$post_seperator);
 }
 fwrite ($fp,"\n");
-
 
 $r=$db->Execute("SELECT $fields FROM ".$tableinfo->realname);
 while ($r->fields["id"] && !$r->EOF) {
@@ -75,6 +77,7 @@ while ($r->fields["id"] && !$r->EOF) {
          fwrite ($fp,$pre_seperator.$row['text'].$post_seperator);
    }
    fwrite ($fp,"\n");
+   $counter++;
    $r->MoveNext();
 }
 
@@ -82,6 +85,7 @@ while ($r->fields["id"] && !$r->EOF) {
 fclose($fp);
 
 echo "<h3>Wrote script to $outfile.</h3>";
+echo "<h3>Wrote $counter records.</h3>";
 
 printfooter($db, $USER);
 
