@@ -12,7 +12,7 @@
   *  option) any later version.                                              *
   \**************************************************************************/                                                                             
 
-$version_code=0.2;
+$version_code=0.2001;
 $localdir=exec("pwd");
 include ('includes/functions_inc.php');
 if (!file_exists("includes/config_inc.php")) {
@@ -25,8 +25,9 @@ include ('includes/config_inc.php');
 include ("includes/defines_inc.php");
 include ('adodb/adodb.inc.php');
 $adodb_version=(float)substr($ADODB_vers,1);
-if ($adodb_version<1.71) {
-   echo "The adodb version you are using ($adodb_version) is too old.  Please download version 1.71 or greater from <a href='http://php.weblogs.com'>php.weblogs.com</a>.";
+$adodb_version_required=3.50;
+if ($adodb_version<$adodb_version_required) {
+   echo "The adodb version you are using ($adodb_version) is too old.  Please download version $adodb_version_required or greater from <a href='http://php.weblogs.com'>php.weblogs.com</a>.";
    exit();
 }
 
@@ -178,6 +179,10 @@ if ($version) {
          $db->Execute("UPDATE dateformats SET dateformat='M d Y' WHERE id=2");
          $db->Execute("UPDATE dateformats SET dateformat='d M Y' WHERE id=3");
          $db->Execute("UPDATE dateformats SET dateformat='d M Y' WHERE id=4");
+      }
+      if ($version<0.2001) {
+         // add columns gw,gr,ew,er (to replace column access) to each table
+         include ("dd/0_2001_inc.php");
       }
 
       $query="UPDATE settings SET version='$version_code' WHERE id=1";
