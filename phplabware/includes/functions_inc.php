@@ -445,8 +445,10 @@ function printheader($title,$head=false, $jsfile=false) {
       header("Expires: Mon, 26 Jul 1997 05:00:00 GMT");
       header("Pragma: no-cache");
    }
+   header ("Content-Type: text/html; charset=ISO-8859-1");
+
 ?>
-<!DOCTYPE HTML PUBLIC "-//W3C/DTD HTML 4.01 TRANSITIONAL//EN"
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 TRANSITIONAL//EN"
 	"http://www.w3.org/TR/html4/loose.dtd">
 <HTML>
 <HEAD>
@@ -490,7 +492,7 @@ if ($mode<>"menu") {
 <BODY BGCOLOR="#ffffff"
   TOPMARGIN="0" LEFTMARGIN="0" 
   MARGINWIDTH="0" MARGINHEIGHT="0">
-<table border="0" width="100%" rules="none" border="0" cellspacing="0" cellpadding="0" bgcolor="333388">
+<table width="100%" rules="none" border="0" cellspacing="0" cellpadding="0" bgcolor="333388">
 <tr class='header' bgcolor="333388">
 <?php
    // get the time
@@ -506,7 +508,7 @@ if ($mode<>"menu") {
 
    ?>
       <td align=left>
-         <font color="#ffffff"><i><b>
+         <font color="#ffffff"><b><i>
          <?php echo "$today"; ?>
          </i></b></font>
       </td>
