@@ -164,7 +164,7 @@ function add_table ($db,$tablename,$sortkey) {
          $r=$db->Execute("SELECT id FROM tableoftables WHERE shortname='$shortname'");
          if ($r->fields["id"])
             $shortname.="$id";
-  	 $r=$db->Execute("INSERT INTO tableoftables (id,sortkey,tablename,shortname,display,permission) Values($id,'$sortkey','$tablename','$shortname','Y','Users')");
+  	 $r=$db->Execute("INSERT INTO tableoftables (id,sortkey,tablename,real_tablename,shortname,display,permission) Values($id,'$sortkey','$tablename','$real_tablename','$shortname','Y','Users')");
          $r=$db->Execute("CREATE TABLE $desc (
 		id int PRIMARY KEY,
 		sortkey int,
