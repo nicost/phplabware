@@ -142,11 +142,9 @@ function searchfield ($db,$tableinfo,$nowfield,$HTTP_POST_VARS,$jscript) {
 ////////////////////////////////////////////////////////
 ////
 //! Generated comma separated list of columns based on view prefs
-// viewmode: 1=tableview, 2=recordview
-// returnas: 1=comma-separated list, 2=array
-function viewlist($db,$tableinfo,$viewid,$viewmode=1,$returnas=1) {
+function viewlist($db,$tableinfo,$viewid) {
    global $USER;
-   $r=$db->Execute("SELECT columnid FROM tableviews WHERE viewnameid=$viewid AND viewmode=$viewmode");
+   $r=$db->Execute("SELECT columnid FROM tableviews WHERE viewnameid=$viewid AND viewmode=1");
    while ($r && !$r->EOF) {
       $rb=$db->Execute("SELECT columnname,sortkey FROM {$tableinfo->desname} WHERE id={$r->fields[0]}");
       $list[$rb->fields[1]]=$rb->fields[0];
@@ -155,10 +153,7 @@ function viewlist($db,$tableinfo,$viewid,$viewmode=1,$returnas=1) {
    //$r=$db->Execute("SELECT columnid FROM tableviews WHERE viewnameid=$viewid");
    ksort($list);
    reset($list);
-   if ($returnas==1)
-      return implode (",",$list);
-   else
-      return $list;
+   return implode (",",$list);
 }
 
       
@@ -325,7 +320,7 @@ function display_table_change($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr
 ///////////////////////////////////////////////////////////
 //// 
 // !Displays all information within the table
-function display_table_info($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr_curr_page,$page_array,$r=false) {
+function display_table_info($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr_curr_page,$page_array,$r=false,$viewid=false) {
    global $nr_records,$USER,$LAYOUT,$HTTP_SESSION_VARS;
 
    $first_record=($pr_curr_page - 1) * $num_p_r;
@@ -358,7 +353,6 @@ function display_table_info($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr_c
             $nowfield['datatype']=$nowfield['nested']['datatype'];
             $nowfield['fileids']=$nowfield['nested']['fileids'];
          }
-//print_r($nowfield);
          if ($nowfield['link'])
             echo "<td>{$nowfield['link']}</td>\n";
          elseif ($nowfield['datatype']=='mpulldown')
@@ -376,7 +370,7 @@ function display_table_info($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr_c
       echo "<td align='center'>&nbsp;\n";  
       if ($HTTP_SESSION_VARS['javascript_enabled']) {
          //$jscript=" onclick='MyWindow=window.open (\"general.php?tablename=".$tableinfo->name."&showid=$id&jsnewwindow=true\",\"view\",\"status,menubar,scrollbar,resizable,width=600,height=400\");MyWindow.focus()'";
-         $jscript=" onclick='MyWindow=window.open (\"general.php?tablename=".$tableinfo->name."&showid=$id&jsnewwindow=true\",\"view\",\"status,menubar,toolbar,scrollbars,resizable,titlebar,width=700,height=500\");MyWindow.focus()'";
+         $jscript=" onclick='MyWindow=window.open (\"general.php?tablename=".$tableinfo->name."&showid=$id&jsnewwindow=true&viewid=$viewid\",\"view\",\"status,menubar,toolbar,scrollbars,resizable,titlebar,width=700,height=500\");MyWindow.focus()'";
          echo "<input type=\"button\" name=\"view_" . $id . "\" value=\"View\" $jscript>\n";
       }
       else
@@ -437,15 +431,32 @@ function display_record($db,$Allfields,$id,$tableinfo,$backbutton=true,$previous
    $count=0;
    echo "<tr>\n";
    // if viewid is defined we will over-ride display record with values from the view settings
-   $viewlist= viewlist($db,$tableinfo,$viewid,2,2);
+   if ($viewid) {
+      $r=$db->Execute("SELECT columnid FROM tableviews WHERE viewnameid=$viewid AND viewmode=2");
+      while ($r && !$r->EOF) {
+         $viewlist[]=$r->fields[0];
+         $r->MoveNext();
+      }
+   }
    foreach ($Allfields as $nowfield) {
-      //Only show the entry when display_record is set
-      if ($nowfield[display_record]=='Y') {
-         // We display the fieldsin two columns
+
+      // decide whether this field will be shown
+      unset ($thisfield);
+      // if we have a viewid, check the list
+      if ($viewlist){
+         $thisfield=in_array($nowfield['columnid'],$viewlist);
+      }
+      else {
+         //Only show the entry when display_record is set
+         $thisfield=$nowfield['display_record']=='Y';
+      }
+      
+      if ($thisfield) {
+         // We display the fields in two columns
          if ($count && !($count % 2))
             echo "</tr>\n<tr>\n";
-         if ($nowfield[datatype]=="textlong") {
-            $textlarge=nl2br(htmlentities($nowfield[values]));
+         if ($nowfield['datatype']=='textlong') {
+            $textlarge=nl2br(htmlentities($nowfield['values']));
             echo "<th>$nowfield[label]</th><td colspan=2>$textlarge</td>\n";
          }
          elseif ($nowfield['datatype']=='file' || $nowfield['datatype']=='image') {
@@ -454,7 +465,7 @@ function display_record($db,$Allfields,$id,$tableinfo,$backbutton=true,$previous
                echo "<th>$nowfield[label]:</th>\n<td colspan=5>";
                for ($i=0;$i<sizeof($files);$i++)  {
                   echo $files[$i]['link']."&nbsp;&nbsp;(<i>".$files[$i]['name']."</i>, ".$files[$i]['type'];
-                  echo " file, ".$files[$i]["size"].")<br>\n";
+                  echo " file, ".$files[$i]['size'].")<br>\n";
                }
                echo "<td>\n";
             }
@@ -486,9 +497,9 @@ function display_record($db,$Allfields,$id,$tableinfo,$backbutton=true,$previous
    // for organizational purpose, define buttons here:
    // next and previous buttons
    if ($previousid)
-      $previousbutton="<input type=\"button\" name=\"view_".$previousid."\" value=\"Previous\" onClick='MyWindow=window.open(\"general.php?tablename={$tableinfo->name}&showid=$previousid&jsnewwindow=true\",\"view\",\"scrollbars,resizable,toolbar,width=600,height=400\")'>\n";
+      $previousbutton="<input type=\"button\" name=\"view_".$previousid."\" value=\"Previous\" onClick='MyWindow=window.open(\"general.php?tablename={$tableinfo->name}&showid=$previousid&jsnewwindow=true&viewid=$viewid\",\"view\",\"scrollbars,resizable,toolbar,width=600,height=400\")'>\n";
    if ($nextid)
-      $nextbutton="<input type=\"button\" name=\"view_".$nextid."\" value=\"Next\" onClick='MyWindow=window.open(\"general.php?tablename={$tableinfo->name}&showid=$nextid&jsnewwindow=true\",\"view\",\"scrollbars,resizable,toolbar,width=600,height=400\")'>\n";
+      $nextbutton="<input type=\"button\" name=\"view_".$nextid."\" value=\"Next\" onClick='MyWindow=window.open(\"general.php?tablename={$tableinfo->name}&showid=$nextid&jsnewwindow=true&viewid=$viewid\",\"view\",\"scrollbars,resizable,toolbar,width=600,height=400\")'>\n";
    // closebutton
    $closebutton="<input type=\"button\" onclick='self.close();window.opener.focus();' name='Close' value='Close'>\n";
    if ($backbutton) {
@@ -498,16 +509,17 @@ function display_record($db,$Allfields,$id,$tableinfo,$backbutton=true,$previous
    if (may_write($db,$tableinfo->id,$id,$USER)) {
       $modifybutton= "<input type=\"submit\" name=\"mod_" . $id . "\" value=\"Modify\">\n";
    }
-
+   // viewmenu:
+   $viewmenu=viewmenu($db,$tableinfo,$viewid);
    // and now display the buttons
    echo "</table>\n";
    echo "<table border=0 align='center' width='100%'>\n";
    if ($backbutton) {
       echo "<tr>\n<td align='left'>";
-      echo " $previousbutton</td><td align='center'>$modifybutton $backbutton</td><td align='right'>$nextbutton </td>\n</tr>\n";
+      echo " $previousbutton</td><td align='center'>$modifybutton $backbutton $viewmenu</td><td align='right'>$nextbutton </td>\n</tr>\n";
    }
    else
-      echo "<tr><td align='left'>$previousbutton &nbsp;</td><td align='center'> $modifybutton $closebutton </td><td align='right'>$nextbutton &nbsp;</td></tr>\n";
+      echo "<tr><td align='left'>$previousbutton &nbsp;</td><td align='center'> $modifybutton $closebutton </td><td>$viewmenu</td><td align='right'>$nextbutton &nbsp;</td></tr>\n";
    echo "</table>";
 }
 

@@ -90,7 +90,7 @@ if ($jsnewwindow && $showid && $tableinfo->name) {
          $r->MoveNext();
          $nextid=$r->fields['id'];
       }
-      show_g($db,$tableinfo,$showid,$USER,$system_settings,false,$previousid,$nextid);
+      show_g($db,$tableinfo,$showid,$USER,$system_settings,false,$previousid,$nextid,$viewid);
    }   
    //show_report_templates_menu($db,$tableinfo,$showid);
    printfooter();
@@ -534,7 +534,7 @@ echo "${$queryname}.<br>";
    if ($md=='edit')
       display_table_change($db,$tableinfo,$Fieldscomma,${$queryname},$num_p_r,${$pagename},$rp,$r);
    else
-      display_table_info($db,$tableinfo,$Fieldscomma,${$queryname},$num_p_r,${$pagename},$rp,$r);
+      display_table_info($db,$tableinfo,$Fieldscomma,${$queryname},$num_p_r,${$pagename},$rp,$r,$viewid);
    printfooter($db,$USER);
 }
 ?>
