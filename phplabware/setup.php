@@ -12,7 +12,7 @@
   *  option) any later version.                                              *
   \**************************************************************************/                                                                             
 
-$version_code=0.1002;
+$version_code=0.1003;
 $localdir=exec("pwd");
 include ('includes/functions_inc.php');
 if (!file_exists("includes/config_inc.php")) {
@@ -152,6 +152,11 @@ if ($version) {
          // add field indexed to table files
          // add associated tables to all known columns of type file
          include ("dd/0_1002_inc.php");
+      }
+      if ($version<0.1003) {
+         // Changes ownerid, date, lastmoddate, lastmodby into viewable/editable fields
+         // Introduces datatype user and date
+         include ("dd/0_1003_inc.php");
       }
       $query="UPDATE settings SET version='$version_code' WHERE id=1";
       if (!$db->Execute($query)) $test=false;
