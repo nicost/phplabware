@@ -103,7 +103,7 @@ function allowonly($required, $current) {
 // imagedir should be relative to the running script and be web-accessible
 function randomImage($imagedir) {
    // determine contents of imagedir and store imagefilenames in imagearray
-   $dirhandle = opendir ("$imagedir");
+   $dirhandle = opendir ($imagedir);
    if (!$dirhandle)
       return false;
    $j = 0;
@@ -261,12 +261,11 @@ function navbar($permissions) {
                $linkmenu="<select name='themenu' onchange='linkmenu(this)'>\n";
                $linkmenu.="<option value=''>--Links--</option>\n";
                while (!$linkr->EOF) {
-                 $Tlinkname=$linkr->fields[0];
+                  $Tlinkname=$linkr->fields[0];
                   $urlname=$linkr->fields[1];
+                  // we use 'target ' as a code for js linkmenu to open a new win
                   if ($linkr->fields[2]=="S")
-                     $targetstr="target='_TOP'";
-                  else 
-                     $targetstr="target='_BLANK'";
+                     $urlname="target ".$urlname;
                   $linkmenu.="<option value='$urlname'>$Tlinkname</option>\n";    
                   $linkr->MoveNext(); 
                }
@@ -291,7 +290,7 @@ function navbar($permissions) {
             $rb->MoveNext();
          }
          $tablemenu="<select name='tablemenu' onchange='linkmenu(this)'>\n";
-         $tablemenu.="<option value=''>--Tables--</option>\n";
+         $tablemenu.="<option value=''>--Databases--</option>\n";
          while (!$records->EOF) {
             if (in_array($records->fields["id"],$showtables)) {
                $tabname=$records->fields[0];
@@ -314,11 +313,15 @@ function navbar($permissions) {
       $systemmenu.="<option value=''>--System--</option>\n";
       if (SID)
          $SID="?".SID;
+      if ($permissions) {
+         $systemmenu.="   <option value='users.php?type=me&dummy=true&".SID."'>my settings</a>\n";
+      }
       if ($permissions & $ADMIN)
          $systemmenu.="   <option value='users.php$SID'>users</a>\n";
       if ($permissions & $SUPER) {
          $systemmenu.="   <option value='groups.php$SID'>groups</a>\n";
          $systemmenu.="   <option value='tablemanage.php$SID'>tables</a>\n";
+         $systemmenu.="   <option value='import.php$SID'>import data</a>\n";
          $systemmenu.="   <option value='linkbar.php$SID'>linkbar</a>\n";
          $systemmenu.="   <option value='setup.php$SID'>setup</a>\n";
       }
@@ -479,7 +482,7 @@ if ($mode<>"menu") {
   TOPMARGIN="0" LEFTMARGIN="0" 
   MARGINWIDTH="0" MARGINHEIGHT="0">
 <table border="0" width="100%" rules="none" border="0" cellspacing="0" cellpadding="0" bgcolor="333388">
-   <tr class='header' bgcolor="333388">
+<tr class='header' bgcolor="333388">
 <?php
    // first display the linkbar if activated
    // only show linkbar when we have been authenticated
