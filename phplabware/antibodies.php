@@ -150,6 +150,17 @@ function may_read_SQL ($db,$table,$USER,$clause=false) {
 }
 
 ////
+// !determines whether or not the user may read this record
+function may_read ($db,$table,$id,$USER) {
+   $query=may_read_SQL($db,$table,$USER,"id=$id");
+   $r=$db->Execute($query);
+   if ($r->EOF)
+      return false;
+   if($r->fields["id"]==$id)
+      return true;
+}
+
+////
 // !checks if this user may write/modify/delete these data
 function may_write ($db,$table,$id,$USER) {
    include ('includes/defines_inc.php');
@@ -286,8 +297,99 @@ function add_ab_form ($db,$fields,$field_values,$id,$USER) {
 
 ////
 // !Shows a page with nice information on the antibody
-function show_ab ($id) {
-   echo "In Preparation.<br>";
+function show_ab ($db,$fields,$id,$USER,$settings) {
+   if (!may_read($db,"antibodies",$id,$USER))
+      return false;
+
+   // get values 
+   $r=$db->Execute("SELECT $fields FROM antibodies WHERE id=$id");
+   if ($r->EOF) {
+      echo "<h3>Could not find this record in the database</h3>";
+      return false;
+   }
+   $column=strtok($fields,",");
+   while ($column) {
+      ${$column}=$r->fields[$column];
+      $column=strtok(",");
+   }
+
+   echo "<table border=0 align='center'>\n";
+   echo "<tr align='center'>\n";
+   echo "<td colspan=2></td>\n";
+   echo "<th>Primary/Secund.</th>\n<th>Label</th>\n<th>Mono-/Polyclonal</th>\n";
+   echo "<th>Host</th>\n<th>Class</th>\n";
+   echo "</tr>\n";
+   echo "<tr>\n";
+   echo "<th>Name: <sup style='color:red'>&nbsp;*</sup></th>\n";
+   echo "<td>$name</td>\n";
+   $r=$db->Execute("SELECT type,id FROM ab_type1");
+   $text=get_cell($db,"ab_type1","type","id",$type1);
+   echo "<td align='center'>$text</td>\n";
+   
+   $r=$db->Execute("SELECT type,id FROM ab_type5 ORDER BY sortkey");
+   $text=get_cell($db,"ab_type5","type","id",$type5);
+   echo "<td align='center'>$text</td>\n";
+   
+   $r=$db->Execute("SELECT type,id FROM ab_type2");
+   $text=get_cell($db,"ab_type2","type","id",$type2);
+   echo "<td align='center'>$text</td>\n";
+
+   $r=$db->Execute("SELECT type,id FROM ab_type3");
+   $text=get_cell($db,"ab_type3","type","id",$type3);
+   echo "<td align='center'>$text</td>\n";
+
+   $r=$db->Execute("SELECT type,id FROM ab_type4 ORDER BY sortkey");
+   $text=get_cell($db,"ab_type4","type","id",$type4);
+   echo "<td align='center'>$text</td>\n";
+
+   echo "</tr>\n";
+
+   echo "<tr>\n";
+   echo "<th>Antigen: </th><td>$antigen</td>\n";
+   echo "<td>&nbsp;</td>";
+   echo "<th>Epitope: </th><td colspan=3>$epitope</td>\n";
+   echo "</tr>\n";
+   
+   echo "<tr>";
+   echo "<th>Buffer: </th><td>$buffer</td>\n";
+   echo "<td>&nbsp;</td>";
+   echo "<th>Concentration (mg/ml): </th><td colspan=3>$concentration</td>\n";
+   echo "</tr>\n";
+   
+   echo "<tr>";
+   echo "<th>Source: </th><td>$source</td>\n";
+   echo "<td>&nbsp;</td>";
+   echo "<th>Location: </th><td colspan=3>$location</td>\n";
+   echo "</tr>\n";
+   
+   echo "<tr>";
+   $query="SELECT firstname,lastname,email FROM users WHERE id=$ownerid";
+   $r=$db->Execute($query);
+   if ($r->fields["email"]) {
+      echo "<th>Author: </th><td><a href='mailto:".$r->fields["email"]."'>";
+      echo $r->fields["firstname"]." ".$r->fields["lastname"]."</a></td>\n";
+   }
+   else {
+      echo "<th>Author: </th><td>".$r->fields["firstname"]." ";
+      echo $r->fields["lastname"] ."</td>\n";
+   }
+   echo "<td>&nbsp;</td>";
+   $dateformat=get_cell($db,"dateformats","dateformat","id",$settings["dateformat"]);
+   $date=date($dateformat,$date);
+   echo "<th>Date entered: </th><td colspan=3>$date</td>\n";
+   echo "</tr>\n";
+   
+   echo "<tr>";
+   echo "<th>Notes: </th><td colspan=6><textarea name='notes' rows='5' cols='100%'>$notes</textarea></td>\n";
+   echo "</tr>\n";
+   
+   echo "<form method='post' id='antibodyview action='$PHP_SELF'>\n"; 
+   echo "<tr>";
+   echo "<td colspan=7 align='center'><input type='submit' name='submit' value='Dismiss'></td>\n";
+   echo "</tr>\n";
+   
+
+   echo "</table></form>\n";
 }
 
 /*****************************BODY*******************************/
@@ -309,7 +411,7 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
    // show the record
    if (substr($key, 0, 4) == "view") {
       $modarray = explode("_", $key);
-      show_ab($modarray[1],$USER);
+      show_ab($db,$fields,$modarray[1],$USER,$settings);
       printfooter();
       exit();
    }
@@ -320,9 +422,6 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
 if ($add)
    add_ab_form ($db,$fields,$field_values,0,$USER);
 
-elseif ($show)
-   show_ab ($id);
-   
 else {
    // print header of table
    echo "<table border=\"1\" align=center >\n";
