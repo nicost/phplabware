@@ -578,8 +578,11 @@ function getvalues($db,$tableinfo,$fields,$qfield=false,$field=false) {
                if (${$column}['values']) {
                   $asstableinfo=new tableinfo($db,${$column}['ass_table_name']);
                   $tmpvalue=getvalues($db,$asstableinfo,${$column}['ass_column_name'],'id',${$column}['values']);
-                  ${$column}['link']="<a target=_ href=\"general.php?tablename={$asstableinfo->name}&showid=".${$column}['values']."\">{$tmpvalue[0]['text']}</a>\n";
-                  $text=$tmpvalue[0]['text'];
+                  if (is_array($tmpvalue[0]))
+                     $text=$tmpvalue[0]['text'];
+                  else
+                     $text=$tmpvalue[0];
+                  ${$column}['link']="<a target=_ href=\"general.php?tablename={$asstableinfo->name}&showid=".${$column}['values']."\">$text</a>\n";
                }
                if (!$text)
                   $text="&nbsp;";
