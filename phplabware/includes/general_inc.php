@@ -129,7 +129,7 @@ function display_record($db,$Allfields,$id,$tablename,$real_tablename) {
             echo "</tr>\n";
          }
          elseif ($nowfield[datatype]=="file") {
-            $files=get_files($db,$tablename,$id,$nowfield["id"]);
+            $files=get_files($db,$tablename,$id,$nowfield["columnid"]);
             if ($files) { 
                echo "<tr><th>Files:</th>\n<td colspan=5>";
                for ($i=0;$i<sizeof($files);$i++)  {
@@ -453,6 +453,7 @@ function add_g_form ($db,$fields,$field_values,$id,$USER,$PHP_SELF,$system_setti
    if (!may_write($db,$tableid,$id,$USER)) 
       return false; 
    if ($id) {
+   echo $nowfield["id"].".<br>";
 	$Allfields=getvalues($db,$real_tablename,$DB_DESNAME,$tableid,$fields,id,$id);
 	$namein=get_cell($db,$DBNAME,"title","id",$id);		
 	display_add($db,$tableid,$real_tablename,$DB_DESNAME,$Allfields,$id,$namein,$system_settings);
