@@ -552,15 +552,27 @@ function may_read_SQL ($db,$table,$tableid,$USER,$temptable="tempa") {
 ////
 // Generates a temporary table from given recordset
 function make_temp_table ($db,$temptable,$r) {
+   global $system_settings;
    $rc=$db->Execute("CREATE TEMPORARY TABLE $temptable (
-                     uniqueid int PRIMARY KEY)");
+                     uniqueid int UNIQUE NOT NULL)");
    if ($rc) {
       $r->MoveFirst();
       while (!$r->EOF) {
-         $ri=$db->Execute("INSERT INTO $temptable VALUES (".$r->fields["id"].")");
+         $string .= $r->fields["id"]."\n";
+         //$db->Execute("INSERT INTO $temptable VALUES (".$r->fields["id"].")");
          $r->MoveNext();
       }
    }
+   // INSERT is to slow.  COPY instead from a file.  postgres only!
+   $tmpfile=tempnam("/tmp","tmptable");
+   $fp=fopen($tmpfile,"w");
+   fwrite($fp,$string);
+   fflush($fp);
+   chmod ($tmpfile,0644);
+   $rd=$db->Execute ("COPY $temptable FROM '$tmpfile'"); 
+   $rc=$db->Execute("ALTER TABLE $temptable ADD PRIMARY KEY (uniqueid)");
+   fclose ($fp);
+   unlink($tmpfile);
 }
 
 ////
