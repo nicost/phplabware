@@ -25,7 +25,7 @@ include ('includes/config_inc.php');
 include ("includes/defines_inc.php");
 include ('adodb/adodb.inc.php');
 
-$post_vars="action,authmethod,checkpwd,pwd,secure_server_new,submit,";
+$post_vars="action,authmethod,checkpwd,dateformat,pwd,secure_server_new,submit,";
 globalize_vars($post_vars, $HTTP_POST_VARS);
 
 if ($set_local) {
@@ -108,6 +108,19 @@ CREATE TABLE settings
    if (!$db->Execute($query)) $test=false;
    $query="INSERT INTO authmethods VALUES (2,'PAM')";
    if (!$db->Execute($query)) $test=false;
+   $query="CREATE TABLE dateformats 
+	(id int PRIMARY KEY, 
+	dateformat text, 
+	sortkey int)";
+   if (!$db->Execute($query)) $test=false;
+   $query="INSERT INTO dateformats VALUES (1,'m-d-Y',100)";
+   if (!$db->Execute($query)) $test=false;
+   $query="INSERT INTO dateformats VALUES (2,'M-D-Y',200)";
+   if (!$db->Execute($query)) $test=false;
+   $query="INSERT INTO dateformats VALUES (3,'d-m-Y',300)";
+   if (!$db->Execute($query)) $test=false;
+   $query="INSERT INTO dateformats VALUES (4,'D-M-Y',400)";
+   if (!$db->Execute($query)) $test=false;
    $result=$db->Execute("CREATE TABLE users 
 	(id int PRIMARY KEY, 
 	firstname text, 
@@ -181,7 +194,8 @@ if ($version) {
       if ($version<0.0021) {
          $query="CREATE TABLE antibodies (
 	    id int PRIMARY KEY,
-	    access int,
+	    access char(9),
+            ownerid int,
 	    name text,
 	    type1 int,
 	    type2 int,
@@ -286,7 +300,8 @@ if ($version) {
    }
 
    if ($action) {
-      
+      if ($dateformat)
+         $settings["dateformat"]=$dateformat;
       if ($secure_server_new=="Yes")
          $settings["secure_server"]=true;
       else
@@ -309,6 +324,14 @@ if ($version) {
    echo "name='globals-form' action='$PHP_SELF'>\n";
    echo "<table border=1 align='center' width='70%'>\n";
    echo "<tr><th>Description</th><th>Setting</th></tr>\n";
+   echo "<tr><td colspan='2' align='center'><i>Localization</i></th></tr>\n";
+   echo "<tr><td>Date Format:</td>\n";
+   $query="SELECT dateformat,id FROM dateformats ORDER BY sortkey";
+   $r=$db->Execute($query);
+   echo "\n<td align='center'>";
+   echo $r->GetMenu2("dateformat",$settings["dateformat"],false);
+   echo "</td></tr>\n";
+
    echo "<tr><td colspan='2' align='center'><i>Login Options</i></th></tr>\n";
    echo "<tr><td>Is PhpLabWare accessible through a secure server? ";
    echo "If so, passwords will be encrypted while in transit.\n";
@@ -323,7 +346,7 @@ if ($version) {
             &nbsp&nbsp No<input type='radio' name='secure_server_new' checked 
             value='No'>\n";
    echo "</td></tr>\n";
-   echo "<tr><td>Authentification method.  For PAM you will need the utility 'testpwd' available from <a href='http://sourceforge.net/project/showfiles.php?group_id=17393'>in the package check_user</a>. </td>";
+   echo "<tr><td>Authentification method.  For PAM you will need the utility 'testpwd' available <a href='http://sourceforge.net/project/showfiles.php?group_id=17393'>here</a>. </td>";
    $query="SELECT method,id FROM authmethods";
    $r=$db->Execute($query);
    echo "\n<td align='center'>";
