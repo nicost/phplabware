@@ -360,7 +360,7 @@ function add_ab_form ($db,$fields,$field_values,$id,$USER) {
 
 ////
 // !Shows a page with nice information on the antibody
-function show_ab ($db,$fields,$id,$USER,$settings) {
+function show_ab ($db,$fields,$id,$USER,$system_settings) {
    if (!may_read($db,"antibodies",$id,$USER))
       return false;
 
@@ -437,7 +437,7 @@ function show_ab ($db,$fields,$id,$USER,$settings) {
       echo $r->fields["lastname"] ."</td>\n";
     }
    echo "<td>&nbsp;</td>";
-   $dateformat=get_cell($db,"dateformats","dateformat","id",$settings["dateformat"]);
+   $dateformat=get_cell($db,"dateformats","dateformat","id",$system_settings["dateformat"]);
    $date=date($dateformat,$date);
    echo "<th>Date entered: </th><td colspan=3>$date</td>\n";
    echo "</tr>\n";
@@ -475,7 +475,7 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
    // show the record
    if (substr($key, 0, 4) == "view") {
       $modarray = explode("_", $key);
-      show_ab($db,$fields,$modarray[1],$USER,$settings);
+      show_ab($db,$fields,$modarray[1],$USER,$system_settings);
       printfooter();
       exit();
    }
