@@ -486,7 +486,7 @@ function searchhelp ($db,$table,$column,$columnvalues,$query,$wcappend,$and) {
             $columnvalue="%$columnvalue%";
          else
             $columnvalue="% $columnvalue %";
-         $query[0].="$and $column LIKE '$columnvalue' ";
+         $query[0].="$and UPPER($column) LIKE UPPER('$columnvalue') ";
       }
    }
    return $query;
