@@ -114,7 +114,7 @@ if ($HTTP_POST_VARS["assign"]=="Import Data") {
    // Array $to_types contains the target column types
    for ($i=0;$i<$nrfields;$i++) {
       $the_field=$HTTP_POST_VARS["fields_$i"];
-      if ($the_field) {
+      if (isset($the_field) && $the_field && $the_field!="") {
          $to_fields[$i]=get_cell($db,$desc,"columnname","id",$the_field);
          if ($to_fields[$i]=="id")
             $id_chosen=true;
