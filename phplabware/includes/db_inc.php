@@ -681,10 +681,10 @@ function make_SQL_csf ($r,$ids,$field="id",&$column_count) {
 ////
 // !Helper function for search
 // Interprets fields the right way
-function searchhelp ($db,$table,$table_desc,$column,&$columnvalues,$query,$wcappend,$and) {
+function searchhelp ($db,$tableinfo,$column,&$columnvalues,$query,$wcappend,$and) {
    if ($column=="ownerid") {
       $query[1]=true;
-      $r=$db->Execute("SELECT id FROM $table WHERE ownerid=$columnvalues[$column]");
+      $r=$db->Execute("SELECT id FROM ".$tableinfo->realname." WHERE ownerid=$columnvalues[$column]");
       $list=make_SQL_ids($r,false);
       if ($list) 
          $query[0].= "$and id IN ($list) ";
@@ -693,7 +693,7 @@ function searchhelp ($db,$table,$table_desc,$column,&$columnvalues,$query,$wcapp
       $query[1]=true;
       // since all tables now have desc. tables,we can check for int/floats
       // should probably do this more upstream for performance gain
-      $rc=$db->Execute("SELECT type FROM $table_desc WHERE columnname='$column'");
+      $rc=$db->Execute("SELECT type FROM ".$tableinfo->desc." WHERE columnname='$column'");
       if (substr($rc->fields[0],0,3)=="int") {
          $columnvalues[$column]=(int)$columnvalues[$column];
          $query[0].="$and $column='$columnvalues[$column]' ";
@@ -721,24 +721,24 @@ function searchhelp ($db,$table,$table_desc,$column,&$columnvalues,$query,$wcapp
 // The whereclause should NOT start with WHERE
 // The whereclause should contain the output of may_read_SQL and
 // can also be used for sorting
-function search ($table,$fields,&$fieldvalues,$whereclause=false,$wcappend=true) {
-   global $db;
-   $rb=$db->Execute("SELECT table_desc_name FROM tableoftables WHERE real_tablename='$table'");
-   $table_desc=$r->fields[0];
+function search ($db,$tableinfo,$fields,&$fieldvalues,$whereclause=false,$wcappend=true) {
+   //global $db;
+   //$rb=$db->Execute("SELECT table_desc_name FROM tableoftables WHERE real_tablename='$table'");
+  // $table_desc=$r->fields[0];
    $columnvalues=$fieldvalues;
-   $query[0]="SELECT $fields FROM $table WHERE ";
+   $query[0]="SELECT $fields FROM ".$tableinfo->realname." WHERE ";
    $query[1]=$query[2]=false;
    $column=strtok($fields,",");
    while ($column && !$columnvalues[$column])
       $column=strtok (",");
    if ($column && $columnvalues[$column]) {
       $query[1]=true;
-      $query=searchhelp ($db,$table,$table_desc,$column,$columnvalues,$query,$wcappend,false);
+      $query=searchhelp ($db,$tableinfo,$column,$columnvalues,$query,$wcappend,false);
    }
    $column=strtok (",");
    while ($column) { 
       if ($column && $columnvalues[$column]) {
-         $query=searchhelp ($db,$table,$table_desc,$column,$columnvalues,$query,$wcappend,"AND");
+         $query=searchhelp ($db,$tableinfo,$column,$columnvalues,$query,$wcappend,"AND");
       }
       $column=strtok (",");
    }
@@ -871,7 +871,7 @@ function make_search_SQL($db,$tableinfo,$fields,$USER,$search,$searchsort="title
    if (!$whereclause)
       $whereclause=-1;
    if ($search=="Search") {
-      ${$queryname}=search($tableinfo->realname,$fields,$HTTP_POST_VARS," $whereclause ORDER BY $searchsort");
+      ${$queryname}=search($db,$tableinfo,$fields,$HTTP_POST_VARS," $whereclause ORDER BY $searchsort");
       ${$fieldvarsname}=$HTTP_POST_VARS;
    }
    elseif (session_is_registered ($queryname) && isset($HTTP_SESSION_VARS[$queryname])) {
@@ -900,6 +900,7 @@ function make_search_SQL($db,$tableinfo,$fields,$USER,$search,$searchsort="title
       // extract variables from session
       globalize_vars ($fields, ${$fieldvarsname});
    }
+//echo "${$queryname}.<br>";
    return ${$queryname};
 }
 
