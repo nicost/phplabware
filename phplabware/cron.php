@@ -39,7 +39,7 @@ function doindexfile ($db,$filetext,$fileid,$indextable,$recordid,$pagenr)
          // only add this entry if we did not have it before
          // we are not keeping track any more on which page this word occurred, only the first one
          $r=$db->Execute("SELECT wordid FROM $indextable WHERE wordid=$wordid AND fileid=$fileid AND recordid=$recordid");
-         if ($r->RecordCount()==0)  {
+         if ($r && $r->RecordCount()==0)  {
             $db->Execute("INSERT INTO $indextable VALUES ($wordid,$fileid,$pagenr,$recordid)");
          }
       }
@@ -156,9 +156,11 @@ if ($HTTP_GET_VARS['tablename']) {
 
 // we'll do the postgres maintenance
 if (substr($db_type,0,8)=='postgres') {
+   $db->debug=true;
    $db->Execute('VACUUM');
    $db->Execute('ANALYZE');
    $db->Execute('VACUUM ANALYZE');
+   $db->debug=false;
    echo "Finished postgres maintenance.\n";
 }
 ?>
