@@ -25,10 +25,16 @@ class tableinfo {
    var $pagename;
    var $id;
 
-   function tableinfo ($db) {
+   // hackers way of overloading
+   function tableinfo ($db,$realname=false,$id=false) {
       global $HTTP_GET_VARS;
 
-      $r=$db->Execute("SELECT id,shortname,tablename,real_tablename,table_desc_name,label FROM tableoftables WHERE tablename='$HTTP_GET_VARS[tablename]'");
+      if ($id)
+         $r=$db->Execute("SELECT id,shortname,tablename,real_tablename,table_desc_name,label FROM tableoftables WHERE id='$id'");
+      elseif ($realname)
+         $r=$db->Execute("SELECT id,shortname,tablename,real_tablename,table_desc_name,label FROM tableoftables WHERE real_tablename='$realname'");
+      else
+         $r=$db->Execute("SELECT id,shortname,tablename,real_tablename,table_desc_name,label FROM tableoftables WHERE tablename='$HTTP_GET_VARS[tablename]'");
       $this->id=$r->fields["id"];
       $this->short=$r->fields["shortname"];
       $this->realname=$r->fields["real_tablename"];
