@@ -23,8 +23,11 @@ $fields="id,access,ownerid,magic,name,type1,type2,type3,type4,type5,antigen,epit
 
 // register variables
 $showid=$HTTP_GET_VARS["showid"];
-$post_vars = "add,submit,search,";
+$edit_type=$HTTP_GET_VARS["edit_type"];
+$post_vars = "add,submit,search,searchj";
 globalize_vars ($post_vars, $HTTP_POST_VARS);
+if ($searchj)
+   $search="Search";
 
 
 /****************************FUNCTIONS***************************/
@@ -149,7 +152,8 @@ function add_ab_form ($db,$fields,$field_values,$id,$USER,$PHP_SELF,$system_sett
       $value="Modify Antibody";
    else
       $value="Add Antibody";
-   echo "<td colspan=7 align='center'><input type='submit' name='submit' value='$value'></td>\n";
+   echo "<td colspan=7 align='center'><input type='submit' name='submit' value='$value'>\n";
+   echo "&nbsp;&nbsp;<input type='submit' name='submit' value='Cancel'></td>\n";
    echo "</tr>\n";
    
 
@@ -305,6 +309,40 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
       printfooter();
       exit();
    }
+   if (substr($key, 0, 7) == "addtype") {
+      $modarray = explode("_", $key);
+      $table=$modarray[1]."_".$modarray[2];
+      include("includes/type_inc.php");
+      add_type($db,$table);
+      show_type($db,$table,"");
+      printfooter();
+      exit();
+   }
+   if (substr($key, 0, 6) == "mdtype") {
+      $modarray = explode("_", $key);
+      $table=$modarray[1]."_".$modarray[2];
+      include("includes/type_inc.php");
+      mod_type($db,$table,$modarray[3]);
+      show_type($db,$table,"");
+      printfooter();
+      exit();
+   }
+   if (substr($key, 0, 6) == "dltype") {
+      $modarray = explode("_", $key);
+      $table=$modarray[1]."_".$modarray[2];
+      include("includes/type_inc.php");
+      del_type($db,$table,$modarray[3],"antibodies");
+      show_type($db,$table,"");
+      printfooter();
+      exit();
+   }
+}
+
+if ($edit_type && ($USER["permissions"] & $LAYOUT)) {
+   include("includes/type_inc.php");
+   show_type($db,$edit_type,"");
+   printfooter();
+   exit();
 }
 
 // provide a means to hyperlink directly to a record
@@ -353,6 +391,9 @@ else {
          unset ($HTTP_POST_VARS);
       }
    } 
+   elseif ($submit=="Cancel")
+      // to not interfere with search form 
+      unset ($HTTP_POST_VARS);
    // or deleted
    elseif ($HTTP_POST_VARS) {
       reset ($HTTP_POST_VARS);
@@ -368,7 +409,7 @@ else {
    echo "</caption>\n";
    // print form
 ?>
-<form name='form' method='post' action='<?php echo $PHP_SELF?>?<?=SID?>'>  
+<form name='ab_form' method='post' action='<?php echo $PHP_SELF?>?<?=SID?>'>  
 <?php
 
    if ($search=="Show All") {
@@ -383,30 +424,112 @@ else {
       $column=strtok(",");
    }
 
+   // prepare SQl search statement
+   $whereclause=may_read_SQL ($db,"antibodies",$USER);
+   if ($search=="Search")
+      $ab_query=search("antibodies",$fields,$HTTP_POST_VARS," id IN ($whereclause) ORDER BY name");
+   elseif (session_is_registered ("ab_query") && isset($HTTP_SESSION_VARS["ab_query"]))
+      $ab_query=$HTTP_SESSION_VARS["ab_query"];
+   else
+      $ab_query = "SELECT $fields FROM antibodies WHERE id IN ($whereclause) ORDER BY date DESC";
+   $HTTP_SESSION_VARS["ab_query"]=$ab_query;   
+   session_register("ab_query");
+
    // row with search form
-   echo "<tr align='center'>\n";
-   echo "<td><input type='text' name='name' value='$name' size=8></td>\n";
+   echo "<tr align='center'>\n";   
+   //javascript that submits the form when a select was chosen
+   $jscript="onChange='document.ab_form.searchj.value=\"Search\"; document.ab_form.submit()'";
+   echo "<input type='hidden' name='searchj' value=''>\n";
+   $r=$db->Execute($ab_query);
+   $lista=make_SQL_csf ($r,false,"id",$nr_records);
+   // and a list with all records we may see
+   $listb=may_read_SQL($db,"antibodies",$USER);
+   // show title we may see, when too many, revert to text box
+   if ($name) $list=$listb; else $list=$lista;
+   if ($list && ($nr_records < $max_menu_length) ) {
+      $r=$db->Execute("SELECT name FROM antibodies WHERE id IN ($list) ORDER BY name");
+      $text=$r->GetMenu("name",$name,true,false,0,"style='width: 80%' $jscript");
+      echo "<td style='width: 10%'>$text</td>\n";
+   }
+   else
+      echo "<td><input type='text' name='name' value='$name' size=8></td>\n";
    echo "<td><input type='text' name='antigen' value='$antigen' size=8></td>\n";
    echo "<td><input type='text' name='notes' value='$notes' size=8></td>\n";
-   $r=$db->Execute("SELECT typeshort,id FROM ab_type1");
-   $text=$r->GetMenu2("type1",$type1,true,false,0,"style='width: 80%'");
-   echo "<td style='width: 10%'>$text</td>\n";
 
-   $r=$db->Execute("SELECT typeshort,id FROM ab_type5 ORDER BY sortkey");
-   $text=$r->GetMenu2("type5",$type5,true,false,0,"style='width: 80%'");
-   echo "<td style='width: 10%'>$text</td>\n";
+   echo "<td style='width: 10%'>";
+   if ($type1) $list=$listb; else $list=$lista;
+   $r=$db->Execute("SELECT type1 FROM antibodies WHERE id IN ($list)");
+   $list2=make_SQL_ids($r,false,"type1");
+   if ($list2) {
+      $r=$db->Execute("SELECT typeshort,id FROM ab_type1 WHERE id IN ($list2) ORDER BY sortkey");
+      $text=$r->GetMenu2("type1",$type1,true,false,0,"style='width: 80%' $jscript");
+      echo "$text</td>\n";
+   }
+   else
+      echo "&nbsp;</td>\n";
 
-   $r=$db->Execute("SELECT typeshort,id FROM ab_type2");
-   $text=$r->GetMenu2("type2",$type2,true,false,0,"style='width: 80%'");
-   echo "<td style='width: 10%'>$text</td>\n";
+   echo "<td style='width: 10%'>";
+   if ($USER["permissions"] & $LAYOUT) {
+      echo "<a href='$PHP_SELF?edit_type=ab_type5&";
+      echo SID;
+      echo "'>Edit Labels</a><br>\n";
+   }   
+   if ($type5) $list=$listb; else $list=$lista;
+   $r=$db->Execute("SELECT type5 FROM antibodies WHERE id IN ($list)");
+   $list2=make_SQL_ids($r,false,"type5");
+   if ($list2) {
+      $r=$db->Execute("SELECT typeshort,id FROM ab_type5 WHERE id IN ($list2) ORDER BY sortkey");
+      $text=$r->GetMenu2("type5",$type5,true,false,0,"style='width: 80%' $jscript");
+      echo "$text</td>\n";
+   }
+   else
+      echo "&nbsp;</td>\n";
 
-   $r=$db->Execute("SELECT typeshort,id FROM ab_type3 ORDER BY SORTKEY");
-   $text=$r->GetMenu2("type3",$type3,true,false,0,"style='width: 80%'");
-   echo "<td style='width: 10%'>$text</td>\n";
+   echo "<td style='width: 10%'>";
+   if ($type2) $list=$listb; else $list=$lista;
+   $r=$db->Execute("SELECT type2 FROM antibodies WHERE id IN ($list)");
+   $list2=make_SQL_ids($r,false,"type2");
+   if ($list2) {
+      $r=$db->Execute("SELECT typeshort,id FROM ab_type2 WHERE id IN ($list2) ORDER BY sortkey");
+      $text=$r->GetMenu2("type2",$type2,true,false,0,"style='width: 80%' $jscript");
+      echo "$text</td>\n";
+   }
+   else
+      echo "&nbsp;</td>\n";
 
-   $r=$db->Execute("SELECT typeshort,id FROM ab_type4 ORDER BY sortkey");
-   $text=$r->GetMenu2("type4",$type4,true,false,0,"style='width: 80%'");
-   echo "<td style='width: 10%'>$text</td>\n";
+   echo "<td style='width: 10%'>";
+   if ($USER["permissions"] & $LAYOUT) {
+      echo "<a href='$PHP_SELF?edit_type=ab_type3&";
+      echo SID;
+      echo "'>Edit Hosts</a><br>\n";
+   }    
+   if ($type3) $list=$listb; else $list=$lista;
+   $r=$db->Execute("SELECT type3 FROM antibodies WHERE id IN ($list)");
+   $list2=make_SQL_ids($r,false,"type3");
+   if ($list2) {
+      $r=$db->Execute("SELECT typeshort,id FROM ab_type3 WHERE id IN ($list2) ORDER BY sortkey");
+      $text=$r->GetMenu2("type3",$type3,true,false,0,"style='width: 80%' $jscript");
+      echo "$text</td>\n";
+   }
+   else
+      echo "&nbsp;</td>\n";  
+
+   echo "<td style='width: 10%'>";
+   if ($USER["permissions"] & $LAYOUT) {
+      echo "<a href='$PHP_SELF?edit_type=ab_type4&";
+      echo SID;
+      echo "'>Edit Classes</a><br>\n";
+   }    
+   if ($type4) $list=$listb; else $list=$lista;
+   $r=$db->Execute("SELECT type4 FROM antibodies WHERE id IN ($list)");
+   $list2=make_SQL_ids($r,false,"type4");
+   if ($list2) {
+      $r=$db->Execute("SELECT typeshort,id FROM ab_type4 WHERE id IN ($list2) ORDER BY sortkey");
+      $text=$r->GetMenu2("type4",$type4,true,false,0,"style='width: 80%' $jscript");
+      echo "$text</td>\n";
+   }
+   else
+      echo "&nbsp;</td>\n";
 
    echo "<td><input type='text' name='location' value='$location' size=8></td>\n";
    echo "<td>&nbsp;</td>";
@@ -427,17 +550,6 @@ else {
    echo "<th>Files</th>\n";
    echo "<th>Action</th>\n";
    echo "</tr>\n";
-
-   // retrieve all antibodies and their info from database
-   $whereclause=may_read_SQL ($db,"antibodies",$USER);
-   if ($search=="Search")
-      $ab_query=search("antibodies",$fields,$HTTP_POST_VARS," id IN ($whereclause) ORDER BY name");
-   elseif (session_is_registered ("ab_query") && isset($HTTP_SESSION_VARS["ab_query"]))
-      $ab_query=$HTTP_SESSION_VARS["ab_query"];
-   else
-      $ab_query = "SELECT $fields FROM antibodies WHERE id IN ($whereclause) ORDER BY date DESC";
-   $HTTP_SESSION_VARS["ab_query"]=$ab_query;   
-   session_register("ab_query");
    
    // paging stuff
    if (!$num_p_r)
