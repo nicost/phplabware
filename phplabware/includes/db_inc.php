@@ -307,8 +307,7 @@ function get_files ($db,$table,$id,$columnid,$format=1) {
          $icon="icons/$filestype.jpg";
          if (@is_readable($icon))
             $text="<img src='$icon'>";
-         $filesname=str_replace(" ","%20",$filesname);
-         $files[$i]["link"]="<a href='showfile.php?id=$filesid&name=$filesname&$sid'>$text</a>\n";
+         $files[$i]["link"]="<a href='showfile.php?id=$filesid&$sid'>$text</a>\n";
          $r->MoveNext();
          $i++;
       }
