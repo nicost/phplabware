@@ -78,7 +78,7 @@ function display_tablehead($Allfields,$list)
  	   echo "<td style='width: 10%'>";
   	  if ($USER["permissions"] & $LAYOUT) 
   	  	{
-   	 	echo "<a href='$PHP_SELF?dbname=$DBNAME&edit_type=$nowfield[ass_t]&<?=SID?>";
+   	 	echo "<a href='$PHP_SELF?tablename=$DBNAME&edit_type=$nowfield[ass_t]&<?=SID?>";
     		echo "'>Edit $nowfield[name]</a><br>\n";
 			}	 		 			
 		$r=$db->Execute("SELECT $nowfield[name] FROM $DBNAME WHERE id IN ($list)");
@@ -239,8 +239,8 @@ function display_record($Allfields,$id)
 function make_link($id)
 	{
 	global $db,$DBNAME,$DB_DESNAME,$system_settings;
-    echo "<tr><th>Link:</th><td colspan=7><a href='$PHP_SELF?dbname=$DBNAME&showid=$id&<?=SID?>";
-    echo "'>".$system_settings["baseURL"].getenv("SCRIPT_NAME")."?dbname=$DBNAME&showid=$id</a></td></tr>\n";
+    echo "<tr><th>Link:</th><td colspan=7><a href='$PHP_SELF?tablename=$DBNAME&showid=$id&<?=SID?>";
+    echo "'>".$system_settings["baseURL"].getenv("SCRIPT_NAME")."?tablename=$DBNAME&showid=$id</a></td></tr>\n";
 	}
 
 ///////////////////////////////////////////////////////////
@@ -250,7 +250,7 @@ function display_add($Allfields,$id,$namein)
 	{
 	global $db, $DBNAME, $DB_DESNAME, $db_type, $USER;	
 
-    $dbstring=$PHP_SELF;$dbstring.="?";$dbstring.="dbname=$DBNAME&";
+    $dbstring=$PHP_SELF;$dbstring.="?";$dbstring.="tablename=$DBNAME&";
     echo "<form method='post' id='protocolform' enctype='multipart/form-data' action='$dbstring";
 	?><?=SID?>'><?php
 
@@ -305,7 +305,7 @@ function display_add($Allfields,$id,$namein)
      		   echo "<tr><th>$nowfield[name]";
      		   if ($USER["permissions"] && $LAYOUT)
      		   	{
-     		   	echo "<a href='$PHP_SELF?dbname=$DBNAME&edit_type=$nowfield[ass_t]&<?=SID?>'>";
+     		   	echo "<a href='$PHP_SELF?tablename=$DBNAME&edit_type=$nowfield[ass_t]&<?=SID?>'>";
      		   	echo "<FONT size=1 color='#00ff00'> <small>(edit)</small></font></a>";
      		   	}
      		   if ($nowfield[required]=="Y"){echo"<sup style='color:red'>&nbsp;*</sup>";}
@@ -358,7 +358,7 @@ echo "</tr>\n";
 echo "</table></form>\n";
 
 //end of table
-$dbstring=$PHP_SELF;$dbstring.="?";$dbstring.="dbname=$DBNAME&";
+$dbstring=$PHP_SELF;$dbstring.="?";$dbstring.="tablename=$DBNAME&";
 echo "<form method='post' id='protocolform' enctype='multipart/form-data' action='$dbstring";
 ?><?=SID?>'><?php
 
@@ -367,9 +367,7 @@ echo "<form method='post' id='protocolform' enctype='multipart/form-data' action
 ///////////////////////////////////////////////////////////////////////
 ////
 // !Get all description table values out for a display
-function getvalues($db,$DBNAME,$DB_DESNAME,$fields,$qfield,$field)
-	{
-	global $db,$DBNAME,$DB_DESNAME;
+function getvalues($db,$DBNAME,$DB_DESNAME,$fields,$qfield,$field) {
 	$r=$db->Execute("SELECT $fields FROM $DBNAME WHERE $qfield=$field"); 
 	$column=strtok($fields,",");
 	$Allfields=array();
@@ -390,7 +388,8 @@ function getvalues($db,$DBNAME,$DB_DESNAME,$fields,$qfield,$field)
 		   $column=strtok(",");
 		   }		
 	return $Allfields;
-	}
+}
+
 /////////////////////////////////////////////////
 ////
 // !displays the bar between the search header and the records
@@ -459,8 +458,7 @@ function simple_SQL($db,$tablein,$column,$searchfield,$searchval)
 ////
 // !Checks input data to addition
 // returns false if something can not be fixed     
-function check_g_data ($db,&$field_values) {
-   global $db, $DB_DESNAME;
+function check_g_data ($db,&$field_values, $DB_DESNAME) {
 
    $allreq=array();
    $rs = $db->Execute("select label from $DB_DESNAME where required ='Y' and (datatype != 'file')");
@@ -561,9 +559,10 @@ function process_file($db,$fileid,$system_settings) {
 }
 
 /////////////////////////////////////////////////////////////////////
-////  table management functions
-function create_new_table($db,$DBNAME){
-   global $HTTP_POST_VARS,$PHP_SELF,$DBNAME;
+////  
+// !table management functions
+function create_new_table($db){
+   global $HTTP_POST_VARS,$PHP_SELF;
    echo "<form method='post' id='tablemanage' enctype='multipart/form-data' ";
    $dbstring=$PHP_SELF;
    echo "action='$dbstring".SID."'>\n"; 
@@ -728,10 +727,10 @@ function add_columnecg($db,$tablename2,$colname2,$datatype,$Rdis,$Tdis,$req,$sor
 
 	$fieldstring="label,sortkey, display_table, display_record,required, type, datatype, associated_table, associated_sql"; 
 	$desc=$real_tablename . "_desc";
-	if ($colname==""){$string="Please enter all values";}
-	else
-		{
-		if ($datatype=="pulldown")
+	if ($colname=="")
+	   $string="Please enter a columnname";
+	else {
+	   if ($datatype=="pulldown")
 			{ 
 			// create an associated table, not overwriting old ones, using a max number
 			$ALLTABLES=$db->MetaTables();  
@@ -750,12 +749,14 @@ function add_columnecg($db,$tablename2,$colname2,$datatype,$Rdis,$Tdis,$req,$sor
 				}		
 			$maxnum=max($allnums);$newnum=$maxnum+1;
 			$tablestr.="_$newnum";	
+			$db->debug=true;
 			$r=$db->Execute("INSERT INTO $desc ($fieldstring) Values('$colname','$sort','$Tdis','$Rdis','$req','text','$datatype','$tablestr','$colname from $tablestr where ')");
 			$rs=$db->Execute("CREATE TABLE $tablestr (id int PRIMARY KEY, sortkey int, type text, typeshort text)");
 			$rsss=$db->Execute("ALTER table $real_tablename add column $colname text");
 			if (($r)&&($rs)&&($rsss)&&(!($colname==""))) {$string="Added column $colname into table <i>$tablename</i>";}
-			else {$string="Please enter all values";}	
-			}				
+			else 
+			   $string="Problems creating this column.";
+		}				
 		else
 			{  
 			$r=$db->Execute("INSERT INTO $desc ($fieldstring) Values('$colname','$sort','$Tdis','$Rdis','$req','text','$datatype','','')");
@@ -783,18 +784,30 @@ function mod_columnECG($db,$id,$sort,$tablename,$colname,$datatype,$Rdis,$Tdis,$
 /////////////////////////////////////////////////////////////////////////
 //// 
 // !deletes a general column entry
-function rm_columnecg($db,$tablename,$id,$colname,$datatype)
-	{
+function rm_columnecg($db,$tablename,$id,$colname,$datatype) {
 	global $string;
-	$desc=$tablename;$desc.="_desc";
-	$r=$db->Execute("Alter table $tablename drop column $colname");
+	// find the id of the table and therewith the tablename
+	$r=$db->Execute("SELECT id FROM tableoftables WHERE tablename='$tablename2'");
+	$id=$r->fields["id"];
+	$real_tablename=$id."_$tablename";
+	$desc=$real_tablename."_desc";
+	$r=$db->Execute("Alter table $real_tablename drop column $colname");
 	$rv=$db->Execute("select associated_table from $desc where id ='$id'");
     $tempTAB=array();
-	if ($rv){while (!$rv->EOF){$fieldA=$rv->fields[0];array_push($tempTAB, $fieldA);$rv->MoveNext();}
-	foreach ($tempTAB as $DDD){$rb=$db->Execute("Drop table if exists $DDD");}}
-	$rrr=$db->Execute("DELETE FROM $desc WHERE id='$id'");
-	if (($r)&&($rrr)){$string="Succesfully deleted Column $colname from $tablename";}		
-	}
+	if ($rv) {
+	   while (!$rv->EOF) {
+	      $fieldA=$rv->fields[0];
+	      array_push($tempTAB, $fieldA);
+	      $rv->MoveNext();
+	   }
+	   foreach ($tempTAB as $DDD) {
+	      $rb=$db->Execute("Drop table if exists $DDD");
+	   }
+        }
+        $rrr=$db->Execute("DELETE FROM $desc WHERE id='$id'");
+	if (($r)&&($rrr)) 
+	     $string="Succesfully deleted Column <i>$colname</i> from Table <i>$tablename</i>.";
+}
 
 
 
