@@ -15,16 +15,16 @@
 *  option) any later version.                                              *
   \**************************************************************************/                                                                                     
 // this may take a long time.  Simply kill me if I hang
-ini_set("max_execution_time","0");
+ini_set('max_execution_time','0');
 
-require ("include.php");
-require ("includes/db_inc.php");
-require ("includes/general_inc.php");
+require ('include.php');
+require ('includes/db_inc.php');
+require ('includes/general_inc.php');
 
 printheader($httptitle,false);
-navbar ($USER["permissions"]);
+navbar ($USER['permissions']);
 
-if (!$USER["permissions"] & $SUPER) {
+if (!$USER['permissions'] & $SUPER) {
    echo "<h3 align='center'>Sorry, this page is not for you.</h3>\n";
    printfooter($db, $USER);
    exit();
@@ -35,8 +35,8 @@ if (!$USER["permissions"] & $SUPER) {
 // fields - let's you export only a subset of columns
 // valuesOnly - switch wether or not values should be 'expanded'
 
-$tablename=$HTTP_GET_VARS["tablename"];
-$tableid=get_cell($db,"tableoftables","id","tablename",$tablename);
+$tablename=$HTTP_GET_VARS['tablename'];
+$tableid=get_cell($db,'tableoftables','id','tablename',$tablename);
 if (!$tableid) {
    echo "<h3>This script will dump the contents of a table in a tab-delimited file. The contents of that file can be imported into phplabware or any other database program.</h3>";
    $r=$db->execute("SELECT id,tablename FROM tableoftables");
@@ -53,6 +53,26 @@ if (!$tableid) {
 }
 
 $tableinfo=new tableinfo($db);
+
+if (! ($HTTP_GET_VARS['fields'] || $HTTP_POST_VARS['selectfields'])) {
+   $rfields=$db->Execute("SELECT columnname FROM {$tableinfo->desname}");
+   $tr=$rfields->recordCount();
+   $menu=$rfields->GetMenu('selectfields'," ",false,true,$tr);
+   echo "<table align='center'>\n<tr><td>\n";
+   echo "<form method='post' action='$PHP_SELF?tablename={$tableinfo->name}'>\n";
+   echo "<h3>Select the fields you want to export: </h3><br>$menu<br>";
+   echo "<input type='submit' name='submit' value='submit'>\n";
+   echo "</form>\n</td></tr></table>\n";
+   printfooter($d,$USER);
+   exit();
+}
+if ($HTTP_POST_VARS['selectfields']) {
+   foreach($HTTP_POST_VARS['selectfields'] as $field)
+      $fields.=$field.",";
+   // strip the last comma
+   $fields=substr($fields,0,-1);
+   //print_r($HTTP_POST_VARS['selectfields']);
+}
 
 if (!$tableinfo->id) {
    echo "<h3 align='center'>Table <i>$tablename</i> does not exist.</h3>\n";
@@ -87,10 +107,17 @@ if (!$ff) {
    printfooter($db, $USER);
 }
 
-if ($HTTP_GET_VARS['fields']) 
-   $fields=$HTTP_GET_VARS['fields'];
+if (!$fields) {
+   if ($HTTP_GET_VARS['fields'])  
+      $fields='id,'.$HTTP_GET_VARS['fields'];
+   else
+      $fields='id,'.comma_array_SQL($db,$tableinfo->desname,'columnname');
+}
 else
-   $fields='id,'.comma_array_SQL($db,$tableinfo->desname,'columnname');
+   $fields='id,'.$fields;
+// we might have accidentaly added an extra id, delete that here:
+$fields=preg_replace('/,id/','',$fields);
+
 $headers=getvalues($db,$tableinfo,$fields);
 if ($HTTP_GET_VARS['valuesOnly'])
    $valuesOnly=true;
@@ -105,7 +132,7 @@ fwrite ($fp,"\n");
 
 $r=$db->Execute("SELECT $fields FROM ".$tableinfo->realname);
 while ($r->fields["id"] && !$r->EOF) {
-   $rowvalues=getvalues($db,$tableinfo,$fields,"id",$r->fields["id"]);
+   $rowvalues=getvalues($db,$tableinfo,$fields,'id',$r->fields['id']);
    foreach ($rowvalues as $row) {
       if (is_array($row)) {
          // files will be exported to the directory files
