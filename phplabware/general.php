@@ -399,7 +399,7 @@ else {
    if ($may_write)
       echo "<p><a href='$PHP_SELF?&add=Add&tablename=$tableinfo->name&".SID."'>Add Record</a></td>\n"; 
    echo "</tr>\n</table>\n";
-   next_previous_buttons($rp,true,$num_p_r,$numrows,${$pagename});
+   next_previous_buttons($rp,true,$num_p_r,$numrows,${$pagename},$db,$tableinfo);
 
    // print header of table
    echo "<table border='1' align='center'>\n";

@@ -329,19 +329,33 @@ function make_link($id,$DBNAME) {
 ////
 // ! Make dropdown menu with available templates
 // When one is chosen, open the formatted record in a new window
-function show_reports($db,$tableinfo,$recordid) {
+function show_reports($db,$tableinfo,$recordid=false) {
    $r=$db->Execute("SELECT id,label FROM reports WHERE tableid=".$tableinfo->id);
    if ($r && !$r->EOF) {
-      $menu="<tr><th>Report:</th>\n";
-      $menu.="<td><select name='reportlinks' onchange='linkmenu(this)'>\n";
-      $menu.="<option value=''>---Reports---</option>\n";
-      while (!$r->EOF) {
-         $url="target "."report.php?tablename=".$tableinfo->name."&reportid=".$r->fields["id"]."&recordid=$recordid";
-         $menu.="<option value='$url'>".$r->fields["label"]."</option>\n";
-         $r->MoveNext();
+      if ($recordid) {
+         $menu="<tr><th>Report:</th>\n";
+         $menu.="<td><select name='reportlinks' onchange='linkmenu(this)'>\n";
+         $menu.="<option value=''>---Reports---</option>\n";
+         while (!$r->EOF) {
+            $url="target "."report.php?tablename=".$tableinfo->name."&reportid=".$r->fields["id"]."&recordid=$recordid";
+            $menu.="<option value='$url'>".$r->fields["label"]."</option>\n";
+            $r->MoveNext();
+         }
+         $menu.="</select>\n";
+         $menu.="</td></tr>\n";
       }
-      $menu.="</select>\n";
-      $menu.="</td></tr>\n";
+      else { // for tableview reports
+         $menu="<td>Report:</td>\n";
+         $menu.="<td><select name='reportlinks' onchange='linkmenu(this)'>\n";
+         $menu.="<option value=''>---Reports---</option>\n";
+         while (!$r->EOF) {
+            $url="target "."report.php?tablename=".$tableinfo->name."&reportid=".$r->fields["id"]."&tableview=true";
+            $menu.="<option value='$url'>".$r->fields["label"]."</option>\n";
+            $r->MoveNext();
+         }
+         $menu.="</select>\n";
+         $menu.="</td>\n";
+      }
       echo $menu;
    }
 }

@@ -1018,7 +1018,7 @@ function first_last_page (&$r,&$current_page,$r_p_p,$numrows) {
 // $r is the result of a $db->Execute query used to display the table with records
 // When $paging is true, the records per page field will also be displayed
 // $num_p_r holds the (global) records per page variable
-function next_previous_buttons($r,$paging=false,$num_p_r=false,$numrows=false,$pagenr=false) {
+function next_previous_buttons($r,$paging=false,$num_p_r=false,$numrows=false,$pagenr=false,$db=false,$tableinfo=false) {
    echo "<table border=0 width=100%>\n<tr width=100%>\n<td align='left'>";
    if (function_exists($r->AtFirstPage))
       $r->AtFirstPage=$r->AtFirstPage();
@@ -1029,6 +1029,8 @@ function next_previous_buttons($r,$paging=false,$num_p_r=false,$numrows=false,$p
          echo "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>\n";
       else
          echo "&nbsp;</td>\n";
+   if ($db && $tableinfo)
+      show_reports($db,$tableinfo);
    if ($paging) {
       if ($numrows>0) {
          echo "<td align='center'>$numrows Records found. ";
