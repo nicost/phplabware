@@ -608,7 +608,7 @@ function getvalues($db,$tableinfo,$fields,$qfield=false,$field=false) {
 // !Checks input data to addition
 // returns false if something can not be fixed     
 function check_g_data ($db,&$field_values, $DB_DESNAME,$modify=false) {
-   $max_menu_length;
+   global $max_menu_length;
 
    // make sure all the required fields are there 
    $rs = $db->Execute("SELECT columnname,datatype FROM $DB_DESNAME where required='Y' and (datatype != 'file')");
