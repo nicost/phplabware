@@ -763,7 +763,7 @@ function current_page($curr_page, $sname) {
 // !Assembles the search SQL statement and remembers it in HTTP_SESSION_VARS
 function make_search_SQL($db,$table,$tableshort,$tableid,$fields,$USER,$search,$searchsort="title",$whereclause=false) {
    global $HTTP_POST_VARS, $HTTP_SESSION_VARS;
-echo "$searchsort.<br>";
+
    if (!$searchsort)
       $searchsort="title";
    $fieldvarsname=$tableshort."_fieldvars";
