@@ -33,19 +33,37 @@ $table_desname=$r->fields["table_desc_name"];
 $queryname=$tableshort."_query";
 $pagename=$tableshort."_curr_page";
 
+require("includes/db_inc.php");
+require("includes/general_inc.php");
+
+// read all fields in from the description file
+$fields=comma_array_SQL($db,$table_desname,columnname);
+$fields_table=comma_array_SQL($db,$table_desname,columnname,"WHERE display_table='Y'");
+
 // load plugin php code if it has been defined 
 $plugin_code=get_cell($db,"tableoftables","plugin_code","id",$tableid);
 if ($plugin_code)
    @include($plugin_code);
 
-require("includes/db_inc.php");
-require("includes/general_inc.php");
-
 // register variables
-$get_vars="tablename,md,showid,edit_type,add";
+$get_vars="tablename,md,showid,edit_type,add,jsnewwindow";
 globalize_vars($get_vars, $HTTP_GET_VARS);
 $post_vars = "add,md,edit_type,submit,search,searchj,serialsortdirarray";
 globalize_vars($post_vars, $HTTP_POST_VARS);
+
+$httptitle .=$tablename;
+
+// this shows a record entry in a new window, called through javascript
+if ($jsnewwindow && $showid && $tablename) {
+   printheader($httptitle);
+   if (function_exists("plugin_show"))
+      plugin_show($db,$fields,$showid,$USER,$system_settings,$tableid,$real_tablename,$table_desname,false);
+   else
+      show_g($db,$fields,$showid,$USER,$system_settings,$tableid,$real_tablename,$table_desname,false);
+   printfooter();
+   exit();
+}
+
 // Mode can be changed through a get var and is perpetuated through post vars
 if ($HTTP_GET_VARS["md"])
    $md=$HTTP_GET_VARS["md"];
@@ -67,17 +85,10 @@ reset ($HTTP_POST_VARS);
 if ($searchj || $sortup || $sortdown)
    $search="Search";
 
-$httptitle .=$tablename;
-
 /*****************************BODY*******************************/
 printheader($httptitle);
 navbar($USER["permissions"]);
 
-
-// read all fields in from the description file
-// $fields_label=comma_array_SQL($db,$table_desname,label);
-$fields=comma_array_SQL($db,$table_desname,columnname);
-$fields_table=comma_array_SQL($db,$table_desname,columnname,"WHERE display_table='Y'");
 
 // check wether user may see this table
 if (!may_see_table($db,$USER,$tableid)) {
@@ -125,13 +136,13 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
       printfooter();
       exit();
    }
-   // show the record
-   if (substr($key, 0, 4) == "view") {
+   // show the record only when javascript is not active
+   if (substr($key, 0, 4) == "view" && !$HTTP_SESSION_VARS["javascript_enabled"]) {
       $modarray = explode("_", $key);
       if (function_exists("plugin_show"))
-         plugin_show($db,$fields,$modarray[1],$USER,$system_settings,$tableid,$real_tablename,$table_desname);
+         plugin_show($db,$fields,$modarray[1],$USER,$system_settings,$tableid,$real_tablename,$table_desname,true);
       else
-         show_g($db,$fields,$modarray[1],$USER,$system_settings,$tableid,$real_tablename,$table_desname);
+         show_g($db,$fields,$modarray[1],$USER,$system_settings,$tableid,$real_tablename,$table_desname,true);
       printfooter();
       exit();
    }
@@ -180,11 +191,11 @@ if ($edit_type && ($USER["permissions"] & $LAYOUT)) {
 }
 
 // provide a means to hyperlink directly to a record
-if ($showid) {
+if ($showid && !$jsnewwindow) {
    if (function_exists("plugin_show"))
-      plugin_show($db,$fields,$showid,$USER,$system_settings,$tableid,$real_tablename,$table_desname);
+      plugin_show($db,$fields,$showid,$USER,$system_settings,$tableid,$real_tablename,$table_desname,true);
    else
-      show_g($db,$fields,$showid,$USER,$system_settings,$tableid,$real_tablename,$table_desname);
+      show_g($db,$fields,$showid,$USER,$system_settings,$tableid,$real_tablename,$table_desname,true);
    printfooter();
    exit();
 }

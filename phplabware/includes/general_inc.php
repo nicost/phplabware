@@ -171,7 +171,7 @@ function display_table_change($db,$tableid,$DB_DESNAME,$Fieldscomma,$pr_query,$n
 //// 
 // !Displays all information within the table
 function display_table_info($db,$tableid,$DB_DESNAME,$Fieldscomma,$pr_query,$num_p_r,$pr_curr_page,$page_array,$r=false) {
-   global $nr_records,$max_menu_length,$USER,$LAYOUT;
+   global $nr_records,$max_menu_length,$USER,$LAYOUT,$HTTP_SESSION_VARS;
 
    $tablename=get_cell($db,"tableoftables","tablename","id",$tableid);
    $real_tablename=get_cell($db,"tableoftables","real_tablename","id",$tableid);
@@ -195,7 +195,12 @@ function display_table_info($db,$tableid,$DB_DESNAME,$Fieldscomma,$pr_query,$num
          echo "<td>$nowfield[text]</td>\n"; 
 
       echo "<td align='center'>&nbsp;\n";  
-      echo "<input type=\"submit\" name=\"view_" . $id . "\" value=\"View\">\n";
+      if ($HTTP_SESSION_VARS["javascript_enabled"]) {
+         $jscript=" onclick='open (\"general.php?tablename=$tablename&showid=$id&jsnewwindow=true\",\"view\",\"scrollbars,resizable\")'";
+         echo "<input type=\"button\" name=\"view_" . $id . "\" value=\"View\" $jscript>\n";
+      }
+      else
+         echo "<input type=\"submit\" name=\"view_" . $id . "\" value=\"View\">\n";
       if (may_write($db,$tableid,$id,$USER)) {
          echo "<input type=\"submit\" name=\"mod_" . $id . "\" value=\"Modify\">\n";
          $delstring = "<input type=\"submit\" name=\"del_" . $id . "\" value=\"Remove\" ";
@@ -223,7 +228,7 @@ function display_table_info($db,$tableid,$DB_DESNAME,$Fieldscomma,$pr_query,$num
 ///////////////////////////////////////////////////////////
 ////
 // !Display a record in a nice format
-function display_record($db,$Allfields,$id,$tablename,$real_tablename) {
+function display_record($db,$Allfields,$id,$tablename,$real_tablename,$backbutton=true) {
    global $PHP_SELF, $md;
 
    echo "&nbsp;<br>\n";
@@ -268,8 +273,10 @@ function display_record($db,$Allfields,$id,$tablename,$real_tablename) {
    make_link($id,$tablename);
    echo "<form method='post' action='$PHP_SELF?tablename=$tablename&".SID."'>\n";
    echo "<input type='hidden' name='md' value='$md'>\n";
-   echo "<tr>\n<td colspan=7 align='center'>";
-   echo "<input type='submit' name='submit' value='Back'></td>\n</tr>\n";
+   if ($backbutton) {
+      echo "<tr>\n<td colspan=7 align='center'>";
+      echo "<input type='submit' name='submit' value='Back'></td>\n</tr>\n";
+   }
    echo "</table>";
 }
 
@@ -598,12 +605,12 @@ function add_g_form ($db,$fields,$field_values,$id,$USER,$PHP_SELF,$system_setti
 
 ////
 // !Shows a page with nice information on the record
-function show_g($db,$fields,$id,$USER,$system_settings,$tableid,$real_tablename,$DB_DESNAME)  {
+function show_g($db,$fields,$id,$USER,$system_settings,$tableid,$real_tablename,$DB_DESNAME,$backbutton=true)  {
    $tablename=get_cell($db,"tableoftables","tablename","id",$tableid);
    if (!may_read($db,$tableid,$id,$USER))
        return false;
    $Allfields=getvalues($db,$real_tablename,$DB_DESNAME,$tableid,$fields,id,$id);
-   display_record($db,$Allfields,$id,$tablename,$real_tablename);
+   display_record($db,$Allfields,$id,$tablename,$real_tablename,$backbutton);
 }
 	
 ////
