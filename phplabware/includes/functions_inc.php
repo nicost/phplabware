@@ -251,7 +251,6 @@ function get_person_link ($db,$id) {
 function navbar($permissions) {
    include ('includes/defines_inc.php');
    global $db, $USER, $HTTP_SESSION_VARS; 
-
    if ($HTTP_SESSION_VARS['javascript_enabled'] && $USER['settings']['menustyle']) 
       $mode='menu';
    if ($mode=='menu') { 
@@ -495,12 +494,18 @@ if ($mode<>'menu') {
          } 
       }
    }
-  //TOPMARGIN="0" LEFTMARGIN="0" 
-  //MARGINWIDTH="0" MARGINHEIGHT="0">
 
+// set the desired stylesheet.  Make sure it exists
+if (!isset($USER['settings']['style'])) {
+   $USER['settings']['style']='phplabware.css';
+}
+$stylesheet='stylesheets/'.$USER['settings']['style'];
+if (!@is_readable($stylesheet)) {
+   $stylesheet='stylesheets/phplabware.css';
+}
 ?> 
 <TITLE><?php echo "$title" ?></TITLE>
-<LINK rel="STYLESHEET" type="text/css" href="phplabware.css">
+<LINK rel="STYLESHEET" type="text/css" href="<?php echo $stylesheet?>">
 </HEAD>
 <BODY BGCOLOR="#ffffff">
 <table width="100%" rules="none" border="0" cellspacing="0" cellpadding="0" bgcolor="333388">

@@ -132,6 +132,7 @@ function modify ($db, $type) {
    $firstname=$HTTP_POST_VARS['firstname'];
    $lastname=$HTTP_POST_VARS['lastname'];
    $email=$HTTP_POST_VARS['email'];
+   $USER['settings']['style']=$HTTP_POST_VARS['user_style'];
 
    if($perms)
       for ($i=0; $i<sizeof($perms); $i++)
@@ -293,6 +294,33 @@ function show_user_form ($type) {
       else
          $schecked='checked';
       echo "<td><input type='radio' name='menustyle' $schecked value='0'>scattered &nbsp;&nbsp;<input type='radio' name='menustyle' $dchecked value='1'>drop-down</td></tr>";
+      echo "<tr><td>Style: </td>";
+      // if there is no pref, set it to default
+      if (!isset($USER['settings']['style'])) {
+         $USER['settings']['style']='phplabware.css';
+      }
+      // list available stylesheets in folder stylesheets:
+      echo '<td><select name="user_style">'."\n";
+      $d=dir ('stylesheets');
+      while (false !== ($file=$d->read())) {
+         if (substr($file,0,10)=='phplabware') {
+             if (substr($file,10,1)=='_') {
+                 $entry=substr($file,11,-4)."<br>\n";
+             } else {
+                 $entry='default';
+             }
+             if ($file==$USER['settings']['style']) {
+                $selected='selected';
+             } else {
+                 unset($selected);
+             }
+             echo "<option $selected value=\"$file\">$entry</option>\n";
+         }
+      }
+      $d->close();
+      echo "</select>\n</td></tr>\n";
+      
+      
    }
    
    if ($USER['permissions'] & $SUPER) {
