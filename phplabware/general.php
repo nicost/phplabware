@@ -123,10 +123,10 @@ foreach($HTTP_POST_VARS as $key =>$value) {
    if (substr($key, 0, 3) == 'max') {
       $cname=substr($key,4);
       $field=strtok($cname,'_');
-      $value=$HTTP_POST_VARS["$cname"];
+      $value=$HTTP_POST_VARS[$cname];
       // we need to replace this value with an id if appropriate
       if ($value)
-         $HTTP_POST_VARS["$cname"]=find_nested_match($db,$tableinfo,$field,$value);
+         $HTTP_POST_VARS[$cname]=find_nested_match($db,$tableinfo,$field,$value);
    }
    // check if sortup or sortdown arrow was been pressed
    else {
@@ -190,7 +190,7 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
             }
          }
          if(check_g_data ($db,$change_values,$tableinfo,true)) {
-            $modfields=comma_array_SQL_where($db,$tableinfo->desname,"columnname","modifiable","Y");
+            $modfields=comma_array_SQL_where($db,$tableinfo->desname,'columnname','modifiable','Y');
             modify($db,$tableinfo->realname,$modfields,$change_values,$chgarray[1],$USER,$tableinfo->id); 
          }
          break;
@@ -330,6 +330,8 @@ else {
    }
    // then look whether it should be modified
    elseif ($submit=='Modify Record') {
+print_r($HTTP_POST_VARS);
+echo "test.<br>";
       $modfields=comma_array_SQL_where($db,$tableinfo->desname,"columnname","modifiable","Y");
       // The pdf plugin wants to modify fields that have been set to modifiable=='N'
       if (! (check_g_data($db,$HTTP_POST_VARS,$tableinfo,true) && 
@@ -412,8 +414,10 @@ else {
    // prepare the search statement and remember it
    $fields_table='id,'.$Fieldscomma;
 
+//$db->debug=true;
    ${$queryname}=make_search_SQL($db,$tableinfo,$fields_table,$USER,$search,$sortstring,$listb['sql']);
    $r=$db->Execute(${$queryname});
+//$db->debug=false;
 
    // when search fails we'll revert to Show All after showing an error message
    if (!$r) {
@@ -428,6 +432,11 @@ else {
       session_unregister($queryname);
       ${$queryname}=make_search_SQL($db,$tableinfo,$fields_table,$USER,$search,$sortstring,$listb['sql']);
       $r=$db->Execute(${$queryname});
+/*
+      if (!isset($r)) {
+         echo "${$queryname}.<br>";
+      }
+*/
    }
 
    // set variables needed for paging
