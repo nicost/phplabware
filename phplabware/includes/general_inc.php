@@ -402,12 +402,10 @@ function getvalues($db,$DBNAME,$DB_DESNAME,$tableid,$fields,$qfield=false,$field
       $rid=$db->Execute("SELECT id FROM $DBNAME WHERE $qfield=$field");
       $id=$rid->fields["id"];
    }
-   else
-      $r=$db->Execute("SELECT $fields FROM $DBNAME"); 
    $column=strtok($fields,",");
    $Allfields=array();
    while ($column) {
-      if($column!="id") {
+      if($column!="id" && $r) {
          ${$column}["values"]= $r->fields[$column];
          $rb=$db->CacheExecute(2,"SELECT id,label,datatype,display_table,display_record,associated_table,associated_column,associated_local_key,required,link_first,link_last,modifiable FROM $DB_DESNAME WHERE columnname='$column'");
          ${$column}["name"]=$column;
