@@ -323,16 +323,11 @@ function display_table_change($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr
       $r->MoveNext();
       $current_record++;
    }
+
    // Add Record button
    if (may_write($db,$tableinfo->id,false,$USER)) {
       echo "<tr><td colspan=20 align='center'>";
-      if ($HTTP_SESSION_VARS['javascript_enabled']) {
-         $jscript=" onclick='MyWindow=window.open (\"general.php?tablename=".$tableinfo->name."&amp;showid=$id&amp;jsnewwindow=true\",\"view\",\"scrollbars,resizable,toolbar,status,menubar,width=700,height=500\");MyWindow.focus()'";
-         echo "<input type=\"submit\" name=\"add\" value=\"Add Record\" $jscript>";
-      }
-      else {
-         echo "<input type=\"submit\" name=\"add\" value=\"Add Record\">";
-      }
+      echo "<input type=\"submit\" name=\"add\" value=\"Add Record\">";
       echo "</td></tr>\n";
    }
 
