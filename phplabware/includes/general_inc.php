@@ -308,11 +308,13 @@ function getvalues($db,$DBNAME,$DB_DESNAME,$tableid,$fields,$qfield=false,$field
          ${$column}["ass_local_key"]=$rb->fields["associated_local_key"];
          ${$column}["required"]=$rb->fields["required"];
          ${$column}["modifiable"]=$rb->fields["modifiable"];
+         if ($rb->fields["datatype"]=="table") {
+            ${$column}["ass_table_desc_name"]=get_cell($db,"tableoftables","table_desc_name","id",$rb->fields["associated_table"]);
+            ${$column}["ass_table_name"]=get_cell($db,"tableoftables","real_tablename","id",$rb->fields["associated_table"]);
+            ${$column}["ass_column_name"]=get_cell($db,${$column}["ass_table_desc_name"],"columnname","id",$rb->fields["associated_column"]);
+	 }
          if ($id) {
             if ($rb->fields["datatype"]=="table") {
-               ${$column}["ass_table_desc_name"]=get_cell($db,"tableoftables","table_desc_name","id",$rb->fields["associated_table"]);
-               ${$column}["ass_table_name"]=get_cell($db,"tableoftables","real_tablename","id",$rb->fields["associated_table"]);
-               ${$column}["ass_column_name"]=get_cell($db,${$column}["ass_table_desc_name"],"columnname","id",$rb->fields["associated_column"]);
                if ($rb->fields["associated_local_key"]) {
                   ${$column}["ass_local_column_name"]=get_cell($db,$DB_DESNAME,"columnname","id",$rb->fields["associated_local_key"]);
                   ${$column}["values"]=get_cell($db,$DBNAME,${$column}["ass_local_column_name"],"id",$id); 
