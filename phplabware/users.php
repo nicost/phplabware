@@ -3,6 +3,7 @@
 
 // users.php - List, modify, add, and delete users
 // users.php - author: Nico Stuurman<nicost@sourceforge.net>
+// TABLES: users
   /***************************************************************************
   * This script displays a table with users in group of calling admin.       *
   * Functions to add or modify users and add auditors are integrated.        *

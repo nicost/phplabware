@@ -2,6 +2,7 @@
   
 // groups.php -  List, modify, delete and add groups
 // groups.php - author: Nico Stuurman <nicost@soureforge.net>
+// TABLES: groups
   /***************************************************************************
   * This script displays a table with groups in phplabware. It can only be   *
   * called by the sysadmin                                                   *

@@ -2,6 +2,7 @@
   
 // pdfs.php - Users can upload pdf files, pull bibl. data from Pubmed 
 // pdfs.php - author: Nico Stuurman <nicost@soureforge.net>
+// TABLES: pdfs
   /***************************************************************************
   * This script displays a table with pdfs in phplabware.                    *
   *                                                                          *

@@ -2,6 +2,7 @@
   
 // protocols.php -  List, modify, delete and add protocols
 // protocols.php - author: Nico Stuurman <nicost@soureforge.net>
+// TABLES: protocols
   /***************************************************************************
   * This script displays a table with protocols in phplabware.               *
   *                                                                          *

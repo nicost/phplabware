@@ -2,7 +2,7 @@
   
 // antibodies.php -  List, modify, delete and add antibodies
 // antibodies.php - author: Nico Stuurman <nicost@soureforge.net>
-// ETHAN TEST LINE
+// TABLES: antibodies
 
   /***************************************************************************
   * This script displays a table with antibodies in phplabware.              *
