@@ -22,7 +22,7 @@ $userfields ="id,login,firstname,lastname,pwd,groupid,permissions,email,indir,ou
 require("include.php");
 
 // register variables
-$post_vars = "email,id,firstname,lastname,login,me,modify,perms,pwd,pwdcheck,user_group,";
+$post_vars = "email,id,firstname,lastname,login,me,modify,perms,pwd,pwdcheck,user_group,user_add_groups,";
 $post_vars .= "create,user_add,";
 
 if (!$type)
@@ -130,6 +130,7 @@ function modify ($db, $type) {
    $login=$HTTP_POST_VARS["login"];
    $pwd=$HTTP_POST_VARS["pwd"];
    $user_group=$HTTP_POST_VARS["user_group"];
+   $user_add_groups=$HTTP_POST_VARS["user_add_groups"];
    $firstname=$HTTP_POST_VARS["firstname"];
    $lastname=$HTTP_POST_VARS["lastname"];
    $email=$HTTP_POST_VARS["email"];
@@ -172,8 +173,13 @@ function modify ($db, $type) {
           $query.=", pwd='$pwd'";
       }
       $query .= " WHERE id='$id';";
-      if ($db->Execute($query))
+      if ($db->Execute($query)) {
          echo "Modified settings of user <i>$firstname $lastname</i>.<br>\n";
+	 $db->Execute ("DELETE FROM usersxgroups WHERE usersid=$id");
+	 if ($user_add_groups)
+	    foreach ($user_add_groups AS $add_groupid)
+	       $db->Execute("INSERT INTO usersxgroups VALUES ('$id','$add_groupid')");
+      }    
       else
          echo "Could not modify settings of user: <i>$firstname $lastname</i>.<br>\n";
    }
@@ -183,8 +189,12 @@ function modify ($db, $type) {
          $query = "INSERT INTO users (id, login, pwd, groupid, firstname, lastname, permissions, email, createdbyid, createdbyip, createddate) ";
          $query .= "VALUES('$id','$login','$pwd','$user_group','$firstname','$lastname', '$permissions', '$email', '$theid', '$theip', '$thedate')"; 
 
-         if ($db->Execute($query))
+         if ($db->Execute($query)) {
             echo "User <i>$firstname $lastname</i> added.<br>\n";
+	    if ($user_add_groups)
+	       foreach ($user_add_groups AS $add_groupid)
+	          $db->Execute("INSERT INTO usersxgroups VALUES ('$id','$add_groupid')");
+         } 
          else
             echo "Failed to add user: <i>$firstname $lastname</i>.<br>\n";
    }
@@ -278,9 +288,18 @@ function show_user_form ($type) {
    }
 
    if ($USER["permissions"] & $SUPER) {
-      echo "<tr>\n<td>Group:</td>\n<td>";
+      echo "<tr>\n<td>Primary group:</td>\n<td>";
       $r = $db->Execute("SELECT name,id FROM groups");
       echo $r->GetMenu2("user_group",$groupid,false);
+      echo "</td>\n</tr>";
+      echo "<tr>\n<td>Additional groups:</td>\n<td>";
+      $r=$db->Execute("SELECT groupsid FROM usersxgroups WHERE usersid=$id");
+      while ($r && !$r->EOF) {
+         $add_groups[]=$r->fields["groupsid"];
+	 $r->MoveNext();
+      }
+      $r = $db->Execute("SELECT name,id FROM groups");
+      echo $r->GetMenu2("user_add_groups[]",$add_groups,true,true,3);
       echo "</td>\n</tr>";
    }
    else {
@@ -462,7 +481,8 @@ else {
    echo "<tr>\n";
    echo "<th>Login</th>\n";
    echo "<th>Real Name</th>\n";
-   echo "<th>Group</th>\n";
+   echo "<th>Primary<br>Group</th>\n";
+   echo "<th>Additional<br>Groups</th>\n";
    echo "<th>Admin</th>\n";
    echo "<th>Write</th>\n";
    echo "<th>Read</th>\n";
@@ -500,6 +520,16 @@ else {
       echo "<td><b><a href=\"mailto:".$r->fields["email"]."\">".$r->fields["login"]."</a></b></td>\n";
       echo "<td>".$r->fields["firstname"]."&nbsp;".$r->fields["lastname"]."</td>\n";
       echo "<td>".get_cell ($db,"groups","name","id",$r->fields["groupid"])."</td>\n";
+      $ra=$db->Execute("SELECT groupsid FROM usersxgroups WHERE usersid='".$r->fields["id"]."'");
+      echo "<td>";
+      if (!$ra || $ra->EOF)
+         echo "&nbsp";
+      else 
+         while (!$ra->EOF) {
+            echo get_cell($db,"groups","name","id",$ra->fields["groupsid"])."<br>";
+	    $ra->MoveNext();
+         }
+      echo "</td>\n";
       for ($i=0;$i<4;$i++)
          echo "<td align=\"center\">$stat[$i]</td>\n";
 
@@ -535,7 +565,7 @@ else {
       $r->MoveNext();
    }
 
-   echo "<tr border=0><td colspan=11 align='center'>";
+   echo "<tr border=0><td colspan=12 align='center'>";
    echo "<INPUT align='center' TYPE='submit' NAME='user_add' VALUE='Add User'></INPUT>\n";
    echo "</td></tr>\n";
    echo "</form>\n";
