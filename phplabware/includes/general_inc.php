@@ -295,6 +295,14 @@ function display_table_info($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr_c
          else echo "<tr class='row_even' align='center'>\n";
   
       foreach($Allfields as $nowfield) {
+         // we explode nested table links to the current world:
+         if (isset($nowfield['nested'])) {
+            $nowfield['text']=$nowfield['nested']['text'];
+            $nowfield['value']=$nowfield['nested']['value'];
+            $nowfield['datatype']=$nowfield['nested']['datatype'];
+            $nowfield['fileids']=$nowfield['nested']['fileids'];
+         }
+//print_r($nowfield);
          if ($nowfield['link'])
             echo "<td>{$nowfield['link']}</td>\n";
          elseif ($nowfield['datatype']=='mpulldown')
@@ -302,7 +310,8 @@ function display_table_info($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr_c
          else
             echo "<td>{$nowfield['text']}</td>\n"; 
          // write file ids to user settings so that we do not need to check them again when downloading thumbnails
-         if (($nowfield['datatype']=='image' || $nowfield['datatype']=='file') && isset($nowfield['fileids'])) {
+         //if (($nowfield['datatype']=='image' || $nowfield['datatype']=='file') && isset($nowfield['fileids'])) {
+         if (isset($nowfield['fileids'])) {
             foreach ($nowfield['fileids'] as $fileid)
                $USER['settings']['fileids'][]=$fileid;
          }
@@ -698,15 +707,16 @@ function display_add($db,$tableinfo,$Allfields,$id,$namein,$system_settings) {
 // !Get all description table values out for a display
 // Returns an array with lots of information on every column
 // If qfield is set, database values for that record will be returned as well
-function getvalues($db,$tableinfo,$fields,$qfield=false,$field=false) {
+function getvalues($db,$tableinfo,$fields,$qfield=false,$field=false) 
+{
    global $system_settings;
+
    if ($qfield) {
-//$db->debug=true;
       $r=$db->Execute("SELECT $fields FROM $tableinfo->realname WHERE $qfield=$field"); 
-//$db->debug=false;
       $rid=$db->Execute("SELECT id FROM $tableinfo->realname WHERE $qfield=$field");
       $id=$rid->fields['id'];
    }
+
    $columns=split(',',$fields);
    $Allfields=array();
    foreach ($columns as $column) {
@@ -746,24 +756,37 @@ function getvalues($db,$tableinfo,$fields,$qfield=false,$field=false) {
 //print_r($tmpvalue);
 //print_r(${$column}['values']);
                   if (is_array($tmpvalue[0])) {
+                     if (isset($tmpvalue[0]['nested']))
+                        ${$column}['nested']=$tmpvalue[0]['nested'];
+                     else {
+                        ${$column}['nested']['text']=$tmpvalue[0]['text']; 
+                        ${$column}['nested']['values']=$tmpvalue[0]['values']; 
+                        ${$column}['nested']['datatype']=$tmpvalue[0]['datatype']; 
+                        ${$column}['nested']['fileids']=$tmpvalue[0]['fileids']; 
+                     }
+/*
                      $text=$tmpvalue[0]['text'];
                      $values=$tmpvalue[0]['values'];
                      $datatype=$tmpvalue[0]['datatype'];
                      $fileids=$tmpvalue[0]['fileids'];
+*/
+                     
                   }
                   else {
                      $text=$tmpvalue[0];
                      $values=$text;
                   }
-                  ${$column}['link']="<a target=_ href=\"general.php?tablename={$asstableinfo->name}&showid=".${$column}['values']."\">$text</a>\n";
+                  ${$column}['link']="<a target=_ href=\"general.php?tablename={$asstableinfo->name}&showid=".${$column}['nested']['values']."\">{${$column}['nested']['text']}</a>\n";
                }
                if (!$text)
                   $text="&nbsp;";
                ${$column}['text']=$text;
+/*
                ${$column}['values']=$values;
                ${$column}['fileids']=$fileids;
                if ($datatype)
                   ${$column}['datatype']=$datatype;
+*/
             }
             elseif ($rb->fields['datatype']=='link') {
                if (${$column}['values'])
