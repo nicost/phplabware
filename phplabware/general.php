@@ -399,6 +399,13 @@ else {
    $numrows=$r->RecordCount();
    // work around bug in adodb/mysql
    $r->Move(1);
+   // protect against pushing the reload button while at the last page
+   if ( ((${$pagename}-1) * $num_p_r) >=$numrows)
+      ${$pagename} -=1; 
+   // if we are still outof range, this must be a new search statement and we can go to page 1
+   if ( ((${$pagename}-1) * $num_p_r) >$numrows) {
+      ${$pagename} =1; 
+   }
    if (${$pagename} < 2)
       $rp->AtFirstPage=true;
    else
@@ -407,9 +414,6 @@ else {
       $rp->AtLastPage=true;
    else
       $rp->AtLastPage=false;
-   // protect against pushing the reload button while at the last page
-   if ( ((${$pagename}-1) * $num_p_r) >=$numrows)
-      ${$pagename} -=1; 
 
    // get variables for links 
    $sid=SID;
