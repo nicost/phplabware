@@ -76,10 +76,10 @@ function tablestring ($db) {
 function delete_user ($db, $id) {
    global $USER;
 
-   include ("includes/defines_inc.php");
+   include ('includes/defines_inc.php');
    $tables=tablestring($db);
-   $original_permissions=get_cell ($db,"users","permissions","id",$id);
-   $original_login=get_cell($db,"users","login","id",$id);
+   $original_permissions=get_cell ($db,'users','permissions','id',$id);
+   $original_login=get_cell($db,'users','login','id',$id);
    if (!$original_login)
       return true;
 
@@ -142,15 +142,15 @@ function modify ($db, $type) {
 
    // check whether status of the victim is smaller than 
    //  the current users status
-   if ($type == "modify")
-      $original_permissions=get_cell ($db,"users","permissions","id",$id);
+   if ($type == 'modify')
+      $original_permissions=get_cell ($db,'users','permissions','id',$id);
 
    // check whether this is not illegitimate
    if (! (($USER['permissions'] & $SUPER) || 
          (($USER['permissions'] & $ADMIN) && ($USER['groupid']==$user_group) && 
           ($USER['permissions'] > $original_permissions) ) || 
          ($USER['id']==$id) ) ) {
-      echo "You are not allowed to do this. <br>";
+      echo 'You are not allowed to do this. <br>';
       return false;
    }
 
@@ -293,21 +293,6 @@ function show_user_form ($type) {
       echo "<td><input type='radio' name='menustyle' $schecked value='0'>scattered &nbsp;&nbsp;<input type='radio' name='menustyle' $dchecked value='1'>drop-down</td></tr>";
    }
    
-   if ($USER['permissions'] >= $WRITE && ($system_settings['authmethod'] <> 2
-         || ($type=='me' && $HTTP_SESSION_VARS['authmethod']=='sql') 
-         || $type=='create') ) {
-      echo "<tr><td>Password (max. 20 characters):</td><td><input type='password' name='pwd' maxlength=20 size=20 value=''>";
-      if ($type=='create')
-         echo "<sup style='color:red'>&nbsp(required)</sup></td></tr>\n";
-      echo "<tr><td>Password reType(max. 20 characters):</td><td><input type='password' name='pwdcheck' maxlength=20 size=20 value=''>";
-      if ($type=='create')
-         echo "<sup style='color:red'>&nbsp(required)</sup></td></tr>\n";
-      if ($type=='modify' || $type=='me')
-         echo "<tr><td colspan=2 align='center'>Leave the password fields blank to keep the current password</td></tr>\n";
-      if ($type=='create' && $system_settings['authmethod']==2)
-         echo "<tr><td colspan=2 align='center'>Leave the password fields blank to force PAM-based authentification</td></tr>\n";
-   }
-
    if ($USER['permissions'] & $SUPER) {
       echo "<tr>\n<td>Primary group:</td>\n<td>";
       $r = $db->Execute('SELECT name,id FROM groups');
@@ -326,6 +311,28 @@ function show_user_form ($type) {
    else {
       echo "<input type=\"hidden\" name=\"user_group\" value=\"" . $USER["groupid"] . "\">";
    }
+
+   if ($USER['permissions'] >= $WRITE && ($system_settings['authmethod'] <> 2
+         || ($type=='me' && $HTTP_SESSION_VARS['authmethod']=='sql') 
+         || $type=='create') ) {
+      echo "<tr><td>Password (max. 20 characters):</td><td><input type='password' name='pwd' maxlength=20 size=20 value=''>";
+      if ($type=='create')
+         echo "<sup style='color:red'>&nbsp(required)</sup></td></tr>\n";
+      echo "<tr><td>Password reType(max. 20 characters):</td><td><input type='password' name='pwdcheck' maxlength=20 size=20 value=''>";
+      if ($type=='create')
+         echo "<sup style='color:red'>&nbsp(required)</sup></td></tr>\n";
+      if ($type=='modify' || $type=='me')
+         echo "<tr><td colspan=2 align='center'>Leave the password fields blank to keep the current password</td></tr>\n";
+      if ($type=='create' && $system_settings['authmethod']==2)
+         echo "<tr><td colspan=2 align='center'>Leave the password fields blank to force PAM-based authentification</td></tr>\n";
+/*      if ($permissions & $ACCESS_EDIT )
+        $checked = "checked";
+      else
+         $checked = '';
+      echo "<tr><td>Control access settings:</td>\n<td><input type='checkbox' name='perms[]' value='$ACCESS_EDIT' $checked></td></tr>\n";
+*/
+   }
+
 
    // Checkboxes to give user permissions 
    // set default choice 
@@ -418,7 +425,7 @@ allowonly($ADMIN,$USER["permissions"]);
 // set title and print headers
 $title.="User administration";
 // extend title if user is an admin
-if ($USER["permissions"] < $SUPER)
+if (!($USER['permissions'] & $SUPER))
    $title .= " in group ".get_cell($db,"groups","name","id",$USER["groupid"]);
 printheader($title);
 navbar($USER["permissions"]);
@@ -493,8 +500,8 @@ else {
    $db_query = "SELECT * FROM users";
 
    // if user is not sysadmin then only list users of admin's group
-   if (! ($USER["permissions"] & $SUPER))
-      $db_query .= " WHERE groupid='" .$USER[groupid]."'";
+   if (! ($USER['permissions'] & $SUPER))
+      $db_query .= " WHERE groupid='" .$USER['groupid']."'";
 
    // extend query to order output list on login name
    $db_query .= " ORDER BY login";
@@ -571,7 +578,7 @@ else {
       // do not let admins fool around with other admins in group
       $id = $r->fields["id"];
       if ( ($USER["id"] <> $id) &&  ( !($r->fields["permissions"] & $ADMIN) 
-                                    || ($USER["permissions"] & $SUPER)) ) {
+                                    || ($USER['permissions'] & $SUPER)) ) {
          $modstring="<input type=\"submit\" name=\"mop_".$id."\" value=\"Modify\">";
          $delstring="<input type=\"submit\" name=\"del_".$id."\" value=\"Remove\" ";
          $delstring.="Onclick=\"if(confirm('Do you really want to delete user: ";
