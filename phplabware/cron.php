@@ -88,7 +88,7 @@ while ($rfiles && !($rfiles->EOF)) {
             //the file and sees how many pages there are
 
             $filepath=file_path($db,$rfiles->fields[id]);
-            $gs=$system_settins[gs];
+            $gs=$system_settings[gs];
             if (!@is_readable($gs))
                echo "Could not read ghostscipt binary (gs) at '$gs'.<br>";
                // we don't need to quit since the rest will simply fail
