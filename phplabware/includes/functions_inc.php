@@ -251,7 +251,7 @@ function navbar($permissions) {
    }
    if ($permissions) {
       ?>
-      <td  align='right'><a href="logout.php?<?=SID?>">logout</a></td>
+      <td  align='right'><a href="logout.php?<?=SID?>">logout</a>&nbsp;</td>
       <?php
    }
    else
