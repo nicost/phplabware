@@ -30,7 +30,7 @@ if ($adodb_version<1.71) {
    exit();
 }
 
-$post_vars="access,action,authmethod,baseURL,homeURL,checkpwd,convert,dateformat,filedir,thumbnaildir,gs,pwd,protocols_file,pdfs_file,pdfget,secure_server_new,smallthumbsize,submit,tmpdir,tmpdirpsql,word2html";
+$post_vars="access,action,authmethod,baseURL,homeURL,checkpwd,convert,dateformat,filedir,thumbnaildir,templatedir,gs,pwd,protocols_file,pdfs_file,pdfget,secure_server_new,smallthumbsize,submit,tmpdir,tmpdirpsql,word2html";
 globalize_vars($post_vars, $HTTP_POST_VARS);
 
 if ($set_local) {
@@ -166,7 +166,7 @@ if ($version) {
       }
       if ($version<0.1005) {
          // Creates table reports
-         $rs=$db->Execute("CREATE TABLE reports (id int UNIQUE NOT NULL, label text, tableid int, template text, sortkey int, type text, file text) ");
+         $rs=$db->Execute("CREATE TABLE reports (id int UNIQUE NOT NULL, label text, tableid int, sortkey int, type text, filesize int) ");
         // Create indices
         $db->Execute("CREATE INDEX reports_id ON reports(id)");
         $db->Execute("CREATE INDEX reports_tableid ON reports(tableid)");
@@ -203,6 +203,11 @@ if ($version) {
             $system_settings["thumbnaildir"]=$thumbnaildir;
 	 else
 	    echo "<h4 align='center'>Directory $thumbnaildir is not writeable</h4>";
+      if ($templatedir) 
+         if (is_writable($templatedir))
+            $system_settings["templatedir"]=$templatedir;
+	 else
+	    echo "<h4 align='center'>Directory $templatedir is not writeable</h4>";
       if ($tmpdir) 
          if (is_writeable($tmpdir))
             $system_settings["tmpdir"]=$tmpdir;
@@ -353,6 +358,17 @@ if ($version) {
    }
    $thumbnaildir=$system_settings["thumbnaildir"];
    echo "<td><input type='text' name='thumbnaildir' value='$thumbnaildir'></td></tr>\n";
+
+   echo "<tr><td>Directory <i>templates</i>. The webdaemon should ";
+   echo "have read and write priveleges, but the directory should not be directly ";
+   echo "accessible through the web. ";
+   if (!$system_settings["templates"]) {
+      $dir=getenv("SCRIPT_FILENAME");
+      $dir=substr($dir,0,strrpos($dir,"/")+1)."templates";
+      $system_settings["templatedir"]=$dir;
+   }
+   $templatedir=$system_settings["templatedir"];
+   echo "<td><input type='text' name='templatedir' value='$templatedir'></td></tr>\n";
 
    echo "<tr><td>Directory for <i>temporary</i> files. For security reasons, only the webdaemon should be able to read (and write) files here.  Usually, this is <b>not</b> the case for directory <i>/tmp</i>. </td>";
    if (!$system_settings["tmpdir"]) 
