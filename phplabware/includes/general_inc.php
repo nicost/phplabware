@@ -305,7 +305,7 @@ function make_link($id,$DBNAME) {
 // !display addition and modification form
 function display_add($db,$tableinfo,$Allfields,$id,$namein,$system_settings) { 
    global $PHP_SELF, $db_type, $md, $USER, $LAYOUT, $HTTP_POST_VARS;
-
+   
    $dbstring=$PHP_SELF;$dbstring.="?";$dbstring.="tablename=".$tableinfo->name."&";
    echo "<form method='post' id='protocolform' enctype='multipart/form-data' name='form' action='$dbstring";
 	?><?=SID?>'><?php
@@ -327,7 +327,7 @@ function display_add($db,$tableinfo,$Allfields,$id,$namein,$system_settings) {
       // see if display_record is set
       if ( (($nowfield["display_record"]=="Y") || ($nowfield["display_table"]=="Y")) ) {
          // To persist between multiple invocation, grab POST vars 
-         if ($nowfield["modifiable"]=="Y" && isset($HTTP_POST_VARS[$nowfield["name"]]))
+         if ($nowfield["modifiable"]=="Y" && isset($HTTP_POST_VARS[$nowfield["name"]]) && $HTTP_POST_VARS[$nowfield["name"]])
             $nowfield["values"]=$HTTP_POST_VARS[$nowfield["name"]];
          if ($nowfield["modifiable"]=="N" && $nowfield["datatype"]!="sequence") {
             echo "<input type='hidden' name='$nowfield[name]' value='$nowfield[values]'>\n";
@@ -608,8 +608,8 @@ function add_g_form ($db,$tableinfo,$field_values,$id,$USER,$PHP_SELF,$system_se
    if (!may_write($db,$tableinfo->id,$id,$USER)) 
       return false; 
    if ($id) {
-   echo $nowfield["id"].".<br>";
 	$Allfields=getvalues($db,$tableinfo,$tableinfo->fields,id,$id);
+	//print_r($Allfields);
 	$namein=get_cell($db,$tableinfo->desname,"title","id",$id);		
 	display_add($db,$tableinfo,$Allfields,$id,$namein,$system_settings);
    }    
