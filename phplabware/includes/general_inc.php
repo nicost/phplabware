@@ -246,6 +246,13 @@ function display_record($db,$Allfields,$id,$tableinfo,$backbutton=true)
 {
    global $PHP_SELF, $md,$USER;
 
+   if (!$Allfields[1]['recordid']) {
+      echo "<table border=0 align='center'>\n";
+      echo "<tr>\n<td align='center'><h3>Record not found</h3>\n</td>\n</tr>";
+      echo "<tr>\n<td align='center'>\n<button onclick='self.close();window.opener.focus();' name='Close' value='close'>Close</button></td></tr>\n";
+      echo "</table>\n";
+      exit;
+   }
    echo "&nbsp;<br>\n";
    echo "<table border=0 align='center'>\n";
    $count=0;
