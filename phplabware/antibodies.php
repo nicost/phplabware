@@ -20,7 +20,7 @@ allowonly($READ, $USER["permissions"]);
 
 // main global vars
 $title .= "Antibodies";
-$fields="name,id,type1,type2,type3,type4,type5,species,antigen,epitope,concentration,buffer,notes,location,source,date";
+$fields="id,access,ownerid,name,type1,type2,type3,type4,type5,species,antigen,epitope,concentration,buffer,notes,location,source,date";
 
 // register variables
 $get_vars = "id,";
@@ -38,6 +38,8 @@ globalize_vars ($post_vars, $HTTP_POST_VARS);
 // Fieldvalues must be an associative array containing all the $fields to be added.
 // Fields named 'date' are automatically filled with a Unix timestamp
 function add ($db,$table,$fields,$fieldvalues,$USER) {
+   if (!may_write($db,$table,false,$USER))
+      return false;
    include('includes/defines_inc.php');
    if (!($USER["permissions"] & $WRITE) )
       return false;
@@ -50,6 +52,14 @@ function add ($db,$table,$fields,$fieldvalues,$USER) {
       while ($column) {
          if (!($column=="id")) {
             $columns.=",$column";
+            // set userid
+            if ($column=="ownerid")
+               $fieldvalues["ownerid"]=$USER["id"];
+            // set default access rights, 
+            elseif ($column=="access")
+               if (!$fieldvalues["access"])
+                  $fieldvalues["access"]="rw-r-----";
+            // set timestamp
             if ($column=="date") {
                $date=(time());
                $values.=",$date";
@@ -71,18 +81,20 @@ function add ($db,$table,$fields,$fieldvalues,$USER) {
 // Fieldvalues must be an associative array containing all the $fields to be added.
 // If a field is not present in $fieldvalues, it will not be changed.  
 // The entry 'id' in $fields will be ignored.
-function modify ($db, $table,$fields,$fieldvalues,$id) {
-   // check whether this is allowed
-
-   $query="UPDATE $table SET ";
+function modify ($db,$table,$fields,$fieldvalues,$id,$USER) {
+   if (!may_write($db,$table,$id,$USER))
+      return false;
+   $query=" UPDATE $table SET ";
    $column=strtok($fields,",");
    while ($column) {
-      $test=true;
-      if (! ($column=="id" || $column=="date") ) 
+      if (! ($column=="id" || $column=="date" || $column=="ownerid" || $column=="access")) {
+         $test=true;
          $query.="$column='$fieldvalues[$column]',";
+      }
       $column=strtok(",");
    }
    $query[strrpos($query,",")]=" ";
+
    if ($test) {
       $query.=" WHERE id='$id'";
       if ($db->Execute($query))
@@ -92,18 +104,79 @@ function modify ($db, $table,$fields,$fieldvalues,$id) {
 
 
 ////
-// !Deletes the etry with id=$id
-// Returns true on succes, false on failure
+// !Deletes the entry with id=$id
+// Returns true on succes, false on failurei
+// Checks whether this is allowed
 // This is very generic, it is likely that you will need to do more cleanup
 function delete ($db, $table, $id, $USER) {
-   // check whether this user is allowed to do this
-
+   if (!may_write($db,$table,$id,$USER))
+      return false;
+   include ('includes/defines_inc.php');
+   if ($USER["permissions"] & $ADMIN)
+      $test=true;
 
    // and now delete for real
    if ($db->Execute("DELETE FROM $table WHERE id=$id"))
       return true;
    else
       return false;
+}
+
+
+////
+// !Returns an SQL SELECT statement with ids of records the user may see
+function may_read_SQL ($db,$table,$USER,$clause=false) {
+   include ('includes/defines_inc.php');
+   $query="SELECT id FROM $table ";
+   if ($USER["permissions"] & $SUPER) {
+      if ($clause)
+         $query .= "WHERE $clause";
+   }
+   else {
+      $usergroup=get_cell($db,"users","groupid","id",$USER["id"]);
+      $userid=$USER["id"];
+      $query .= " WHERE ";
+      if ($clause) 
+         $query .= " $clause AND ";
+      // owner
+      $query .= "( (ownerid=$userid AND SUBSTRING (access FROM 1 FOR 1)='r') ";
+      // group
+      $query .= "OR ($usergroup=CAST( (SELECT groupid FROM users WHERE users.id=$table.ownerid) AS int) AND SUBSTRING (access FROM 4 FOR 1)='r') ";
+      // world
+      $query .= "OR (SUBSTRING (access FROM 7 FOR 1)='r')";
+      $query .=")";
+   }
+   return $query;
+}
+
+////
+// !checks if this user may write/modify/delete these data
+function may_write ($db,$table,$id,$USER) {
+   include ('includes/defines_inc.php');
+   
+   if ($USER["permissions"] & $SUPER)
+      return true;
+   if ( ($USER["permissions"] & $WRITE) && (!$id))
+      return true;
+   $usergroup=get_cell($db,"users","groupid","id",$USER["id"]);
+   $r=$db->Execute("SELECT groupid FROM users WHERE id IN (
+                    SELECT ownerid FROM $table WHERE id=$id) ");
+   $ownergroup=$r->fields["groupid"];
+   if ($USER["permissions"] & $ADMIN) {
+      if ($usergroup==$ownergroup)
+         return true;
+   }
+   if ($id) {
+      $userid=$USER["id"];
+      if ($r=$db->Execute("SELECT * FROM $table WHERE id=$id AND
+            ownerid=$userid AND SUBSTRING (access FROM 2 FOR 1)='w'")) 
+         if (!$r->EOF)
+            return true;
+      if ($r=$db->Execute("SELECT * FROM $table WHERE id=$id AND
+            ownerid=$userid AND SUBSTRING (access FROM 5 FOR 1)='w'")) 
+         if (!$r->EOF && ($usergroup==$ownergroup) )
+            return true;
+   }
 }
 
 
@@ -115,11 +188,12 @@ function check_ab_data ($field_values) {
       echo "<h3>Please enter an antibody name.</h3>";
       return false;
    }
-   if ($field_values["concentration"])
-      if (! @settype ($field_values["concentration"],"double")) {
+   if ($field_values["concentration"]) {
+      if (! $field_values["concentration"]=(float)$field_values["concentration"] ) {
          echo "<h3>Use numbers only for the concentration field.</h3>";
          return false;
       }
+   }
    return true;
 }
 
@@ -127,7 +201,10 @@ function check_ab_data ($field_values) {
 ////
 // !Prints a form with antibody stuff
 // $id=0 for a new entry, otherwise it is the id
-function add_ab_form ($db, $fields,$field_values,$id) {
+function add_ab_form ($db,$fields,$field_values,$id,$USER) {
+   if (!may_write($db,"antibodies",$id,$USER))
+      return false;
+
    // get values in a smart way
    $column=strtok($fields,",");
    while ($column) {
@@ -210,6 +287,7 @@ function add_ab_form ($db, $fields,$field_values,$id) {
 ////
 // !Shows a page with nice information on the antibody
 function show_ab ($id) {
+   echo "In Preparation.<br>";
 }
 
 /*****************************BODY*******************************/
@@ -217,22 +295,30 @@ function show_ab ($id) {
 printheader($title);
 navbar($USER["permissions"]);
 
-// check is something should be modified
+// check if something should be modified or shown
 while((list($key, $val) = each($HTTP_POST_VARS))) {
    if (substr($key, 0, 3) == "mod") {
       $modarray = explode("_", $key);
       $ADODB_FETCH_MODE=ADODB_FETCH_ASSOC;
       $r=$db->Execute("SELECT $fields FROM antibodies WHERE id=$modarray[1]"); 
       $ADODB_FETCH_MODE=ADODB_FETCH_NUM;
-      add_ab_form ($db,$fields,$r->fields,$modarray[1]);
+      add_ab_form ($db,$fields,$r->fields,$modarray[1],$USER);
+      printfooter();
+      exit();
+   }
+   // show the record
+   if (substr($key, 0, 4) == "view") {
+      $modarray = explode("_", $key);
+      show_ab($modarray[1],$USER);
       printfooter();
       exit();
    }
 }
 
+
 // when the 'Add' button has been chosen: 
 if ($add)
-   add_ab_form ($db,$fields,$field_values,0);
+   add_ab_form ($db,$fields,$field_values,0,$USER);
 
 elseif ($show)
    show_ab ($id);
@@ -243,18 +329,18 @@ else {
    echo "<caption>\n";
    // first handle addition of a new antibody
    if ($submit == "Add Antibody") {
-      if (! add ($db, "antibodies",$fields,$HTTP_POST_VARS,$USER) ) {
+      if (! (check_ab_data($HTTP_POST_VARS) && add ($db, "antibodies",$fields,$HTTP_POST_VARS,$USER) ) ){
          echo "</caption>\n</table>\n";
-         add_ab_form ($db,$fields,$HTTP_POST_VARS,0);
+         add_ab_form ($db,$fields,$HTTP_POST_VARS,0,$USER);
          printfooter ();
          exit;
       }
    }
    // then look whether it should be modified
    elseif ($submit =="Modify Antibody") {
-      if (! (check_ab_data($HTTP_POST_VARS) && modify ($db,"antibodies",$fields,$HTTP_POST_VARS,$id)) ) {
+      if (! (check_ab_data($HTTP_POST_VARS) && modify ($db,"antibodies",$fields,$HTTP_POST_VARS,$HTTP_POST_VARS["id"],$USER)) ) {
          echo "</caption>\n</table>\n";
-         add_ab_form ($db,$fields,$HTTP_POST_VARS,$HTTP_POST_VARS["id"]);
+         add_ab_form ($db,$fields,$HTTP_POST_VARS,$HTTP_POST_VARS["id"],$USER);
          printfooter ();
          exit;
       }
@@ -279,18 +365,17 @@ else {
    echo "<th>Antigen</th>\n";
    echo "<th>mg/ml</th>\n";
    echo "<th>Primary/Secundary</th>\n";
-   echo "<th>Label</th\n";
+   echo "<th>Label</th>\n";
    echo "<th>Mono-/Polyclonal</th>\n";
    echo "<th>Host</th>\n";
    echo "<th>Class</th>\n";
    echo "<th>Location</th>\n";
-   echo "<th colspan=\"2\">Action</th>\n";
+   echo "<th>Action</th>\n";
    echo "</tr>\n";
 
-//$db->debug=true;
-
    // retrieve all antibodies and their info from database
-   $query = "SELECT $fields FROM antibodies ORDER BY date DESC";
+   $whereclause=may_read_SQL ($db,"antibodies",$USER);
+   $query = "SELECT $fields FROM antibodies WHERE id IN ($whereclause) ORDER BY date DESC";
    $r=$db->Execute($query);
    // print all entries
    while (!($r->EOF)) {
@@ -322,23 +407,27 @@ else {
       echo "<td>$at4</td>\n";
       echo "<td>$location&nbsp;</td>\n";
       
-      
-      // print last columns with links to adjust group
-      $modstring = "<input type=\"submit\" name=\"mod_" . $id . "\" value=\"Modify\">";
-      echo "<td align='center'>$modstring</td>\n";
-      $delstring = "<input type=\"submit\" name=\"del_" . $id . "\" value=\"Remove\" ";
-      $delstring .= "Onclick=\"if(confirm('Are you sure the antibody $name ";
-      $delstring .= "should be removed?')){return true;}return false;\">";                                           
-      echo "<td align='center'>$delstring</td>\n";
+      echo "<td align='center'>&nbsp;\n";
+      echo "<input type=\"submit\" name=\"view_" . $id . "\" value=\"View\">\n";
+      if (may_write($db,"antibodies",$id,$USER)) {
+         echo "<input type=\"submit\" name=\"mod_" . $id . "\" value=\"Modify\">\n";
+         $delstring = "<input type=\"submit\" name=\"del_" . $id . "\" value=\"Remove\" ";
+         $delstring .= "Onclick=\"if(confirm('Are you sure the antibody $name ";
+         $delstring .= "should be removed?')){return true;}return false;\">";                                           
+         echo "$delstring\n";
+      }
+      echo "</td>\n";
       echo "</tr>\n";
    
       $r->MoveNext();
    }
 
    // print footer of table
-   echo "<tr><td colspan=11 align='center'>";
-   echo "<input type=\"submit\" name=\"add\" value=\"Add Antibody\">";
-   echo "</td></tr>";
+   if (may_write($db,"antibodies",false,$USER)) {
+      echo "<tr><td colspan=10 align='center'>";
+      echo "<input type=\"submit\" name=\"add\" value=\"Add Antibody\">";
+      echo "</td></tr>";
+   }
 
    echo "</table>\n";
    echo "</form>\n";
