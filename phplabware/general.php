@@ -17,7 +17,7 @@
 require("include.php");
 class tableinfo {
    var $short;
-   var $real_name;
+   var $realname;
    var $label;
    var $desname;
    var $queryname;
@@ -37,21 +37,22 @@ if (!$tableid) {
    exit();
 }
 $tableinfo->short=$tableshort=$r->fields["shortname"];
-$tableinfo->real_name=$real_tablename=$r->fields["real_tablename"];
+$tableinfo->realname=$real_tablename=$r->fields["real_tablename"];
 $tableinfo->label=$tablelabel=$r->fields["label"];
 $tableinfo->desname=$table_desname=$r->fields["table_desc_name"];
 $tableinfo->queryname=$queryname=$tableshort."_query";
 $tableinfo->pagename=$pagename=$tableshort."_curr_page";
+$tableinfo->name=$HTTP_GET_VARS[tablename];
 
 require("includes/db_inc.php");
 require("includes/general_inc.php");
 
 // read all fields in from the description file
-$fields=comma_array_SQL($db,$table_desname,columnname);
-$fields_table=comma_array_SQL($db,$table_desname,columnname,"WHERE display_table='Y'");
+$tableinfo->fields=$fields=comma_array_SQL($db,$tableinfo->desname,columnname);
+$fields_table=comma_array_SQL($db,$tableinfo->desname,columnname,"WHERE display_table='Y'");
 
 // load plugin php code if it has been defined 
-$plugin_code=get_cell($db,"tableoftables","plugin_code","id",$tableid);
+$plugin_code=get_cell($db,"tableoftables","plugin_code","id",$tableinfo->id);
 if ($plugin_code)
    @include($plugin_code);
 
@@ -61,15 +62,15 @@ globalize_vars($get_vars, $HTTP_GET_VARS);
 $post_vars = "add,md,edit_type,submit,search,searchj,serialsortdirarray";
 globalize_vars($post_vars, $HTTP_POST_VARS);
 
-$httptitle .=$tablelabel;
+$httptitle .=$tableinfo->label;
 
 // this shows a record entry in a new window, called through javascript
-if ($jsnewwindow && $showid && $tablename) {
+if ($jsnewwindow && $showid && $tableinfo->name) {
    printheader($httptitle);
    if (function_exists("plugin_show"))
       plugin_show($db,$fields,$showid,$USER,$system_settings,$tableid,$real_tablename,$table_desname,false);
    else
-      show_g($db,$fields,$showid,$USER,$system_settings,$tableid,$real_tablename,$table_desname,false);
+      show_g($db,$tableinfo,$showid,$USER,$system_settings,false);
    printfooter();
    exit();
 }
@@ -98,7 +99,7 @@ navbar($USER["permissions"]);
 
 
 // check wether user may see this table
-if (!may_see_table($db,$USER,$tableid)) {
+if (!may_see_table($db,$USER,$tableinfo->id)) {
    echo "<h3 align='center'>These data are not for you.  Sorry;(</h3>\n";
    printfooter();
    exit();
@@ -109,8 +110,8 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
    // display form with information regarding the record to be changed
    if (substr($key, 0, 3) == "mod") {
       $modarray = explode("_", $key);
-      $r=$db->Execute("SELECT $fields FROM $real_tablename WHERE id=$modarray[1]"); 
-      add_g_form($db,$fields,$r->fields,$modarray[1],$USER,$PHP_SELF,$system_settings,$real_tablename,$tableid,$table_desname);
+      $r=$db->Execute("SELECT $fields FROM ".$tableinfo->realname." WHERE id=$modarray[1]"); 
+      add_g_form($db,$tableinfo,$r->fields,$modarray[1],$USER,$PHP_SELF,$system_settings);
       printfooter();
       exit();
    }
@@ -139,7 +140,7 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
          echo "<h3 align='center'>Deleted file <i>$filename</i>.</h3>\n";
       else
          echo "<h3 align='center'>Failed to delete file <i>$filename</i>.</h3>\n";
-      add_g_form ($db,$fields,$HTTP_POST_VARS,$id,$USER,$PHP_SELF,$system_settings,$real_tablename,$tableid,$table_desname);
+      add_g_form ($db,$tableinfo,$HTTP_POST_VARS,$id,$USER,$PHP_SELF,$system_settings);
       printfooter();
       exit();
    }
@@ -149,7 +150,7 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
       if (function_exists("plugin_show"))
          plugin_show($db,$fields,$modarray[1],$USER,$system_settings,$tableid,$real_tablename,$table_desname,true);
       else
-         show_g($db,$fields,$modarray[1],$USER,$system_settings,$tableid,$real_tablename,$table_desname,true);
+         show_g($db,$tableinfo,$modarray[1],$USER,$system_settings,true);
       printfooter();
       exit();
    }
@@ -202,29 +203,29 @@ if ($showid && !$jsnewwindow) {
    if (function_exists("plugin_show"))
       plugin_show($db,$fields,$showid,$USER,$system_settings,$tableid,$real_tablename,$table_desname,true);
    else
-      show_g($db,$fields,$showid,$USER,$system_settings,$tableid,$real_tablename,$table_desname,true);
+      show_g($db,$tableinfo,$showid,$USER,$system_settings,true);
    printfooter();
    exit();
 }
 
 // when the 'Add' button has been chosen: 
 if ($add) {
-   add_g_form($db,$fields,$field_values,0,$USER,$PHP_SELF,$system_settings,$real_tablename,$tableid,$table_desname);
+   add_g_form($db,$tableinfo,$field_values,0,$USER,$PHP_SELF,$system_settings);
    }
 else { 
     // first handle addition of a new record
    if ($submit == "Add Record") {
       if (!(check_g_data($db, $HTTP_POST_VARS, $table_desname) && 
-            $id=add($db,$real_tablename,$fields,$HTTP_POST_VARS,$USER,$tableid) ) )
+            $id=add($db,$tableinfo->realname,$fields,$HTTP_POST_VARS,$USER,$tableinfo->id) ) )
       	{
-         add_g_form($db,$fields,$HTTP_POST_VARS,0,$USER,$PHP_SELF,$system_settings,$real_tablename,$tableid, $table_desname);
+         add_g_form($db,$tableinfo,$HTTP_POST_VARS,0,$USER,$PHP_SELF,$system_settings);
          printfooter ();
          exit;
       }
       else {  
          // $id ==-1 when the record was already uploaded
          if ($id>0) {
-            $rb=$db->Execute("SELECT id,columnname,associated_table FROM $table_desname WHERE datatype='file'");
+            $rb=$db->Execute("SELECT id,columnname,associated_table FROM ".$tableinfo->desname." WHERE datatype='file'");
             while (!$rb->EOF) {
        	       $fileid=upload_files($db,$tableid,$id,$rb->fields["id"],$rb->fields["columnname"],$USER,$system_settings);
                // try to convert word files into html files
@@ -235,7 +236,7 @@ else {
             }
             // call plugin code to do something with newly added data
             if (function_exists("plugin_add"))
-               plugin_add($db,$tableid,$id);
+               plugin_add($db,$tableinfo->id,$id);
          }
          // to not interfere with search form 
          unset ($HTTP_POST_VARS);
@@ -246,7 +247,7 @@ else {
    // then look whether it should be modified
    elseif ($submit=="Modify Record") {
       if (! (check_g_data($db,$HTTP_POST_VARS,$table_desname,true) && modify($db,$real_tablename,$fields,$HTTP_POST_VARS,$HTTP_POST_VARS["id"],$USER,$tableid)) ) {
-         add_g_form ($db,$fields,$HTTP_POST_VARS,$HTTP_POST_VARS["id"],$USER,$PHP_SELF,$system_settings,$real_tablename,$tableid,$table_desname);
+         add_g_form ($db,$tableinfo,$HTTP_POST_VARS,$HTTP_POST_VARS["id"],$USER,$PHP_SELF,$system_settings);
          printfooter ();
          exit;
       }
@@ -468,9 +469,8 @@ else {
 
    if ($md=="edit")
       display_table_change($db,$tableinfo,$Fieldscomma,${$queryname},$num_p_r,${$pagename},$rp,$r);
-      //display_table_change($db,$tableid,$table_desname,$Fieldscomma,${$queryname},$num_p_r,${$pagename},$rp,$r);
    else
-      display_table_info($db,$tableid,$table_desname,$Fieldscomma,${$queryname},$num_p_r,${$pagename},$rp,$r);
+      display_table_info($db,$tableinfo,$Fieldscomma,${$queryname},$num_p_r,${$pagename},$rp,$r);
    printfooter($db,$USER);
 }
 ?>
