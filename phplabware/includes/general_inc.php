@@ -229,6 +229,7 @@ function display_table_change($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr
             $thestar="<sup style='color:red'>&nbsp;*</sup>";
          else
             $thestar=false;
+
          if ( ($nowfield['modifiable']!='Y') || !$may_write) {
             echo "<td><input type='hidden' name='{$nowfield['name']}_$id' value=\"{$nowfield['values']}\">\n";
             echo "{$nowfield['text']}</td>\n";
@@ -244,9 +245,8 @@ function display_table_change($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr
             //$js="onchange='var theField=document.g_form.{$nowfield['name']_$id; if (isAFloat(document.g_form.{$nowfield['name']}_$id.value)) { submit_changes($tableinfo->id,$id,\"{$nowfield['name']}\",document.g_form.{$nowfield['name']}_$id.value); } else {event.returnValue=false;}'";
             $js="onchange='var theField=document.g_form.{$nowfield['name']}_$id; if (isAFloat(theField.value)) { submit_changes($tableinfo->id,$id,\"{$nowfield['name']}\",theField.value); } else {theField.reset();}'";
      	    echo "<td><input type='text' name='{$nowfield['name']}_$id' value='{$nowfield['values']}' size=8 $js>$thestar</td>\n";
-         }
-         elseif ($nowfield['datatype']=='textlong') {
-     	    echo "<td><textarea name='$nowfield[name]_$id' cols=45 rows=3>$thestar{$nowfield['values']}</textarea></td>\n"; 
+         } elseif ($nowfield['datatype']=='textlong') {
+     	    echo "<td><textarea name='$nowfield[name]_$id' cols=45 rows=3 $js>$thestar{$nowfield['values']}</textarea></td>\n"; 
          }
          elseif ($nowfield['datatype']=='link') {
             echo "<td><input type='text' name='$nowfield[name]_$id' value='$nowfield[values]' size=15>$thestar</td>\n";
