@@ -72,7 +72,6 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
    // show the record
    if (substr($key, 0, 4) == "view") {
       $modarray = explode("_", $key);
-      echo "in view.<br>";
       show_g($db,$fields,$modarray[1],$USER,$system_settings,$tablename,$real_tablename,$table_desname);
       printfooter();
       exit();
