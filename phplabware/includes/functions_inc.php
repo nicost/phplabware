@@ -192,58 +192,60 @@ function navbar($permissions) {
    include ('includes/defines_inc.php');
    global $db; 
 
-   $links_per_row=5;
+   $links_per_row=6;
    
-   if ($permissions & $ACTIVE) 
-	{	
-	// first display the linkbar if activated
-	$r=$db->Execute("select display from tableoftables where tablename ='linkbar'");
-	$linkdis=$r->fields[0];
-	if ($linkdis=="1")
-		{
-		$linkr=$db->Execute("select label,linkurl,target from linkbar where display ='Y' ORDER by sortkey");
-		if ($linkr)
-			{
-			echo "<table bgcolor='#DDDDDD' border=0 width=100%><LINK='ff00000' VLINK='ff00000'>";
-		    echo "<tr align='center'>\n";
-			while (!$linkr->EOF) 
-				{ 
-				if (($count%$links_per_row)==0){echo "</tr><tr bgcolor='ffeeff' align='center'>";}
-				$Tlinkname=$linkr->fields[0];
-				$urlname=$linkr->fields[1];
-				if ($linkr->fields[2]=="S"){$targetstr="target='_TOP'";}
-				else {$targetstr="target='_BLANK'";}	
-				echo "<td style='width: 20%' align='center'><a href=\"$urlname\" $targetstr>$Tlinkname</a></td>";
-				$count++;
-				$linkr->MoveNext(); 
-				}
-	  echo"</font></tr></table>";
-  	} 
-   }
+   if ($permissions & $ACTIVE) {
+      // first display the linkbar if activated
+      $r=$db->Execute("select display from tableoftables where tablename ='linkbar'");
+      $linkdis=$r->fields[0];
+      if ($linkdis=="1") {
+         $linkr=$db->Execute("select label,linkurl,target from linkbar where display ='Y' ORDER by sortkey");
+         if ($linkr) {
+            echo "<table bgcolor='#DDDDDD' border=0 width=100%><LINK='ff00000' VLINK='ff00000'>";
+            echo "<tr align='center'>\n";
+            while (!$linkr->EOF) {
+               if (($count%$links_per_row)==0)
+                  echo "</tr><tr bgcolor='ffeeff' align='center'>";
+               $Tlinkname=$linkr->fields[0];
+               $urlname=$linkr->fields[1];
+               if ($linkr->fields[2]=="S")
+                  $targetstr="target='_TOP'";
+               else 
+                  $targetstr="target='_BLANK'";
+               echo "<td style='width: 20%' align='center'><a href=\"$urlname\" $targetstr>$Tlinkname</a></td>";
+               $count++;
+               $linkr->MoveNext(); 
+            }
+            echo"</font></tr></table>";
+         } 
+      }
 				
+      echo "<table border=0 width=100%>\n";
+      echo "<tr bgcolor='eeeeff' align='center'>\n";
+      $records=$db->Execute("select tablename,Custom from tableoftables where display='Y' and permission='Users' ORDER by sortkey");
+      $count=0;
+      if ($records) {
+         while (!$records->EOF) {
+            if (($count%$links_per_row)==0)
+               echo "</tr><tr bgcolor='eeeeff' align='center'>";
+            $tabname=$records->fields[0];
+            $scriptname=$records->fields[1];
+            $linkname="";
+            if ($scriptname=="")
+               $linkname="general.php?tablename=$tabname&".SID;
+            else 
+               $linkname=$scriptname."?".SID;
+            echo "<td style='width: 20%' align='center'><a href=\"$linkname\">$tabname</a></td>";
+            $count++;
+            $records->MoveNext(); 
+         }		
+         echo"</tr>";
+      } 
+   }
+   echo "</tr></table>";
+
    echo "<table border=0 width=100%>\n";
    echo "<tr bgcolor='eeeeff' align='center'>\n";
-   $records=$db->Execute("select tablename,Custom from tableoftables where display='Y' and permission='Users' ORDER by sortkey");
-   $count=0;
-   if ($records)
-		{
-		while (!$records->EOF) 
-			{ 
-			if (($count%$links_per_row)==0){echo "</tr><tr bgcolor='eeeeff' align='center'>";}
-			$tabname=$records->fields[0];
-			$scriptname=$records->fields[1];
-			$linkname="";
-			if ($scriptname=="")
-				{$linkname="general.php?tablename=$tabname&<?=SID?>";}
-			else{$linkname=$scriptname;$linkname.="?<?=SID?>";}		
-			echo "<td style='width: 20%' align='center'><a href=\"$linkname\">$tabname</a></td>";
-			$count++;
-			$records->MoveNext(); 
-			}		
- 	  echo"</tr>";
-  	} 
-   }
-   echo "<tr bgcolor='eeeeff' align='center'>";
    if ($permissions & $ADMIN) {
       ?>      
       <td align='center'><a href="users.php?<?=SID?>">users</a></td>
@@ -256,10 +258,6 @@ function navbar($permissions) {
       <td align='center'><a href="setup.php?<?=SID?>">system</a></td>
       <?php
    }
-   echo "</tr></table>";
-   echo "<table border=0 width=100%>\n";
-   echo "<tr bgcolor='eeeeff' align='right'>";
-
    if ($permissions) {
       ?>
       <td  align='right'><a href="logout.php?<?=SID?>">logout</a></td>
