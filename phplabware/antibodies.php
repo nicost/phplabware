@@ -21,7 +21,7 @@ allowonly($READ, $USER["permissions"]);
 
 // main global vars
 $title .= "Antibodies";
-$fields="id,access,ownerid,name,type1,type2,type3,type4,type5,species,antigen,epitope,concentration,buffer,notes,location,source,date,filename,mime";
+$fields="id,access,ownerid,name,type1,type2,type3,type4,type5,antigen,epitope,concentration,buffer,notes,location,source,date";
 
 // register variables
 $get_vars = "id,";
@@ -55,7 +55,7 @@ function check_ab_data ($field_values) {
 ////
 // !Prints a form with antibody stuff
 // $id=0 for a new entry, otherwise it is the id
-function add_ab_form ($db,$fields,$field_values,$id,$USER) {
+function add_ab_form ($db,$fields,$field_values,$id,$USER,$PHP_SELF) {
    if (!may_write($db,"antibodies",$id,$USER))
       return false;
 
@@ -84,7 +84,7 @@ function add_ab_form ($db,$fields,$field_values,$id,$USER) {
    echo "<th>Name: <sup style='color:red'>&nbsp;*</sup></th>\n";
    echo "<td><input type='text' name='name' value='$name'></td>\n";
 
-   $r=$db->Execute("SELECT type,id FROM ab_type1");
+   $r=$db->Execute("SELECT type,id FROM ab_type1 ORDER BY sortkey");
    $text=$r->GetMenu2("type1",$type1,false);
    echo "<td>$text</td>\n";
    
@@ -96,7 +96,7 @@ function add_ab_form ($db,$fields,$field_values,$id,$USER) {
    $text=$r->GetMenu2("type2",$type2,false);
    echo "<td>$text</td>\n";
 
-   $r=$db->Execute("SELECT type,id FROM ab_type3");
+   $r=$db->Execute("SELECT type,id FROM ab_type3 ORDER BY sortkey");
    $text=$r->GetMenu2("type3",$type3,false);
    echo "<td>$text</td>\n";
 
@@ -251,7 +251,7 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
       $ADODB_FETCH_MODE=ADODB_FETCH_ASSOC;
       $r=$db->Execute("SELECT $fields FROM antibodies WHERE id=$modarray[1]"); 
       $ADODB_FETCH_MODE=ADODB_FETCH_NUM;
-      add_ab_form ($db,$fields,$r->fields,$modarray[1],$USER);
+      add_ab_form ($db,$fields,$r->fields,$modarray[1],$USER,$PHP_SELF);
       printfooter();
       exit();
    }
@@ -267,7 +267,7 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
 
 // when the 'Add' button has been chosen: 
 if ($add)
-   add_ab_form ($db,$fields,$field_values,0,$USER);
+   add_ab_form ($db,$fields,$field_values,0,$USER,$PHP_SELF);
 
 else {
    // print header of table
@@ -277,7 +277,7 @@ else {
    if ($submit == "Add Antibody") {
       if (! (check_ab_data($HTTP_POST_VARS) && add ($db, "antibodies",$fields,$HTTP_POST_VARS,$USER) ) ){
          echo "</caption>\n</table>\n";
-         add_ab_form ($db,$fields,$HTTP_POST_VARS,0,$USER);
+         add_ab_form ($db,$fields,$HTTP_POST_VARS,0,$USER,$PHP_SELF);
          printfooter ();
          exit;
       }
@@ -288,7 +288,7 @@ else {
    elseif ($submit =="Modify Antibody") {
       if (! (check_ab_data($HTTP_POST_VARS) && modify ($db,"antibodies",$fields,$HTTP_POST_VARS,$HTTP_POST_VARS["id"],$USER)) ) {
          echo "</caption>\n</table>\n";
-         add_ab_form ($db,$fields,$HTTP_POST_VARS,$HTTP_POST_VARS["id"],$USER);
+         add_ab_form ($db,$fields,$HTTP_POST_VARS,$HTTP_POST_VARS["id"],$USER,$PHP_SELF);
          printfooter ();
          exit;
       }
