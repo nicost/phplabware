@@ -983,7 +983,7 @@ function getvalues($db,$tableinfo,$fields,$qfield=false,$field=false)
 // !Checks input data to addition
 // returns false if something can not be fixed     
 function check_g_data ($db,&$field_values,$tableinfo,$modify=false) {
-   global $max_menu_length;
+   global $max_menu_length, $system_settings;
 
    // make sure all the required fields are there 
    $rs = $db->Execute("SELECT columnname,datatype FROM {$tableinfo->desname} where required='Y' and (datatype != 'file')");
@@ -1017,6 +1017,10 @@ function check_g_data ($db,&$field_values,$tableinfo,$modify=false) {
              $field_values["$fieldA"]=(int)$field_values["$fieldA"];
          }
          elseif ($rs->fields[1]=='date') {
+            if ($system_settings['dateformat']<3) {
+               // we have a US date, change dashes to slashes
+               $field_values["$fieldA"]=strtr($field_values["$fieldA"],'-','/');
+            }
             $field_values["$fieldA"]=strtotime($field_values["$fieldA"]);
             if ($field_values["$fieldA"] < 0)
                $field_values["$fieldA"]="";
