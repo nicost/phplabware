@@ -52,12 +52,14 @@ if (!$edit_type) {
 //echo "$fields_label.<br>$fields.<br>";
 }
 
-// check if something should be modified, deleted or shown
+# check wether user may see this table
 if (!may_see_table($db,$USER,$tableid)) {
    echo "<h3 align='center'>These data are not for you.  Sorry;(</h3>\n";
    printfooter();
    exit();
 }
+
+// check if something should be modified, deleted or shown
 while((list($key, $val) = each($HTTP_POST_VARS))) {	
    // display form with information regarding the record to be changed
    if (substr($key, 0, 3) == "mod") {
