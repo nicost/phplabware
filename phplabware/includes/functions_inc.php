@@ -30,7 +30,7 @@ function get_cell ($db, $table, $column, $column2, $value) {
    $query="SELECT $column FROM $table WHERE $column2='$value'";
    $result=@$db->Execute($query);
    if ($result) {
-      $out=$result->fields[0];
+      $out=$result->fields[$column];
    }
    else
       return false;
