@@ -4,7 +4,7 @@
 // setup.php - author: Nico Stuurman <nicost@sourceforge.net>
 
   /***************************************************************************
-  * Copyright (c) 2001 by Nico Stuurman                                      *
+  * Copyright (c) 2001,2002,2003 by Nico Stuurman                            *
   * ------------------------------------------------------------------------ *
   *  This program is free software; you can redistribute it and/or modify it *
   *  under the terms of the GNU General Public License as published by the   *
@@ -12,7 +12,7 @@
   *  option) any later version.                                              *
   \**************************************************************************/                                                                             
 
-$version_code=0.1006;
+$version_code=0.2;
 $localdir=exec("pwd");
 include ('includes/functions_inc.php');
 if (!file_exists("includes/config_inc.php")) {
