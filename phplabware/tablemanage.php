@@ -292,7 +292,6 @@ echo "<th>Display</th>\n";
 echo "<th>Groups</th>\n";
 echo "<th>Sort key</th>\n";
 echo "<th>Plugin code</th>\n";
-echo "<th>Custom</th>\n";
 echo "<th>Action</th>\n";
 echo "<th>Fields</th>\n";
 
@@ -306,7 +305,7 @@ echo "<td><input type='text' name='newtable_plugincode' value=''></td>\n";
 echo "<td></td>\n";
 echo "<td align='center'><input type='submit' name='addtable' value='Add'></td></tr>\n";
  
-$query = "SELECT id,tablename,label,display,sortkey,custom,plugin_code FROM tableoftables where display='Y' or display='N' ORDER BY sortkey";
+$query = "SELECT id,tablename,label,display,sortkey,plugin_code FROM tableoftables where display='Y' or display='N' ORDER BY sortkey";
 $r=$db->Execute($query);
 
 // query for group select boxes
@@ -322,7 +321,6 @@ while (!($r->EOF) && $r) {
    $Display = $r->fields["display"];
    $sortkey = $r->fields["sortkey"];
    $plugincode=$r->fields["plugin_code"];
-   $Custom = $r->fields["custom"];
    
    // print start of row of selected group
    if ($rownr % 2) 
@@ -351,10 +349,6 @@ while (!($r->EOF) && $r) {
       echo "<td><input type='text' name='table_plugincode[]' value='$plugincode'></td>\n";
    else
       echo "<td>&nbsp;<input type='hidden' name='table_plugincode[]' value=''></td>\n";
-   if ($Custom=="")
-      echo "<td>Yes</td>\n";
-   else
-      echo "<td>Pre-Built</td>\n";
    $modstring = "<input type='submit' name='modtable"."_$rownr' value='Modify'>";
    $delstring = "<input type='submit' name='deltable"."_$rownr' value='Remove' ";
    $delstring .= "Onclick=\"if(confirm('Are you absolutely sure the table $name should be removed? (No Undo possible!)')){return true;}return false;\">";  
