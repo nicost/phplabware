@@ -98,7 +98,7 @@ if ($r) {
    while (!$rcb->EOF && $rcb) {
       $newid=$db->Genid($newtable_realname."_id_seq");
       $row=$rcb->fields;
-      $rcopy=$db->Execute("INSERT INTO $newtable_realname VALUES ('$newid','$row[access]','$row[ownerid]','$row[magic]','$row[lastmoddate]','$row[lastmodby]','$row[date]','$row[title]','$row[author]','$row[notes]','$row[pdbid]','$row[file]','$row[webmol]')");
+      $rcopy=$db->Execute("INSERT INTO $newtable_realname VALUES ('$newid','$row[access]','$row[ownerid]','$row[magic]','$row[lastmoddate]','$row[lastmodby]','$row[date]','$row[title]','$row[author]','$row[notes]','$row[pdbid]','$row[file]','$row[pdbid]')");
       if (!$rcopy)
          $failed=true;
       else {
