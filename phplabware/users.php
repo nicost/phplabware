@@ -108,20 +108,20 @@ function delete_user ($db, $id) {
 function modify ($db, $type) {
    global $HTTP_POST_VARS, $USER, $perms, $post_vars;
 
-   include ('includes/defines_inc.php');
+   $id=$HTTP_POST_VARS["id"];
+   $login=$HTTP_POST_VARS["login"];
+   $pwd=$HTTP_POST_VARS["pwd"];
+   $user_group=$HTTP_POST_VARS["user_group"];
+   $firstname=$HTTP_POST_VARS["firstname"];
+   $lastname=$HTTP_POST_VARS["lastname"];
+   $email=$HTTP_POST_VARS["email"];
 
-   // creates variables from all values passed by http_post_vars, 
-   // skips ones those are already set
-   $var=strtok($post_vars,",");
-   ${$var}=$HTTP_POST_VARS[$var];
-   while ($var) {
-      $var=strtok(",");
-      if (!${$var})
-         ${$var}=$HTTP_POST_VARS[$var];
-   }
    if($perms)
       for ($i=0; $i<sizeof($perms); $i++)
          $permissions=$permissions | $perms[$i];
+
+   // include here, to avoid being overwritten by post_vars 
+   include ('includes/defines_inc.php');
 
    // check whether status of the victim is smaller than 
    //  the current users status
@@ -141,7 +141,6 @@ function modify ($db, $type) {
    $theid=$USER["id"];
    $theip=getenv("REMOTE_ADDR");
    $thedate=time();
-
    
    //if (!($status)) $status = $USER; 
    if ($type=="modify"  && $id) {
@@ -200,6 +199,7 @@ function modify ($db, $type) {
 // !can be called to create (type=create) or modify (type=modify) other users or oneselves (type=me) 
 function show_user_form ($type) {
    global $userfields, $HTTP_SERVER_VARS, $perms, $USER, $db, $system_settings;
+   global $HTTP_SESSION_VARS;
 
    include ('includes/defines_inc.php');
  
@@ -244,7 +244,8 @@ function show_user_form ($type) {
       echo "<input type='hidden' name='login' value='$login'>\n";
    }
 
-   if ($USER["permissions"] >= $WRITE && $system_settings["authmethod"] <> 2) {
+   if ($USER["permissions"] >= $WRITE && ($system_settings["authmethod"] <> 2
+         || ($type=="me" && $HTTP_SESSION_VARS["authmethod"]=="sql") ) ) {
       echo "<tr><td>Password (max. 20 characters):</td><td><input type='password' name='pwd' maxlength=20 size=20 value=''>";
       if ($type=="create")
          echo "<sup style='color:red'>&nbsp(required)</sup></td></tr>\n";
@@ -252,7 +253,7 @@ function show_user_form ($type) {
       if ($type=="create")
          echo "<sup style='color:red'>&nbsp(required)</sup></td></tr>\n";
       if ($type=="modify" || $type=="me")
-         echo "<tr><td colspan=2 align='center'>Leave the password fields blank to retain the current password</td></tr>\n";
+         echo "<tr><td colspan=2 align='center'>Leave the password fields blank to keep the current password</td></tr>\n";
    }
 
    if ($USER["permissions"] & $SUPER) {
@@ -446,7 +447,7 @@ else {
    echo "<th>Read</th>\n";
    echo "<th>Active</th>\n";
    echo "<th>Created</th>\n";
-   echo "<th>Modified</th\n";
+   echo "<th>Modified</th>\n";
    echo "<th colspan=\"2\">Action</th>\n";
    echo "</tr>\n";
 
@@ -507,7 +508,7 @@ else {
          echo "<td align=\"center\">$delstring</td>\n";
       }
       else
-         echo "<td align='center'>none</td><td align='center'>none</td>";
+         echo "<td align='center'>&nbsp;</td><td align='center'>&nbsp;</td>";
      
       echo "</tr>\n";
       $r->MoveNext();
