@@ -24,9 +24,10 @@ $fields="id,access,ownerid,magic,title,type1,type2,notes,date,lastmodby,lastmodd
 // register variables
 $showid=$HTTP_GET_VARS["showid"];
 $edit_type=$HTTP_GET_VARS["edit_type"];
-$post_vars = "add,submit,search,";
+$post_vars = "add,submit,search,searchj";
 globalize_vars ($post_vars, $HTTP_POST_VARS);
-
+if ($searchj)
+   $search="Search";
 
 /****************************FUNCTIONS***************************/
 
@@ -111,7 +112,8 @@ function add_pr_form ($db,$fields,$field_values,$id,$USER,$PHP_SELF,$system_sett
       $value="Modify Protocol";
    else
       $value="Add Protocol";
-   echo "<td colspan=7 align='center'><input type='submit' name='submit' value='$value'></td>\n";
+   echo "<td colspan=7 align='center'><input type='submit' name='submit' value='$value'>\n";
+   echo "&nbsp;&nbsp;<input type='submit' name='submit' value='Cancel'></td>\n";
    echo "</tr>\n";
    
 
@@ -219,7 +221,7 @@ function show_pr ($db,$fields,$id,$USER,$system_settings) {
 // !Tries to convert a MsWord file into html 
 // When succesfull, the file is added to the database
 function process_file($db,$fileid,$system_settings) {
-   global $HTTP_POST_FILESi,$HTTP_POST_VARS;
+   global $HTTP_POST_FILES,$HTTP_POST_VARS;
    $mimetype=get_cell($db,"files","mime","id",$fileid);
    if (!strstr($mimetype,"html")) {
       $word2html=$system_settings["word2html"];
@@ -353,7 +355,7 @@ else {
       }
    }
    // then look whether it should be modified
-   elseif ($submit =="Modify Protocol") {
+   elseif ($submit=="Modify Protocol") {
       if (! (check_pr_data($HTTP_POST_VARS) && modify ($db,"protocols",$fields,$HTTP_POST_VARS,$HTTP_POST_VARS["id"],$USER)) ) {
          echo "</caption>\n</table>\n";
          add_pr_form ($db,$fields,$HTTP_POST_VARS,$HTTP_POST_VARS["id"],$USER,$PHP_SELF,$system_settings);
@@ -371,6 +373,9 @@ else {
          unset ($HTTP_POST_VARS);
       }
    } 
+   elseif ($submit=="Cancel")
+      // to not interfere with search form 
+      unset ($HTTP_POST_VARS);
    // or deleted
    elseif ($HTTP_POST_VARS) {
       reset ($HTTP_POST_VARS);
@@ -386,7 +391,7 @@ else {
    echo "</caption>\n";
    // print form
 ?>
-<form name='form' method='post' action='<?php echo $PHP_SELF?>?<?=SID?>'>  
+<form name='pr_form' method='post' action='<?php echo $PHP_SELF?>?<?=SID?>'>  
 <?php
 
    if ($search=="Show All") {
@@ -411,9 +416,12 @@ else {
       $pr_query = "SELECT $fields FROM protocols WHERE id IN ($whereclause) ORDER BY date DESC";
    $HTTP_SESSION_VARS["pr_query"]=$pr_query;   
    session_register("pr_query");
-
    // row with search form
    echo "<tr align='center'>\n";
+   // javascript that submit the form with the search button when a selects was chosen
+   $jscript="onChange='document.pr_form.searchj.value=\"Search\"; document.pr_form.submit()'";
+   echo "<input type='hidden' name='searchj' value=''>\n";
+   //$jscript="onChange='alert(\"You clicked wrong\")'";
    // get a list with ids we may see
    $r=$db->Execute($pr_query);
    $lista=make_SQL_csf ($r,false,"id",$nr_records);
@@ -423,7 +431,7 @@ else {
    if ($title) $list=$listb; else $list=$lista;
    if ($list && ($nr_records < $max_menu_length) ) {
       $r=$db->Execute("SELECT title FROM protocols WHERE id IN ($list)");
-      $text=$r->GetMenu("title",$title,true,false,0,"style='width: 80%'");
+      $text=$r->GetMenu("title",$title,true,false,0,"style='width: 80%' $jscript");
       echo "<td style='width: 10%'>$text</td>\n";
    }
    else
@@ -437,7 +445,7 @@ else {
          $r=$db->Execute("SELECT CONCAT(firstname, ' ', lastname),id  from users WHERE id IN ($list2) ORDER by login");
       else
          $r=$db->Execute("SELECT firstname || ' ' || lastname,id  from users WHERE id IN ($list2) ORDER by login");
-      $text=$r->GetMenu2("ownerid",$ownerid,true,false,0,"style='width: 80%'");
+      $text=$r->GetMenu2("ownerid",$ownerid,true,false,0,"style='width: 80%' $jscript");
    }
    else
       $text="&nbsp;";
@@ -456,7 +464,7 @@ else {
    $list2=make_SQL_ids($r,false,"type1");
    if ($list2) {
       $r=$db->Execute("SELECT typeshort,id FROM pr_type1 WHERE id IN ($list2)");
-      $text=$r->GetMenu2("type1",$type1,true,false,0,"style='width: 80%'");
+      $text=$r->GetMenu2("type1",$type1,true,false,0,"style='width: 80%' $jscript");
       echo "$text</td>\n";
    }
    else
