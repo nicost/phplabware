@@ -17,10 +17,10 @@
 
 
 $db->Execute("ALTER TABLE users ADD COLUMN createdbyid int");
-$db->Execute("ALTER TABLE users ADD COLUMN createdbyip int");
+$db->Execute("ALTER TABLE users ADD COLUMN createdbyip text");
 $db->Execute("ALTER TABLE users ADD COLUMN createddate int");
 $db->Execute("ALTER TABLE users ADD COLUMN modbyid int");
-$db->Execute("ALTER TABLE users ADD COLUMN modbyip int");
+$db->Execute("ALTER TABLE users ADD COLUMN modbyip text");
 $db->Execute("ALTER TABLE users ADD COLUMN moddate int");
 
 
