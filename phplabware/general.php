@@ -316,9 +316,14 @@ else {
 
    // get a list with ids we may see, $listb has all the ids we may see
    //$r=$db->CacheExecute(2,${$queryname});
-   //$lista=make_SQL_csf ($r,false,"id",$nr_records);
-   make_temp_table($db,"tempa",$r);
-   $lista= " ($real_tablename.id=tempa.uniqueid) ";
+   if ($db_type=="mysql") {
+      $lista=make_SQL_csf ($r,false,"id",$nr_records);
+      $lista=" id IN ($lista) ";
+   }
+   else {
+      make_temp_table($db,"tempa",$r);
+      $lista= " ($real_tablename.id=tempa.uniqueid) ";
+   }
 
    //  get a list of all fields that are displayed in the table
    $Fieldscomma=comma_array_SQL_where($db,$table_desname,"columnname","display_table","Y");
