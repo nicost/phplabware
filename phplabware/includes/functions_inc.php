@@ -282,7 +282,7 @@ function printheader($title,$head=false) {
 <BODY BGCOLOR="#ffffff"
   TOPMARGIN="0" BOTTOMMARGIN="0" LEFTMARGIN="0" RIGHTMARGIN="0"
   MARGINWIDTH="0" MARGINHEIGHT="0">
-<table border=0 width=100% rules="none" border="0" cellspacing="0" cellpadding="0">
+<table border="0" width="100%" rules="none" border="0" cellspacing="0" cellpadding="0">
    <tr class='header' bgcolor="333388">
 <?php
    // first display the linkbar if activated
@@ -294,15 +294,15 @@ function printheader($title,$head=false) {
          $linkr=$db->Execute("select label,linkurl,target from linkbar where display ='Y' ORDER by sortkey");
          if ($linkr) {
             while (!$linkr->EOF) {
-            if (($count%$links_per_row)==0)
-               echo "</tr><tr bgcolor='333388' align='center'>";
+               if ($count && (($count%$links_per_row)==0) )
+                 echo "</tr><tr bgcolor='333388' align='center'>";
                $Tlinkname=$linkr->fields[0];
                $urlname=$linkr->fields[1];
                if ($linkr->fields[2]=="S")
                   $targetstr="target='_TOP'";
                else 
                   $targetstr="target='_BLANK'";
-               echo "<td style='width: 20%' align='center'><a href=\"$urlname\" $targetstr><font color='#ffffff'>$Tlinkname</font></a></td>";
+               echo "<td style='width: 20%' align='center'><a href=\"$urlname\" $targetstr><font color='#ffffff'>$Tlinkname</font></a></td>\n";
                $count++;
                $linkr->MoveNext(); 
             }
