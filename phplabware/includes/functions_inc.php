@@ -94,7 +94,7 @@ function nice_bytes ($bytes) {
  */
 function allowonly($required, $current) {
    if (! ($required & $current)) {
-      printheader("Not Allowed");
+      printheader('Not Allowed');
       navbar(1);
       echo "&nbsp;<br><h3 align='center'>Sorry, but this page is not for you!";
       echo "</hr><br>&nbsp;\n";
@@ -208,15 +208,15 @@ function loginscreen ($message="<h3>Login to PhpLabWare</h3>") {
 function globalize_vars ($var_string, $type) {
 
    if ($var_string && $type) {
-      $var_name = strtok ($var_string, ",");
+      $var_name = strtok ($var_string, ',');
       global ${$var_name};
       if (!${$var_name})
-         ${$var_name} = $type["$var_name"];
+         ${$var_name} = $type[$var_name];
       while ($var_name) {
          $var_name = strtok (",");
          global ${$var_name};
          if (!${$var_name})
-            ${$var_name} = $type["$var_name"];
+            ${$var_name} = $type[$var_name];
       }
    }
 }
@@ -339,7 +339,7 @@ function navbar($permissions) {
       if (SID)
          $SID="?".SID;
       if ($permissions) {
-         $systemmenu.="   <option value=\"users.php?type=me&dummy=true&".SID."\">my settings</option>\n";
+         $systemmenu.="   <option value=\"users.php?type=me&amp;dummy=true&amp;".SID."\">my settings</option>\n";
          $systemmenu.="   <option value='views.php?".SID."'>table views</option>\n";
       }
       if ($permissions & $ADMIN)
@@ -403,7 +403,7 @@ function navbar($permissions) {
                   $label=$records->fields['label'];
                   $linkname="";
                   if ($scriptname=='')
-                     $linkname="general.php?tablename=$tabname&".SID;
+                     $linkname="general.php?tablename=$tabname&amp;".SID;
                   else 
                      $linkname=$scriptname.'?'.SID;
                   echo "      <td style='width: 20%' align='center'><a href=\"$linkname\">$label</a></td>\n";
@@ -426,7 +426,7 @@ function navbar($permissions) {
       echo "<tr bgcolor='eeeeff' align='center'>";
       if ($permissions) {
          ?>
-      <td align='center'><a href="users.php?type=me&<?=SID?>">settings</a></td>
+      <td align='center'><a href="users.php?type=me&amp;<?=SID?>">settings</a></td>
 <?php 
       }
       if ($permissions & $ADMIN) {
