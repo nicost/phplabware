@@ -229,7 +229,7 @@ else {
    // prepare the search statement and remember it
    $fields="id,".$fields;
    ${$queryname}=make_search_SQL($db,$real_tablename,$tableshort,$tableid,$fields,$USER,$search,$sortstring);
-   
+
    $r=$db->CacheExecute(2,${$queryname});
 
 
@@ -290,7 +290,7 @@ else {
          $list=$lista;   
       if ($nowfield[datatype]== "link")
          echo "<td style='width: 10%'>&nbsp;</td>\n";
-      if ($nowfield[datatype]== "text") {
+      elseif ($nowfield[datatype]== "text") {
          // show titles we may see, when too many, revert to text box
          if ($list && ($nr_records < $max_menu_length) )  {
   	     $r=$db->Execute("SELECT $nowfield[name] FROM $real_tablename WHERE id IN ($list)");
@@ -300,10 +300,10 @@ else {
 	 else
     	    echo  " <td style='width: 10%'><input type='text' name='$nowfield[name]' value='".$HTTP_POST_VARS[$nowfield[name]]."'size=8></td>\n";
       }
-      if ($nowfield[datatype]== "textlong")
+      elseif ($nowfield[datatype]== "textlong")
     	    echo  " <td style='width: 10%'><input type='text' name='$nowfield[name]' value='".$HTTP_POST_VARS[$nowfield[name]]."'size=8></td>\n";
         // echo "<td style='width: 10%'>&nbsp;</td>\n";
-      if ($nowfield[datatype]== "pulldown") {
+      elseif ($nowfield[datatype]== "pulldown") {
          echo "<td style='width: 10%'>";
          if ($USER["permissions"] & $LAYOUT)  {
             echo "<a href='$PHP_SELF?tablename=$tablename&edit_type=$nowfield[ass_t]&<?=SID?>";
@@ -318,7 +318,9 @@ else {
     	    echo "$text</td>\n";
          }  
       }
-      if ($nowfield[datatype] == "file")
+      elseif ($nowfield[datatype] == "file")
+         echo "<td style='width: 10%'>&nbsp;</td>";
+      elseif ($nowfield[datatype] == "table")
          echo "<td style='width: 10%'>&nbsp;</td>";
    }	 
    echo "<td><input type=\"submit\" name=\"search\" value=\"Search\">&nbsp;";
