@@ -35,7 +35,7 @@ if ((!$r) || $r->EOF) {
 $tableid=$r->fields("tablesfk");
 $tableitemid=$r->fields("ftableid");
 $filename=$r->fields("filename");
-$filesize=$r->fields("filesize");
+$filesize=$r->fields("size");
 $mime=$r->fields("mime");
 $tablename=get_cell($db,"tableoftables","tablename","id",$tableid);
 if (!may_read($db,$tablename,$tableitemid,$USER)) {
@@ -44,8 +44,12 @@ if (!may_read($db,$tablename,$tableitemid,$USER)) {
 }
 $filedir=$system_settings["filedir"];
 // send headers
+header("Accept-Ranges: bytes");
+header("Connection: close");
 header("Content-Type: $mime");
 header("Content-Length: $filesize");
-readfile("$filedir/$id"."_".$name);   
+header("Content-Disposition-type: attachment");
+header("Content-Disposition: attachment; filename=\"$filename\"");
+readfile("$filedir/$id"."_".$filename);   
 
 ?>
