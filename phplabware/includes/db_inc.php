@@ -599,7 +599,6 @@ function make_search_SQL($db,$table,$tableshort,$fields,$USER,$search,$searchsor
 
    $fieldvarsname=$tableshort."_fieldvars";
    global ${$fieldvarsname};
-   ${$fieldvarsname}=$HTTP_POST_VARS;
    $queryname=$tableshort."_query";
    $whereclause=may_read_SQL ($db,$table,$USER);
    if ($search=="Search")
@@ -612,18 +611,22 @@ function make_search_SQL($db,$table,$tableshort,$fields,$USER,$search,$searchsor
       ${$queryname} = "SELECT $fields FROM $table WHERE id IN ($whereclause) ORDER BY date DESC";
    $HTTP_SESSION_VARS[$queryname]=${$queryname};   
    session_register($queryname);
+   if (!${$fieldvarsname})
+      ${$fieldvarsname}=$HTTP_POST_VARS;
    $HTTP_SESSION_VARS[$fieldvarsname]=${$fieldvarsname};   
    session_register($fieldvarsname);
 
-   // globalize HTTP_POST_VARS 
-   $column=strtok($fields,",");
-   while ($column) {
-      global ${$column};
-      ${$column}=$HTTP_POST_VARS[$column];
-      $column=strtok(",");
+   if ($search !="Show All") {
+      // globalize HTTP_POST_VARS 
+      $column=strtok($fields,",");
+      while ($column) {
+         global ${$column};
+         ${$column}=$HTTP_POST_VARS[$column];
+         $column=strtok(",");
+      }
+      // extract variables from session
+      globalize_vars ($fields, ${$fieldvarsname});
    }
-   // extract variables from session
-   globalize_vars ($fields, ${$fieldvarsname});
    return ${$queryname};
 }
 
