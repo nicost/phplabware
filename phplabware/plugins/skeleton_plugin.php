@@ -43,8 +43,99 @@ function plugin_check_data($db,&$fieldvalues,$table_desc,$modify=false)
    return true;
 }
 */
+/*
+// This example plugin will track all changes made and report them in the field 'history' (which you should first add to the table)
+function plugin_check_data($db,&$fieldvalues,$table_desc,$modify=false) 
+{
+   global $USER;
 
+   // this function is likely to be needed only here...
+   function get_associated_values($db,$ass_table,$typeids) {
+      if (is_array($typeids)) {
+         $typeidlist=implode(',',$typeids);
+         $rp=$db->Execute("SELECT typeshort,id FROM $ass_table WHERE id IN ($typeidlist) ORDER BY sortkey,typeshort");
+          while ($rp && !$rp->EOF) {
+             $valueArray[]=$rp->fields[0];
+             $rp->MoveNext();
+          }
+          return ($valueArray);
+      }
+   }
 
+   // this is the old and inefficient way of getting tableinfo in
+   $table=get_cell($db,"tableoftables","real_tablename","table_desc_name",$table_desc);
+
+   // store the contents of the history field
+   $ra=$db->Execute("SELECT history FROM $table WHERE id={$fieldvalues['id']}");
+   if (isset($ra)) {
+      $fieldvalues['history']=addslashes($ra->fields[0]);
+   }
+   else {
+      // This table does not have the field 'history', report and continue
+      trigger_error ('The Column <b>history</b> has not been defined for this table.  ');
+      return true;
+   }
+   $now=date('F j, Y, g:1 a'); 
+   // when modifying, report to the 'history' field what was changed
+   $ra=$db->Execute("SELECT columnname,datatype,key_table,associated_table FROM $table_desc WHERE modifiable='Y'");
+   while ($ra && $ra->fields) {
+      $columnname=$ra->fields[0]; 
+      // the following is also done in function modify, but we need them here too:
+      if (in_array($columnname, array('gr','gw','er','ew')))
+         $fieldvalues[$columnname]=get_access($fieldvalues,$columnname);
+      // we need to deal with datatypes table, mulldown and pulldown seperately
+      if ($ra->fields[1]=='mpulldown') {
+         $rp=$db->Execute ("SELECT typeid FROM {$ra->fields[2]} WHERE recordid={$fieldvalues['id']}");
+         unset($typeids);
+         unset ($oldValueArray);
+         unset ($newValueArray);
+         while ($rp && $rp->fields) {
+             $typeids[]=$rp->fields[0];
+             $rp->MoveNext();
+         }
+         if ($typeids <> $fieldvalues[$columnname]) {
+            // get the values out to tell the user what changed
+            // the values from the database
+            $oldValueArray= get_associated_values($db,$ra->fields[3],$typeids);
+            if (is_array($oldValueArray))
+               $oldValue=implode(',',$oldValueArray);
+            // the new values entered by the user
+            $newValueArray= get_associated_values($db,$ra->fields[3],$fieldvalues[$columnname]);
+            if (is_array($newValueArray))
+               $newValue=implode(',',$newValueArray);
+         }
+      }
+      elseif ($ra->fields[1]=='pulldown') {
+         $rc=$db->Execute("SELECT {$ra->fields[0]} FROM $table WHERE id={$fieldvalues['id']}");
+         if ( ((int)$rc->fields[0]) != ((int)$fieldvalues[$columnname])) {
+            $oldValue=getcell($db,$ra->fields[3],'typeshort','id',$rc->fields[0]);
+            $newValue=getcell($db,$ra->fields[3],'typeshort','id',$fieldvalues[$columnname]);
+         }
+      }
+
+      else {
+         $r=$db->Execute("Select $columnname FROM $table WHERE id={$fieldvalues['id']}");
+         $oldValue=$r->fields[0];
+         $newValue=$fieldvalues[$columnname];
+         // echo "$columnname, $val,$oldvalue.<br>";
+      }
+
+      if (((string)$newValue) != ((string)$oldValue) ) {
+         // we need to escape these before sticking them into the notes field!
+         $oldValue=addslashes($oldValue);
+         $newValue=addslashes($newValue);
+         $text="\n\n$now: {$USER['firstname']} {$USER['lastname']} ({$USER['login']},{$USER['id']}) changed column \'$columnname\' from \'$oldValue\' to \'$newValue\'.";
+      }
+
+      $fieldvalues['history'].=$text;
+      unset($text);
+      $ra->Movenext();
+   }
+
+   return true;
+}
+
+*/
 
 ////
 /*// !Overrides the standard 'show record'function
