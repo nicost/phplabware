@@ -1,6 +1,6 @@
 <?php
 
-
+// creates table IPnumbers
 
 $newtableid=$db->GenID("tableoftables_gen_id_seq");
 $newtablename=ipnumbers;
