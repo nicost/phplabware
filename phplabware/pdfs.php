@@ -37,7 +37,7 @@ if ($searchj)
 // This function queries ncbi and pulls data associated with a paper into the database
 function check_pd_data ($db,&$field_values) {
    // avoid problems with spaces and the like
-   $field_values["pmid"]=trim(field_values["pmid"]);
+   $field_values["pmid"]=trim($field_values["pmid"]);
    // no fun without a pmid
    if (!$field_values["pmid"]) {
       echo "<h3>Please enter the Pubmed ID the PDF reprint.</h3>";
@@ -420,41 +420,37 @@ else {
       $pd_curr_page=1;
       session_unregister("pd_query");
    }
+
+   // paging stuff
+   $num_p_r=paging($num_p_r, $USER);
+
+   // get current page
+   $pd_curr_page =current_page($pd_curr_page,"pd"); 
+
+   // prepare search SQL statement
+   $pd_fieldvars=$HTTP_POST_VARS;
+   $whereclause=may_read_SQL ($db,"pdfs",$USER);
+   if ($search=="Search")
+      $pd_query=search("pdfs",$fields,$HTTP_POST_VARS," id IN ($whereclause) ORDER BY title");
+   elseif (session_is_registered ("pd_query") && isset($HTTP_SESSION_VARS["pd_query"])) {
+      $pd_query=$HTTP_SESSION_VARS["pd_query"];
+      $pd_fieldvars=$HTTP_SESSION_VARS["pd_fieldvars"];
+   }
+   else
+      $pd_query = "SELECT $fields FROM pdfs WHERE id IN ($whereclause) ORDER BY date DESC";
+   $HTTP_SESSION_VARS["pd_query"]=$pd_query;   
+   session_register("pd_query");
+   $HTTP_SESSION_VARS["pd_fieldvars"]=$pd_fieldvars;   
+   session_register("pd_fieldvars");
+
+   // globalize HTTP_POST_VARS 
    $column=strtok($fields,",");
    while ($column) {
       ${$column}=$HTTP_POST_VARS[$column];
       $column=strtok(",");
    }
-
-   // prepare search SQL statement
-   $whereclause=may_read_SQL ($db,"pdfs",$USER);
-   if ($search=="Search")
-      $pd_query=search("pdfs",$fields,$HTTP_POST_VARS," id IN ($whereclause) ORDER BY title");
-   elseif (session_is_registered ("pd_query") && isset($HTTP_SESSION_VARS["pd_query"]))
-      $pd_query=$HTTP_SESSION_VARS["pd_query"];
-   else
-      $pd_query = "SELECT $fields FROM pdfs WHERE id IN ($whereclause) ORDER BY date DESC";
-   $HTTP_SESSION_VARS["pd_query"]=$pd_query;   
-   session_register("pd_query");
-
-   // paging stuff
-   if (!$num_p_r)
-      $num_p_r=$USER["settings"]["num_p_r"];
-   if (isset($HTTP_POST_VARS["num_p_r"]))
-      $num_p_r=$HTTP_POST_VARS["num_p_r"];
-   if (!isset($num_p_r))
-      $num_p_r=10;
-   $USER["settings"]["num_p_r"]=$num_p_r;
-   if (!isset($pd_curr_page))
-      $pd_curr_page=$HTTP_SESSION_VARS["pd_curr_page"];
-   if (isset($HTTP_POST_VARS["next"]))
-      $pd_curr_page+=1;
-   if (isset($HTTP_POST_VARS["previous"]))
-      $pd_curr_page-=1;
-   if ($pd_curr_page<1)
-      $pd_curr_page=1;
-   $HTTP_SESSION_VARS["pd_curr_page"]=$pd_curr_page; 
-   session_register("pd_curr_page");
+   // extract variables from session
+   globalize_vars ($fields, $pd_fieldvars);
 
    // loop through all entries for next/previous buttons
    $r=$db->PageExecute($pd_query,$num_p_r,$pd_curr_page);
@@ -477,23 +473,7 @@ else {
    //echo "Show All</button></td></tr>\n";
    echo "</table>\n";
 
-   // next/previous buttons
-   echo "<table border=0 align=center width=100%>\n";
-   echo "<tr><td align='left'>";
-   if ($r && !$r->AtFirstPage())
-      echo "<input type=\"submit\" name=\"previous\" value=\"Previous\"></td>\n";
-   else
-      echo "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp&nbsp;</td>\n";
-   echo "<td align='center'>";
-   echo "<input type='text' name='num_p_r' value='$num_p_r' size=3>";
-   echo "Records per page</td>\n";
-   echo "<td align='right'>";
-   if ($r && !$r->AtLastPage())
-      echo "<input type=\"submit\" name=\"next\" value=\"Next\"></td>\n";
-   else
-      echo "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp&nbsp;</td>\n";
-   echo "</tr>\n";
-   echo "</table>\n";
+   next_previous_buttons($r,true,$num_p_r);
 
    // print header of table
    echo "<table border='1' align='center'>\n";
@@ -631,19 +611,8 @@ else {
    echo "</table>\n";
 
    // next/previous buttons
-   echo "<table border=0 width=100%>\n<tr width=100%>\n<td align='left'>";
-   if ($r && !$r->AtFirstPage())
-      echo "<input type=\"submit\" name=\"previous\" value=\"Previous\"></td>\n";
-   else
-      echo "&nbsp;</td>\n";
-   echo "<td align='right'>";
-   if ($r && !$r->AtLastPage())
-      echo "<input type=\"submit\" name=\"next\" value=\"Next\"></td>\n";
-   else
-      echo "&nbsp;</td>\n";
-   echo "</tr>\n";
+   next_previous_buttons($r);
 
-   echo "</table>\n";
    echo "</form>\n";
 
 }
