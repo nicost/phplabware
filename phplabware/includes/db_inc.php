@@ -669,7 +669,7 @@ function may_read_SQL_subselect ($db,$table,$tableid,$USER,$clause=false) {
       if ($clause) 
          $query .= " $clause AND ";
       // owner
-      $query .= "( (ownerid=$userid AND SUBSTRING (access FROM 1 FOR 1)='r') ";
+      $query .= "( (ownerid=$userid) ";
       // group
       $query .= "OR (CAST( (SELECT groupid FROM users WHERE users.id=$table.ownerid) AS int) IN ($grouplist) AND SUBSTRING (access FROM 4 FOR 1)='r') ";
       // world
@@ -715,7 +715,7 @@ function may_read_SQL_JOIN ($db,$table,$USER) {
       $userid=$USER["id"];
       $query .= " WHERE ";
       // owner and everyone
-      $query .= "( (ownerid=$userid AND SUBSTRING(access FROM 1 FOR 1)='r') ";
+      $query .= "( (ownerid=$userid) ";
       $query .= "OR (SUBSTRING(access FROM 7 FOR 1)='r')";
       $query .=")";
       $r=$db->CacheExecute(2,$query);
