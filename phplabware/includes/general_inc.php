@@ -196,7 +196,7 @@ function display_table_info($db,$tableid,$DB_DESNAME,$Fieldscomma,$pr_query,$num
 
       echo "<td align='center'>&nbsp;\n";  
       if ($HTTP_SESSION_VARS["javascript_enabled"]) {
-         $jscript=" onclick='MyWindow=window.open (\"general.php?tablename=$tablename&showid=$id&jsnewwindow=true\",\"view\",\"scrollbars,resizable\")'";
+         $jscript=" onclick='MyWindow=window.open (\"general.php?tablename=$tablename&showid=$id&jsnewwindow=true\",\"view\",\"scrollbar=yes,resizable=yes,width=400,height=200\")'";
          echo "<input type=\"button\" name=\"view_" . $id . "\" value=\"View\" $jscript>\n";
       }
       else
@@ -204,7 +204,8 @@ function display_table_info($db,$tableid,$DB_DESNAME,$Fieldscomma,$pr_query,$num
       if (may_write($db,$tableid,$id,$USER)) {
          echo "<input type=\"submit\" name=\"mod_" . $id . "\" value=\"Modify\">\n";
          $delstring = "<input type=\"submit\" name=\"del_" . $id . "\" value=\"Remove\" ";
-         $delstring .= "Onclick=\"if(confirm('Are you sure that you want to remove record $title?'))";
+	 $jstitle=str_replace("'"," ",$title);
+         $delstring .= "Onclick=\"if(confirm('Are you sure that you want to remove record $jstitle?'))";
          $delstring .= "{return true;}return false;\">"; 
          echo "$delstring\n";
       }
@@ -624,11 +625,13 @@ function process_file($db,$fileid,$system_settings) {
    if (!strstr($mimetype,"html")) {
       $word2html=$system_settings["word2html"];
       $filepath=file_path($db,$fileid);
+      if (!$filepath)
+         return false;
       $temp=$system_settings["tmpdir"]."/".uniqid("file");
       $command= "$word2html $filepath $temp";
       $result=exec($command);
       // version of wvHtml >= 0.7 have to be called differently:
-      if (@is_readable($temp) || filesize($temp) < 1) {
+      if (@is_readable($temp) || @filesize($temp) < 1) {
          $command="$word2html --targetdir=".$system_settings["tmpdir"]." \"$filepath\" $converted_file";
          $result=exec($command);
       } 
