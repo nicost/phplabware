@@ -164,8 +164,11 @@ while ($r->fields['id'] && !$r->EOF) {
                $row['values']=strtr($row['values'],"\t\n\r\m",'    ');
                fwrite ($fp,$pre_seperator.$row['values'].$post_seperator);
             }
-            else
+            else {
+               // strip every kind of new line tag first
+               $row['text']=strtr($row['text'],"\t\n\r\m",'    ');
                fwrite ($fp,$pre_seperator.$row['text'].$post_seperator);
+            }
          }
          }
       }
