@@ -259,10 +259,14 @@ function upload_files ($db,$tableid,$id,$columnid,$USER,$system_settings) {
       $filestype=substr(strrchr($mime,"/"),1);
       $size=$HTTP_POST_FILES["file"]["size"][$i];
       $title=$HTTP_POST_VARS["filetitle"][$i];
+      if (!$title)
+         $title="NULL"; 
+      else
+         $title="'$title'";
       $type=$HTTP_POST_VARS["filetype"][$i];
       // this works asof php 4.02
       if (move_uploaded_file($HTTP_POST_FILES["file"]["tmp_name"][$i],"$filedir/$fileid"."_"."$originalname")) {
-         $query="INSERT INTO files (id,filename,mime,size,title,tablesfk,ftableid,ftablecolumnid,type) VALUES ($fileid,'$originalname','$mime','$size','$title','$tableid',$id,'$columnid[$i]','$filestype')";
+         $query="INSERT INTO files (id,filename,mime,size,title,tablesfk,ftableid,ftablecolumnid,type) VALUES ($fileid,'$originalname','$mime','$size',$title,'$tableid',$id,'$columnid[$i]','$filestype')";
 	 $db->Execute($query);
       }
    }
@@ -287,7 +291,7 @@ function get_files ($db,$table,$id,$columnid,$format=1) {
          $filestype=$files[$i]["type"]=$r->fields("type");
          $filesize=$files[$i]["size"]=nice_bytes($r->fields("size"));
 	 if ($format==1) {
-            if ($filestitle)
+            if (strlen($filestitle) > 0)
                $text=$filestitle;
             else
                 $text=$filesname;
