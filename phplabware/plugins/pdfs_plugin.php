@@ -158,7 +158,7 @@ function plugin_check_data($db,&$field_values,$table_desc,$modify=false)
 
 ////
 // !Overrides the standard 'show record'function
-function plugin_show($db,$fields,$id,$USER,$system_settings,$tableid,$real_tablename,$table_desc)
+function plugin_show($db,$fields,$id,$USER,$system_settings,$tableid,$real_tablename,$table_desc,$backbutton=true)
 {
    global $PHP_SELF;
    $tablename=get_cell($db,"tableoftables","tablename","id",$tableid);
@@ -262,10 +262,11 @@ function plugin_show($db,$fields,$id,$USER,$system_settings,$tableid,$real_table
 ?>   
 <form method='post' id='pdfview' action='<?php echo "$PHP_SELF?tablename=$tablename"?>&<?=SID?>'> 
 <?php
-   echo "<tr>";
-   echo "<td colspan=7 align='center'><input type='submit' name='submit' value='Back'></td>\n";
-   echo "</tr>\n";
-
+   if ($backbutton) {
+      echo "<tr>";
+      echo "<td colspan=7 align='center'><input type='submit' name='submit' value='Back'></td>\n";
+      echo "</tr>\n";
+   }
    echo "</table></form>\n";
 }
 
