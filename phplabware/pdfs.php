@@ -50,6 +50,8 @@ function check_pd_data ($db,&$field_values) {
          if ($pubmedinfo[$i]=="\n")
 	    $lc++;
       }
+for ($i=0; $i<sizeof($line);$i++)
+   echo "$i: ".$line[$i].".<br>";
       // parse the first line.  1: journal  date;Vol:fp-lp
       $jstart=strpos($line[1],": ");
       $jend=strpos($line[1],"  ");
@@ -72,7 +74,9 @@ function check_pd_data ($db,&$field_values) {
       $field_values["lpage"]=$lpage;
       $field_values["title"]=$line[2];
       $field_values["author"]=$line[3];
-      $field_values["abstract"]=$line[6];
+      // check whether there is an abstract
+     if ((substr($line[5],0,4)!="PMID"))
+         $field_values["abstract"]=$line[5];
       // check wether the journal is in pd_typ1, if not, add it
       $r=$db->Execute("SELECT id FROM pd_type1 WHERE typeshort='$journal'");
       if ($r && $r->fields("id"))
@@ -185,26 +189,30 @@ function show_pd ($db,$fields,$id,$USER,$system_settings) {
    echo "<table border=0 align='center'>\n";
    echo "<tr>\n";
    echo "<th>Article: </th>\n";
-   echo "<td colspan=2>$title<br>\n";
+   echo "<td>$title<br>\n";
    $text=get_cell($db,"pd_type1","type","id",$type1);
    echo "$text ($year), <b>$volume</b>:$fpage-$lpage<br>\n";
    echo "$author</td></tr>\n";
    
+   if ($abstract) {
+      echo "<tr>\n<th>Abstract</th>\n";
+      echo "<td>$abstract</td>\n</tr>\n";
+   }
+
    echo "<tr>";
    $query="SELECT firstname,lastname,email FROM users WHERE id=$ownerid";
    $r=$db->Execute($query);
    if ($r->fields["email"]) {
       echo "<th>Submitted by: </th><td><a href='mailto:".$r->fields["email"]."'>";
-      echo $r->fields["firstname"]." ".$r->fields["lastname"]."</a></td>\n";
+      echo $r->fields["firstname"]." ".$r->fields["lastname"]."</a> ";
    }
    else {
       echo "<th>Submitted by: </th><td>".$r->fields["firstname"]." ";
-      echo $r->fields["lastname"] ."</td>\n";
+      echo $r->fields["lastname"] ." ";
    }
-   echo "<td>&nbsp;</td>";
    $dateformat=get_cell($db,"dateformats","dateformat","id",$system_settings["dateformat"]);
    $date=date($dateformat,$date);
-   echo "<th>Date entered: </th><td colspan=3>$date</td>\n";
+   echo "($date)</td>\n";
    echo "</tr>\n";
 
    if ($lastmodby && $lastmoddate) {
@@ -213,27 +221,26 @@ function show_pd ($db,$fields,$id,$USER,$system_settings) {
       $r=$db->Execute($query);
       if ($r->fields["email"]) {
          echo "<th>Last modified by: </th><td><a href='mailto:".$r->fields["email"]."'>";
-         echo $r->fields["firstname"]." ".$r->fields["lastname"]."</a></td>\n";
+         echo $r->fields["firstname"]." ".$r->fields["lastname"]."</a>";
       }
       else {
          echo "<th>Last modified by: </th><td>".$r->fields["firstname"]." ";
-         echo $r->fields["lastname"] ."</td>\n";
+         echo $r->fields["lastname"];
       }
-      echo "<td>&nbsp;</td>";
       $dateformat=get_cell($db,"dateformats","dateformat","id",$system_settings["dateformat"]);
       $lastmoddate=date($dateformat,$lastmoddate);
-      echo "<th>Date modified: </th><td colspan=3>$lastmoddate</td>\n";
+      echo " ($lastmoddate)</td>\n";
       echo "</tr>\n";
    }
 
    echo "<tr>";
    $notes=nl2br(htmlentities($notes));
-   echo "<th>Notes: </th><td colspan=6>$notes</td>\n";
+   echo "<th>Notes: </th><td>$notes</td>\n";
    echo "</tr>\n";
 
    $files=get_files($db,"pdfs",$id);
    if ($files) {
-      echo "<tr><th>Files:</th>\n<td colspan=5>";
+      echo "<tr><th>Files:</th>\n<td>";
       for ($i=0;$i<sizeof($files);$i++) {
          echo $files[$i]["link"]."&nbsp;&nbsp;(".$files[$i]["type"];
          echo " file)<br>\n";
@@ -241,15 +248,20 @@ function show_pd ($db,$fields,$id,$USER,$system_settings) {
       echo "</tr>\n";
    }
    
-   echo "<tr><th>Link:</th><td colspan=7><a href='$PHP_SELF?showid=$id&";
+   echo "<tr><th>Links:</th><td colspan=7><a href='$PHP_SELF?showid=$id&";
    echo SID;
-   echo "'>".$system_settings["baseURL"].getenv("SCRIPT_NAME")."?showid=$id</a></td></tr>\n";
+   echo "'>".$system_settings["baseURL"].getenv("SCRIPT_NAME")."?showid=$id</a> (This page)<br>\n";
+
+   echo "<a href='http://www.ncbi.nlm.nih.gov/entrez/query.fcgi?";
+   echo "cmd=Retrieve&db=PubMed&list_uids=$pmid&dopt=Abstract'>Paper at Pubmed</a><br>\n";
+   echo "<a href='http://www.ncbi.nlm.nih.gov/entrez/query.fcgi?";
+   echo "cmd=Link&db=PubMed&dbFrom=PubMed&from_uid=$pmid'>Related papers at Pubmed</a></td></tr>\n";
 
 ?>   
 <form method='post' id='protocolview' action='<?php echo $PHP_SELF?>?<?=SID?>'> 
 <?php
    echo "<tr>";
-   echo "<td colspan=7 align='center'><input type='submit' name='submit' value='Dismiss'></td>\n";
+   echo "<td colspan=7 align='center'><input type='submit' name='submit' value='Back'></td>\n";
    echo "</tr>\n";
 
    echo "</table></form>\n";
