@@ -776,7 +776,7 @@ function getvalues($db,$tableinfo,$fields,$qfield=false,$field=false)
                      $text=$tmpvalue[0];
                      $values=$text;
                   }
-                  ${$column}['link']="<a target=_ href=\"general.php?tablename={$asstableinfo->name}&showid=".${$column}['nested']['values']."\">{${$column}['nested']['text']}</a>\n";
+                  ${$column}['link']="<a target=_ href=\"general.php?tablename={$asstableinfo->name}&showid=".${$column}['values']."\">{${$column}['nested']['text']}</a>\n";
                }
                if (!$text)
                   $text="&nbsp;";
