@@ -39,6 +39,63 @@ if (!($permissions & $SUPER)) {
 navbar($USER['permissions']);
 
 ////
+//
+function move ($fromfile, $tofile) {
+   //  guess this won't work on Windows
+   `mv '$fromfile' '$tofile'`;
+    if (!filesize($tofile)) 
+      copy($fromfile,$tofile);
+    return filesize($tofile);
+}
+
+
+////
+// !Upload files and enters then into table files
+// files should be called file[] in HTTP_POST_FILES
+// filetitle in HTTP_POST_VARS will be inserted in the title field of table files
+// returns id of last uploaded file upon succes, false otherwise
+function import_file ($db,$tableid,$id,$columnid,$columnname,$tmpfileid,$system_settings)
+{
+   if (!$tmpfileid)
+      return false;
+   $table=get_cell($db,'tableoftables','tablename','id',$tableid);
+   $real_tablename=get_cell($db,'tableoftables','real_tablename','id',$tableid);
+
+   if (!($db && $table && $id)) {
+      echo "Error in code: $db, $table, or $id is not defined.<br>";
+      return false;
+   }
+   if (isset($tmpfileid) && !$filedir=$system_settings['filedir']) {
+      echo "<h3><i>Filedir</i> was not set.  The file was not uploaded. Please contact your system administrator</h3>";
+      return false;
+   }
+   $r=$db->Execute("SELECT name,mime,type FROM tmpfiles WHERE id=$tmpfileid");
+   if (!$r->fields[0])
+      return false;
+   if (!$fileid=$db->GenID("files_id_seq"))
+      return false;
+   $originalname=$r->fields['name'];
+   $mime=$r->fields['type'];
+   $filestype=$r->fields['type'];
+   $filesdir=$system_settings['tmpdir'].'/phplabwaredump/files/';
+   $tmplocation=$filesdir.$tmpfileid.'_'.$originalname;
+   $size=filesize($tmplocation);
+   $title=$$originalname;
+   if (!$title)
+      $title='NULL'; 
+   else
+      $title="'$title'";
+   $type=$filestype;
+   if (move($tmplocation,"$filedir/$fileid".'_'."$originalname")) {
+      $query="INSERT INTO files (id,filename,mime,size,title,tablesfk,ftableid,ftablecolumnid,type) VALUES ($fileid,'$originalname','$mime','$size',$title,'$tableid',$id,'$columnid','$filestype')";
+      $db->Execute($query);
+   }
+   else
+      $fileid=false;
+   return $fileid;
+}
+
+////
 // !returns variable delimiter, based on delimiter_type (a POST variable)
 function get_delimiter ($delimiter,$delimiter_type) {
    if ($delimiter)
@@ -138,7 +195,7 @@ if ($HTTP_POST_VARS['assign']=='Import Data') {
    else
       $table_link="general.php?tablename=$table_label"."&".SID;
 
-   // file the tmp table with file related data
+   // fill the tmp table with file related data
    if ($localfile) {
        $dumpdir='phplabwaredump';
        $filename=$dumpdir.'/dumpcontent.txt';
@@ -182,9 +239,14 @@ if ($HTTP_POST_VARS['assign']=='Import Data') {
          if ($to_fields[$i]=='id')
             $id_chosen=true;
          $to_types[$i]=get_cell($db,$desc,'type','id',$the_field);
+         $to_datatypes[$i]=get_cell($db,$desc,'datatype','id',$the_field);
          // type checking and cleanup for database upload
          // since we can have int(11) etc...
-         if (substr($to_types[$i],0,3)=='int'){
+         if ($to_datatypes[$i]=='file'){
+            // this has type int, but its value changed, so set to_type to text
+            $to_types[$i]='text';
+         }
+         elseif (substr($to_types[$i],0,3)=='int'){
             $to_types[$i]='int';
             $fields[$i]=(int)$fields[$i];
          }
@@ -232,7 +294,7 @@ if ($HTTP_POST_VARS['assign']=='Import Data') {
                $query="UPDATE $table SET ";
                // import data from file into SQL statement
                for ($i=0; $i<$nrfields;$i++) {
-                  if ($to_fields[$i]) {
+                  if ($to_fields[$i] && $to_datatypes[$i]!='file') {
                      $worthit=true;
                      $query.="$to_fields[$i]='$fields[$i]',";
                   }
@@ -250,8 +312,16 @@ if ($HTTP_POST_VARS['assign']=='Import Data') {
                   // only the first record that matched will be modified
                   // when doing an update we leave access and owner untouched
                   $query.=" lastmoddate='$lastmoddate', lastmodby='$lastmodby' WHERE $to_fields[$pkey]='$fields[$pkey]'";
-                  if ($r=$db->Execute($query))
+                  if ($r=$db->Execute($query)) {
                       $modified++;
+                      for ($i=0; $nrfields;$i++) {
+                         if ($to_datatypes[$i]=='file') {
+                            $fileids=explode(',',$fields[$i]);
+                            foreach ($fileids as $fileid)
+			       import_file ($db,$tableid,$recordid,$HTTP_POST_VARS["fields_$i"],$to_fields[$i],$fileid,$system_settings);
+                          }
+                      }
+                   }
                }
             }
 
@@ -262,7 +332,7 @@ if ($HTTP_POST_VARS['assign']=='Import Data') {
                $query_end=" VALUES (";
                $newid=false;
                for ($i=0;$i<$nrfields;$i++) {
-                  if ($fields[$i] && $to_fields[$i]) {
+                  if ($fields[$i] && $to_fields[$i] && $to_datatypes[$i]!='file') {
                      $worthit=true;
                      $query_start.="$to_fields[$i],";  
                      $query_end.="'$fields[$i]',";
@@ -295,10 +365,16 @@ if ($HTTP_POST_VARS['assign']=='Import Data') {
                         $duplicateid++;
                      $query="$query_start access,date,lastmoddate,lastmodby,ownerid) $query_end '$access','$lastmoddate','$lastmoddate','$lastmodby','$ownerid')";
                   }
-$db->debug=true;
-                  if ($r=$db->Execute($query))
+                  if ($r=$db->Execute($query)) {
                       $inserted++;
-$db->debug=false;
+                      for ($i=0; $i<$nrfields;$i++) {
+                         if ($to_datatypes[$i]=='file') {
+                            $fileids=explode(',',$fields[$i]);
+                            foreach ($fileids as $fileid)
+                               import_file ($db,$tableid,$id,$HTTP_POST_VARS["fields_$i"],$to_fields[$i],$fileid,$system_settings);
+                          }
+                      }
+                  }
                } 
             }
          }
