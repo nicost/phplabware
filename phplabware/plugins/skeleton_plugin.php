@@ -28,6 +28,14 @@ function plugin_add ($db,$tableid,$id)
 }
 */
 
+////
+// !Assign a new record to the userid returned by this function
+/*
+function plugin_setowner($db)  
+{
+   return $otheruserid;
+}
+*/
 
 ////
 // !Change/calculate/check values just before they are added/modified
