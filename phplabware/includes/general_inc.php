@@ -297,7 +297,7 @@ function display_table_info($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr_c
          else
             echo "<td>{$nowfield['text']}</td>\n"; 
          // write file ids to a file so that we do not need to check them again when downloading thumbnails
-         if ($nowfield['datatype']=='image' || $nowfield['datatype']=='file') {
+         if (($nowfield['datatype']=='image' || $nowfield['datatype']=='file') && isset($nowfield['fileids'])) {
             foreach ($nowfield['fileids'] as $fileid)
                $USER['settings']['fileids'][]=$fileid;
          }
