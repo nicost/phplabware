@@ -56,15 +56,18 @@ function check_pd_data ($db,&$field_values) {
       $journal=trim(substr($line[1],$jstart+1,$jend-$jstart));
       $dend=strpos($line[1],";");
       $date=trim(substr($line[1],$jend+1,$dend-$jend-1));
-      $field_values["year"]=strtok($date," ");
+      $year=$field_values["year"]=strtok($date," ");
       $vend=strpos($line[1],":",$dend);
-      $volumeinfo=trim(substr($line[1],$dend+1,$vend-$dend-1));
-      $field_values["volume"]=strtok($volumeinfo,"("); 
-      $pages=trim(substr($line[1],$vend+1));
-      $fpage=strtok($pages,"-");
-      $lpage1=strtok("-");
-      $lpage=substr_replace($fpage,$lpage1,strlen($fpage)-strlen($lpage1));
-      // echo "$jstart,$jend,$journal,$date,$year,$volume,$fpage,$lpage1,$lpage.<br>";
+      // if we can not find this, it might not have vol. first/last page
+      if ($vend) {
+         $volumeinfo=trim(substr($line[1],$dend+1,$vend-$dend-1));
+         $volume=$field_values["volume"]=strtok($volumeinfo,"("); 
+         $pages=trim(substr($line[1],$vend+1));
+         $fpage=strtok($pages,"-");
+         $lpage1=strtok("-");
+         $lpage=substr_replace($fpage,$lpage1,strlen($fpage)-strlen($lpage1));
+      }
+      //echo "$jstart,$jend,$journal,$date,$year,$volume,$fpage,$lpage1,$lpage.<br>";
       $field_values["fpage"]=$fpage;
       $field_values["lpage"]=$lpage;
       $field_values["title"]=$line[2];
