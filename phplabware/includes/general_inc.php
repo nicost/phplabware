@@ -611,7 +611,7 @@ function display_add($db,$tableinfo,$Allfields,$id,$namein,$system_settings) {
 	 elseif ($nowfield['datatype']=='sequence') {
 	    if (!$nowfield['text']) {
 	       // find the highest sequence and return that plus one
-	       $rmax=$db->Execute("SELECT MAX (${nowfield['name']}) AS ${nowfield['name']} FROM ".$tableinfo->realname);
+	       $rmax=$db->Execute("SELECT MAX(${nowfield['name']}) AS ${nowfield['name']} FROM ".$tableinfo->realname);
 	       $newseq=$rmax->fields[0]+1;
 	    }
 	    else
