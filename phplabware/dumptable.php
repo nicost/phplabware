@@ -56,7 +56,7 @@ $header="<?php\n\n\n\n\n";
 fwrite($fp,$header);
 
 fwrite ($fp,'$newtableid=$db->GenID("tableoftables_gen_id_seq");'."\n");
-fwrite ($fp,'$newtablename='."$tablename;\n");
+fwrite ($fp,'$newtablename='."\"$tablename\";\n");
 fwrite ($fp,'$newtablelabel='."\"$table_label\";\n");
 fwrite ($fp,'for ($i=0;$i<$hownew;$i++) {$newtablelabel.="new";}'."\n");
 fwrite ($fp, 'while (get_cell($db,"tableoftables","id","tablename",$newtablename)) {
