@@ -136,7 +136,6 @@ if ($edit_type && ($USER["permissions"] & $LAYOUT)) {
    show_type($db,$edit_type,$assoc_name,$tablename);
    printfooter();
    exit();
-
 }
 
 // provide a means to hyperlink directly to a record
@@ -161,7 +160,12 @@ else {
          exit;
       }
       else {  
-	 $fileid=upload_files($db,$tableid,$id,$USER,$system_settings);
+         $rb=$db->Execute("SELECT id FROM $table_desname WHERE datatype='file'");
+         while (!$rb->EOF) {
+            $columnids[]=$rb->fields["id"];
+            $rb->MoveNext(); 
+         }
+	 $fileid=upload_files($db,$tableid,$id,$columnids,$USER,$system_settings);
          // insert stuff to deal with word/html files
          process_file($db,$fileid,$system_settings); 
          // to not interfere with search form 
@@ -181,7 +185,12 @@ else {
          if ($HTTP_POST_FILES["file"]["name"][0]) {
             // delete all existing file
             delete ($db,$tableid,$HTTP_POST_VARS["id"],$USER,true);
-            $fileid=upload_files($db,$tableid,$HTTP_POST_VARS["id"],$USER,$system_settings);
+            $rb=$db->Execute("SELECT id FROM $table_desname WHERE datatype='file' ORDER BY sortkey");
+            while (!$rb->EOF) {
+               $columnids[]=$rb->fields["id"];
+               $rb->MoveNext(); 
+            }
+            $fileid=upload_files($db,$tableid,$HTTP_POST_VARS["id"],$columnids,$USER,$system_settings);
             process_file($db,$fileid,$system_settings);
          }
          // to not interfere with search form 

@@ -145,7 +145,7 @@ function add_ab_form ($db,$tableid,$fields,$field_values,$id,$USER,$PHP_SELF,$sy
    echo "<th>Notes: </th><td colspan=6><textarea name='notes' rows='5' cols='100%'>$notes</textarea></td>\n";
    echo "</tr>\n";
    
-   $files=get_files($db,"antibodies",$id);
+   $files=get_files($db,"antibodies",$id,1);
    echo "<tr>";
    echo "<th>Files: </th>\n";
    echo "<td colspan=5><table border=0>";
@@ -264,7 +264,7 @@ function show_ab ($db,$tableid,$fields,$id,$USER,$system_settings) {
    echo "<th>Notes: </th><td colspan=6>$notes</td>\n";
    echo "</tr>\n";
 
-   $files=get_files($db,"antibodies",$id);
+   $files=get_files($db,"antibodies",$id,1);
    if ($files) {
       echo "<tr><th>Files:</th>\n<td colspan=5>";
       for ($i=0;$i<sizeof($files);$i++) {
@@ -387,7 +387,7 @@ else {
          exit;
       }
       else {  
-	 upload_files($db,$tableid,$id,$USER,$system_settings);
+	 upload_files($db,$tableid,$id,1,$USER,$system_settings);
          // to not interfere with search form 
          unset ($HTTP_POST_VARS);
 	 // or we won't see the new record
@@ -403,7 +403,7 @@ else {
          exit;
       }
       else { 
-	 upload_files($db,$tableid,$HTTP_POST_VARS["id"],$USER,$system_settings);
+	 upload_files($db,$tableid,$HTTP_POST_VARS["id"],1,$USER,$system_settings);
          // to not interfere with search form 
          unset ($HTTP_POST_VARS);
       }
@@ -632,7 +632,7 @@ else {
       echo "<td>$at3</td>\n";
       echo "<td>$at4</td>\n";
       echo "<td>$location&nbsp;</td>\n";
-      $files=get_files($db,"antibodies",$id,3);
+      $files=get_files($db,"antibodies",$id,1,3);
       echo "<td>";
       if ($files) 
          for ($i=0;$i<sizeof($files);$i++)
