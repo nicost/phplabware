@@ -1254,7 +1254,7 @@ function searchhelp ($db,$tableinfo,$column,&$columnvalues,$query,$wcappend,$and
             }
 	    else $query[2].="$and id=0 ";
          }
-         if ($rc->fields[1]=='table') {
+         elseif ($rc->fields[1]=='table') {
          }
          // there are some (old) cases where pulldowns are of type text...
          elseif ($rc->fields[1]=='pulldown') {
