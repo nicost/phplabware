@@ -49,6 +49,20 @@ if (isset($tableid)) {
    }
 }
 
+/**
+ * The user who will own the imported records
+ * This way we default to the one doing the import
+ */
+if ($ownerid) {
+   $USERAS=getUserInfo($db,false,$ownerid);
+}
+if (!isset($USERAS)) {
+   $USERAS=$USER;
+}
+
+/**
+ * Print header and do further checks on permissions
+ */
 $httptitle.=' Import data';
 printheader($httptitle,false,$jsfile);
 $tmpdir=$system_settings['tmpdir'];
@@ -61,18 +75,6 @@ if (!($permissions & $USER)) {
 }
 
 navbar($USER['permissions']);
-
-/**
- *
- */
-function move ($fromfile, $tofile) {
-   //  guess this won't work on Windows
-   `mv '$fromfile' '$tofile'`;
-    // but this should
-    if (!@filesize($tofile)) 
-      copy($fromfile,$tofile);
-    return filesize($tofile);
-}
 
 /**
  * interpret a date string according to the system settings
@@ -138,7 +140,7 @@ function import_file ($db,$tableid,$id,$columnid,$columnname,$tmpfileid,$system_
    else
       $title="'$title'";
    $type=$filestype;
-   if (move($tmplocation,"$filedir/$fileid".'_'."$originalname")) {
+   if (rename($tmplocation,"$filedir/$fileid".'_'."$originalname")) {
       $query="INSERT INTO files (id,filename,mime,size,title,tablesfk,ftableid,ftablecolumnid,type) VALUES ($fileid,'$originalname','$mime','$size',$title,'$tableid',$id,'$columnid','$filestype')";
       $db->Execute($query);
    }
@@ -146,6 +148,7 @@ function import_file ($db,$tableid,$id,$columnid,$columnname,$tmpfileid,$system_
       $fileid=false;
    return $fileid;
 }
+
 
 /**
  *  returns variable delimiter, based on delimiter_type (a POST variable)
@@ -199,38 +202,42 @@ function check_input ($tableinfo, &$fields, $to_fields, $field_types, $field_dat
          if ($field_datatypes[$i]=='pulldown') {
             // see if we have this value already, otherwise make a new entry in the type table....
              // &nbsp; is used as a place holder in output of phplabware.  Unset the value if found
-             if ($fields[$i]=="&nbsp;")
+             if ($fields[$i]=="&nbsp;") {
                 unset ($fields[$i]);
-             else {
+             } else {
                 $Allfields=getvalues($db,$tableinfo,$to_fields[$i]);
                 $rtemp=$db->Execute("SELECT id FROM {$Allfields[0]['ass_t']} WHERE typeshort='{$fields[$i]}'");
                 if ($rtemp && $rtemp->fields[0]) {
                    $fields[$i]=$rtemp->fields[0];
-                }
-                else { // insert this new value in the type table:
+                } else { // insert this new value in the type table:
                    $typeid=$db->GenId($Allfields[0]['ass_t'].'_id_seq');
                    unset($rtemp);
                    $rtemp=$db->Execute("INSERT INTO {$Allfields[0]['ass_t']} (id,type,typeshort,sortkey) VALUES ($typeid,'{$fields[$i]}','{$fields[$i]}','0')");
-                   if ($rtemp && $rtemp->fields[0]) {
-                      $fields[$i]=$rtemp->fields[0];
+                   if ($rtemp) {
+                      $fields[$i]=$typeid;
+                   } else {
+                      echo "Error during import.<br>";
+                      unset($fields[$i]);
                    }
                 }
              }
-         }
-         // for mpulldowns we have a problem since we do not have the new id yet
+         } elseif ($field_datatypes[$i]!='mpulldown') {
+          // for mpulldowns we have a problem since we do not have the new id yet
+          // we'll deal with these later
 
-         if ($field_types[$i]=='int'){
-            $fields[$i]=(int)$fields[$i];
+            if ($field_types[$i]=='int'){
+               $fields[$i]=(int)$fields[$i];
+            }
+            elseif($field_types[$i]=='id')
+               $fields[$i]=(int)$fields[$i];
+            elseif($field_types[$i]=='float')
+               $fields[$i]=(float)$fields[$i];
+            else
+               $fields[$i]=addslashes($fields[$i]);
          }
-         elseif($field_types[$i]=='id')
-            $fields[$i]=(int)$fields[$i];
-         elseif($field_types[$i]=='float')
-            $fields[$i]=(float)$fields[$i];
-         else
-            $fields[$i]=addslashes($fields[$i]);
       }
+      //return $fields;
    }
-   //return $fields;
 }
           
 /**
@@ -260,6 +267,42 @@ function check_line(&$line,$quote,$delimiter) {
 }
 
 /**
+ * Checks if these values exist in the mpulldown table
+ * Adds them if they do not exist.
+ * Makes the needed links in the ass table linking data and mpulldown tables
+ */
+function addmpulldown($db,$tableinfo,$id,$to_field,$field)
+{
+   /**
+    * Analyze $field first, accept <br> as field seperators
+    */
+   $Allfields=getvalues($db,$tableinfo,$to_field);
+   $fields=explode('<br>',$field);
+   foreach($fields as $value) {
+      /**
+       * Checks if this value is already in the mpulldown table, if not, add it:
+       */
+      if ($value && ($value!='&nbsp;')) {
+         $r=$db->Execute("SELECT id FROM {$Allfields[0]['ass_t']} WHERE type='$value' OR typeshort='$value'");
+         $rassid=$r->fields[0];
+         if (!$rassid) {
+            /**
+             * Value not found, insert it now
+             */
+            $rassid=$db->genID($Allfields[0]['ass_t'].'_id_seq');
+            $r=$db->query("INSERT INTO {$Allfields[0]['ass_t']} (id,type,typeshort)
+                           VALUES($rassid,'$value','$value')");
+         }
+         // now link make the links in the keytable
+         if ($rassid) {
+            $db->Execute("INSERT INTO {$Allfields[0]['key_t']} (recordid,typeid) VALUES ($id,$rassid)");
+         }
+      }
+   }
+}
+
+
+/**
  * Start of the main code
  *
  * do the final parsing (part 3)
@@ -277,10 +320,7 @@ if ($HTTP_POST_VARS['assign']=='Import Data') {
    // Here we query for them 
    $rseq=$db->Execute("SELECT columnname FROM $desc WHERE datatype='sequence'");
 
-   if ($table_custom)
-      $table_link="$table_custom?".SID;
-   else
-      $table_link="general.php?tablename=$table_label"."&".SID;
+   $table_link="general.php?tablename=$table_label"."&".SID;
 
    // fill the tmp table with file related data
    // Files are only imported through the phplabwaredump directory 
@@ -353,14 +393,14 @@ if ($HTTP_POST_VARS['assign']=='Import Data') {
             $fields[$i]=addslashes($fields[$i]);
       }
    } 
+
    // sanity check:
    $freq_array=array_count_values($to_fields);
    if (sizeof($freq_array) < sizeof($to_fields)) {
        $error_string="<h3 align='center'>Some columns in the database were selected more than once.  Please correct this and try again.</h3>";
        $HTTP_POST_VARS['dataupload']='Continue';
-   }
-   // do the database upload
-   else {
+   } else {
+      // do the database upload
       $delimiter=get_delimiter($delimiter,$delimiter_type);
       $quote=get_quote($quote,$quote_type);
       $fh=fopen("$tmpdir/$tmpfile",'r');
@@ -388,58 +428,97 @@ if ($HTTP_POST_VARS['assign']=='Import Data') {
             check_input ($tableinfo,$fields,$to_fields,$to_types,$to_datatypes,$nrfields);
             $worthit=false;
             unset($recordid);
-            // if there is a column being used as primary key, we do an SQL
-            // UPDATE, otherwise an insert
-            if (isset($pkey) && $pkey!="") {
-               // check if we already had such a record
+            // if there is a column being used as a Match Field, we do an SQL
+            // UPDATE, otherwise first create a default entry and modify that
+      
+            // First figure out if such a record already exists
+            if ($pkey) {
                $r=$db->Execute("SELECT id FROM $table WHERE $to_fields[$pkey]='$fields[$pkey]'");
-               $recordid=$r->fields[0];
+               // only the first record that matched will be modified
+               $existingid=$r->fields[0];
+            } 
+
+            // now enforce the Update/Overwrite policies
+            $makeNewId=false;
+            if ($pkeypolicy=='overwrite') {
+               if ($existingid) {
+                  $recordid=$existingid;
+               } else {
+                  $makeNewId=true;
+               }
+            } elseif ($pkeypolicy=='onlyupdate') {
+               if ($existingid) {
+                  $recordid=$existingid;
+               }
+            } elseif ($pkeypolicy=='skip') {
+               if (!$existingid) {
+                  $makeNewId=true;
+               }
+            } elseif ($pkeypolicy=='addall') {
+               $makeNewId=true;
             }
-            if (isset($recordid) && ($pkeypolicy=='overwrite' || $pkeypolicy=='onlyupdate')) {
+
+            // if no Match Field was set, we'll add all records as new ones
+            if (!$pkey) {
+               $makeNewId=true;
+            }
+               
+            if ($makeNewId) {
+               // generate a default record
+               $fieldvalues=set_default($db,$tableinfo,$fields,$USERAS,$system_settings);
+               $recordid=add($db,$tableinfo->realname,$tableinfo->fields,$fields,$USERAS,$tableinfo->id);
+            }
+
+            // only continue if we have a record (existing or newly made) to modify
+            if (isset($recordid)) {
                $query="UPDATE $table SET ";
                // import data from file into SQL statement
                for ($i=0; $i<$nrfields;$i++) {
-                  if ($to_fields[$i] && $to_datatypes[$i]!='file') {
+                  if ($fields[$i] && $to_fields[$i] && $to_datatypes[$i]!='file' && $to_datatypes[$i]!='mpulldown') {
+                     // if date is an int, assume it is UNIX date, otherwise convert 
+                     if ($to_datatypes[$i]=='date') {
+                        if (!is_int($fields[$i]))
+                           $fields[$i]=mymktime($fields[$i]);
+                     }
                      $worthit=true;
                      $query.="$to_fields[$i]='$fields[$i]',";
                   }
                }
-               // for sequences, insert next available number:
-              while ($rseq && !$rseq->EOF) {
-                  $rmax=$db->Execute("SELECT max(".$rseq->fields[0].") FROM $table");
-                  $vmax=$rmax->fields[0]+1;
-                  $query.=$rseq->fields[0]."='$vmax',";
-                  $rseq->MoveNext();
-               }
-               $rseq->MoveFirst();
                if ($worthit) {
-                  // strip last comma
-                  // $query.=" WHERE $to_fields[$pkey]='$fields[$pkey]'";
-                  // only the first record that matched will be modified
                   // when doing an update we leave access and owner untouched
-                  $query.=" lastmoddate='$lastmoddate', lastmodby='$lastmodby' WHERE $to_fields[$pkey]='$fields[$pkey]'";
+                  $query.=" lastmoddate='$lastmoddate', lastmodby='$lastmodby' WHERE id=$recordid";
+//$db->debug=true;
                   if ($r=$db->Execute($query)) {
-                      $modified++;
+//$db->debug=false;
+                      // keep count of new and modified records
+                      if ($makeNewId) {
+                         $inserted++;
+                      } else {
+                         $modified++;
+                      }
                       for ($i=0; $i<$nrfields;$i++) {
                          if ($to_datatypes[$i]=='file') {
                             $fileids=explode(',',$fields[$i]);
                             foreach ($fileids as $fileid)
 			       import_file ($db,$tableid,$recordid,$HTTP_POST_VARS["fields_$i"],$to_fields[$i],$fileid,$system_settings);
-                          }
+                          } elseif($to_datatypes[$i]=='mpulldown') {
+                             addmpulldown($db,$tableinfo,$recordid,$to_fields[$i],$fields[$i]);
+                         }
                       }
                    }
+//$db->debug=false;
                }
-            }
 
             // if there is no primary key set, we simply INSERT a new record
             //if ( !(isset($pkey) || isset($recordid)) ) 
-	    elseif ($pkeypolicy!='onlyupdate') {
+/*
+            } elseif ($pkeypolicy!='onlyupdate') {
 //$db->debug=true;
                $query_start="INSERT INTO $table (";
                $query_end=" VALUES (";
                $newid=false;
                for ($i=0;$i<$nrfields;$i++) {
-                  if ($fields[$i] && $to_fields[$i] && $to_datatypes[$i]!='file') {
+                  if ($fields[$i] && $to_fields[$i] && $to_datatypes[$i]!='file' && $to_datatypes[$i]!='mpulldown') {
                      // if date is an int, assume it is UNIX date, otherwise convert 
                      if ($to_datatypes[$i]=='date') {
                         if (!is_int($fields[$i]))
@@ -456,13 +535,6 @@ if ($HTTP_POST_VARS['assign']=='Import Data') {
                         $newid=$fields[$i];
                   }
                }
-               while ($rseq && !$rseq->EOF) {
-                  $rmax=$db->Execute("SELECT max(".$rseq->fields[0].") FROM $table");
-                  $vmax=$rmax->fields[0]+1;
-                  $query_start.=$rseq->fields[0].",";
-                  $query_end.="'$vmax',";
-                  $rseq->MoveNext();
-               }
                $rseq->MoveFirst();
                // delete last commas and combine into SQL INSERT query
                if ($worthit) {
@@ -472,8 +544,7 @@ if ($HTTP_POST_VARS['assign']=='Import Data') {
                         $query="$query_start id,gr,gw,er,ew,lastmoddate,lastmodby,ownerid) $query_end '$id',$gr,$gw,$er,$ew,'$lastmoddate','$lastmodby','$ownerid')";
                      else
                         $query="$query_start id,gr,gw,er,ew,date,lastmoddate,lastmodby,ownerid) $query_end '$id',$gr,$gw,$er,$ew,'$lastmoddate','$lastmoddate','$lastmodby','$ownerid')";
-                  }
-                  else {
+                  } else {
                      // let's make sure the 'next' id will be higher
                      if ($newid)
                         while ($id<$newid)
@@ -489,14 +560,18 @@ if ($HTTP_POST_VARS['assign']=='Import Data') {
                   if ($r=$db->Execute($query)) {
                       $inserted++;
                       for ($i=0; $i<$nrfields;$i++) {
+                         // add files and mpulldowns to newly added record
                          if ($to_datatypes[$i]=='file') {
                             $fileids=explode(',',$fields[$i]);
                             foreach ($fileids as $fileid)
                                import_file ($db,$tableid,$id,$HTTP_POST_VARS["fields_$i"],$to_fields[$i],$fileid,$system_settings);
-                          }
+                          } elseif($to_datatypes[$i]=='mpulldown') {
+                             addmpulldown($db,$tableinfo,$id,$to_fields[$i],$fields[$i]);
+                         }
                       }
                   }
                } 
+*/
             }
          }
          
@@ -533,7 +608,7 @@ if ($HTTP_POST_VARS['assign']=='Import Data') {
 
 
 // interpret uploaded file and get information for final parsing (part 2)
-if ($HTTP_POST_VARS['dataupload']=='Continue') {
+if ($HTTP_POST_VARS['dataupload']=='Continue' && may_write($db,$tableid,false,$USERAS)) {
    if ($error_string)
       echo $error_string;
    $filename=$HTTP_POST_FILES['datafile']['name'];
@@ -547,8 +622,9 @@ if ($HTTP_POST_VARS['dataupload']=='Continue') {
       }
       $tmpdir=$system_settings['tmpdir'];
       if ($tmpfile || $localfile || move_uploaded_file($HTTP_POST_FILES['datafile']['tmp_name'],"$tmpdir/$filename")) {
-         if ($tmpfile)
+         if ($tmpfile) {
             $filename=$tmpfile;
+         }
          // lcoalfiles can also have associated files packaged with them
          if ($localfile) {
              $dumpdir='phplabwaredump';
@@ -583,25 +659,22 @@ if ($HTTP_POST_VARS['dataupload']=='Continue') {
          echo "<input type='hidden' name='ownerid' value='$ownerid'>\n";
          echo "<table align='center'>\n<tr>\n";
          echo "<th>First line:</th>\n";
-         for($i=0;$i<$nrfields;$i++)
-            echo "   <td align='center'>$fields[$i]</td>\n";
-         echo "</tr>\n";
          echo "<th>Second line:</th>\n";
-         for($i=0;$i<$nrfields;$i++)
-            echo "   <td align='center'>$fields2[$i]</td>\n";
-         echo "</tr>\n";
-         echo "<tr>\n   <th>Assign to Column:</th>\n";
+         echo "<th>Assign to Column:</th>\n";
+         echo"<th>Match Field:</th>\n";
+         echo "</tr>\n<tr>\n";
          $desc=get_cell($db,'tableoftables','table_desc_name','id',$tableid);
-         $r=$db->Execute("SELECT label,id FROM $desc WHERE (display_record='Y' OR display_table='Y' OR columnname='id') AND datatype<>'sequence' ORDER BY sortkey");
+         $r=$db->Execute("SELECT label,id FROM $desc WHERE (display_record='Y' OR display_table='Y') ORDER BY sortkey");
          for($i=0;$i<$nrfields;$i++) {
+            echo "   <td>$fields[$i]</td>\n";
+            echo "   <td>$fields2[$i]</td>\n";
             $menu=$r->GetMenu("fields_$i",$fields[$i]);
-            echo "   <td align='center'>$menu</td>\n";
+            echo "   <td>$menu</td>\n";
             $r->Move(0);
+            echo "   <td><input type='radio' name='pkey' value='$i'></td>\n";
+            echo "</tr>\n<tr>\n";
          }
-         echo "</tr>\n<tr>\n   <th>Primary Key:</th>\n";
-         for($i=0;$i<$nrfields;$i++)
-            echo "   <td align='center'><input type='radio' name='pkey' value='$i'></td>\n";
-         echo "   <td align='center'><input type='radio' name='pkey' value='' checked> (none)</td>\n";
+         echo "<td colspan=3></td><td><input type='radio' name='pkey' value='' checked> (none)</td>\n";
          echo "</tr>\n";
          $colspan=$nrfields+2;
          echo "</table>\n";
@@ -609,16 +682,15 @@ if ($HTTP_POST_VARS['dataupload']=='Continue') {
          echo "<br><table align='center'>\n";
 
          echo "<tr><th>Update/Overwrite policy</th>\n";
-         echo "<td colspan=3><input type='radio' name='pkeypolicy' value='overwrite'> Overwrite when primary key matches, otherwise add the new record</input><br>\n";
-         echo "<input type='radio' name='pkeypolicy' value='onlyupdate'> Overwrite when primary key matches, otherwise ignore the new record</input><br>\n";
-         echo "<input type='radio' name='pkeypolicy' value='skip' checked> Skip when primary key matches, otherwise add the new record</input></td></tr>\n";
+         echo "<td colspan=3><input type='radio' name='pkeypolicy' value='overwrite'> Overwrite when 'Match Field' matches, otherwise add the new record</input><br>\n";
+         echo "<input type='radio' name='pkeypolicy' value='onlyupdate'> Overwrite when 'Match Field' matches, otherwise ignore the new record</input><br>\n";
+         echo "<input type='radio' name='pkeypolicy' value='skip' checked> Skip when 'Match Field' matches, otherwise add the new record</input><br>\n";
+         echo "<input type='radio' name='pkeypolicy' value='addall' checked> Ignore 'Match Field', add all new records</input></td></tr>\n";
 
          echo "<tr><th>Skip first line?</th>\n";
          echo "<td><input type='radio' name='skipfirstline' value='yes' checked> Yes</input></td>\n";
-         echo "<td><input type='radio' name='skipfirstline' value='no'> no</input></td></tr>\n";
+         echo "<td><input type='radio' name='skipfirstline' value='no'> No</input></td></tr>\n";
 
-        // echo "<br><br>\n<table align='center>\n";
-	 
          echo "<tr><td colspan=5 align='center'><input type='submit' name='assign' value='Import Data'></input></td></tr>\n";
          echo "</table>\n</form>\n<br>\n";
 
@@ -631,6 +703,10 @@ if ($HTTP_POST_VARS['dataupload']=='Continue') {
    }
    else
       $string="Please enter all fields";  
+}
+
+if ($USERAS && !may_write($db,$tableid,false,$USERAS)) {
+   $string.="Error: The selected user may not write to the selected database. ";
 }
 
 
@@ -668,20 +744,14 @@ echo "<td align='center'> <table><tr>
    <td><input type='radio' name='quote_type' value='none' checked> none</td></tr>
    <tr><td>&nbsp;</td></tr>
    </table></td>\n";
-//$query = "SELECT label,id FROM tableoftables where id>1000 ORDER BY sortkey";
-// This might fail in MySQL
-//$query = "SELECT label,id FROM tableoftables where display='Y' AND permission='Users' AND id IN (SELECT tableid FROM groupxtable_display WHERE groupid={$USER['group_array'][0]}) ORDER BY sortkey";
-if (!isset($tableid)) {
-   $query = "SELECT label,id FROM tableoftables LEFT JOIN groupxtable_display on tableoftables.id=groupxtable_display.tableid where display='Y' AND permission='Users' AND groupid={$USER['group_array'][0]} ORDER BY sortkey";
-   //$db->debug=true;
-   $r=$db->Execute($query);
-   //$db->debug=false;
-   if ($r)
-      $menu=$r->GetMenu2('tableid',$tableid);
-   echo "<td>$menu</td>\n";
+$r=$db->Execute("SELECT label,id FROM tableoftables LEFT JOIN groupxtable_display on tableoftables.id=groupxtable_display.tableid where display='Y' AND permission='Users' AND groupid={$USER['group_array'][0]} ORDER BY sortkey");
+$menu=$r->GetMenu2('tableid',$tableid);
+echo "<td>$menu</td>\n";
+/*
 } else {
    echo "<td><input type='hidden' name='tableid' value='$tableid'>$tablelabel</td>\n";
 }
+*/
 
 if ($permissions & $SUPER) {
    $query = 'SELECT login,id FROM users ORDER By login';
