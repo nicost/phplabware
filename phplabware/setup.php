@@ -12,7 +12,7 @@
   *  option) any later version.                                              *
   \**************************************************************************/                                                                             
 
-$version_code=0.001;
+$version_code=0.002;
 $localdir=exec("pwd");
 include ('includes/functions_inc.php');
 if (!file_exists("includes/config_inc.php")) {
@@ -25,7 +25,7 @@ include ('includes/config_inc.php');
 include ("includes/defines_inc.php");
 include ('adodb/adodb.inc.php');
 
-$post_vars="action,pwd,secure_server_new,submit,";
+$post_vars="action,authmethod,checkpwd,pwd,secure_server_new,submit,";
 globalize_vars($post_vars, $HTTP_POST_VARS);
 
 // only allow connections from localhost
@@ -148,7 +148,7 @@ CREATE TABLE settings
       // $db->RollBackTrans();
    }
    else {
-      //echo "<h3 align='center'>Succesfully created database tables!</h3>\n";
+      echo "<h3 align='center'>Succesfully created database tables!</h3>\n";
       // $db->CommitTrans();
       $version=$version_code;
    }
@@ -163,10 +163,37 @@ if ($version) {
    $settings=unserialize(get_cell($db, "settings", "settings", "id", 1));
    // display form with current settings
    if ($action) {
+      // insert database updates here
+      if ($version<$version_code) {
+         $test=true;
+	 // $db->debug=true;
+         if ($version<0.002) {
+	    $query="CREATE TABLE authmethods 
+	       (id int PRIMARY KEY, 
+	        method text)";
+	    if (!$db->Execute($query)) $test=false;
+	    $query="INSERT INTO authmethods VALUES (1,'SQL')";
+	    if (!$db->Execute($query)) $test=false;
+	    $query="INSERT INTO authmethods VALUES (2,'PAM')";
+	    if (!$db->Execute($query)) $test=false;
+	 }
+	 $query="UPDATE settings SET version='$version_code' WHERE id=1";
+	 if (!$db->Execute($query)) $test=false;
+	 
+	 if ($test)
+            echo "<h3 align='center'>Succefully updated the database to version $version_code.</h3>\n";
+	 else 
+            echo "<h3 align='center'>Failed to update the database to version $version_code.</h3>\n";
+      }
+      
       if ($secure_server_new=="Yes")
          $settings["secure_server"]=true;
       else
          $settings["secure_server"]=false;
+      if ($authmethod)
+         $settings["authmethod"]=$authmethod;
+      if ($checkpwd)
+         $settings["checkpwd"]=$checkpwd;
       $settings_ser=serialize($settings);
       $query="UPDATE settings SET settings='$settings_ser' WHERE id=1";
       $result=$db->Execute($query);
@@ -192,6 +219,17 @@ if ($version) {
             &nbsp&nbsp No<input type='radio' name='secure_server_new' checked 
             value='No'>\n";
    echo "</td></tr>\n";
+   echo "<tr><td>Authentification method.  For PAM you will need the utility 'testpwd' available from <a href='http://sourceforge.net/project/showfiles.php?group_id=17393'>in the package check_user</a>. </td>";
+   $query="SELECT method,id FROM authmethods";
+   $r=$db->Execute($query);
+   echo "\n<td align='center'>";
+   echo $r->GetMenu2("authmethod",$settings["authmethod"],false);
+   echo "</td></tr>\n";
+   echo "<tr><td>(When using PAM:) Location of check_pwd. ";
+   echo "Please use this only in conjunction with the sudo command</td>\n";
+   echo "<td>\n";
+   $checkpwd=$settings["checkpwd"];
+   echo "<input type='text' name='checkpwd' value='$checkpwd'></td></tr>\n";
 
    echo "<tr><td colspan=2 align='center'><input align=center type=submit 
          name=action value=submit></td></tr>\n";  
