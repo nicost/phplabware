@@ -664,7 +664,7 @@ function make_SQL_ids ($r,$ids,$field="id") {
 ////
 // !Returns an array with ids of records the user may see in SQL format
 // Works with MySQL but not with early postgres 7 versions (current ones should
-// work
+// work)
 function may_read_SQL_JOIN ($db,$table,$USER) {
    include ('includes/defines_inc.php');
    if (!($USER["permissions"] & $SUPER)) {
@@ -731,7 +731,7 @@ function make_temp_table ($db,$temptable,$r) {
          $r->MoveNext();
       }
    }
-   // INSERT is to slow.  COPY instead from a file.  postgres only!
+   // INSERT is too slow.  COPY instead from a file.  postgres only!
    $tmpfile=tempnam($system_settings["tmppsql"],"tmptable");
    $fp=fopen($tmpfile,"w");
    fwrite($fp,$string);
@@ -746,7 +746,6 @@ function make_temp_table ($db,$temptable,$r) {
 ////
 // !determines whether or not the user may read this record
 function may_read ($db,$tableinfo,$id,$USER) {
-//   $table=get_cell($db,"tableoftables","real_tablename","id",$tableid);
    $list=may_read_SQL($db,$tableinfo,$USER);
    $query="SELECT id FROM $tableinfo->realname WHERE ".$list["sql"];
    $r=$db->Execute($query);
@@ -823,6 +822,44 @@ function make_SQL_csf ($r,$ids,$field="id",&$column_count) {
    }
    return ($ids);
 }
+////
+// !helperfunction for numerictoSQL
+function typevalue ($value,$type) {
+   if ($type=="int") {
+      return (int)$value;
+   }
+   elseif ($type=="float") {
+      return (float)$value;
+   }
+   return false; 
+}
+
+////
+// !interprets numerical search terms into an SQL statement
+// implements ranges (i.e. 1-6), and lists (1,2,3) and combinations thereof
+function numerictoSQL ($searchterm,$column,$type,$and) {
+   $commalist=explode(",",$searchterm);
+   for ($i=0;$i<sizeof($commalist);$i++) {
+      $rangelist=explode("-",$commalist[$i]);
+      if (sizeof($rangelist)==2) {
+         sort($rangelist);
+         $value1=typevalue($rangelist[0],$type);
+         $value2=typevalue($rangelist[1],$type);
+         if ($i>0) {
+            $sql.="OR ";
+         }
+         $sql.="($column>=$value1 AND $column<=$value2) ";
+      }
+      elseif (sizeof($rangelist)==1) {
+         $value=typevalue ($commalist[$i],$type);
+         if ($i>0) {
+            $sql.="OR ";
+         }
+         $sql.="($column=$value) ";
+      }
+   }
+   return "$and ($sql) ";
+}
 
 ////
 // !Helper function for search
@@ -863,12 +900,14 @@ function searchhelp ($db,$tableinfo,$column,&$columnvalues,$query,$wcappend,$and
          $query[0].="$and $column='$columnvalues[$column]' ";
       }
       elseif (substr($rc->fields[0],0,3)=="int") {
-         $columnvalues[$column]=(int)$columnvalues[$column];
-         $query[0].="$and $column='$columnvalues[$column]' ";
+         $query[0].=numerictoSQL ($columnvalues[$column],$column,"int",$and); 
+         // $columnvalues[$column]=(int)$columnvalues[$column];
+         // $query[0].="$and $column='$columnvalues[$column]' ";
       }
       elseif (substr($rc->fields[0],0,5)=="float") {
-         $columnvalues[$column]=(float)$columnvalues[$column];
-         $query[0].="$and $column='$columnvalues[$column]' ";
+         $query[0].=numerictoSQL ($columnvalues[$column],$column,"float",$and); 
+         // $columnvalues[$column]=(float)$columnvalues[$column];
+         // $query[0].="$and $column='$columnvalues[$column]' ";
       }
       else {
          $columnvalues[$column]=trim($columnvalues[$column]);
