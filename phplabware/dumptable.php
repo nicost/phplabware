@@ -28,7 +28,7 @@ if (!$USER["permissions"] & $SUPER) {
 $tablename=$HTTP_GET_VARS["tablename"];
 if (!$tablename) {
    echo "<h3 align='center'>Usage: dumptable.php?tablename=mytablename.</h3>\n";
-   printfooter($d, $USER);
+   printfooter($db, $USER);
 }
 
 $tableid=get_cell($db,"tableoftables","id","tablename",$tablename);
@@ -40,7 +40,7 @@ if (!$tableid) {
 $table_desc=get_cell($db,"tableoftables","table_desc_name","tablename",$tablename);
 $table_label=get_cell($db,"tableoftables","label","tablename",$tablename);
 $table_plugin=get_cell($db,"tableoftables","plugin_code","tablename",$tablename);
-echo "$table_plugin";
+//echo "$table_plugin";
 
 // open file to write output to
 $outfile=$system_settings["tmpdir"]."/dumptable.php";
@@ -175,6 +175,6 @@ fclose($fp);
 
 echo "<h3>Wrote script to $outfile.</h3>";
 
-printfooter($d, $USER);
+printfooter($db, $USER);
 
 ?>
