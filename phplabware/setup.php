@@ -12,7 +12,7 @@
   *  option) any later version.                                              *
   \**************************************************************************/                                                                             
 
-$version_code=0.0036;
+$version_code=0.0041;
 $localdir=exec("pwd");
 include ('includes/functions_inc.php');
 if (!file_exists("includes/config_inc.php")) {
@@ -133,6 +133,13 @@ if ($version) {
          include ("dd/0_0035_inc.php");
       if ($version<0.0036)
          include ("dd/0_0036_inc.php");
+      if ($version<0.0041) {
+         include ("dd/0_0037_inc.php");
+         include ("dd/0_0038_inc.php");
+         include ("dd/0_0039_inc.php");
+         include ("dd/0_0040_inc.php");
+         include ("dd/0_0041_inc.php");
+      }
       
       $query="UPDATE settings SET version='$version_code' WHERE id=1";
       if (!$db->Execute($query)) $test=false;
