@@ -383,7 +383,7 @@ else {
    //  get a list of all fields that are displayed in the table
    $Fieldscomma=comma_array_SQL_where($db,$table_desname,"columnname","display_table","Y");
    $Labelcomma=comma_array_SQL_where($db,$table_desname,"label","display_table","Y");
-   $Allfields=getvalues($db,$real_tablename,$table_desname,$tableid,$Fieldscomma);	
+   $Allfields=getvalues($db,$tableinfo,$Fieldscomma,false,false);	
    
    // javascript to automatically execute search when pulling down 
    $jscript="onChange='document.g_form.searchj.value=\"Search\"; document.g_form.submit()'";
