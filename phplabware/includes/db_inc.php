@@ -756,7 +756,7 @@ function searchhelp ($db,$tableinfo,$column,&$columnvalues,$query,$wcappend,$and
       // should probably do this more upstream for performance gain
       $rc=$db->Execute("SELECT type,datatype,associated_table FROM ".$tableinfo->desname." WHERE columnname='$column'");
       if ($rc->fields[1]=="file" && $rc->fields[2]) {
-         $rw=$db->Execute("SELECT id FROM words WHERE word LIKE '$columnvalues[$column]'");
+         $rw=$db->Execute("SELECT id FROM words WHERE word LIKE '".strtolower($columnvalues[$column])."'");
          if ($rw && $rw->fields[0]) {
             $rh=$db->Execute("SELECT recordid FROM ".$rc->fields[2]." WHERE wordid='".$rw->fields[0]."'");
             if ($rh && $rh->fields[0]) {
