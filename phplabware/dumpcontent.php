@@ -106,6 +106,8 @@ if (!$ff) {
    echo "<h3 align='center'>Failed to open <i>$filetable</i> for output</h3>\n";
    printfooter($db, $USER);
 }
+// write the column headers for the temp file table
+fwrite ($ff,"id\tname\tmime\tsize\ttype\n");
 
 if (!$fields) {
    if ($HTTP_GET_VARS['fields'])  
