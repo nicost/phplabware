@@ -17,9 +17,6 @@
 
 $userfields ="id,login,firstname,lastname,pwd,groupid,permissions,email,indir,outdir";
 
-// main global vars
-$title = "Admin Users";
-
 // main include calls
 require("include.php");
 
@@ -303,19 +300,13 @@ function show_user_form ($type) {
 
 /****************************** main script ***********************************/
 
-// extend title if user is an admin
-if ($USER["permissions"] & $ADMIN):
-   $title .= " in group: ".get_cell($db,"groups","name","id",$USER["groupid"]);
-endif;
-
-// Only a groupadmin and sysadmin are allowed to view this page
 allowonly($ACTIVE,$USER["permissions"]);
 
 
-printheader($title);
-navbar($USER["permissions"]);
-
 if ($type=="me") {
+   $title .= "Personal Settings";
+   printheader($title);
+   navbar($USER["permissions"]);
    // pull existing data from database
    $query = "SELECT $userfields FROM users WHERE id=$USER[id];";
    $r = $db->Execute($query);
@@ -337,6 +328,14 @@ if ($me=="Change Settings") {
 
 // Only a groupadmin and sysadmin are allowed to view the remainder
 allowonly($ADMIN,$USER["permissions"]);
+
+// set title and print headers
+$title.="User administration";
+// extend title if user is an admin
+if ($USER["permissions"] < $SUPER)
+   $title .= " in group ".get_cell($db,"groups","name","id",$USER["groupid"]);
+printheader($title);
+navbar($USER["permissions"]);
 
 // Check whether modify or delete button has been chosen
 $del=false;
