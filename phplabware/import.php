@@ -23,23 +23,48 @@ include ('./includes/defines_inc.php');
 
 $post_vars='delimiter,delimiter_type,quote,quote_type,tableid,nrfields,pkey,pkeypolicy,skipfirstline,tmpfile,ownerid,localfile';
 globalize_vars($post_vars, $HTTP_POST_VARS);
+$get_vars='tableid';
+globalize_vars($get_vars, $HTTP_GET_VARS);
 
 $permissions=$USER['permissions'];
+/**
+ * Prevent unauthorized assignment to other users:
+ */
+if (!($permissions & $SUPER)) {
+   $ownerid=$USER['id'];
+}
+/**
+ * Make sure that this user is allowed to work with the desired table
+ */
+if (isset($tableid)) {
+   $query = "SELECT label,id FROM tableoftables LEFT JOIN groupxtable_display on tableoftables.id=groupxtable_display.tableid where display='Y' AND permission='Users' AND groupid={$USER['group_array'][0]} and tableoftables.id=$tableid ";
+   $r=$db->Execute($query);
+   if (!$r->fields[0]) {
+      navbar($USER['permissions']);
+      echo "Illegal request detected. Bailing out";
+      printfooter($db,$USER);
+      exit;
+   } else {
+      $tablelabel=$r->fields[0];
+   }
+}
+
 $httptitle.=' Import data';
 printheader($httptitle,false,$jsfile);
 $tmpdir=$system_settings['tmpdir'];
 
-if (!($permissions & $SUPER)) {
-	navbar($USER['permissions']);
-	echo "<h3 align='center'><b>Sorry, this page is not for you</B></h3>";
-	printfooter($db,$USER);
-	exit;
+if (!($permissions & $USER)) {
+   navbar($USER['permissions']);
+   echo "<h3 align='center'><b>Sorry, this page is not for you</B></h3>";
+   printfooter($db,$USER);
+   exit;
 }
 
 navbar($USER['permissions']);
 
-////
-//
+/**
+ *
+ */
 function move ($fromfile, $tofile) {
    //  guess this won't work on Windows
    `mv '$fromfile' '$tofile'`;
@@ -72,11 +97,13 @@ function mymktime($datestring) {
    return mktime(0,0,0,$month,$day,$year);
 }
 
-////
-// !Upload files and enters then into table files
-// files should be called file[] in HTTP_POST_FILES
-// filetitle in HTTP_POST_VARS will be inserted in the title field of table files
-// returns id of last uploaded file upon succes, false otherwise
+/**
+ *  Upload files and enters then into table files
+ *
+ * files should be called file[] in HTTP_POST_FILES
+ * filetitle in HTTP_POST_VARS will be inserted in the title field of table files
+ * returns id of last uploaded file upon succes, false otherwise
+ */
 function import_file ($db,$tableid,$id,$columnid,$columnname,$tmpfileid,$system_settings)
 {
    if (!$tmpfileid)
@@ -118,8 +145,10 @@ function import_file ($db,$tableid,$id,$columnid,$columnname,$tmpfileid,$system_
    return $fileid;
 }
 
-////
-// !returns variable delimiter, based on delimiter_type (a POST variable)
+/**
+ *  returns variable delimiter, based on delimiter_type (a POST variable)
+ *
+ */
 function get_delimiter ($delimiter,$delimiter_type) {
    if ($delimiter)
       return $delimiter;
@@ -134,8 +163,10 @@ function get_delimiter ($delimiter,$delimiter_type) {
    return $delimiter;
 } 
  
-////
-// !returns the string 'quote', based on quote_type (a POST variable)
+/**
+ *  returns the string 'quote', based on quote_type (a POST variable)
+ *
+ */
 function get_quote ($quote,$quote_type) {
    if ($$quote)
       return $$quote;
@@ -148,9 +179,11 @@ function get_quote ($quote,$quote_type) {
    return $quote;
 } 
 
-////
-// !corrects problems in input data (Removes quotes around text, 
-// checks for ints and floats, quotes text
+/**
+ *  corrects problems in input data (Removes quotes around text, 
+ *
+ * checks for ints and floats, quotes text
+ */
 function check_input ($tableinfo, &$fields, $to_fields, $field_types, $field_datatypes, $nrfields)
 {
    global $db;
@@ -198,9 +231,11 @@ function check_input ($tableinfo, &$fields, $to_fields, $field_types, $field_dat
    //return $fields;
 }
           
-////
-// !in quoted lines, empty fields are (sometimes) not quoted
-// we try to deal nicely with those here
+/**
+ *  in quoted lines, empty fields are (sometimes) not quoted
+ *
+ * we try to deal nicely with those here
+ */
 function check_line(&$line,$quote,$delimiter) {
    if ($quote) {
       // delimiters without quotes can be a problem, so add quotes to them
@@ -270,7 +305,7 @@ if ($HTTP_POST_VARS['assign']=='Import Data') {
                 $row[$columnname]=$value;
              }
              if ($line)
-                $db->Execute($db->GetInsertSQL(&$rs,$row));
+                $db->Execute($db->GetInsertSQL($rs,$row));
          }
       }
    }
@@ -393,7 +428,7 @@ if ($HTTP_POST_VARS['assign']=='Import Data') {
             // if there is no primary key set, we simply INSERT a new record
             //if ( !(isset($pkey) || isset($recordid)) ) 
 	    elseif ($pkeypolicy!='onlyupdate') {
-$db->debug=true;
+//$db->debug=true;
                $query_start="INSERT INTO $table (";
                $query_end=" VALUES (";
                $newid=false;
@@ -627,16 +662,31 @@ echo "<td align='center'> <table><tr>
    <td><input type='radio' name='quote_type' value='none' checked> none</td></tr>
    <tr><td>&nbsp;</td></tr>
    </table></td>\n";
-$query = "SELECT label,id FROM tableoftables where id>1000 ORDER BY sortkey";
-$r=$db->Execute($query);
-if ($r)
-   $menu=$r->GetMenu2("tableid",$tableid);
-echo "<td>$menu</td>\n";
-$query = "SELECT login,id FROM users";
-$r=$db->Execute($query);
-if ($r)
-   $menu2=$r->GetMenu2("ownerid",$ownerid);
-echo "<td>$menu2</td>\n";
+//$query = "SELECT label,id FROM tableoftables where id>1000 ORDER BY sortkey";
+// This might fail in MySQL
+//$query = "SELECT label,id FROM tableoftables where display='Y' AND permission='Users' AND id IN (SELECT tableid FROM groupxtable_display WHERE groupid={$USER['group_array'][0]}) ORDER BY sortkey";
+if (!isset($tableid)) {
+   $query = "SELECT label,id FROM tableoftables LEFT JOIN groupxtable_display on tableoftables.id=groupxtable_display.tableid where display='Y' AND permission='Users' AND groupid={$USER['group_array'][0]} ORDER BY sortkey";
+   //$db->debug=true;
+   $r=$db->Execute($query);
+   //$db->debug=false;
+   if ($r)
+      $menu=$r->GetMenu2('tableid',$tableid);
+   echo "<td>$menu</td>\n";
+} else {
+   echo "<td><input type='hidden' name='tableid' value='$tableid'>$tablelabel</td>\n";
+}
+
+if ($permissions & $SUPER) {
+   $query = 'SELECT login,id FROM users ORDER By login';
+   $r=$db->Execute($query);
+   if ($r)
+      $menu2=$r->GetMenu2('ownerid',$ownerid);
+   echo "<td>$menu2</td>\n";
+} else {
+   echo "<td><input type='hidden' name='ownerid' value={$USER['id']}>";
+   echo "{$USER['login']}</td>\n";
+}
 echo "</tr>\n";
 
 echo "<tr><td colspan='4' align='center'><input type='submit' name='dataupload' value='Continue'></td></tr>\n";
