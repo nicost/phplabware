@@ -97,6 +97,14 @@ CREATE TABLE settings
    if (!$result) $test=false;
    $result=$db->Execute("INSERT INTO settings VALUES (1,0.001,'',".$db->DBDate(time()).")");
    if (!$result) $test=false;
+   $query="CREATE TABLE authmethods 
+      (id int PRIMARY KEY, 
+      method text)";
+   if (!$db->Execute($query)) $test=false;
+   $query="INSERT INTO authmethods VALUES (1,'SQL')";
+   if (!$db->Execute($query)) $test=false;
+   $query="INSERT INTO authmethods VALUES (2,'PAM')";
+   if (!$db->Execute($query)) $test=false;
    $result=$db->Execute("CREATE TABLE users 
 	(id int PRIMARY KEY, 
 	firstname text, 
@@ -167,19 +175,10 @@ if ($version) {
    // insert database updates here
    if ($version<$version_code) {
       $test=true;
-      if ($version<0.002) {
-         $query="CREATE TABLE authmethods 
-            (id int PRIMARY KEY, 
-	     method text)";
-	 if (!$db->Execute($query)) $test=false;
-	 $query="INSERT INTO authmethods VALUES (1,'SQL')";
-	 if (!$db->Execute($query)) $test=false;
-	 $query="INSERT INTO authmethods VALUES (2,'PAM')";
-	 if (!$db->Execute($query)) $test=false;
-      }
       if ($version<0.0021) {
          $query="CREATE TABLE antibodies (
 	    id int PRIMARY KEY,
+	    access int,
 	    name text,
 	    type1 int,
 	    type2 int,
@@ -198,9 +197,9 @@ if ($version) {
             (id int PRIMARY KEY, 
 	     type text)";
 	 if (!$db->Execute($query)) $test=false;
-	 $query="INSERT INTO ab_type1 VALUES (1,'1')";
+	 $query="INSERT INTO ab_type1 VALUES (1,'Primary')";
 	 if (!$db->Execute($query)) $test=false;
-	 $query="INSERT INTO ab_type1 VALUES (2,'2')";
+	 $query="INSERT INTO ab_type1 VALUES (2,'Secundary')";
 	 if (!$db->Execute($query)) $test=false;
 	 $query="INSERT INTO ab_type1 VALUES (3,'other')";
 	 if (!$db->Execute($query)) $test=false;
@@ -224,6 +223,44 @@ if ($version) {
 	 $query="INSERT INTO ab_type3 VALUES (3,30,'rabbit')";
 	 if (!$db->Execute($query)) $test=false;
 	 $query="INSERT INTO ab_type3 VALUES (4,40,'rat')";
+	 if (!$db->Execute($query)) $test=false;
+         $query="CREATE TABLE ab_type4 
+            (id int PRIMARY KEY,
+	     sortkey int,
+	     type text)";
+	 if (!$db->Execute($query)) $test=false;
+	 $query="INSERT INTO ab_type4 VALUES (1,100,'IgG')";
+	 if (!$db->Execute($query)) $test=false;
+	 $query="INSERT INTO ab_type4 VALUES (2,200,'IgM')";
+	 if (!$db->Execute($query)) $test=false;
+	 $query="INSERT INTO ab_type4 VALUES (3,300,'IgG1')";
+	 if (!$db->Execute($query)) $test=false;
+	 $query="INSERT INTO ab_type4 VALUES (4,400,'IgG2a')";
+	 if (!$db->Execute($query)) $test=false;
+	 $query="INSERT INTO ab_type4 VALUES (5,500,'IgG2b')";
+	 if (!$db->Execute($query)) $test=false;
+	 $query="INSERT INTO ab_type4 VALUES (6,600,'IgE')";
+	 if (!$db->Execute($query)) $test=false;
+         $query="CREATE TABLE ab_type5 
+            (id int PRIMARY KEY,
+	     sortkey int,
+	     type text)";
+	 if (!$db->Execute($query)) $test=false;
+	 $query="INSERT INTO ab_type5 VALUES (1,100,'Phosphatase (Alk.)')";
+	 if (!$db->Execute($query)) $test=false;
+	 $query="INSERT INTO ab_type5 VALUES (2,200,'Peroxidase (H.)')";
+	 if (!$db->Execute($query)) $test=false;
+	 $query="INSERT INTO ab_type5 VALUES (3,300,'FITC')";
+	 if (!$db->Execute($query)) $test=false;
+	 $query="INSERT INTO ab_type5 VALUES (4,400,'Rhodamine')";
+	 if (!$db->Execute($query)) $test=false;
+	 $query="INSERT INTO ab_type5 VALUES (5,500,'Cy3')";
+	 if (!$db->Execute($query)) $test=false;
+	 $query="INSERT INTO ab_type5 VALUES (6,600,'Cy5')";
+	 if (!$db->Execute($query)) $test=false;
+	 $query="INSERT INTO ab_type5 VALUES (7,700,'Alex-488')";
+	 if (!$db->Execute($query)) $test=false;
+	 $query="INSERT INTO ab_type5 VALUES (8,0,'None')";
 	 if (!$db->Execute($query)) $test=false;
       }
       
