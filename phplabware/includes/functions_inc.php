@@ -345,75 +345,77 @@ function navbar($permissions) {
    
    // No javascript or the user preferes the old style menus:
    else {
-   $links_per_row=6;
+      $links_per_row=6;
    
-   if ($permissions & $ACTIVE) {
+      if ($permissions & $ACTIVE) {
 				
-      echo "<table border=0 width=100% cellspacing='0' cellpadding='0' bgcolor='eeeeff'>\n";
-      $records=$db->Execute("select tablename,custom,id,label from tableoftables where display='Y' and permission='Users' ORDER by sortkey");
-      $count=0;
-      if ($records) {
-         $query="SELECT tableid FROM groupxtable_display WHERE (groupid='".$USER["group_array"][0]."' ";
-         for ($i=1;$i<sizeof($USER["group_array"]);$i++)
-	    $query.="OR groupid='".$USER["group_array"][$i]."' ";
-	 $query.=")";
-	 $rb=$db->Execute($query);
-	 while ($rb && !$rb->EOF) {
-	    $showtables[]=$rb->fields["tableid"];
-	    $rb->MoveNext();
-	 }
-         while (!$records->EOF) {
-	    if (in_array($records->fields["id"],$showtables)) {
-               //if ($count && (($count % $links_per_row)==0))
-               if (($count % $links_per_row)==0)
-                  echo "</tr>\n<tr bgcolor='eeeeff' align='center'>\n";
-               $tabname=$records->fields[0];
-               $scriptname=$records->fields[1];
-               $label=$records->fields["label"];
-               $linkname="";
-               if ($scriptname=="")
-                  $linkname="general.php?tablename=$tabname&".SID;
-               else 
-                  $linkname=$scriptname."?".SID;
-               echo "      <td style='width: 20%' align='center'><a href=\"$linkname\">$label</a></td>\n";
-               $count++;
-	    }
-            $records->MoveNext(); 
-         }	
-         // the following is needed to make table look decent in Netscape 4
-         $range=$count % $links_per_row;
-         if ($range) {
-            $range=$links_per_row-$range;
-            for ($i=0;$i<$range;$i++)
-               echo "<td style='width: 20% align='center'>&nbsp;</td>\n";
-         }
-      } 
-   }
-   echo "</tr>\n</table>\n\n";
+         echo "<table border=0 width=100% cellspacing='0' cellpadding='0' bgcolor='eeeeff'>\n";
+         $records=$db->Execute("select tablename,custom,id,label from tableoftables where display='Y' and permission='Users' ORDER by sortkey");
+         $count=0;
+         if ($records) {
+            $query="SELECT tableid FROM groupxtable_display WHERE (groupid='".$USER["group_array"][0]."' ";
+            for ($i=1;$i<sizeof($USER["group_array"]);$i++)
+               $query.="OR groupid='".$USER["group_array"][$i]."' ";
+	    $query.=")";
+            $rb=$db->Execute($query);
+            while ($rb && !$rb->EOF) {
+               $showtables[]=$rb->fields["tableid"];
+               $rb->MoveNext();
+            }
+            while (!$records->EOF) {
+               if (in_array($records->fields["id"],$showtables)) {
+                  if (($count % $links_per_row)==0)
+                     echo "</tr>\n<tr bgcolor='eeeeff' align='center'>\n";
+                  $tabname=$records->fields[0];
+                  $scriptname=$records->fields[1];
+                  $label=$records->fields["label"];
+                  $linkname="";
+                  if ($scriptname=="")
+                     $linkname="general.php?tablename=$tabname&".SID;
+                  else 
+                     $linkname=$scriptname."?".SID;
+                  echo "      <td style='width: 20%' align='center'><a href=\"$linkname\">$label</a></td>\n";
+                  $count++;
+	       }
+               $records->MoveNext(); 
+            }	
+            // the following is needed to make table look decent in Netscape 4
+            $range=$count % $links_per_row;
+            if ($range) {
+               $range=$links_per_row-$range;
+               for ($i=0;$i<$range;$i++)
+                  echo "<td style='width: 20% align='center'>&nbsp;</td>\n";
+            }
+         } 
+      }
+      echo "</tr>\n</table>\n\n";
 
-   echo "<table border=0 width=100% cellspacing='0' cellpadding='0'>\n";
-   echo "<tr bgcolor='eeeeff' align='center'>";
-   if ($permissions & $ADMIN) {
-      ?>      
+      echo "<table border=0 width=100% cellspacing='0' cellpadding='0'>\n";
+      echo "<tr bgcolor='eeeeff' align='center'>";
+         ?>
+      <td align='center'><a href="users.php?type=me&<?=SID?>">settings</a></td>
+<?php
+      if ($permissions & $ADMIN) {
+         ?>      
       <td align='center'><a href="users.php?<?=SID?>">users</a></td>
 <?php
-   }
-   if ($permissions & $SUPER) {
-      ?>
+      }
+      if ($permissions & $SUPER) {
+         ?>
       <td align='center'><a href="groups.php?<?=SID?>">groups</a></td>
       <td align='center'><a href="tablemanage.php?<?=SID?>">tables</a></td>
       <td align='center'><a href="linkbar.php?<?=SID?>">linkbar</a></td>
       <td align='center'><a href="setup.php?<?=SID?>">system</a></td>
 <?php
-   }
-   if ($permissions) {
-      ?>
+      }
+      if ($permissions) {
+         ?>
       <td  align='right'><a href="logout.php?<?=SID?>">logout</a>&nbsp;</td>
 <?php
-   }
-   else
-      echo "<td align='right'><a href='login.php'>login</a></td>";
-   echo "</tr>\n</table>\n<hr>\n";
+      }
+      else
+         echo "<td align='right'><a href='login.php'>login</a></td>";
+      echo "</tr>\n</table>\n<hr>\n";
    }
    echo "<!--************************END OF NAVBAR**********************-->\n";
 }
