@@ -77,17 +77,6 @@ if ($searchj || $sortup || $sortdown)
    $search="Search";
 
 /*****************************BODY*******************************/
-/*
-printheader($httptitle);
-if (!$edit_type)
-   navbar($USER["permissions"]);
-
-// name this window so that javascript code can refer back to it
-$head="<script language=\"Javascript\">\n<!--\n";
-$head.="   this.window.name=\"".$tableinfo->name."\"\n";
-$head.="-->\n</script>\n";
-*/
-
 
 // check wether user may see this table
 if (!may_see_table($db,$USER,$tableinfo->id)) {
@@ -209,13 +198,12 @@ if ($showid && !$jsnewwindow) {
 // when the 'Add' button has been chosen: 
 if ($add) {
    add_g_form($db,$tableinfo,$field_values,0,$USER,$PHP_SELF,$system_settings);
-   }
+}
 else { 
     // first handle addition of a new record
    if ($submit == "Add Record") {
       if (!(check_g_data($db, $HTTP_POST_VARS, $tableinfo->desname) && 
-            $id=add($db,$tableinfo->realname,$tableinfo->fields,$HTTP_POST_VARS,$USER,$tableinfo->id) ) )
-      	{
+            $id=add($db,$tableinfo->realname,$tableinfo->fields,$HTTP_POST_VARS,$USER,$tableinfo->id) ) ) {
          add_g_form($db,$tableinfo,$HTTP_POST_VARS,0,$USER,$PHP_SELF,$system_settings);
          printfooter ();
          exit;
@@ -252,7 +240,9 @@ else {
    }
    // then look whether it should be modified
    elseif ($submit=="Modify Record") {
-      if (! (check_g_data($db,$HTTP_POST_VARS,$tableinfo->desname,true) && modify($db,$tableinfo->realname,$tableinfo->fields,$HTTP_POST_VARS,$HTTP_POST_VARS["id"],$USER,$tableinfo->id)) ) {
+      if (! (check_g_data($db,$HTTP_POST_VARS,$tableinfo->desname,true) && 
+             modify($db,$tableinfo->realname,$tableinfo->fields,$HTTP_POST_VARS,$HTTP_POST_VARS["id"],$USER,$tableinfo->id)) ) {
+echo "But check_g_data did return false???<br>";
          add_g_form ($db,$tableinfo,$HTTP_POST_VARS,$HTTP_POST_VARS["id"],$USER,$PHP_SELF,$system_settings);
          printfooter ();
          exit;
@@ -455,8 +445,8 @@ else {
          else
             echo "<td style='width:10%'>test</td>\n";
       }
-      elseif ($nowfield["datatype"]=="int" || $nowfield["datatype"]=="float" || $nowfield["datatype"]=="sequence") {
-    	    echo  " <td style='width: 10%'><input type='text' name='$nowfield[name]' value='".${$nowfield[name]}."'size=8 align='right'></td>\n";
+      elseif ($nowfield["datatype"]=="int" || $nowfield["datatype"]=="float" || $nowfield["datatype"]=="sequence" || $nowfield['datatype']=="date") {
+    	    echo  " <td style='width: 10%'><input type='text' name='$nowfield[name]' value='".${$nowfield[name]}."'size=8 align='center'></td>\n";
       }
       elseif ($nowfield["datatype"]== "text" || $nowfield["datatype"]=="file")
          echo  " <td style='width: 25%'><input type='text' name='$nowfield[name]' value='".${$nowfield[name]}."'size=8></td>\n";

@@ -350,20 +350,20 @@ function display_add($db,$tableinfo,$Allfields,$id,$namein,$system_settings) {
    echo "<table border=0 align='center'>\n<tr align='center'>\n<td colspan=2></td>\n";
    foreach ($Allfields as $nowfield) {
       // see if display_record is set
-      if ( (($nowfield["display_record"]=="Y") || ($nowfield["display_table"]=="Y")) ) {
+      if ( (($nowfield['display_record']=="Y") || ($nowfield['display_table']=='Y')) ) {
          // To persist between multiple invocation, grab POST vars 
-         if ($nowfield["modifiable"]=="Y" && isset($HTTP_POST_VARS[$nowfield["name"]]) && $HTTP_POST_VARS[$nowfield["name"]] && isset($HTTP_POST_VARS["submit"]))
-            $nowfield["values"]=$HTTP_POST_VARS[$nowfield["name"]];
-         if ($nowfield["modifiable"]=="N" && $nowfield["datatype"]!="sequence") {
+         if ($nowfield['modifiable']=='Y' && isset($HTTP_POST_VARS[$nowfield['name']]) && $HTTP_POST_VARS[$nowfield['name']] && isset($HTTP_POST_VARS['submit']))
+            $nowfield['values']=$HTTP_POST_VARS[$nowfield['name']];
+         if ($nowfield['modifiable']=='N' && $nowfield['datatype']!='sequence') {
             echo "<input type='hidden' name='$nowfield[name]' value='$nowfield[values]'>\n";
-            if ($nowfield[text] && $nowfield[text]!="" && $nowfield[text]!=" ") {
+            if ($nowfield['text'] && $nowfield['text']!="" && $nowfield['text']!=" ") {
                echo "<tr><th>$nowfield[label]:</th>"; 
                echo "<td>$nowfield[text]";
             }
          }
-         elseif ($nowfield[datatype]=="text" || $nowfield[datatype]=="int" || $nowfield[datatype]=="float") {
+         elseif ($nowfield['datatype']=='text' || $nowfield['datatype']=='int' || $nowfield['datatype']=='float' || $nowfield['datatype']=='date') {
             echo "<tr><th>$nowfield[label]:"; 
-            if ($nowfield[required]=="Y") {
+            if ($nowfield['required']=='Y') {
                echo "<sup style='color:red'>&nbsp;*</sup>";
             }
             echo "</th>\n";
@@ -371,46 +371,46 @@ function display_add($db,$tableinfo,$Allfields,$id,$namein,$system_settings) {
                $size=60;
             else
                $size=10;
-     	    echo "<td><input type='text' name='$nowfield[name]' value='$nowfield[values]' $size>";
+     	    echo "<td><input type='text' name='$nowfield[name]' value='$nowfield[text]' $size>";
          }
-	 elseif ($nowfield["datatype"]=="sequence") {
-	    if (!$nowfield["text"]) {
+	 elseif ($nowfield['datatype']=='sequence') {
+	    if (!$nowfield['text']) {
 	       // find the highest sequence and return that plus one
 	       $rmax=$db->Execute("SELECT MAX ($nowfield[column]) AS $nowfield[column] FROM ".$tableinfo->realname);
 	       $newseq=$rmax->fields[0]+1;
 	    }
 	    else
-	       $newseq=$nowfield["text"];
+	       $newseq=$nowfield['text'];
             echo "<input type='hidden' name='$nowfield[name]' value='$newseq'>\n";
             echo "<tr><th>$nowfield[label]:"; 
-            if ($nowfield[required]=="Y") {
+            if ($nowfield['required']=='Y') {
                echo "<sup style='color:red'>&nbsp;*</sup>";
 	    }
 	    echo "</th>\n";
-            if ($nowfield["modifiable"]=="N") {
+            if ($nowfield['modifiable']=='N') {
                echo "<td>$newseq";
 	    }
 	    else
      	       echo "<td><input type='text' name='$nowfield[name]' value='$newseq' 10>";
 	 }
-         elseif ($nowfield[datatype]=="textlong") {
+         elseif ($nowfield['datatype']=='textlong') {
             echo "<tr><th>$nowfield[label]:";
-            if ($nowfield[required]=="Y") 
+            if ($nowfield[required]=='Y') 
                echo "<sup style='color:red'>&nbsp;*</sup>";
      	    echo "<td><textarea name='$nowfield[name]' rows='5' cols='100%' value='$nowfield[values]'>$nowfield[values]</textarea>";
          }
-         elseif ($nowfield[datatype]=="link") {
+         elseif ($nowfield['datatype']=='link') {
             echo "<tr><th>$nowfield[label] (http link):";
-            if ($nowfield[required]=="Y")
+            if ($nowfield['required']=='Y')
                echo "<sup style='color:red'>&nbsp;*</sup>";
             echo "<td><input type='text' name='$nowfield[name]' value='$nowfield[values]' size=60>";
          }
-         elseif ($nowfield[datatype]=="pulldown") {
+         elseif ($nowfield['datatype']=='pulldown') {
             // get previous value	
             $r=$db->Execute("SELECT typeshort,id FROM $nowfield[ass_t] ORDER BY sortkey");
             $text=$r->GetMenu2("$nowfield[name]",$nowfield[values],true,false);
             echo "<tr><th>$nowfield[label]:";
-            if ($nowfield[required]=="Y")
+            if ($nowfield['required']=='Y')
                echo"<sup style='color:red'>&nbsp;*</sup>";
             echo "</th>\n<td>";
             if ($USER["permissions"] & $LAYOUT) {
@@ -419,9 +419,9 @@ function display_add($db,$tableinfo,$Allfields,$id,$namein,$system_settings) {
             }
             echo "$text<br>";
          }
-         elseif ($nowfield[datatype]=="table") {
+         elseif ($nowfield['datatype']=='table') {
             // only display primary key here
-            if (!$nowfield["ass_local_key"]) { 
+            if (!$nowfield['ass_local_key']) { 
                // get previous value	
                $r=$db->Execute("SELECT $nowfield[ass_column_name],id FROM $nowfield[ass_table_name]");
                $text=$r->GetMenu2("$nowfield[name]",$nowfield[values],true,false);
@@ -431,9 +431,9 @@ function display_add($db,$tableinfo,$Allfields,$id,$namein,$system_settings) {
                echo "</th>\n<td>$text<br>";
             }
          }
-	 if ($nowfield[datatype]=="textlarge") {
+	 if ($nowfield['datatype']=='textlarge') {
 	    echo "<tr><th>$nowfield[name]:";
-            if ($nowfield[required]=="Y")
+            if ($nowfield['required']=='Y')
 	       echo"<sup style='color:red'>&nbsp;*</sup>";
 	    echo "</th><td colspan=6><textarea name='$nowfield[name]' rows='5' cols='100%'>$nowfield[values]</textarea>";
 	 }
@@ -566,25 +566,25 @@ echo "<br>";
             elseif ($rb->fields["datatype"]=="user") {
                $rname=$db->Execute("SELECT firstname,lastname,email FROM users WHERE id=".${$column}["values"]);
                if ($rname && $rname->fields) {
-                  if ($rname->fields[email])
-                     ${$column}["text"]="<a href='mailto:".$rname->fields[email]."'>".$rname->fields[firstname]." ".$rname->fields[lastname]."</a>\n";
+                  if ($rname->fields['email'])
+                     ${$column}['text']="<a href='mailto:".$rname->fields[email]."'>".$rname->fields[firstname]." ".$rname->fields[lastname]."</a>\n";
                   else
                      ${$column}["text"]=$rname->fields[firstname]." ".$rname->fields[lastname]."\n";
                }
             }
-            elseif ($rb->fields["datatype"]=="date") {
-               $dateformat=get_cell($db,"dateformats","dateformat","id",$system_settings["dateformat"]);
-               ${$column}["text"]=date($dateformat,${$column}["values"]);
+            elseif ($rb->fields['datatype']=='date' && ${$column}['values']>0) {
+               $dateformat=get_cell($db,'dateformats','dateformat','id',$system_settings['dateformat']);
+               ${$column}['text']=date($dateformat,${$column}['values']);
             }
             else
-               ${$column}["text"]=${$column}["values"];
+               ${$column}['text']=${$column}['values'];
 
-            if ($rb->fields["link_first"] && ${$column}["values"]) {
-               ${$column}["text"]="<a href='".$rb->fields["link_first"].${$column}["text"].$rb->fields["link_last"]."'>".${$column}["text"]."</a>\n";
+            if ($rb->fields['link_first'] && ${$column}['values']) {
+               ${$column}['text']="<a href='".$rb->fields['link_first'].${$column}['text'].$rb->fields['link_last']."'>".${$column}['text']."</a>\n";
             }
  
-            if (! isset(${$column}["text"]) || strlen(${$column}["text"])<1 )
-               ${$column}["text"]="&nbsp;";
+            if (! isset(${$column}['text']) || strlen(${$column}['text'])<1 )
+               ${$column}['text']='&nbsp;';
          }
       }
       array_push ($Allfields, ${$column});
@@ -613,8 +613,8 @@ function check_g_data ($db,&$field_values, $DB_DESNAME,$modify=false) {
       }
       $rs->MoveNext();
    }
-   // make sure ints and floats are correct
-   $rs = $db->Execute("select columnname,datatype from $DB_DESNAME where datatype IN ('int','float')");
+   // make sure ints and floats are correct, try to set the UNIX date
+   $rs = $db->Execute("select columnname,datatype from $DB_DESNAME where datatype IN ('int','float','date')");
    while ($rs && !$rs->EOF) {
       $fieldA=$rs->fields[0];
       if (isset($field_values["$fieldA"]) && (strlen($field_values[$fieldA]) >0)) {
@@ -622,10 +622,14 @@ function check_g_data ($db,&$field_values, $DB_DESNAME,$modify=false) {
             $field_values["$fieldA"]=(int)$field_values["$fieldA"];
          elseif ($rs->fields[1]=="float")
             $field_values["$fieldA"]=(float)$field_values["$fieldA"];
+         elseif ($rs->fields[1]=="date") {
+            $field_values["$fieldA"]=strtotime($field_values["$fieldA"]);
+            if ($field_values["$fieldA"] < 0)
+               $field_values["$fieldA"]="";
+         }
       }
       $rs->MoveNext();
    }
-
    // Hooray, the first call to a plugin function!!
    if (function_exists("plugin_check_data")) {
       if (!plugin_check_data($db,$field_values,$DB_DESNAME,$modify))
