@@ -267,7 +267,7 @@ function show_ab ($db,$fields,$id,$USER,$system_settings) {
 <form method='post' id='antibodyview' action='<?php echo $PHP_SELF?>?<?=SID?>'> 
 <?php
    echo "<tr>";
-   echo "<td colspan=7 align='center'><input type='submit' name='submit' value='Dismiss'></td>\n";
+   echo "<td colspan=7 align='center'><input type='submit' name='submit' value='Back'></td>\n";
    echo "</tr>\n";
    
 

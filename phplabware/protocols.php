@@ -240,7 +240,7 @@ function show_pr ($db,$fields,$id,$USER,$system_settings) {
 <form method='post' id='protocolview' action='<?php echo $PHP_SELF?>?<?=SID?>'> 
 <?php
    echo "<tr>";
-   echo "<td colspan=7 align='center'><input type='submit' name='submit' value='Dismiss'></td>\n";
+   echo "<td colspan=7 align='center'><input type='submit' name='submit' value='Back'></td>\n";
    echo "</tr>\n";
 
    echo "</table></form>\n";
