@@ -12,7 +12,7 @@
   *  option) any later version.                                              *
   \**************************************************************************/                                                                             
 
-$version_code=0.2001;
+$version_code=0.2002;
 $localdir=exec("pwd");
 include ('includes/functions_inc.php');
 if (!file_exists("includes/config_inc.php")) {
@@ -183,6 +183,10 @@ if ($version) {
       if ($version<0.2001) {
          // add columns gw,gr,ew,er (to replace column access) to each table
          include ("dd/0_2001_inc.php");
+      }
+      if ($version<0.2002) {
+         // fill columns gw,gr,ew,er with values from column access
+         include ("dd/0_2002_inc.php");
       }
 
       $query="UPDATE settings SET version='$version_code' WHERE id=1";
