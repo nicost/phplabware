@@ -12,7 +12,7 @@
   *  option) any later version.                                              *
   \**************************************************************************/                                                                             
 
-$version_code=0.1004;
+$version_code=0.1005;
 $localdir=exec("pwd");
 include ('includes/functions_inc.php');
 if (!file_exists("includes/config_inc.php")) {
@@ -163,6 +163,14 @@ if ($version) {
          $rs=$db->Execute("CREATE TABLE images (id int UNIQUE NOT NULL, x_size int, y_size int, xbt_size int, ybt_size int, xst_size int, yst_size int, xnmperpixel int, ynmperpixel int, rotation int, seq int, type text) ");
          // Create index
          $db->Execute("CREATE INDEX images_id ON images(id)");
+      }
+      if ($version<0.1005) {
+         // Creates table reports
+         $rs=$db->Execute("CREATE TABLE reports (id int UNIQUE NOT NULL, label text, tableid int, template text, sortkey int, type text, file text) ");
+        // Create indices
+        $db->Execute("CREATE INDEX reports_id ON reports(id)");
+        $db->Execute("CREATE INDEX reports_tableid ON reports(tableid)");
+        $db->Execute("CREATE INDEX reports_sortkey ON reports(sortkey)");
       }
 
       $query="UPDATE settings SET version='$version_code' WHERE id=1";
