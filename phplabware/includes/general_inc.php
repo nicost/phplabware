@@ -84,7 +84,8 @@ function searchfield ($db,$tableinfo,$nowfield,$HTTP_POST_VARS,$jscript) {
    // datatype of column ownerid is text (historical oversight...)
    elseif ($nowfield['name']=='ownerid') {
        //if ($list) {
-      $rowners=$db->Execute("SELECT ownerid FROM $tableinfo->realname WHERE $list");
+      $rowners=$db->Execute("SELECT ownerid FROM $tableinfo->realname");
+      //$rowners=$db->Execute("SELECT ownerid FROM $tableinfo->realname WHERE $list");
       while ($rowners && !$rowners->EOF) {
          $ownerids[]=$rowners->fields[0];
          $rowners->MoveNext();
