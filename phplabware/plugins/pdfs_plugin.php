@@ -165,8 +165,7 @@ function plugin_show($db,$tableinfo,$id,$USER,$system_settings,$backbutton=true)
    global $PHP_SELF;
    $journaltable=get_cell($db,$tableinfo->desname,"associated_table","columnname","journal");
    $categorytable=get_cell($db,$tableinfo->desname,"associated_table","columnname","category");
-
-   if (!may_read($db,$tableinfo->id,$id,$USER))
+   if (!may_read($db,$tableinfo,$id,$USER))
       return false;
 
    // get values 
