@@ -186,7 +186,6 @@ function get_quote ($quote,$quote_type) {
 
 /**
  *  corrects problems in input data (Removes quotes around text, 
- *
  * checks for ints and floats, quotes text
  */
 function check_input ($tableinfo, &$fields, $to_fields, $field_types, $field_datatypes, $nrfields)
@@ -242,7 +241,6 @@ function check_input ($tableinfo, &$fields, $to_fields, $field_types, $field_dat
           
 /**
  *  in quoted lines, empty fields are (sometimes) not quoted
- *
  *  we try to deal nicely with those here
  */
 function check_line(&$line,$quote,$delimiter) {
@@ -304,7 +302,6 @@ function addmpulldown($db,$tableinfo,$id,$to_field,$field)
 
 /**
  * Start of the main code
- *
  * do the final parsing (part 3)
  */
 if ($HTTP_POST_VARS['assign']=='Import Data') {
@@ -405,16 +402,6 @@ if ($HTTP_POST_VARS['assign']=='Import Data') {
       $quote=get_quote($quote,$quote_type);
       $fh=fopen("$tmpdir/$tmpfile",'r');
       if ($fh) {
-         $access=$system_settings['access'];
-         // translate the $access string into our new format
-         if ($access{3}=='r')
-            $gr=1; else $gr=0;
-         if ($access{4}=='w')
-            $gw=1; else $gw=0;
-         if ($access{6}=='r')
-            $er=1; else $er=0;
-         if ($access{7}=='w')
-            $ew=1; else $ew=0;
          $lastmoddate=time();
          $lastmodby=$USER['id'];
          if ($skipfirstline=='yes')
@@ -465,8 +452,9 @@ if ($HTTP_POST_VARS['assign']=='Import Data') {
                
             if ($makeNewId) {
                // generate a default record
-               $fieldvalues=set_default($db,$tableinfo,$fields,$USERAS,$system_settings);
-               $recordid=add($db,$tableinfo->realname,$tableinfo->fields,$fields,$USERAS,$tableinfo->id);
+               $tmpfields='gr,gw,er,ew';
+               $fieldvalues=set_default($db,$tableinfo,$tmpfields,$USERAS,$system_settings);
+               $recordid=add($db,$tableinfo->realname,$tableinfo->fields,$fieldvalues,$USERAS,$tableinfo->id);
             }
 
             // only continue if we have a record (existing or newly made) to modify
