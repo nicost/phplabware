@@ -33,7 +33,7 @@ if (!$db->Execute($query)) $test=false;
 $db->Execute("CREATE INDEX protocols_id_index ON protocols (id)");
 $db->Execute("CREATE INDEX protocols_ownerid_index ON protocols (ownerid)");
 $db->Execute("CREATE INDEX protocols_date_index ON protocols (date)");
-$db->Execute("CREATE INDEX protocols_magic_index ON protocolss (magic)");
+$db->Execute("CREATE INDEX protocols_magic_index ON protocols (magic)");
 $db->Execute("CREATE INDEX protocols_name_index ON protocols (title)");
 $db->Execute("CREATE INDEX protocols_name_index ON protocols (title(10))");
 $query="CREATE TABLE pr_type1 
