@@ -25,10 +25,16 @@ include ('includes/config_inc.php');
 include ("includes/defines_inc.php");
 include ('adodb/adodb.inc.php');
 
-$post_vars="action,pwd,secure_server_new";
+$post_vars="action,pwd,secure_server_new,submit,";
 globalize_vars($post_vars, $HTTP_POST_VARS);
 
 // only allow connections from localhost
+$host=getenv("HTTP_HOST");
+if (! ($host=="localhost" ||$host=="127.0.0.1") ) {
+   printheader("Phplabware setup.  Localhost only");
+   echo "<table align='center' border=0><caption>This script can only be reached from the localhost. </table>\n";
+   printfooter();
+}
 
 // we want associative arrays from the database
 //$ADODB_FETCH_MODE=ADODB_FETCH_ASSOC;
@@ -71,9 +77,15 @@ if (! ($version || $pwd) ) {
 if (!$version && $pwd) {
    // we connected to an empty database and have the password
    // now create the initial tables
-   //$db->debug = true;
-   //$db->BeginTrans();
+   // $db->debug = true;
+   // $db->BeginTrans();
    $test=true;
+   //$db->debug=true;
+/*
+CREATE SEQUENCE settings_id_seq
+CREATE TABLE settings
+   id INT4 DEAFAULT nextval('settings_id_seq');
+*/
    $result=$db->Execute("CREATE TABLE settings 
 	(id int PRIMARY KEY, 
 	version  float(8), 
@@ -132,11 +144,11 @@ if (!$version && $pwd) {
    if (!$result) $test=false;
    if (!$test) {
       echo "<h3 align='center'>Problems creating database tables!</h3>\n";
-      //$db->RollBackTrans();
+      // $db->RollBackTrans();
    }
    else {
       //echo "<h3 align='center'>Succesfully created database tables!</h3>\n";
-      //$db->CommitTrans();
+      // $db->CommitTrans();
       $version=$version_code;
    }
 } 
@@ -164,7 +176,7 @@ if ($version) {
    }
    echo "<form enctype='multipart/form-data' method='post' ";
    echo "name='globals-form' action='$PHP_SELF'>\n";
-   echo "<table border=1 width='100%'>\n";
+   echo "<table border=1 align='center'>\n";
    echo "<tr><th>Description</th><th>Setting</th></tr>\n";
    echo "<tr><td colspan='2' align='center'><i>Login Options</i></th></tr>\n";
    echo "<tr><td>Is PhpLabWare accessible through a secure server? ";
