@@ -540,7 +540,7 @@ return $out;
 ////
 // !Checks input data to addition
 // returns false if something can not be fixed     
-function check_g_data ($db,&$field_values, $DB_DESNAME) {
+function check_g_data ($db,&$field_values, $DB_DESNAME,$modify=false) {
 
    $rs = $db->Execute("select columnname,datatype from $DB_DESNAME where required ='Y' and (datatype != 'file')");
    while (!$rs->EOF) {
@@ -566,10 +566,7 @@ function check_g_data ($db,&$field_values, $DB_DESNAME) {
 
    // Hooray, the first call to a plugin function!!
    if (function_exists("plugin_check_data")) {
-      //if (!plugin_check_data($db,$field_values,$DB_DESNAME))
-      //   return false;
-      $test=plugin_check_data($db,$field_values,$DB_DESNAME);
-      if (!$test)
+      if (!plugin_check_data($db,$field_values,$DB_DESNAME,$modify))
          return false;
    }
 

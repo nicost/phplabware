@@ -43,7 +43,7 @@ require("includes/general_inc.php");
 // register variables
 $get_vars="tablename,md,showid,edit_type,add";
 globalize_vars($get_vars, $HTTP_GET_VARS);
-$post_vars = "add,md,submit,search,searchj,serialsortdirarray";
+$post_vars = "add,md,edit_type,submit,search,searchj,serialsortdirarray";
 globalize_vars($post_vars, $HTTP_POST_VARS);
 // Mode can be changed through a get var and is perpetuated through post vars
 if ($HTTP_GET_VARS["md"])
@@ -106,7 +106,7 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
             if ( ($testarray[1]==$chgarray[1]) && (in_array ($testarray[0],$Fieldsarray))) 
                $change_values[$testarray[0]]=$val;  
          }
-         if(check_g_data ($db,$change_values,$table_desname))
+         if(check_g_data ($db,$change_values,$table_desname,true))
             modify($db,$real_tablename,$Fieldscomma,$change_values,$chgarray[1],$USER,$tableid); 
          break;
       }
@@ -135,7 +135,8 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
 // Add/modify/delete pulldown menu items 
    if (substr($key, 0, 7) == "addtype") {
       $modarray = explode("_", $key);
-      $table=$modarray[1]."_".$modarray[2]."_".$modarray[3];
+      //$table=$modarray[1]."_".$modarray[2]."_".$modarray[3];
+      $table=$edit_type;
       include("includes/type_inc.php");
       add_type($db,$table);
       show_type($db,$table,"",$tablename);	
@@ -144,18 +145,22 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
    }
    if (substr($key, 0, 6) == "mdtype") {
       $modarray = explode("_", $key);
-      $table=$modarray[1]."_".$modarray[2]."_".$modarray[3];
+      //$table=$modarray[1]."_".$modarray[2]."_".$modarray[3];
+      $table=$edit_type;
       include("includes/type_inc.php");
-      mod_type($db,$table,$modarray[4]);
+      mod_type($db,$table,$modarray[1]);
       show_type($db,$table,"",$tablename);
       printfooter();
       exit();
    }
    if (substr($key, 0, 6) == "dltype") {
       $modarray = explode("_", $key);
-      $table=$modarray[1]."_".$modarray[2]."_".$modarray[3];
+      //$table=$modarray[1]."_".$modarray[2]."_".$modarray[3];
+      $table=$edit_type;
       include("includes/type_inc.php");
-      del_type($db,$table,$modarray[4],$real_tablename);
+      $DBNAME=$real_tablename;
+      $DB_DESNAME=$table_desname;
+      del_type($db,$table,$modarray[1],$real_tablename);
       show_type($db,$table,"",$tablename);
       printfooter();
       exit();
@@ -208,7 +213,7 @@ else {
    }
    // then look whether it should be modified
    elseif ($submit=="Modify Record") {
-      if (! (check_g_data($db,$HTTP_POST_VARS,$table_desname) && modify($db,$real_tablename,$fields,$HTTP_POST_VARS,$HTTP_POST_VARS["id"],$USER,$tableid)) ) {
+      if (! (check_g_data($db,$HTTP_POST_VARS,$table_desname,true) && modify($db,$real_tablename,$fields,$HTTP_POST_VARS,$HTTP_POST_VARS["id"],$USER,$tableid)) ) {
          add_g_form ($db,$fields,$HTTP_POST_VARS,$HTTP_POST_VARS["id"],$USER,$PHP_SELF,$system_settings,$real_tablename,$tableid,$table_desname);
          printfooter ();
          exit;
@@ -369,7 +374,7 @@ else {
       }
       if ($nowfield[datatype]== "link")
          echo "<td style='width: 10%'>&nbsp;</td>\n";
-      elseif ($nowfield[datatype]=="text" || $nowfield["datatype"]=="int" || $nowfield["datatype"]=="float") {
+      elseif ($nowfield["datatype"]=="int" || $nowfield["datatype"]=="float") {
          // show titles we may see, when too many, revert to text box
          if ($list && ($count < $max_menu_length) )  {
   	     $rlist=$db->CacheExecute(2,"SELECT $nowfield[name] FROM $real_tablename WHERE $list");
@@ -379,6 +384,8 @@ else {
 	 else 
     	    echo  " <td style='width: 10%'><input type='text' name='$nowfield[name]' value='".${$nowfield[name]}."'size=8></td>\n";
       }
+      elseif ($nowfield[datatype]== "text")
+    	    echo  " <td style='width: 10%'><input type='text' name='$nowfield[name]' value='".${$nowfield[name]}."'size=8></td>\n";
       elseif ($nowfield[datatype]== "textlong")
     	    echo  " <td style='width: 10%'><input type='text' name='$nowfield[name]' value='".${$nowfield[name]}."'size=8></td>\n";
       elseif ($nowfield["datatype"]== "pulldown") {

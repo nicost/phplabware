@@ -23,6 +23,7 @@ function show_type ($db,$table,$name, $tablename=false) {
    if($HTTP_POST_VARS[type_name]) {$name=$HTTP_POST_VARS[type_name];}
    echo "<form method='post' id='typeform' enctype='multipart/form-data' ";
    echo "action='$dbstring".SID."'>\n"; 
+   echo "<input type='hidden' name='edit_type' value='$table'>\n";
 
    echo "<table align='center'>\n";
    echo "<center><h3>Edit $name</h3></center>\n";
@@ -64,8 +65,8 @@ function show_type ($db,$table,$name, $tablename=false) {
       echo "<td><input type='text' name='type_type[]' value='$type'></td>\n";
       echo "<td><input type='text' name='type_typeshort[]' value='$typeshort'></td>\n";
       echo "<td><input type='text' name='type_sortkey[]' value='$sortkey'></td>\n";
-      $modstring = "<input type='submit' name='mdtype_$table"."_$rownr' value='Modify'>";
-      $delstring = "<input type='submit' name='dltype_$table"."_$rownr' value='Remove' ";
+      $modstring = "<input type='submit' name='mdtype"."_$rownr' value='Modify'>";
+      $delstring = "<input type='submit' name='dltype"."_$rownr' value='Remove' ";
       $delstring .= "Onclick=\"if(confirm('Are you sure the $name \'$type\' ";
       $delstring .= "should be removed?')){return true;}return false;\">";                                           
       echo "<td align='center'>$modstring $delstring</td>\n";
@@ -103,9 +104,9 @@ function del_type ($db,$table,$index,$table2) {
    $id=$HTTP_POST_VARS["type_id"][$index]; 
    $string="";
    if ($DBNAME) {
-      $recordref=get_cell($db,$DB_DESNAME,label,associated_table,$table);
+      $recordref=get_cell($db,$DB_DESNAME,"columnname","associated_table",$table);
       if ($id) {
-         $r=$db->Execute("UPDATE $table2 SET $recordref='' WHERE $recordref='$id'");
+         $r=$db->Execute("UPDATE $table2 SET $recordref=NULL WHERE $recordref='$id'");
          if ($r) 
 	    $r=$db->Execute("DELETE FROM $table WHERE id=$id");
 	 if ($r)
