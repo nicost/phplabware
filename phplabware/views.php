@@ -95,11 +95,11 @@ if ($USER['permissions'] & $SUPER)
    $r=$db->Execute ("SELECT label,tablename FROM tableoftables ORDER by sortkey ");
 else {
    // JOIN for mysql
-   if ($db_type=='mysql')
+//   if ($db_type=='mysql')
       $r=$db->Execute("SELECT tableoftables.label,tableoftables.tablename FROM tableoftables LEFT JOIN groupxtable_display ON tableoftables.id=groupxtable_display.tableid WHERE groupxtable_display.groupid IN ({$USER['group_list']}) ORDER BY tableoftables.sortkey");
-   else
+//   else
       // subselect for the rest
-      $r=$db->Execute("SELECT label,tablename FROM tableoftables WHERE id IN (SELECT tableid FROM groupxtable_display WHERE groupid IN ({$USER['group_list']})) ORDER BY sortkey");
+//      $r=$db->Execute("SELECT label,tablename FROM tableoftables WHERE id IN (SELECT tableid FROM groupxtable_display WHERE groupid IN ({$USER['group_list']})) ORDER BY sortkey");
 }
 echo $r->GetMenu2('tablename',$tableinfo->name,true,false,0,'OnChange="document.views.submit()"');
 echo "</td>\n";
