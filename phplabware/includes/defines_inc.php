@@ -12,4 +12,7 @@ $EDIT=8;
 $LAYOUT=16;
 $SUPER=64;
 
+// the following will be needed in most scripts
+$PHP_SELF=$HTTP_SERVER_VARS["PHP_SELF"];
+
 ?>
