@@ -332,6 +332,7 @@ function navbar($permissions) {
       else
          $systemmenu="<a href='login.php'>login</a>\n";
 
+      // display the menus
       echo "<table border=0 width=100% cellspacing='0' cellpadding='0' bgcolor='eeeeff'>\n";
       echo "<tr>\n<form name='menubar'>\n";
       echo "<td width='7%'>&nbsp;</td>\n";
@@ -341,6 +342,8 @@ function navbar($permissions) {
       echo "<td width='90%'>&nbsp;</td>\n";
       echo "</tr>\n</form>\n</table>\n";
    }
+   
+   // No javascript or the user preferes the old style menus:
    else {
    $links_per_row=6;
    
