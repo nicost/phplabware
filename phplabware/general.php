@@ -42,7 +42,6 @@ $httptitle .=$tablename;
 printheader($httptitle);
 navbar($USER["permissions"]);
 
-
 // find id associated with table
 if (!$edit_type) {
    $r=$db->Execute("SELECT id,shortname,tablename,real_tablename FROM tableoftables WHERE tablename='$tablename'");
@@ -60,6 +59,7 @@ if (!$edit_type) {
    // read all fields in from the description file
    // $fields_label=comma_array_SQL($db,$table_desname,label);
    $fields=comma_array_SQL($db,$table_desname,columnname);
+   $fields_table=comma_array_SQL($db,$table_desname,columnname,"WHERE display_table='Y'");
 }
 
 # check wether user may see this table
@@ -236,12 +236,10 @@ else {
    ${$pagename}=current_page(${$pagename},$tableshort);
  
    // prepare the search statement and remember it
-   $fields="id,".$fields;
-   ${$queryname}=make_search_SQL($db,$real_tablename,$tableshort,$tableid,$fields,$USER,$search,$sortstring);
-
+   $fields_table="id,".$fields_table;
+  //$fields_table="id ";
+   ${$queryname}=make_search_SQL($db,$real_tablename,$tableshort,$tableid,$fields_table,$USER,$search,$sortstring);
    $r=$db->CacheExecute(2,${$queryname});
-
-
 
    if ($r)
    	{
@@ -300,16 +298,14 @@ else {
          $list=$lista;   
       if ($nowfield[datatype]== "link")
          echo "<td style='width: 10%'>&nbsp;</td>\n";
-      elseif ($nowfield[datatype]== "alink")
-         echo "<td style='width: 10%'>&nbsp;</td>\n";
       elseif ($nowfield[datatype]== "text") {
          // show titles we may see, when too many, revert to text box
-         if ($list && ($nr_records < $max_menu_length) )  {
+    /*     if ($list && ($nr_records < $max_menu_length) )  {
   	     $r=$db->Execute("SELECT $nowfield[name] FROM $real_tablename WHERE id IN ($list)");
              $text=$r->GetMenu("$nowfield[name]",$HTTP_POST_VARS[$nowfield[name]],true,false,0,"style='width: 80%' $jscript");
              echo "<td style='width: 10%'>$text</td>\n";
          }
-	 else
+	 else */
     	    echo  " <td style='width: 10%'><input type='text' name='$nowfield[name]' value='".$HTTP_POST_VARS[$nowfield[name]]."'size=8></td>\n";
       }
       elseif ($nowfield[datatype]== "textlong")
