@@ -104,13 +104,10 @@ foreach($HTTP_POST_VARS as $key =>$value) {
    }
    // check if sortup or sortdown arrow was been pressed
    else {
-      list($testkey,$testvalue)=explode('_',$key);
-      if ($testkey=='sortup'){
-         $sortup=$testvalue;
-      }
-      if ($testkey=='sortdown') {
-         $sortdown=$testvalue;
-      }
+      if (substr($key,0,6)=='sortup')
+         $sortup=substr($key,7);
+      if (substr($key,0,8)=='sortdown')
+         $sortdown=substr($key,9);
    }
 } 
 reset ($HTTP_POST_VARS);
@@ -375,16 +372,10 @@ else {
    $listb=may_read_SQL($db,$tableinfo,$USER,'tempb');
 
    // prepare the search statement and remember it
-   $fields_table="id,".$fields_table;
+   $fields_table='id,'.$fields_table;
 
    ${$queryname}=make_search_SQL($db,$tableinfo,$fields_table,$USER,$search,$sortstring,$listb['sql']);
    $r=$db->Execute(${$queryname});
-
-   // set variables needed for paging
-   $numrows=$r->RecordCount();
-
-   // set the current page to what the user ordered
-   ${$pagename}=current_page(${$pagename},$tableinfo->short,$num_p_r,$numrows);
 
    // when search fails we'll revert to Show All after showing an error message
    if (!$r) {
@@ -395,10 +386,17 @@ else {
       unset (${$queryname});
       unset ($HTTP_SESSION_VARS[$queryname]);
       unset ($serialsortdirarray);
+      unset ($sortstring);
       session_unregister($queryname);
       ${$queryname}=make_search_SQL($db,$tableinfo,$fields_table,$USER,$search,$sortstring,$listb['sql']);
       $r=$db->Execute(${$queryname});
    }
+
+   // set variables needed for paging
+   $numrows=$r->RecordCount();
+
+   // set the current page to what the user ordered
+   ${$pagename}=current_page(${$pagename},$tableinfo->short,$num_p_r,$numrows);
 
    // work around bug in adodb/mysql
    $r->Move(1);
@@ -486,15 +484,14 @@ else {
    echo "<input type=\"submit\" name=\"search\" value=\"Show All\"></td>";
    echo "</tr>\n\n";
 
-
-   //display_midbar($Labelcomma);
-   $labelarray=explode (",",$Labelcomma);
-   $fieldarray=explode (",",$Fieldscomma);
    if ($sortdirarray)
       echo "<input type='hidden' name='serialsortdirarray' value='".serialize($sortdirarray)."'>\n";
    echo "<tr>\n";
-   foreach ($labelarray As $key => $fieldlabel) 
-      tableheader ($sortdirarray,$fieldarray[$key], $fieldlabel);
+
+   foreach($Allfields as $nowfield)  {
+      tableheader ($sortdirarray,$nowfield);
+   }
+
    echo "<th>Action</th>\n";
    echo "</tr>\n\n";
 
