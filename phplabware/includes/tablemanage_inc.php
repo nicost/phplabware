@@ -79,7 +79,7 @@ function create_new_table($db){
    echo "</table>\n";
    echo "</form>\n";
 
-	}
+}
 
 /////////////////////////////////////////////////////////////////////////
 ////  
@@ -281,10 +281,11 @@ function add_columnecg($db,$tablename2,$colname2,$label,$datatype,$Rdis,$Tdis,$r
    $SQL_reserved=",absolute,action,add,allocate,alter,are,assertion,at,between,bit,bit_length,both,cascade,cascaded,case,cast,catalog,char_length,charachter_length,cluster,coalsce,collate,collation,column,connect,connection,constraint,constraints,convert,corresponding,cross,current_date,current_time,current_timestamp,current_user,date,day,deallocate,deferrrable,deferred,describe,descriptor,diagnostics,disconnect,domain,drop,else,end-exec,except,exception,execute,external,extract,false,first,full,get,global,hour,identity,immediate,initially,inner,input,insensitive,intersect,interval,isolation,join,last,leading,left,level,local,lower,match,minute,month,names,national,natural,nchar,next,no,nullif,octet_length,only,outer,output,overlaps,pad,partial,position,prepare,preserve,prior,read,relative,restrict,revoke,right,rows,scroll,second,session,session_user,size,space,sqlstate,substring,system_user,temporary,then,time,timepstamp,timezone_hour,timezone_minute,trailing,transaction,translate,translation,trim,true,unknown,uppper,usage,using,value,varchar,varying,when,write,year,zone,";
 
    // find the id of the table and therewith the tablename
-   $r=$db->Execute("SELECT id,real_tablename,table_desc_name FROM tableoftables WHERE tablename='$tablename2'"); 
+   $r=$db->Execute("SELECT id,real_tablename,table_desc_name,label FROM tableoftables WHERE tablename='$tablename2'"); 
    $id=$r->fields["id"];
    $real_tablename=$r->fields["real_tablename"];
    $desc=$r->fields["table_desc_name"];
+   $tablelabel=$r->fields["label"];
    $search=array("' '","','","';'","'\"'");
    $replace=array("_","_","","");
    $colname=preg_replace ($search,$replace, $colname2);
@@ -292,14 +293,6 @@ function add_columnecg($db,$tablename2,$colname2,$label,$datatype,$Rdis,$Tdis,$r
    $fieldstring="id,columnname,label,sortkey,display_table,display_record,required,modifiable,type,datatype,associated_table,associated_column"; 
    $fieldid=$db->GenId($desc."_id");
    $label=strtr($label,",'","  ");
-/*
-   // avoid having more than one column of type 'file'
-   if ($datatype=="file") {
-      $r=$db->Execute("SELECT id FROM $desc WHERE datatype='file'");
-      if ($r->fields["id"])
-         $filecolumnfound=true;
-   }
-*/
    $colname=strtolower($colname);
    // check whether this name exists, the query should fail
    $rb=$db->Execute("SELECT $colname FROM $real_tablename");
@@ -311,8 +304,6 @@ function add_columnecg($db,$tablename2,$colname2,$label,$datatype,$Rdis,$Tdis,$r
       $string="Please enter a Label";
    elseif (strpos($SQL_reserved,",$colname,")) 
       $string="Column name <i>$colname</i> is a reserved SQL word.  Please pick another column name";
-//   elseif ($filecolumnfound)
-//      $string="Only one column can be of Datatype <i>file</i>.";
    else {
       if ($datatype=="pulldown") {
          // create an associated table, not overwriting old ones, using a max number
@@ -327,11 +318,26 @@ function add_columnecg($db,$tablename2,$colname2,$label,$datatype,$Rdis,$Tdis,$r
 	 $rs=$db->Execute("CREATE TABLE $tablestr (id int PRIMARY KEY, sortkey int, type text, typeshort text)");
 	 $rsss=$db->Execute("ALTER table $real_tablename add column $colname int");
 	 if (($r)&&($rs)&&($rsss)&&(!($colname==""))) 
-            $string="Added column <i>$colname</i> into table <i>$tablename2</i>";
+            $string="Added column <i>$colname</i> into table <i>$tablelabel</i>";
 	 else 
 	    $string="Problems creating this column.";
       }
+      elseif ($datatype=="file") {
+         // this table links words found in files to specific records
+         $tablestr=$real_tablename."_wi"."_$fieldid";
+         $rs=$db->Execute("CREATE TABLE $tablestr (wordid int, fileid int, pagenr int, recordid int)");
+         $db->Execute("CREATE INDEX $tablestr"."_wi ON $tablestr (wordid)");
+         $db->Execute("CREATE INDEX $tablestr"."_fi ON $tablestr (fileid)");
+         $db->Execute("CREATE INDEX $tablestr"."_ri ON $tablestr (recordid)");
 
+	 $r=$db->Execute("INSERT INTO $desc ($fieldstring) Values($fieldid,'$colname','$label','$sort','$Tdis','$Rdis','$req','$modifiable','int','$datatype','$tablestr','')");
+         // we do not need this column, but not having it  might break something
+	 $rsss=$db->Execute("ALTER table $real_tablename add column $colname text");
+	 if (($r)&&($rs)&&(!($colname==""))) 
+            $string="Added column <i>$colname</i> into table <i>$tablelabel</i>";
+	 else 
+	    $string="Problems creating this column.";
+      }
       else {
          if ($datatype=="int")
             $sqltype="int";
@@ -343,7 +349,7 @@ function add_columnecg($db,$tablename2,$colname2,$label,$datatype,$Rdis,$Tdis,$r
          if ($rsss)
             $r=$db->Execute("INSERT INTO $desc ($fieldstring) Values($fieldid,'$colname','$label','$sort','$Tdis','$Rdis','$req','$modifiable','$sqltype','$datatype','','')");
  	 if (($r)&&$rsss&&(!($colname==""))) {
-            $string="Added column <i>$colname</i> into table: <i>$tablename2</i>";
+            $string="Added column <i>$colname</i> into table: <i>$tablelabel</i>";
             return $fieldid;
          }
          else { 
@@ -381,15 +387,19 @@ function mod_columnECG($db,$id,$sort,$tablename,$colname,$label,$datatype,$Rdis,
 // !deletes a general column entry
 function rm_columnecg($db,$tablename,$id,$colname,$datatype) {
    global $string,$USER;
+
    // find the id of the table and therewith the tablename
    $r=$db->Execute("SELECT id FROM tableoftables WHERE tablename='$tablename'");
    $tableid=$r->fields["id"];
    $real_tablename=get_cell($db,"tableoftables","real_tablename","id",$tableid);
+   $tablelabel=get_cell($db,"tableoftables","label","id",$tableid);
    $desc=get_cell($db,"tableoftables","table_desc_name","id",$tableid);
-   //$desc=$real_tablename."_desc";
    // if there are files associated, these have to be deleted as well
    $r=$db->Execute ("SELECT datatype FROM $desc WHERE id='$id'");
-   if ($r->fields["datatype"]=="files") {
+   if ($r->fields["datatype"]=="file") {
+      // delete index table
+      $tablefi=$real_tablename."fi_".$id;
+      $db->Execute("DROP TABLE $tablefi");  
       $r=$db->Execute("SELECT id FROM files WHERE tablesfk='$tableid'");
       while (!$r->EOF)
          delete_file($db,$r->fields["id"],$USER);
@@ -409,7 +419,7 @@ function rm_columnecg($db,$tablename,$id,$colname,$datatype) {
    $rrr=$db->Execute("DELETE FROM $desc WHERE id='$id'");
    // Postgres does know how to drop a column, so only check the second query
    if ($rrr) 
-      $string="Deleted Column <i>$colname</i> from Table <i>$tablename</i>.";
+      $string="Deleted Column <i>$colname</i> from Table <i>$tablelabel</i>.";
 }
 
 ////

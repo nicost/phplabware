@@ -12,7 +12,7 @@
   *  option) any later version.                                              *
   \**************************************************************************/                                                                             
 
-$version_code=0.1;
+$version_code=0.1001;
 $localdir=exec("pwd");
 include ('includes/functions_inc.php');
 if (!file_exists("includes/config_inc.php")) {
@@ -141,6 +141,12 @@ if ($version) {
          include ("dd/0_0039_inc.php");
          include ("dd/0_0040_inc.php");
          include ("dd/0_0041_inc.php");
+      }
+      if ($version<0.1001) {
+         // add table words for indexing of uploaded files
+         $db->Execute("CREATE TABLE words (id int PRIMARY KEY, word text)");
+         $db->Execute("CREATE INDEX words_word_index ON words (word)");
+         $db->Execute("CREATE INDEX words_word_index ON words (word(10))");
       }
       $query="UPDATE settings SET version='$version_code' WHERE id=1";
       if (!$db->Execute($query)) $test=false;
