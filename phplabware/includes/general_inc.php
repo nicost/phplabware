@@ -178,6 +178,14 @@ function display_record($db,$Allfields,$id,$tablename,$real_tablename) {
             $text=get_cell($db,$nowfield[ass_t],"type","id",$nowfield[values]);
             echo "<tr>\n<th>$nowfield[label]:</th>\n<td>$text</td></tr>\n";
          }
+         if ($nowfield[datatype]=="table") {
+            if ($nowfield["ass_local_key"])
+                $searchid=get_cell($db,$real_tablename,$nowfield["ass_local_column_name"],"id",$id);
+            else
+                $searchid=$nowfield["values"];
+            $text=get_cell($db,$nowfield[ass_table_name],$nowfield["ass_column_name"],"id",$searchid);
+            echo "<tr>\n<th>$nowfield[label]:</th>\n<td>$text</td></tr>\n";
+         }
          if ($nowfield[datatype]=="textlong") {
             $textlarge=nl2br(htmlentities($nowfield[values]));
             echo "<tr><th>$nowfield[label]</th><td colspan=6>$textlarge</td>\n";
@@ -247,19 +255,19 @@ function display_add($db,$tableid,$real_tablename,$tabledesc,$Allfields,$id,$nam
             echo "</th>\n";
      	    echo "<td><input type='text' name='$nowfield[name]' value='$nowfield[values]' size=60> </td>\n</tr>";
          }
-         if ($nowfield[datatype]=="textlong") {
+         elseif ($nowfield[datatype]=="textlong") {
             echo "<tr><th>$nowfield[label]:";
             if ($nowfield[required]=="Y") 
                echo "<sup style='color:red'>&nbsp;*</sup>";
      	    echo "<td><textarea name='$nowfield[name]' rows='5' cols='100%' value='$nowfield[values]'>$nowfield[values]</textarea></td></tr>\n";     	     
          }
-         if ($nowfield[datatype]=="link") {
+         elseif ($nowfield[datatype]=="link") {
             echo "<tr><th>$nowfield[label] (http link)";
             if ($nowfield[required]=="Y")
                echo "<sup style='color:red'>&nbsp;*</sup>";
             echo "<td><input type='text' name='$nowfield[name]' value='$nowfield[values]' size=60> </td>\n</tr>";
          }
-         if ($nowfield[datatype]=="pulldown") {
+         elseif ($nowfield[datatype]=="pulldown") {
             // get previous value	
             $r=$db->Execute("SELECT typeshort,id FROM $nowfield[ass_t] ORDER BY sortkey");
             $text=$r->GetMenu2("$nowfield[name]",$nowfield[values],true,false);
@@ -272,50 +280,58 @@ function display_add($db,$tableid,$real_tablename,$tabledesc,$Allfields,$id,$nam
                echo"<sup style='color:red'>&nbsp;*</sup>";
             echo "</th>\n<td>$text<br>";
             echo "</tr>";
-        }
-			if ($nowfield[datatype]=="textlarge")
-				{
-  		      echo "<tr><th>$nowfield[name]";
-  		      if ($nowfield[required]=="Y"){echo"<sup style='color:red'>&nbsp;*</sup>";}
-  		      echo "</th><td colspan=6><textarea name='$nowfield[name]' rows='5' cols='100%'>$nowfield[values]</textarea></td></tr>\n";
-				}
-			if ($nowfield[datatype]=="file")
-				{
-				$files=get_files($db,$real_tablename,$id);
-				echo "<tr>";
-				echo "<th>File:";
-				echo "</th>\n";
-			
-				echo "<td colspan=4> <table border=0>";
-				for ($i=0;$i<sizeof($files);$i++) 
-					{
-					echo "<tr><td colspan=2>".$files[$i]["link"];
-					echo "&nbsp;&nbsp;(".$files[$i]["type"]." file)</td>\n";
-					echo "<td><input type='submit' name='def_".$files[$i]["id"]."' value='Delete' Onclick=\"if(confirm('Are you sure the file ".$files[$i]["name"]." should be removed?')){return true;}return false;\"></td></tr>\n";
-					}
-				echo "<tr><th>Replace file(s) with</th>\n";
-				echo "<td>&nbsp;</td><td><input type='file' name='file[]' value='$filename'></td>\n";
-				echo "</tr></table></td></tr><br>\n\n";
-				echo "";
-				}
-			}
+         }
+         elseif ($nowfield[datatype]=="table") {
+            // only display primary key here
+            if (!$nowfield["ass_local_key"]) { 
+               // get previous value	
+               $r=$db->Execute("SELECT $nowfield[ass_column_name],id FROM $nowfield[ass_table_name]");
+               $text=$r->GetMenu2("$nowfield[name]",$nowfield[values],true,false);
+               echo "<tr><th>$nowfield[label]";
+               if ($nowfield[required]=="Y")
+                  echo"<sup style='color:red'>&nbsp;*</sup>";
+               echo "</th>\n<td>$text<br>";
+               echo "</tr>";
+            }
+         }
+	 if ($nowfield[datatype]=="textlarge") {
+	    echo "<tr><th>$nowfield[name]";
+            if ($nowfield[required]=="Y")
+	       echo"<sup style='color:red'>&nbsp;*</sup>";
+	    echo "</th><td colspan=6><textarea name='$nowfield[name]' rows='5' cols='100%'>$nowfield[values]</textarea></td></tr>\n";
+	 }
+	 if ($nowfield[datatype]=="file") {
+	    $files=get_files($db,$real_tablename,$id);
+	    echo "<tr>";
+	    echo "<th>File:";
+	    echo "</th>\n";
+	    echo "<td colspan=4> <table border=0>";
+	    for ($i=0;$i<sizeof($files);$i++)  {
+	       echo "<tr><td colspan=2>".$files[$i]["link"];
+	       echo "&nbsp;&nbsp;(".$files[$i]["type"]." file)</td>\n";
+	       echo "<td><input type='submit' name='def_".$files[$i]["id"]."' value='Delete' Onclick=\"if(confirm('Are you sure the file ".$files[$i]["name"]." should be removed?')){return true;}return false;\"></td></tr>\n";
+	    }
+	    echo "<tr><th>Replace file(s) with</th>\n";
+	    echo "<td>&nbsp;</td><td><input type='file' name='file[]' value='$filename'></td>\n";
+	    echo "</tr></table></td></tr><br>\n\n";
+	 }
+      }
 	
-		}	
-echo "<td colspan=4>";
-show_access($db,$tableid,$id,$USER,$system_settings);
-echo "</td></tr>\n"; echo "<tr>";
-if ($id) $value="Modify Record"; 
-else $value="Add Record";
+   }	
+   echo "<td colspan=4>";
+   show_access($db,$tableid,$id,$USER,$system_settings);
+   echo "</td></tr>\n"; echo "<tr>";
+   if ($id) $value="Modify Record"; 
+   else $value="Add Record";
 
-// submit and clear buttons
-echo "<td colspan=7 align='center'><input type='submit' name='submit' value='$value'>\n";
-echo "&nbsp;&nbsp;<input type='submit' name='submit' value='Cancel'></td>\n";
-echo "</tr>\n";
-echo "</table></form>\n";
+   // submit and clear buttons
+   echo "<td colspan=7 align='center'><input type='submit' name='submit' value='$value'>\n";
+   echo "&nbsp;&nbsp;<input type='submit' name='submit' value='Cancel'></td>\n";
+   echo "</tr>\n</table>\n</form>\n";
 
-//end of table
-$dbstring=$PHP_SELF;$dbstring.="?";$dbstring.="tablename=$tablename&";
-echo "<form method='post' id='protocolform' enctype='multipart/form-data' action='$dbstring";
+   //end of table
+   $dbstring=$PHP_SELF;$dbstring.="?";$dbstring.="tablename=$tablename&";
+   echo "<form method='post' id='protocolform' enctype='multipart/form-data' action='$dbstring";
 ?><?=SID?>'><?php
 
 }
@@ -340,9 +356,16 @@ function getvalues($db,$DBNAME,$DB_DESNAME,$fields,$qfield=false,$field=false) {
          ${$column}["display_table"]=$rb->fields["display_table"];
          ${$column}["display_record"]=$rb->fields["display_record"];
          ${$column}["ass_t"]=$rb->fields["associated_table"];
-         ${$column}["ass_query"]=$rb->fields["associated_sql"];
+         ${$column}["ass_column"]=$rb->fields["associated_sql"];
          ${$column}["ass_local_key"]=$rb->fields["associated_local_key"];
          ${$column}["required"]=$rb->fields["required"];
+         if ($rb->fields["datatype"]=="table") {
+            ${$column}["ass_table_desc_name"]=get_cell($db,"tableoftables","table_desc_name","id",$rb->fields["associated_table"]);
+            ${$column}["ass_table_name"]=get_cell($db,"tableoftables","real_tablename","id",$rb->fields["associated_table"]);
+            ${$column}["ass_column_name"]=get_cell($db,${$column}["ass_table_desc_name"],"columnname","id",$rb->fields["associated_sql"]);
+            if ($rb->fields["associated_local_key"]) 
+               ${$column}["ass_local_column_name"]=get_cell($db,$DB_DESNAME,"columnname","id",$rb->fields["associated_local_key"]);
+         }
       }
       array_push ($Allfields, ${$column});
       $column=strtok(",");
