@@ -419,6 +419,7 @@ function get_files ($db,$table,$id,$columnid,$format=1,$thumbtype="small") {
       $i=0;
       $sid=SID;
       while (!$r->EOF) {
+//      print_r($r->fields);
          $filesid=$files[$i]["id"]=$r->fields("id");
          $filesname=$files[$i]["name"]=$r->fields("filename");
          $filestitle=$files[$i]["title"]=$r->fields("title");
@@ -426,8 +427,8 @@ function get_files ($db,$table,$id,$columnid,$format=1,$thumbtype="small") {
          $filestype=$files[$i]["type"]=$r->fields("type");
          $filesize=$files[$i]["size"]=nice_bytes($r->fields("size"));
          // if this is an image, we'll send the thumbnail
-         $r=$db->Execute("SELECT id FROM images WHERE id='$filesid'");
-         if ($r->fields(0)) {
+         $rb=$db->Execute("SELECT id FROM images WHERE id='$filesid'");
+         if ($rb->fields(0)) {
             $text="<img src=showfile.php?id=$filesid&type=$thumbtype&$sid>";
          } 
 	 elseif ($format==1) {
