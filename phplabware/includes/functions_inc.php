@@ -242,7 +242,7 @@ function printheader($title) {
 
 ////
 // !Prints footer
-function printfooter() {
+function printfooter($db=false,$USER=false) {
 ?>
 
 <!--********************START OF PRINTFOOTER****************************-->
@@ -252,6 +252,8 @@ function printfooter() {
 </HTML>
 
 <?php
-
+   if ($db && $USER["settings"])
+      $db->Execute("UPDATE users SET settings='".serialize($USER["settings"])."'
+       WHERE id=".$USER["id"]);
 }
 ?>
