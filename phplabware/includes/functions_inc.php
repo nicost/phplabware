@@ -176,6 +176,7 @@ function navbar($permissions) {
    echo "<tr bgcolor='eeeeff' align='right'>\n";
    if ($permissions & $ACTIVE) {
       ?>
+      <td align='center'><a href="antibodies.php?<?=SID?>">antibodies</a></td>
       <td align='center'><a href="users.php?type=me&<?=SID?>">settings</a></td>
       <?php
    }
