@@ -16,6 +16,15 @@
 // set php parameters here
 set_magic_quotes_runtime(0); // seems to interfere with system settings
 
+// register global really kills some stuff, so let's kill them first
+if (ini_get("register_globals")) {
+   reset($HTTP_POST_VARS);
+   while (list($key,$val)=each($HTTP_POST_VARS)) {
+      unset (${$key});
+   }
+}
+reset($HTTP_POST_VARS);
+
 // essential includes
 include ('includes/config_inc.php');
 include ('adodb/adodb.inc.php');
@@ -33,5 +42,5 @@ if (!@$db->PConnect($db_host, $db_user, $db_pwd, $db_name)) {
 $version=get_cell($db,"settings","version","id",1);
 $system_settings=unserialize(get_cell($db,"settings","settings","id",1));
 
-$title="PhpLabware: ";
+$httptitle="PhpLabware: ";
 ?>
