@@ -14,6 +14,7 @@
   \**************************************************************************/  
 
 // defines permissions
+// these values are compared with $USER['permissions'] (using the & and > operators)
 $ACTIVE=1;
 $READ=2;
 $WRITE=4;
@@ -23,16 +24,12 @@ $ADMIN=32;
 $SUPER=64;
 
 // the following is needed in most scripts
-$PHP_SELF=$HTTP_SERVER_VARS["PHP_SELF"];
+$PHP_SELF=$HTTP_SERVER_VARS['PHP_SELF'];
 
 // minimum password length
 $PWD_MINIMUM=4;
 
-// comma-separated list (no spaces!) of tables containing user entries
-// these tables should have the field 'userid'
-$tables="antibodies,protocols";
-
 // maximum length of items displayed in drop-down menu
-$max_menu_length=30;
+$max_menu_length=40;
 
 ?>
