@@ -257,7 +257,7 @@ function display_record($db,$Allfields,$id,$tablename,$real_tablename,$backbutto
          elseif ($nowfield["datatype"]=="file" || $nowfield["datatype"]=="image") {
             $files=get_files($db,$tablename,$id,$nowfield["columnid"],0,"big");
             if ($files) { 
-               echo "<th>Files:</th>\n<td colspan=5>";
+               echo "<th>$nowfield[label]:</th>\n<td colspan=5>";
                for ($i=0;$i<sizeof($files);$i++)  {
                   echo $files[$i]["link"]."&nbsp;&nbsp;(<i>".$files[$i]["name"]."</i>, ".$files[$i]["type"];
                   echo " file, ".$files[$i]["size"].")<br>\n";
