@@ -597,7 +597,7 @@ function rm_columnecg($db,$tablename,$id,$colname,$datatype) {
 // !helper function for show_table_column_page
 function make_column_js_array($db,$r) {
    $result="new Array(\n";
-   $rb=$db->Execute("SELECT label,id FROM ".$r->fields["table_desc_name"]." WHERE label NOT IN ('id','access','date','ownerid','magic','lastmoddate','lastmodby')");
+   $rb=$db->Execute("SELECT label,id FROM ".$r->fields["table_desc_name"]." WHERE label NOT IN ('access','date','ownerid','magic','lastmoddate','lastmodby') ORDER BY label");
    $result.="new Array(\"".$rb->fields["label"]."\", ".$rb->fields["id"].")"; 
    $rb->MoveNext();
    while (!$rb->EOF) {
