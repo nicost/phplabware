@@ -690,13 +690,13 @@ function get_access ($fieldvalues,$column) {
          $ew=1;
       return ${$column};
    }
-   if ($fieldvalues["grr"]) 
+   if ($fieldvalues['grr']) 
       $gr=1;
-   if ($fieldvalues["evr"]) 
+   if ($fieldvalues['evr']) 
       $er=1;
-   if ($fieldvalues["grw"]) 
+   if ($fieldvalues['grw']) 
       $gw=1;
-   if ($fieldvalues["evw"]) 
+   if ($fieldvalues['evw']) 
       $ew=1;
 
    return ${$column};
@@ -739,7 +739,7 @@ function may_read_SQL_subselect ($db,$table,$tableid,$USER,$clause=false) {
 ////
 // !returns a comma-separated list of quoted values from a SQL search
 // helper function for may_read_SQL
-function make_SQL_ids ($r,$ids,$field="id") {
+function make_SQL_ids ($r,$ids,$field='id') {
    if (!$r || $r->EOF)
       return substr ($ids,0,-1);
    $id=$r->fields[$field];
@@ -763,7 +763,7 @@ function make_SQL_ids ($r,$ids,$field="id") {
 // work)
 function may_read_SQL_JOIN ($db,$table,$USER) {
    include ('includes/defines_inc.php');
-   if (!($USER["permissions"] & $SUPER)) {
+   if (!($USER['permissions'] & $SUPER)) {
       $query="SELECT id FROM $table ";
       $usergroup=$USER['groupid'];
       $group_list=$USER['group_list'];
@@ -795,7 +795,7 @@ function may_read_SQL_JOIN ($db,$table,$USER) {
 ////
 // !Generates an SQL query asking for the records that mey be seen by this users
 // Generates a left join for mysql, subselect for postgres
-function may_read_SQL ($db,$tableinfo,$USER,$temptable="tempa") {
+function may_read_SQL ($db,$tableinfo,$USER,$temptable='tempa') {
    global $db_type;
    if ($db_type=='mysql') {
       $list=may_read_SQL_JOIN ($db,$tableinfo->realname,$USER);
@@ -828,8 +828,8 @@ function make_temp_table ($db,$temptable,$r) {
       }
    }
    // INSERT is too slow.  COPY instead from a file.  postgres only!
-   $tmpfile=tempnam($system_settings["tmppsql"],"tmptable");
-   $fp=fopen($tmpfile,"w");
+   $tmpfile=tempnam($system_settings['tmppsql'],'tmptable');
+   $fp=fopen($tmpfile,'w');
    fwrite($fp,$string);
    fflush($fp);
    chmod ($tmpfile,0644);
@@ -843,7 +843,7 @@ function make_temp_table ($db,$temptable,$r) {
 // !determines whether or not the user may read this record
 function may_read ($db,$tableinfo,$id,$USER) {
    $list=may_read_SQL($db,$tableinfo,$USER);
-   $query="SELECT id FROM $tableinfo->realname WHERE ".$list["sql"];
+   $query="SELECT id FROM $tableinfo->realname WHERE ".$list['sql'];
    $r=$db->Execute($query);
    if (!$r)
       return false;
@@ -919,10 +919,10 @@ function make_SQL_csf ($r,$ids,$field="id",&$column_count) {
 ////
 // !helperfunction for numerictoSQL
 function typevalue ($value,$type) {
-   if ($type=="int") {
+   if ($type=='int') {
       return (int)$value;
    }
-   elseif ($type=="float") {
+   elseif ($type=='float') {
       return (float)$value;
    }
    return false; 
@@ -933,15 +933,15 @@ function typevalue ($value,$type) {
 // implements ranges (i.e. 1-6), and lists (1,2,3) and combinations thereof
 // < and > can also be used
 function numerictoSQL ($searchterm,$column,$type,$and) {
-   $commalist=explode(",",$searchterm);
+   $commalist=explode(',',$searchterm);
    for ($i=0;$i<sizeof($commalist);$i++) {
-      $rangelist=explode("-",$commalist[$i]);
+      $rangelist=explode('-',$commalist[$i]);
       if (sizeof($rangelist)==2) {
          sort($rangelist);
          $value1=typevalue($rangelist[0],$type);
          $value2=typevalue($rangelist[1],$type);
          if ($i>0) {
-            $sql.="OR ";
+            $sql.='OR ';
          }
          $sql.="($column>=$value1 AND $column<=$value2) ";
       }
@@ -952,7 +952,7 @@ function numerictoSQL ($searchterm,$column,$type,$and) {
          }
          $value=typevalue ($commalist[$i],$type);
          if ($i>0) {
-            $sql.="OR ";
+            $sql.='OR ';
          }
          if (!$token)
             $token='=';
@@ -1007,7 +1007,7 @@ function datetoSQL ($searchterm,$column,$and) {
 // !Helper function for search
 // Interprets fields the right way
 function searchhelp ($db,$tableinfo,$column,&$columnvalues,$query,$wcappend,$and) {
-   if ($column=="ownerid") {
+   if ($column=='ownerid') {
       $query[1]=true;
       $r=$db->Execute("SELECT id FROM ".$tableinfo->realname." WHERE ownerid=$columnvalues[$column]");
       $list=make_SQL_ids($r,false);
@@ -1028,7 +1028,7 @@ function searchhelp ($db,$tableinfo,$column,&$columnvalues,$query,$wcappend,$and
                    $rhtemp[]=$rh->fields[0];
                    $rh->MoveNext();
                 }
-                $ids=join (",",$rhtemp);
+                $ids=join (',',$rhtemp);
                 $query[0].="$and id IN ($ids) ";
              }
 	     // if we come up empty handed, the SQL search should too:
@@ -1048,7 +1048,7 @@ function searchhelp ($db,$tableinfo,$column,&$columnvalues,$query,$wcappend,$and
                 $rhtemp[]=$rtable->fields[0];
                 $rtable->MoveNext();
              }
-             $ids=join (",",$rhtemp);
+             $ids=join (',',$rhtemp);
              if ($rc->fields['associated_local_key']) {
                 $rasslk=$db->Execute("SELECT columnname FROM {$tableinfo->desname} WHERE id={$rc->fields['associated_local_key']}");
                 $query[0].="$and {$rasslk->fields[0]} IN ($ids) ";
@@ -1152,26 +1152,26 @@ function search ($db,$tableinfo,$fields,&$fieldvalues,$whereclause=false,$wcappe
    $columnvalues=$fieldvalues;
    $query[0]="SELECT $fields FROM ".$tableinfo->realname." WHERE ";
    $query[1]=$query[2]=false;
-   $column=strtok($fields,",");
+   $column=strtok($fields,',');
    while ($column && !$columnvalues[$column])
-      $column=strtok (",");
+      $column=strtok (',');
    if ($column && $columnvalues[$column]) {
       $query[1]=true;
       $query=searchhelp ($db,$tableinfo,$column,$columnvalues,$query,$wcappend,false);
    }
-   $column=strtok (",");
+   $column=strtok (',');
    while ($column) { 
       if ($column && $columnvalues[$column]) {
          $query=searchhelp ($db,$tableinfo,$column,$columnvalues,$query,$wcappend,"AND");
       }
-      $column=strtok (",");
+      $column=strtok (',');
    }
    if ($whereclause)
       if ($query[1])
          $query[0] .= "AND $whereclause";
       else
          $query[0] .= $whereclause;
-   if (function_exists("plugin_search"))
+   if (function_exists('plugin_search'))
       $query[0]=plugin_search($query[0],$columnvalues,$query[1]);
    return $query[0];
 }
