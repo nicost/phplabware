@@ -18,7 +18,8 @@
 $db_type = "postgres7";
 
 // Host on which the database server runs
-$db_host = "localhost";
+//$db_host = "localhost";
+$db_host = "";
 
 // name of the database we are going to use.  You'll have to create it.
 $db_name = "phplabware";
