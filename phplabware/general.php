@@ -50,10 +50,12 @@ $httptitle .=$tableinfo->label;
 // this shows a record entry in a new window, called through javascript
 if ($jsnewwindow && $showid && $tableinfo->name) {
    printheader($httptitle);
-   if (function_exists("plugin_show"))
+   if (function_exists("plugin_show")){
       plugin_show($db,$tableinfo,$showid,$USER,$system_settings,false);
-   else
+   }   
+   else {
       show_g($db,$tableinfo,$showid,$USER,$system_settings,false);
+   }   
    //show_report_templates_menu($db,$tableinfo,$showid);
    printfooter();
    exit();
@@ -198,10 +200,12 @@ navbar($USER["permissions"]);
 
 // provide a means to hyperlink directly to a record
 if ($showid && !$jsnewwindow) {
+
    if (function_exists("plugin_show"))
       plugin_show($db,$tableinfo,$showid,$USER,$system_settings,false);
-   else
+   else {
       show_g($db,$tableinfo,$showid,$USER,$system_settings,true);
+   }   
    printfooter();
    exit();
 }
