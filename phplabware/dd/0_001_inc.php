@@ -81,7 +81,9 @@
    $result=$db->Execute("CREATE TABLE files
 	(id int PRIMARY KEY,
 	 filename text,
-	 mime text)");
+	 mime text,
+	 notes text,
+	 title text)");
    if (!$result) $test=false;
    $db->Execute("CREATE INDEX files_id_index ON files (id)"); 
 
