@@ -64,11 +64,21 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
       add_associated_table($db,$table_name,$addcol_name,$HTTP_POST_VARS["table_select"],$HTTP_POST_VARS["table_column_select"]);
       break;
    }
+   elseif ($key=="link_part_a") {
+      add_active_link($db,$table_name,$addcol_name,$HTTP_POST_VARS["link_part_a"],$HTTP_POST_VARS["link_part_b"]);
+      break;
+   }
    elseif ($key == "addcolumn") {  
       $result=add_columnECG($db,$table_name,$addcol_name,$addcol_label,$addcol_datatype,$addcol_drecord,$addcol_dtable,$addcol_required,$addcol_sort);
       if ($addcol_datatype=="table" && $result) {
          navbar($USER["permissions"]);
-         show_table_column_page($db,$table_name,$addcol_name,$addcol_label,$addcol_datatype,$addcol_drecord,$addcol_dtable,$addcol_required,$addcol_sort);
+         show_table_column_page($db,$table_name,$addcol_name,$addcol_label);
+         printfooter();
+         exit();
+      }
+      elseif ($addcol_datatype=="alink" && $result) {
+         navbar($USER["permissions"]);
+         show_active_link_page($db,$table_name,$addcol_name,$addcol_label);
          printfooter();
          exit();
       }
@@ -85,7 +95,15 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
       $Tdis=$HTTP_POST_VARS["column_dtable"][$modarray[1]];
       $sort=$HTTP_POST_VARS["column_sort"][$modarray[1]];
       $req=$HTTP_POST_VARS["column_required"][$modarray[1]];
-      mod_columnECG($db,$id,$sort,$tablename,$colname,$collabel,$datatype,$Rdis,$Tdis,$req);
+      if (mod_columnECG($db,$id,$sort,$tablename,$colname,$collabel,$datatype,$Rdis,$Tdis,$req) && $datatype=="alink") {
+         navbar($USER["permissions"]);
+         $table_desc=get_cell($db,"tableoftables","table_desc_name","tablename",$tablename);
+         $link_a=get_cell($db,$table_desc,"link_first","id",$id);
+         $link_b=get_cell($db,$table_desc,"link_last","id",$id);
+         show_active_link_page($db,$table_name,$colname,$collabel,$link_a,$link_b);
+         printfooter();
+         exit();
+      }
       break;
    }   	
    elseif (substr($key, 0, 9) == "delcolumn") { 
@@ -103,9 +121,10 @@ if ($editfield)	{
    $noshow=array("id","access","ownerid","magic","lastmoddate","lastmodby","date");
    $nodel=array("title","date","lastmodby","lastmoddate");
    navbar($USER["permissions"]);
-   $r=$db->Execute("SELECT id FROM tableoftables WHERE tablename='$editfield'");
-   $id=$r->fields[0];
-   $currdesc=$editfield."_".$id."_desc";
+   $r=$db->Execute("SELECT id,table_desc_name FROM tableoftables WHERE tablename='$editfield'");
+   $id=$r->fields["id"];
+   $currdesc=$r->fields["table_desc_name"];
+   //$currdesc=$editfield."_".$id."_desc";
    echo "<h3 align='center'>$string</h3>";
    echo "<h3 align='center'>Edit columns of $editfield</h3><br>";
   // echo "<table align='center'>\n";
@@ -138,6 +157,7 @@ if ($editfield)	{
    echo "<option value='table'>table</option>\n";
    echo "<option value='pulldown'>pulldown</option>\n";
    echo "<option value='link'>weblink</option>\n";
+   echo "<option value='alink'>active weblink</option>\n";
    echo "<option value='file'>file</option>\n";
    echo "</select></td>\n";
    echo "<td>&nbsp;</td>\n";
