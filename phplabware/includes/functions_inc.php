@@ -218,12 +218,17 @@ function navbar($permissions) {
       $records=$db->Execute("select tablename,custom,id from tableoftables where display='Y' and permission='Users' ORDER by sortkey");
       $count=0;
       if ($records) {
+         $query="SELECT tableid FROM groupxtable_display WHERE (groupid='".$USER["group_array"][0]."' ";
+         for ($i=1;$i<sizeof($USER["group_array"]);$i++)
+	    $query.="OR groupid='".$USER["group_array"][$i]."' ";
+	 $query.=")";
+	 $rb=$db->Execute($query);
+	 while ($rb && !$rb->EOF) {
+	    $showtables[]=$rb->fields["tableid"];
+	    $rb->MoveNext();
+	 }
          while (!$records->EOF) {
-            $query="SELECT tableid FROM groupxtable_display WHERE groupid='".$USER["group_array"][0]."' ";
-	    for ($i=1;$i<sizeof($USER["group_array"]);$i++)
-	       $query.="OR groupid='".$USER["group_array"][$i]."' ";
-	    $rb=$db->Execute($query);
-	    if ($rb && !$rb->EOF) {
+	    if (in_array($records->fields["id"],$showtables)) {
                if (($count%$links_per_row)==0)
                   echo "</tr><tr bgcolor='eeeeff' align='center'>";
                $tabname=$records->fields[0];
