@@ -15,8 +15,15 @@
   *  option) any later version.                                              *
   \**************************************************************************/ 
 
-
-$db->Execute("CREATE TABLE trust (
+if ($db_type=="mysql")
+   $db->Execute("CREATE TABLE trust (
+              tableid int,
+              recordid int,
+              trusteduserid int,
+              rw char,
+              UNIQUE (tableid,recordid,trusteduserid,rw))");
+else
+   $db->Execute("CREATE TABLE trust (
               tableid int,
               recordid int,
               trusteduserid int,
