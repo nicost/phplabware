@@ -411,7 +411,7 @@ return $out;
 function check_g_data ($db,&$field_values, $DB_DESNAME) {
 
    $allreq=array();
-   $rs = $db->Execute("select label from $DB_DESNAME where required ='Y' and (datatype != 'file')");
+   $rs = $db->Execute("select columnname from $DB_DESNAME where required ='Y' and (datatype != 'file')");
 	while (!$rs->EOF) 
 		{
 		$fieldA=$rs->fields[0];
