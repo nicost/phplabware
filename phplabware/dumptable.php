@@ -176,12 +176,12 @@ while (!$s->EOF) {
       if ($asslocalcolumnname) {
          fwrite($fp,'$lid[]=$newid;
 ');
-         fwrite($fp,'$lasscolumnname[]='.$asslocalcolumnname.";\n");
+         fwrite($fp,'$lasscolumnname[]="'.$asslocalcolumnname."\";\n");
       }
 
-      fwrite($fp,'$asstable_id=get_cell($db,"tableoftables","id","tablename",'.$asstable_name.");\n");
-      fwrite($fp,'$asstable_desc=get_cell($db,"tableoftables","table_desc_name","tablename",'.$asstable_name.");\n");
-      fwrite($fp,'$asscolumn_id=get_cell($db,"$asstable_desc","id","columnname",'.$asscolumnname.");\n");
+      fwrite($fp,'$asstable_id=get_cell($db,"tableoftables","id","tablename","'.$asstable_name."\");\n");
+      fwrite($fp,'$asstable_desc=get_cell($db,"tableoftables","table_desc_name","tablename","'.$asstable_name."\");\n");
+      fwrite($fp,'$asscolumn_id=get_cell($db,"$asstable_desc","id","columnname","'.$asscolumnname."\");\n");
       fwrite ($fp,'$db->Execute("UPDATE $newtable_desc_name SET associated_table=$asstable_id,associated_column=$asscolumn_id,key_table=NULL WHERE id=$newid");
       ');
    }
