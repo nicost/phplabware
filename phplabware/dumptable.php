@@ -15,20 +15,20 @@
 *  option) any later version.                                              *
 \**************************************************************************/                                                                                     
 
-require ("include.php");
+require ('include.php');
 
 printheader($httptitle,false);
-navbar ($USER["permissions"]);
+navbar ($USER['permissions']);
 
-if (!$USER["permissions"] & $SUPER) {
+if (!$USER['permissions'] & $SUPER) {
    echo "<h3 align='center'>Sorry, this page is not for you.</h3>\n";
    printfooter($db, $USER);
    exit();
 }
 
 
-$tablename=$HTTP_GET_VARS["tablename"];
-$tableid=get_cell($db,"tableoftables","id","tablename",$tablename);
+$tablename=$HTTP_GET_VARS['tablename'];
+$tableid=get_cell($db,'tableoftables','id','tablename',$tablename);
 if (!$tableid) {
    echo "<h3>This script will create a php file with code that will re-create the table you selected in phplabware.  Only the table structure, not its content will be re-created</h3>";
    $r=$db->Execute('SELECT id,tablename FROM tableoftables');
@@ -44,13 +44,13 @@ if (!$tableid) {
    exit();
 }
 
-$table_desc=get_cell($db,"tableoftables","table_desc_name","tablename",$tablename);
-$table_label=get_cell($db,"tableoftables","label","tablename",$tablename);
-$table_plugin=get_cell($db,"tableoftables","plugin_code","tablename",$tablename);
+$table_desc=get_cell($db,'tableoftables','table_desc_name','tablename',$tablename);
+$table_label=get_cell($db,'tableoftables','label','tablename',$tablename);
+$table_plugin=get_cell($db,'tableoftables','plugin_code','tablename',$tablename);
 
 // open file to write output to
-$outfile=$system_settings["tmpdir"]."/$tablename.php";
-$fp=fopen($outfile,"w");
+$outfile=$system_settings['tmpdir']."/$tablename.php";
+$fp=fopen($outfile,'w');
 if (!$fp) {
    echo "<h3 align='center'>Failed to open <i>$outfile</i> for output</h3>\n";
    printfooter($db, $USER);
@@ -62,7 +62,7 @@ fwrite($fp,$header);
 
 // Check for associated tables:
 unset($r);
-$r=$db->Execute("SELECT DISTINCT associated_table FROM $table_desc WHERE associated_column !=''");
+$r=$db->Execute("SELECT DISTINCT associated_table FROM $table_desc WHERE associated_column !='' AND datatype='table'");
 while ($r && !$r->EOF) {
    $asstable=get_cell($db,'tableoftables','tablename','id',$r->fields[0]);
    echo "Please make sure that you also export table <i>$asstable</i>, and restore table $asstable before restoring table <i>$table_label</i>, since the latter containes links to the former.<br>";
@@ -132,17 +132,20 @@ while (!$s->EOF) {
       $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid');
    // rewrite types to standard SQL
    $value=$s->fields[6];
-   if (substr ($value,0,3)=="int")
-      $s->fields[6]="int";
+   if (substr ($value,0,3)=='int')
+      $s->fields[6]='int';
    //elseif (substr ($value,0,7)=="varchar")
    for ($i=0; $i<sizeof($s->fields);$i++) {
       $value=$s->fields[$i];
-      fwrite ($fp,",'$value'");
+      if (!$value)
+         fwrite ($fp,",NULL");
+      else
+         fwrite ($fp,",'$value'");
    }
    fwrite ($fp,')");
       ');
    // recreate pull down tables
-   if ($s->fields[7]=="pulldown" || $s->fields[7]=='mpulldown') {
+   if ($s->fields[7]=='pulldown' || $s->fields[7]=='mpulldown') {
       fwrite($fp,'$ass_table=$newtable_realname."ass";
       $id_ass=$db->GenId($ass_table,20);
       $ass_table.="_$id_ass";
@@ -192,26 +195,27 @@ fwrite ($fp,'   $db->Execute("UPDATE $newtable_desc_name SET associated_local_ke
 fwrite ($fp,"}\n");
 
 fwrite ($fp,'// and finally create the table
-      $rc=$db->Execute(" CREATE TABLE $newtable_realname (
+      $rc=$db->Execute(" CREATE TABLE $newtable_realname (id int NOT NULL
 ');
 $s->MoveFirst();
+/*
 $fieldname=$s->fields[2];
 $fieldtype=$s->fields[6];
-if (substr ($fieldtype,0,3)=="int")
-   $fieldtype="int";
-if ($fieldname=="id")
-   $extra=" NOT NULL";
+if (substr ($fieldtype,0,3)=='int')
+   $fieldtype='int';
+if ($fieldname=='id')
+   $extra=' NOT NULL';
 fwrite ($fp,"         $fieldname $fieldtype $extra");
 $s->MoveNext();
+*/
 while (!$s->EOF) {
    unset ($extra);
    $fieldname=$s->fields[2];
    $fieldtype=$s->fields[6];
-   if (substr ($fieldtype,0,3)=="int")
-      $fieldtype="int";
-   if ($fieldname=="id")
-      $extra=" NOT NULL";
-   fwrite ($fp,",\n         $fieldname $fieldtype $extra");
+   if (substr ($fieldtype,0,3)=='int')
+      $fieldtype='int';
+   if ($fieldname!='id')
+      fwrite ($fp,",\n         $fieldname $fieldtype $extra");
    $s->MoveNext();
 }
 fwrite ($fp,' ) ");
