@@ -16,11 +16,11 @@
 
 
 // main include thingies
-require("include.php");
-require("includes/db_inc.php");
+require('include.php');
+require('includes/db_inc.php');
 
-$id=$HTTP_GET_VARS["id"];
-$type=$HTTP_GET_VARS["type"];
+$id=$HTTP_GET_VARS['id'];
+$type=$HTTP_GET_VARS['type'];
 
 if (!$id) {
    echo "<html><h3>404. File not found.</h3></html>";
@@ -32,35 +32,38 @@ if ((!$r) || $r->EOF) {
    echo "<html><h3>404. File not found.</h3></html>";
    exit;
 }
-$tableid=$r->fields("tablesfk");
-$tableitemid=$r->fields("ftableid");
-$mime=$r->fields("mime");
-$tablename=get_cell($db,"tableoftables","tablename","id",$tableid);
-$HTTP_GET_VARS["tablename"]=$tablename;
-$tableinfo=new tableinfo($db);
-if (!may_read($db,$tableinfo,$tableitemid,$USER))
+$tableid=$r->fields('tablesfk');
+$tableitemid=$r->fields('ftableid');
+$mime=$r->fields('mime');
+// we keep a list with fileids that can be seen in the USER settings
+if (! (in_array($id,$USER['settings']['fileids'])))  {
+   $tablename=get_cell($db,'tableoftables','tablename','id',$tableid);
+   $HTTP_GET_VARS['tablename']=$tablename;
+   $tableinfo=new tableinfo($db);
+   if (!may_read($db,$tableinfo,$tableitemid,$USER))
       echo "<html><h3>401. Forbidden.</h3></html>";
-if ($type=="small" || $type=="big") {   // this is an image
-   if ($type=="small")
-      $thumb=$system_settings["thumbnaildir"]."/small/$id.jpg";
+}
+if ($type=='small' || $type=='big') {   // this is an image
+   if ($type=='small')
+      $thumb=$system_settings['thumbnaildir']."/small/$id.jpg";
    if ($type=="big")
-      $thumb=$system_settings["thumbnaildir"]."/big/$id.jpg";
+      $thumb=$system_settings['thumbnaildir']."/big/$id.jpg";
    if (@is_readable($thumb)) {
-      header("Accept-Ranges: bytes");
-      header("Connection: close");
-      header("Content-Type: image/jpg");
+      header('Accept-Ranges: bytes');
+      header('Connection: close');
+      header('Content-Type: image/jpg');
       readfile($thumb);   
    }
    else
       echo "<html><h3>404. File not found.</h3></html>";
 }
 else {  // and this is a file
-   $filedir=$system_settings["filedir"];
-   $filename=$r->fields("filename");
-   $filesize=$r->fields("size");
+   $filedir=$system_settings['filedir'];
+   $filename=$r->fields('filename');
+   $filesize=$r->fields('size');
    // send headers
-   header("Accept-Ranges: bytes");
-   header("Connection: close");
+   header('Accept-Ranges: bytes');
+   header('Connection: close');
    header("Content-Type: $mime");
    header("Content-Length: $filesize");
    header("Content-Disposition-type: attachment");

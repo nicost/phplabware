@@ -275,24 +275,36 @@ function display_table_info($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr_c
    if (!$r)
       $r=$db->Execute($pr_query);
    $r->Move($first_record);
+
+   // we keep a list with fileids in the user settings
+   // these files can be seen without checking the database
+   // to be sure that only the current files can be seen, unset the entry first
+   unset($USER['settings']['fileids']);
+   
    // print all entries
    while (!($r->EOF) && $r && ($current_record < $last_record) )  {
       // Get required ID and title
-      $id=$r->fields["id"];
-      $title=$r->fields["title"];		
+      $id=$r->fields['id'];
+      $title=$r->fields['title'];		
       $Allfields=getvalues($db,$tableinfo,$Fieldscomma,id,$id);
       // print start of row of selected group
       if ($current_record % 2) echo "<tr class='row_odd' align='center'>\n";
          else echo "<tr class='row_even' align='center'>\n";
   
-      foreach($Allfields as $nowfield) 
+      foreach($Allfields as $nowfield) {
          if ($nowfield['link'])
             echo "<td>{$nowfield['link']}</td>\n";
          else
             echo "<td>{$nowfield['text']}</td>\n"; 
+         // write file ids to a file so that we do not need to check them again when downloading thumbnails
+         if ($nowfield['datatype']=='image' || $nowfield['datatype']=='file') {
+            foreach ($nowfield['fileids'] as $fileid)
+               $USER['settings']['fileids'][]=$fileid;
+         }
+      }
 
       echo "<td align='center'>&nbsp;\n";  
-      if ($HTTP_SESSION_VARS["javascript_enabled"]) {
+      if ($HTTP_SESSION_VARS['javascript_enabled']) {
          $jscript=" onclick='MyWindow=window.open (\"general.php?tablename=".$tableinfo->name."&showid=$id&jsnewwindow=true\",\"view\",\"scrollbar=yes,resizable=yes,width=600,height=400\")'";
          echo "<input type=\"button\" name=\"view_" . $id . "\" value=\"View\" $jscript>\n";
       }
@@ -356,7 +368,7 @@ function display_record($db,$Allfields,$id,$tableinfo,$backbutton=true,$previous
             if ($files) { 
                echo "<th>$nowfield[label]:</th>\n<td colspan=5>";
                for ($i=0;$i<sizeof($files);$i++)  {
-                  echo $files[$i]["link"]."&nbsp;&nbsp;(<i>".$files[$i]["name"]."</i>, ".$files[$i]["type"];
+                  echo $files[$i]['link']."&nbsp;&nbsp;(<i>".$files[$i]['name']."</i>, ".$files[$i]['type'];
                   echo " file, ".$files[$i]["size"].")<br>\n";
                }
                echo "<td>\n";
@@ -743,8 +755,10 @@ function getvalues($db,$tableinfo,$fields,$qfield=false,$field=false) {
                // we can get naming conflicts here. Use a really weird name
                $fzsk=get_files($db,$tbname,$id,${$column}['columnid'],3);
                if ($fzsk) 
-                  for ($i=0;$i<sizeof($fzsk);$i++)
+                  for ($i=0;$i<sizeof($fzsk);$i++) {
                      ${$column}['text'].=$fzsk[$i]['link'];
+                     ${$column}['fileids'][]=$fzsk[$i]['id'];
+                  }
             }
             elseif ($rb->fields['datatype']=='user') {
                $rname=$db->Execute("SELECT firstname,lastname,email FROM users WHERE id=".${$column}["values"]);
