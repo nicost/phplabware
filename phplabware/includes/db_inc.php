@@ -280,38 +280,49 @@ function delete ($db, $tableid, $id, $USER, $filesonly=false) {
 
 ////
 // !Generates thumbnails and extracts information from 2-D image files
-function process_image($db,$fileid) 
+function process_image($db,$fileid,$bigsize) 
 {
    global $USER, $system_settings;
 
    $imagefile=file_path ($db,$fileid);
+   $bigthumb=$system_settings["thumbnaildir"]."/big/$fileid.jpg";
+   $smallthumb=$system_settings["thumbnaildir"]."/small/$fileid.jpg";
+   $smallsize=$system_settings["smallthumbsize"];
+   $convert=$system_settings["convert"];
 
-   $command = "$convert_path -verbose -sample ".$x_size."x".$y_size." $action $bla jpg:$bla2 2> $stderr_log";
+   // make big thumbnail and get image info
+   $command = "$convert -verbose -sample ".$bigsize."x".$bigsize." $action '$imagefile' jpg:$bigthumb";
    exec($command, $result_str_arr, $status);
+
+   // make small thumbnail
+   $command = "$convert -sample ".$smallsize."x".$smallsize." $action '$imagefile' jpg:$smallthumb";
+   `$command`;
 
    // get size, mime, and type from image file.  
    // Try exif function, if that fails use convert 
-   $sizearray=getimagesize($path_file);
+   $sizearray=getimagesize($imagefile);
    $width=$sizearray[0];
-   $height=$sizearray[1];
-   $mime=$sizearray["mime"];
-   switch ($sizearray[2]) {
-      case 1: $filename_extension="GIF"; break;
-      case 2: $filename_extension="JPG"; break;
-      case 3: $filename_extension="PNG"; break;
-      case 4: $filename_extension="SWF"; break;
-      case 5: $filename_extension="PSD"; break;
-      case 6: $filename_extension="BMP"; break;
-      case 7: $filename_extension="TIFF"; break;
-      case 8: $filename_extension="TIFF"; break;
-      case 9: $filename_extension="JPC"; break;
-      case 10: $filename_extension="JP2"; break;
-      case 11: $filename_extension="JPX"; break;
-      case 12: $filename_extension="JB2"; break;
-      case 13: $filename_extension="SWC"; break;
-      case 14: $filename_extension="IFF"; break;
+   if ($width) {
+      $height=$sizearray[1];
+      $mime=$sizearray["mime"];
+      switch ($sizearray[2]) {
+         case 1: $filename_extension="GIF"; break;
+         case 2: $filename_extension="JPG"; break;
+         case 3: $filename_extension="PNG"; break;
+         case 4: $filename_extension="SWF"; break;
+         case 5: $filename_extension="PSD"; break;
+         case 6: $filename_extension="BMP"; break;
+         case 7: $filename_extension="TIFF"; break;
+         case 8: $filename_extension="TIFF"; break;
+         case 9: $filename_extension="JPC"; break;
+         case 10: $filename_extension="JP2"; break;
+         case 11: $filename_extension="JPX"; break;
+         case 12: $filename_extension="JB2"; break;
+         case 13: $filename_extension="SWC"; break;
+         case 14: $filename_extension="IFF"; break;
+      }
    }
-   if (!$pixels_x) {
+   else {
       // get filetype and size in pixels from convert. Take first token after filesize.  Don't know if it always works.
       // appparently convert yields:
       // original filename, dimensions, Class, (optional) colordepht, size (in kb), filetype, ???, ???
@@ -329,9 +340,21 @@ function process_image($db,$fileid)
             $test = true;
       }
       // extract pixel dimensions, this fails when there are spaces in the filename
-      $pixels_x = (int) strtok ($pixels, "x+= >");
-      $pixels_y = (int) strtok ("x+= >");
+      $width = (int) strtok ($pixels, "x+= >");
+      $height = (int) strtok ("x+= >");
    }
+
+   if($mime) 
+      $db->Execute("UPDATE files SET mime='$mime' WHERE id=$fileid");
+   $r=$db->Execute("SELECT id FROM images WHERE id=$fileid");
+
+   if (!$r->fields["id"]) 
+      $query="INSERT INTO images (id,x_size,y_size,xbt_size,ybt_size,xst_size,yst_size,type) VALUES ('$fileid', '$width', '$height', '$bigsize', '$bigsize', '$smallsize', '$smallsize', '$filename_extension')";
+   else 
+      $query="UPDATE images SET x_size='$width',y_size='$height',xbt_size='$bigsize',ybt_size='$bigsize',xst_size='$smallsize',yst_size='$smallsize',type='$filename_extension' WHERE id=$fileid";
+
+   $db->Execute($query);
+   
 }
 
 ////
@@ -389,7 +412,7 @@ function upload_files ($db,$tableid,$id,$columnid,$columnname,$USER,$system_sett
 ////
 // !returns an array with id,name,title,size, and hyperlink to all
 // files associated with the given record
-function get_files ($db,$table,$id,$columnid,$format=1) {
+function get_files ($db,$table,$id,$columnid,$format=1,$thumbtype="small") {
    $tableid=get_cell($db,"tableoftables","id","tablename",$table);
    $r=$db->Execute("SELECT id,filename,title,mime,type,size FROM files WHERE tablesfk=$tableid AND ftableid=$id AND ftablecolumnid='$columnid'");
    if ($r && !$r->EOF) {
@@ -402,7 +425,12 @@ function get_files ($db,$table,$id,$columnid,$format=1) {
          $mime=$files[$i]["mime"]=$r->fields("mime");
          $filestype=$files[$i]["type"]=$r->fields("type");
          $filesize=$files[$i]["size"]=nice_bytes($r->fields("size"));
-	 if ($format==1) {
+         // if this is an image, we'll send the thumbnail
+         $r=$db->Execute("SELECT id FROM images WHERE id='$filesid'");
+         if ($r->fields(0)) {
+            $text="<img src=showfile.php?id=$filesid&type=$thumbtype&$sid>";
+         } 
+	 elseif ($format==1) {
             if (strlen($filestitle) > 0)
                $text=$filestitle;
             else
@@ -465,6 +493,8 @@ function delete_file ($db,$fileid,$USER) {
       return false;
    // even if unlink fails we should really remove the entry from the database:
    $db->Execute("DELETE FROM files WHERE id=$fileid");
+   // if this was an image:
+   $db->Execute("DELETE FROM images WHERE id=$fileid");
    // remove indexing of file content
    $db->Execute ("DELETE FROM $associated_table WHERE fileid=$fileid");
    return $filename;
