@@ -223,7 +223,7 @@ function printheader($title) {
 <BODY BGCOLOR="#ffffff">
 <a name="top"></a>
 <table border=0 width=100%>
-   <tr bgcolor="333388" align=right>
+   <tr class='header' bgcolor="333388" align=right>
       <td align=right>
          <font size=+2 color="#ffffff"><i>PhpLabWare  
              <?php if ($version) echo "version $version"; ?></i></font>
