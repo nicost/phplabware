@@ -30,10 +30,15 @@ if (!$USER["permissions"] & $SUPER) {
    exit();
 }
 
+// Three GET variables are useful:
+// tablename
+// fields - let's you export only a subset of columns
+// valuesOnly - switch wether or not values should be 'expanded'
+
 $tablename=$HTTP_GET_VARS["tablename"];
 $tableid=get_cell($db,"tableoftables","id","tablename",$tablename);
 if (!$tableid) {
-   echo "<h3>This script will dump the contents of a table in a tab-delimited file. The contents of that file can be imported int phplabware or any other database program.</h3>";
+   echo "<h3>This script will dump the contents of a table in a tab-delimited file. The contents of that file can be imported into phplabware or any other database program.</h3>";
    $r=$db->execute("SELECT id,tablename FROM tableoftables");
    if ($r) {
       echo "<table align='center'>\n";
@@ -66,12 +71,13 @@ if (!$fp) {
    printfooter($db, $USER);
 }
 
-// 
 if ($HTTP_GET_VARS['fields']) 
    $fields=$HTTP_GET_VARS['fields'];
 else
    $fields="id,".comma_array_SQL($db,$tableinfo->desname,'columnname');
 $headers=getvalues($db,$tableinfo,$fields);
+if ($HTTP_GET_VARS['valuesOnly'])
+   $valuesOnly=true;
 
 foreach ($headers as $header) {
    if ($header['label'])
@@ -81,22 +87,23 @@ foreach ($headers as $header) {
 }
 fwrite ($fp,"\n");
 
-$db->debug=true;
 $r=$db->Execute("SELECT $fields FROM ".$tableinfo->realname);
-$db->debug=false;
 while ($r->fields["id"] && !$r->EOF) {
    $rowvalues=getvalues($db,$tableinfo,$fields,"id",$r->fields["id"]);
    foreach ($rowvalues as $row) {
-      if (is_array($row))
-         fwrite ($fp,$pre_seperator.$row['values'].$post_seperator);
+      if (is_array($row)) {
+         if ($valuesOnly) {
+            fwrite ($fp,$pre_seperator.$row['values'].$post_seperator);
+         }
+         else {
+            if ($row['datatype']=="textlong")
+               fwrite ($fp,$pre_seperator.$row['values'].$post_seperator);
+            else
+               fwrite ($fp,$pre_seperator.$row['text'].$post_seperator);
+         }
+      }
       else
          fwrite ($fp,$pre_seperator.$row.$post_seperator);
-/*
-      if ($row['datatype']=="textlong")
-         fwrite ($fp,$pre_seperator.$row['values'].$post_seperator);
-      else
-         fwrite ($fp,$pre_seperator.$row['text'].$post_seperator);
-*/
    }
    fwrite ($fp,"\n");
    $counter++;
