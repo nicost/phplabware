@@ -39,8 +39,50 @@ function check_pd_data ($db,&$field_values) {
       echo "<h3>Please enter the Pubmed ID the PDF reprint.</h3>";
       return false;
    }
-   // insert code to pull data from pubmed and parse
-   
+   // data from pubmed and parse
+   $pmid=$field_values["pmid"];
+   $pubmedinfo=file("http://www.ncbi.nlm.nih.gov/entrez/utils/pmfetch.fcgi?db=PubMed&id=$pmid&report=abstract&report=abstract&mode=text");
+   if ($pubmedinfo) {
+      // lines appear to be broken randomly, but parts are separated by empty lines
+      // get them into array $line
+      for ($i=0; $i<sizeof($pubmedinfo);$i++) {
+         $line[$lc].=rtrim($pubmedinfo[$i]);
+         if ($pubmedinfo[$i]=="\n")
+	    $lc++;
+      }
+      // parse the first line.  1: journal  date;Vol:fp-lp
+      $jstart=strpos($line[1],": ");
+      $jend=strpos($line[1],"  ");
+      $journal=trim(substr($line[1],$jstart+1,$jend-$jstart));
+      $dend=strpos($line[1],";");
+      $date=trim(substr($line[1],$jend+1,$dend-$jend-1));
+      $field_values["year"]=strtok($date," ");
+      $vend=strpos($line[1],":",$dend);
+      $volumeinfo=trim(substr($line[1],$dend+1,$vend-$dend-1));
+      $field_values["volume"]=strtok($volumeinfo,"("); 
+      $pages=trim(substr($line[1],$vend+1));
+      $fpage=strtok($pages,"-");
+      $lpage1=strtok("-");
+      $lpage=substr_replace($fpage,$lpage1,strlen($fpage)-strlen($lpage1));
+      // echo "$jstart,$jend,$journal,$date,$year,$volume,$fpage,$lpage1,$lpage.<br>";
+      $field_values["fpage"]=$fpage;
+      $field_values["lpage"]=$lpage;
+      $field_values["title"]=$line[2];
+      $field_values["author"]=$line[3];
+      $field_values["abstract"]=$line[6];
+      // check wether the journal is in pd_typ1, if not, add it
+      $r=$db->Execute("SELECT id FROM pd_type1 WHERE typeshort='$journal'");
+      if ($r && $r->fields("id"))
+         $field_values["type1"]=$r->fields("id");
+      else {
+         $tid=$db->GenID("type1_id_seq");
+	 if ($tid) {
+	    $r=$db->Execute("INSERT INTO pd_type1 (id,type,typeshort,sortkey) VALUES ($tid,'$journal','$journal',0)");
+	    if ($r)
+	       $field_values["type1"]=$tid;
+	 }
+      }
+   }
    return true;
 }
 
@@ -74,9 +116,9 @@ function add_pd_form ($db,$fields,$field_values,$id,$USER,$PHP_SELF,$system_sett
    else
       echo "<tr><td colspan=5 align='center'><h3>New PDF</h3></td></tr>\n";
    echo "<tr>\n";
-   echo "<th>PubmedID: <sup style='color:red'>&nbsp;*</sup></th>\n";
-   echo "<td><input type='text' name='pmid' value='$pmid' size=10><br>";
-   echo "Find the PubmedID for this article at <a href='http://ncbi.nlm.nih.gov'>Pubmed</a></td></tr>\n";
+   echo "<th>PMID: <sup style='color:red'>&nbsp;*</sup></th>\n";
+   echo "<td><input type='text' name='pmid' value='$pmid' size=14><br>";
+   echo "Find the PMID for this article at <a href='http://www.ncbi.nlm.nih.gov/entrez/query.fcgi?db=PubMed'>Pubmed</a></td></tr>\n";
 
    echo "<tr>";
    echo "<th>Notes: </th><td colspan=6><textarea name='notes' rows='5' cols='100%'>$notes</textarea></td>\n";
@@ -93,7 +135,6 @@ function add_pd_form ($db,$fields,$field_values,$id,$USER,$PHP_SELF,$system_sett
    }
    echo "<tr><th>Replace file(s) with:</th>\n";
    echo "<td><input type='file' name='file[]' value='$filename'></td>\n";
-   echo "<th>File Title:</th><td><input type='text' name='filetitle[]' value='$filetile' size=30></td><td>&nbsp;</td>\n";
    
    echo "</tr>\n";
    echo "</table></td>\n\n";
@@ -116,7 +157,7 @@ function add_pd_form ($db,$fields,$field_values,$id,$USER,$PHP_SELF,$system_sett
 
 ////
 // !Shows a page with nice information on the pdf
-function show_pdf ($db,$fields,$id,$USER,$system_settings) {
+function show_pd ($db,$fields,$id,$USER,$system_settings) {
    global $PHP_SELF;
 
    if (!may_read($db,"pdfs",$id,$USER))
@@ -245,7 +286,7 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
    // show the record
    if (substr($key, 0, 4) == "view") {
       $modarray = explode("_", $key);
-      show_pr($db,$fields,$modarray[1],$USER,$system_settings);
+      show_pd($db,$fields,$modarray[1],$USER,$system_settings);
       printfooter();
       exit();
    }
@@ -287,7 +328,7 @@ if ($edit_type && ($USER["permissions"] & $LAYOUT)) {
 
 // provide a means to hyperlink directly to a record
 if ($showid) {
-   show_pr($db,$fields,$showid,$USER,$system_settings);
+   show_pd($db,$fields,$showid,$USER,$system_settings);
    printfooter();
    exit();
 }
