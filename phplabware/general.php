@@ -290,6 +290,20 @@ else {
    ${$queryname}=make_search_SQL($db,$tableinfo,$fields_table,$USER,$search,$sortstring,$listb["sql"]);
    $r=$db->Execute(${$queryname});
 
+   // when search fails we'll revert to Show All after showing an error message
+   if (!$r) {
+      echo "<h3 align='center'>The server encountered an error executing your search.  Showing all records instead.</h3><br>\n";
+      $num_p_r=$HTTP_POST_VARS["num_p_r"];
+      unset ($HTTP_POST_VARS);
+      ${$pagename}=1;
+      unset (${queryname});
+      unset ($HTTP_SESSION_VARS[$queryname]);
+      unset ($serialsortdirarray);
+      session_unregister($queryname);
+      ${$queryname}=make_search_SQL($db,$tableinfo,$fields_table,$USER,$search,$sortstring,$listb["sql"]);
+      $r=$db->Execute(${$queryname});
+   }
+
    // set variables needed for paging
    $numrows=$r->RecordCount();
    // work around bug in adodb/mysql
