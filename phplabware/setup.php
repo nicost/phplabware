@@ -12,13 +12,11 @@
   *  option) any later version.                                              *
   \**************************************************************************/                                                                             
 
-$version_code=0.3001;
+$version_code=0.3002;
 $localdir=exec("pwd");
 include ('includes/functions_inc.php');
 if (!file_exists("includes/config_inc.php")) {
-   printheader("Not ready yet");
-   echo "<h3 align='center'>Please edit the file <i>$localdir/includes/config_inc.exp</i> and save it as <i>$localdir/includes/config_inc.php</i>.  Then come back to this page.</h3>";
-   printfooter();
+   echo "<h3 align='center'>Please edit the file <br><i>$localdir/includes/config_inc.exp</i><br> and save it as <br><i>$localdir/includes/config_inc.php</i><br> Then come back to this page.</h3>";
    exit();
 }
 include ('includes/config_inc.php');
@@ -27,7 +25,7 @@ include ('adodb/adodb.inc.php');
 $adodb_version=(float)substr($ADODB_vers,1);
 $adodb_version_required=3.50;
 if ($adodb_version<$adodb_version_required) {
-   echo "The adodb version you are using ($adodb_version) is too old.  Please download version $adodb_version_required or greater from <a href='http://php.weblogs.com'>php.weblogs.com</a>.";
+   echo "The adodb version you are using ($adodb_version) is too old.  Please download version $adodb_version_required or greater from <a href='http://adodb.sourceforge.net'>adodb.sourceforge.net</a>.";
    exit();
 }
 
@@ -91,7 +89,7 @@ if (! ($version || $pwd) ) {
 if (!$version && $pwd) {
    // we connected to an empty database and have the password
    // now create the initial tables
-   // $db->debug = true;
+   //$db->debug = true;
    include ("dd/0_001_inc.php");
 } 
 
@@ -106,41 +104,57 @@ if ($version) {
    // insert database updates here
    if ($version<$version_code) {
       $test=true;
+      // Creates table antibodies
       if ($version<0.0021)
          include ("dd/0_0021_inc.php");
+      // Creates table protocols
       if ($version<0.0022)
          include ("dd/0_0022_inc.php");
+      // Creates table pdfs
       if ($version<0.0023)
          include ("dd/0_0023_inc.php");
+      // Create table pdbs
       if ($version<0.0024)
          include ("dd/0_0024_inc.php");
+      // Adds existing tables as Custom tables in tableoftables
       if ($version<0.0026)
          include ("dd/0_0026_inc.php");
+      // Creates tabel files and files_desc
       if ($version<0.0027)
          include ("dd/0_0027_inc.php");
       if ($version<0.0028)
          include ("dd/0_0028_inc.php");
       if ($version<0.0029)
          include ("dd/0_0029_inc.php");
+      // Creates tables trust
       if ($version<0.0030) 
          include ("dd/0_0030_inc.php");
+      // Makes it possible to assign users to multiple groups
       if ($version<0.0031)
          include ("dd/0_0031_inc.php");
+      // Adds columns columnanme, associated_local_key, thumb_x_size and thumb_y_size to all description tables
       if ($version<0.0032)
          include ("dd/0_0032_inc.php");
+      // rename associated_sql, add columns link_first, link_second, and modifiable
       if ($version<0.0033)
          include ("dd/0_0033_inc.php");
       if ($version<0.0034)
          include ("dd/0_0034_inc.php");
       if ($version<0.0035)
          include ("dd/0_0035_inc.php");
+      // Add column plugin_code to tableoftables
       if ($version<0.0036)
          include ("dd/0_0036_inc.php");
       if ($version<0.0041) {
+         // Create description table for pdfs table
          include ("dd/0_0037_inc.php");
+         // Create description table for protocols table
          include ("dd/0_0038_inc.php");
+         // Create description table for pdbs table
          include ("dd/0_0039_inc.php");
+         // Create description table for IPnumbers table
          include ("dd/0_0040_inc.php");
+         // Create description table for antibodies table
          include ("dd/0_0041_inc.php");
       }
       if ($version<0.1001) {
@@ -200,6 +214,13 @@ if ($version) {
       if ($version<0.3001) {
          // add tables viewnames and tableviews
          include ("dd/0_3001_inc.php");
+      }
+      if ($version<0.3002) {
+         // add table construct
+         // if the table exists already, we do not want to create it again
+         if (!get_cell($db,"tableoftables","id","tablename",'constructs'))  {
+            include ("dd/0_3002_inc.php");
+         }
       }
 
       $query="UPDATE settings SET version='$version_code' WHERE id=1";
