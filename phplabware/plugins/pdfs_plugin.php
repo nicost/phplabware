@@ -296,6 +296,27 @@ Location: ') {
           * These will break anytime a website changes its organization
           */
          switch ($host) {
+         case 'www.molbiolcell.org':
+            /**
+             * We could possibly just add '.pdf' to the getstring, but this
+             * looks more robust
+             */
+             $getstring=str_replace('reprint','reprintframed',$getstring); 
+             $website=read_web_page($host,$getstring,$header,$body,false,5); 
+             //echo $body."<br>\n";  
+             $token=strtok($body,"\n");
+             while ($token && !$done) {
+                if ($link=strstr($token,'/cgi/reprint/')) {
+                   $getstring=substr($link,0,strpos($link,'"'));
+                   $done=true;
+                }
+                $token=strtok("\n");
+             }
+//echo "host: $host, getstring: $getstring.<br>";
+             if (do_pdf_download($host,$getstring,'file')) {
+                 return true;
+             }
+         break;    
          case 'www.nature.com':
             /**
              * This should resolve most nature journals
