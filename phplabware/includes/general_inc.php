@@ -88,32 +88,36 @@ function display_table_info($db,$tableid,$DB_DESNAME,$Fieldscomma,$pr_query,$num
             else
                echo "<td>&nbsp;</td>\n";
          }
-         if ($nowfield[datatype] =="link") {
+         elseif ($nowfield[datatype] =="link") {
             if ($nowfield[values])
                echo "<td><a href='$nowfield[values]' target='_blank'>link</a></td>\n";
             else 
                echo "<td>&nbsp;</td>\n";
          } 
-         if ($nowfield[datatype] =="pulldown") {
+         elseif ($nowfield[datatype] =="pulldown") {
             $text=get_cell($db,$nowfield[ass_t],"typeshort","id",$nowfield[values]); 
             if (!$text)
                $text="&nbsp;";
             echo "<td>$text</td>";
          }
-         if ($nowfield[datatype] =="table") {
-            $key=get_cell($db,$real_table,$nowfields[ass_local_key],"id",$id); 
-            $text=get_cell($db,$nowfield[ass_t],$nowfiels[ass_sql],"id",$key); 
+         elseif ($nowfield[datatype] =="table") {
+            $text=false;
+            $key=$nowfield["values"];
+            if (!$key)
+               $key=get_cell($db,$real_tablename,$nowfield["ass_local_column_name"],"id",$id); 
+            if ($key)
+               $text=get_cell($db,$nowfield["ass_table_name"],$nowfield["ass_column_name"],"id",$key); 
             if (!$text)
                $text="&nbsp;";
             echo "<td>$text</td>";
          }
-         if ($nowfield[datatype] == "textlong") {
+         elseif ($nowfield[datatype] == "textlong") {
             if ($nowfield[values]=="")
                echo "<td>no</td>\n";
             else 
                echo "<td>yes</td>\n"; 
          }
-         if ($nowfield[datatype] == "file") {
+         elseif ($nowfield[datatype] == "file") {
             $files=get_files($db,$tablename,$id,3);
             echo "<td>";
             if ($files) 
