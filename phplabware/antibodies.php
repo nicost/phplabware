@@ -3,7 +3,7 @@
 // antibodies.php -  List, modify, delete and add antibodies
 // antibodies.php - author: Nico Stuurman <nicost@soureforge.net>
   /***************************************************************************
-  * This script displays a table with antobdies in phplabware.               *
+  * This script displays a table with antibodies in phplabware.              *
   *                                                                          *
   * Copyright (c) 2001 by Nico Stuurman                                      *
   * ------------------------------------------------------------------------ *
@@ -321,13 +321,13 @@ if ($add)
 
 else {
    // print header of table
-   echo "<table border=\"1\" align=center >\n";
+   echo "<table border='1' align='center' width='100%'>\n";
    echo "<caption>\n";
    // first handle addition of a new antibody
    if ($submit == "Add Antibody") {
       if (! (check_ab_data($HTTP_POST_VARS) && $id=add ($db, "antibodies",$fields,$HTTP_POST_VARS,$USER) ) ){
          echo "</caption>\n</table>\n";
-         add_ab_form ($db,$fields,$HTTP_POST_VARS,0,$USER,$PHP_SELF,$syste,_settings);
+         add_ab_form ($db,$fields,$HTTP_POST_VARS,0,$USER,$PHP_SELF,$system_settings);
          printfooter ();
          exit;
       }
