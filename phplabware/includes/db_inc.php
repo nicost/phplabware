@@ -1545,6 +1545,10 @@ function paging ($num_p_r,&$USER) {
 // The variable name is formed using the short name for the table
 function current_page($curr_page, $sname, $num_p_r, $numrows) {
    global $HTTP_POST_VARS, $HTTP_SESSION_VARS;
+   // damage control: if settings are absent, $num_p_rt will be 0
+   if (!$num_p_r) {
+      $num_p_r=10;
+   }
    $varname=$sname.'_curr_page';
    ${$varname}=$curr_page;
 
