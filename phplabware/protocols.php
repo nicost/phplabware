@@ -74,7 +74,7 @@ function add_pr_form ($db,$fields,$field_values,$id,$USER,$PHP_SELF,$system_sett
    echo "</tr>\n";
    echo "<tr>\n";
    echo "<th>Title: <sup style='color:red'>&nbsp;*</sup></th>\n";
-   echo "<td><input type='text' name='title' value='$title'></td>\n";
+   echo "<td><input type='text' name='title' value='$title' size=60></td>\n";
 
    $r=$db->Execute("SELECT type,id FROM pr_type1 ORDER BY sortkey");
    $text=$r->GetMenu2("type1",$type1,false);
@@ -243,10 +243,11 @@ function process_file($db,$fileid,$system_settings) {
             $filename=$r->fields("filename");
             // change .doc to .html in a lousy way
             $filename=str_replace(".doc",".htm",$filename); 
-            $type="text/html";
+            $mime="text/html";
+            $type=substr(strrchr($mime,"/"),1);
             $size=filesize($temp);
             $id=$db->GenID("files_id_seq");
-            $query="INSERT INTO files (id,filename,mime,size,title,tablesfk,ftableid) VALUES ($id,'$filename','$type','$size','".$r->fields("title")."','".$r->fields("tablesfk")."','".$r->fields("ftableid")."')";
+            $query="INSERT INTO files (id,filename,mime,size,title,tablesfk,ftableid,type) VALUES ($id,'$filename','$mime','$size','".$r->fields("title")."','".$r->fields("tablesfk")."','".$r->fields("ftableid")."','$type')";
             if ($db->execute($query)) {
                 $newloc=file_path($db,$id);
                `mv $temp $newloc`;
@@ -337,8 +338,12 @@ else {
          exit;
       }
       else { 
-	 $fileid=upload_files($db,"protocols",$HTTP_POST_VARS["id"],$USER,$system_settings);
-         process_file($db,$fileid,$system_settings);
+         if (isset ($HTTP_POST_FILES["file"]["name"][0]) ) {
+            // delete all existing file
+            delete ($db,"protocols",$HTTP_POST_VARS["id"],$USER,true);
+            $fileid=upload_files($db,"protocols",$HTTP_POST_VARS["id"],$USER,$system_settings);
+            process_file($db,$fileid,$system_settings);
+         }
          // to not interfere with search form 
          unset ($HTTP_POST_VARS);
       }
@@ -375,13 +380,25 @@ else {
 
    // row with search form
    echo "<tr align='center'>\n";
-   echo "<td><input type='text' name='title' value='$title' size=8></td>\n";
-   // show a list with users having stuff we may see
+   // get a list with ids we may see
    $list=may_read_SQL($db,"protocols",$USER);
+   // show title we may see, when too many, revert to text box
+   $r=$db->Execute("SELECT COUNT (title) FROM protocols");
+   if ($r->fields(0) < 20) {
+      $r=$db->Execute("SELECT title FROM protocols WHERE id IN ($list)");
+      $text=$r->GetMenu("title",$title,true,false,0,"style='width: 80%'");
+      echo "<td style='width: 10%'>$text</td>\n";
+   }
+   else
+      echo "<td><input type='text' name='title' value='$title' size=8></td>\n";
+   // show a list with users having stuff we may see
    $r=$db->Execute("SELECT ownerid FROM protocols WHERE id IN ($list)");
    $list2=make_SQL_ids($r,false,"ownerid");
    if ($list2) {
-      $r=$db->Execute("SELECT CONCAT(firstname, ' ', lastname),id  from users WHERE id IN ($list2) ORDER by login");
+      if ($db_type=="mysql") // mysql does not use the ansi SQL || operator
+         $r=$db->Execute("SELECT CONCAT(firstname, ' ', lastname),id  from users WHERE id IN ($list2) ORDER by login");
+      else
+         $r=$db->Execute("SELECT firstname || ' ' || lastname,id  from users WHERE id IN ($list2) ORDER by login");
       $text=$r->GetMenu2("ownerid",$ownerid,true,false,0,"style='width: 80%'");
    }
    else
@@ -460,7 +477,8 @@ else {
          echo "<tr class='row_even' align='center'>\n";
 
       echo "<td>$title</td>\n";
-      $owner=get_cell($db,"users","login","id",$r->fields["ownerid"]);
+      $owner=get_cell($db,"users","firstname","id",$r->fields["ownerid"]);
+      $owner.= " ".get_cell($db,"users","lastname","id",$r->fields["ownerid"]);
       echo "<td>$owner</td>\n";
       if ($notes)
          echo "<td>yes</td>\n";
@@ -472,7 +490,7 @@ else {
       echo "<td>";
       if ($files) 
          for ($i=0;$i<sizeof($files);$i++)
-	    echo $files[$i]["link"]."<br>";
+	    echo $files[$i]["link"];
       else
          echo "&nbsp;";
       echo "</td>\n";
