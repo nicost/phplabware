@@ -32,13 +32,14 @@ globalize_vars ($post_vars, $HTTP_POST_VARS);
 ////
 // !Checks input data.
 // returns false if something can not be fixed
-function check_ab_data ($field_values) {
+function check_ab_data (&$field_values) {
    if (!$field_values["name"]) {
       echo "<h3>Please enter an antibody name.</h3>";
       return false;
    }
    if ($field_values["concentration"]) {
       if (! $field_values["concentration"]=(float)$field_values["concentration"] ) {
+	 unset ($field_values["concentration"]);
          echo "<h3>Use numbers only for the concentration field.</h3>";
          return false;
       }
