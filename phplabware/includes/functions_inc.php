@@ -213,8 +213,8 @@ function navbar($permissions) {
    
    if ($permissions & $ACTIVE) {
 				
-      echo "<table border=0 width=100% cellspacing='0' cellpadding='0'>\n";
-      echo "<tr bgcolor='eeeeff' align='center'>\n";
+      echo "<table border=0 width=100% cellspacing='0' cellpadding='0' bgcolor='eeeeff'>\n";
+      //echo "<tr bgcolor='eeeeff' align='center'>\n";
       $records=$db->Execute("select tablename,custom,id,label from tableoftables where display='Y' and permission='Users' ORDER by sortkey");
       $count=0;
       if ($records) {
@@ -229,7 +229,8 @@ function navbar($permissions) {
 	 }
          while (!$records->EOF) {
 	    if (in_array($records->fields["id"],$showtables)) {
-               if ($count && (($count % $links_per_row)==0))
+               //if ($count && (($count % $links_per_row)==0))
+               if (($count % $links_per_row)==0)
                   echo "</tr>\n<tr bgcolor='eeeeff' align='center'>\n";
                $tabname=$records->fields[0];
                $scriptname=$records->fields[1];
@@ -243,7 +244,14 @@ function navbar($permissions) {
                $count++;
 	    }
             $records->MoveNext(); 
-         }		
+         }	
+         // the following is needed to make table look decent in Netscape 4
+         $range=$count % $links_per_row;
+         if ($range) {
+            $range=$links_per_row-$range;
+            for ($i=0;$i<$range;$i++)
+               echo "<td style='width: 20% align='center'>&nbsp;</td>\n";
+         }
       } 
    }
    echo "</tr>\n</table>\n\n";
