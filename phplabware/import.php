@@ -21,7 +21,7 @@ require("includes/general_inc.php");
 require("includes/tablemanage_inc.php");
 include ('includes/defines_inc.php');
 
-$post_vars="delimiter,delimiter_type,tableid,nrfields,pkey,pkeypolicy,skipfirstline,tmpfile,ownerid";
+$post_vars="delimiter,delimiter_type,quote,quote_type,tableid,nrfields,pkey,pkeypolicy,skipfirstline,tmpfile,ownerid";
 globalize_vars($post_vars, $HTTP_POST_VARS);
 
 $permissions=$USER["permissions"];
@@ -53,6 +53,19 @@ function get_delimiter ($delimiter,$delimiter_type) {
    return $delimiter;
 } 
  
+////
+// !returns the string 'quote', based on quote_type (a POST variable)
+function get_quote ($quote,$quote_type) {
+   if ($$quote)
+      return $$quote;
+   if ($quote_type=="doublequote")
+      $quote="\"";
+   elseif ($quote_type=="singlequote")
+      $quote="'";
+   elseif ($quote_type=="none")
+      $quote=false;
+   return $quote;
+} 
 ////
 // !corrects problems in input data (Removes quotes around text, 
 // checks for ints and floats, quotes text
@@ -128,7 +141,10 @@ if ($HTTP_POST_VARS["assign"]=="Import Data") {
    }
    // do the database upload
    else {
+//$quoted=true;
+//$quote="\"";
       $delimiter=get_delimiter($delimiter,$delimiter_type);
+      $quote=get_quote($quote,$quote_type);
       $tmpdir=$system_settings["tmpdir"];
       $fh=fopen("$tmpdir/$tmpfile","r");
       if ($fh) {
@@ -139,7 +155,10 @@ if ($HTTP_POST_VARS["assign"]=="Import Data") {
             $line=chop(fgets($fh,1000000));
          // fgets should not need second parameter, but my php version does...
          while ($line=chop(fgets($fh,1000000))) {
-            $fields=check_input (explode($delimiter,$line),$to_types,$nrfields);
+            if ($quote) {
+               $line=substr($line,1,-1);
+            }
+            $fields=check_input (explode($quote.$delimiter.$quote,$line),$to_types,$nrfields);
             $worthit=false;
 
             // if there is a column being used as primary key, we do an SQL
@@ -259,6 +278,7 @@ if ($HTTP_POST_VARS["dataupload"]=="Continue") {
       echo $error_string;
    $filename=$HTTP_POST_FILES["datafile"]["name"];
    $delimiter=get_delimiter($delimiter,$delimiter_type);
+   $quote=get_quote($quote,$quote_type);
    if ($delimiter && $tableid && $ownerid && ($filename || $tmpfile) ) {
       if (!$system_settings["filedir"]) {
          echo "<h3><i>Filedir</i> was not set.  Please correct this first in <i>setup</i></h3>\n";
@@ -273,16 +293,16 @@ if ($HTTP_POST_VARS["dataupload"]=="Continue") {
          if ($fh) {
             $firstline=chop(fgets($fh,1000000));
             // if quoted delete first and last char
-            if ($quoted) {
-               $firstline=substr($firstline,-1,-1);
+            if ($quote) {
+               $firstline=substr($firstline,1,-1);
             }
-            $fields=explode("\"$delimiter\"",$firstline);
+            $fields=explode($quote.$delimiter.$quote,$firstline);
             $secondline=chop(fgets($fh,1000000));
-            if ($quoted) {
-               $secondline=substr($firstline,-1,-1);
+            if ($quote) {
+               $secondline=substr($secondline,1,-1);
             }
-            $fields2=explode("\"$delimiter\"",$secondline);
-            $nrfields=substr_count($firstline,$delimiter)+1;
+            $fields2=explode($quote.$delimiter.$quote,$secondline);
+            $nrfields=sizeof($fields);
             fclose($fh);
          }
          $tablename=get_cell($db,"tableoftables","tablename","id",$tableid);
@@ -295,6 +315,7 @@ if ($HTTP_POST_VARS["dataupload"]=="Continue") {
          echo "<input type='hidden' name='nrfields' value='$nrfields'>\n";
          echo "<input type='hidden' name='delimiter_type' value='$delimiter_type'>\n";
          echo "<input type='hidden' name='delimiter' value='$delimiter'>\n";
+         echo "<input type='hidden' name='quote_type' value='$quote_type'>\n";
          echo "<input type='hidden' name='ownerid' value='$ownerid'>\n";
          echo "<table align='center'><tr>\n";
          echo "<th>First line:</th>\n";
@@ -347,16 +368,17 @@ if ($HTTP_POST_VARS["dataupload"]=="Continue") {
 }
 
 
-// Page with file to be uploaded, delimiter, table, and owner (Page 1)
+// Page with file to be uploaded, delimiter, table, and owner (Part 1)
 echo "<h3 align='center'>$string</h3>";
 echo "<h3 align='center'>Import Data(1): Select File, delimiter, and Table to import data into</h3>\n";
 echo "<form method='post' id='importdata' enctype='multipart/form-data' ";
 $dbstring=$PHP_SELF;echo "action='$dbstring?".SID."'>\n"; 
-echo "<table align='center' border='0' cellpadding='2' cellspacing='0'>\n";
+echo "<table align='center' border='0' cellpadding='5' cellspacing='0'>\n";
 
 echo "<tr>\n";
 echo "<th>File with data</th>\n";
 echo "<th>Delimiter</th>\n";
+echo "<th>Quotes around field</th>\n";
 echo "<th>Table</th>\n";
 echo "<th>Assign new records to:</th>\n";
 echo "</tr>\n";
@@ -369,6 +391,12 @@ echo "<td align='center'> <table><tr>
    <tr><td><input type='radio' name='delimiter_type' value='semi-colon'> ;</td>
    <td colspan=2><input type='radio' name='delimiter_type' value='other'> other:
    <input type='text' name='delimiter' value='$delimiter' size='2'></td></tr>
+   </table></td>\n";
+echo "<td align='center'> <table><tr>
+   <td><input type='radio' name='quote_type' value='doublequote'> \"&nbsp;</td>
+   <td><input type='radio' name='quote_type' value='singlequote'> '&nbsp;</td>
+   <td><input type='radio' name='quote_type' value='none' checked> none</td></tr>
+   <tr><td>&nbsp;</td></tr>
    </table></td>\n";
 $query = "SELECT label,id FROM tableoftables where id>1000 ORDER BY sortkey";
 $r=$db->Execute($query);
