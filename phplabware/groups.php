@@ -29,9 +29,11 @@ globalize_vars ($post_vars, $HTTP_POST_VARS);
 // main global vars
 $title = "Admin Groups";
 
-////
-// !Adds group to database.
-// An error string is returned when problems occur 
+/**
+ *  Adds group to database.
+ *
+ * An error string is returned when problems occur 
+ */
 function add_new_group ($db,$groupname) {
 
    // check if a groupname is entered
@@ -55,9 +57,11 @@ function add_new_group ($db,$groupname) {
       return "Please enter a groupname!";
 }
 
-////
-// !Change that groupname.  
-// On error, returns an error string
+/**
+ *  Change that groupname.  
+ *
+ * On error, returns an error string
+ */
 function modify_group ($db, $groupid, $new_name) {
    // Only change the name when there is a new one provided
    if (!$new_name)
@@ -79,9 +83,11 @@ function modify_group ($db, $groupid, $new_name) {
 }
 
 
-////
-// !Delete given group
-// The group is only deleted when it has no users
+/**
+ *  Delete given group
+ *
+ * The group is only deleted when it has no users
+ */
 function delete_group ($db, $groupid) {
 
    // check if a groupname is entered
@@ -117,9 +123,11 @@ function delete_group ($db, $groupid) {
 }
 
 
-////
-// !Displays form to modify or add a group
-// if groupid is given the groupname will be modified, otherwise add a new group
+/**
+ *  Displays form to modify or add a group
+ *
+ * if groupid is given the groupname will be modified, otherwise add a new group
+ */
 function group_form ($groupid, $groupname) {
    global $PHP_SELF;
 ?>

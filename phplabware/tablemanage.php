@@ -320,7 +320,8 @@ if ($editfield)	{
    exit;
 }
 
-/////  Reports
+/**
+ */
 elseif ($editreport)	{
    navbar($USER["permissions"]);
    echo $tplmessage;

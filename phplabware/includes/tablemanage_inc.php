@@ -15,9 +15,11 @@
   \**************************************************************************/
 
 
-/////////////////////////////////////////////////////////////////////
-////  
-// !Prints form with access to table management functions
+/**
+ * *  
+ *  Prints form with access to table management functions
+ *
+ */
 function create_new_table($db){
    global $HTTP_POST_VARS,$PHP_SELF;
    echo "<form method='post' id='tablemanage' enctype='multipart/form-data' ";
@@ -81,9 +83,11 @@ function create_new_table($db){
 
 }
 
-/////////////////////////////////////////////////////////////////////////
-////  
-// !deletes a user-generated table, including associated tables
+/**
+ * *  
+ *  deletes a user-generated table, including associated tables
+ *
+ */
 function del_table($db,$tablename,$id,$USER) {
    global $HTTP_POST_VARS, $string;
 
@@ -122,10 +126,12 @@ function del_table($db,$tablename,$id,$USER) {
    return $string;
 }
 
-/////////////////////////////////////////////////////////////////////////
-////   
-// !creates a general table 
-// also adds the tabledescription table and the entry in tableoftables
+/**
+ * *   
+ *  creates a general table 
+ *
+ * also adds the tabledescription table and the entry in tableoftables
+ */
 function add_table ($db,$tablename,$tablelabel,$sortkey,$plugincode) {
     global $string;
     $shortname=substr($tablename,0,3);
@@ -244,9 +250,11 @@ function add_table ($db,$tablename,$tablelabel,$sortkey,$plugincode) {
    }
 }
 
-/////////////////////////////////////////////////////////////////////////
-////
-// !modifies  the display properites of a table within navbar
+/**
+ * *
+ *  modifies  the display properites of a table within navbar
+ *
+ */
 function mod_table($db,$id,$offset) {
    global $HTTP_POST_VARS,$string;
 
@@ -284,9 +292,11 @@ function mod_table($db,$id,$offset) {
    return false;
 }
 
-/////////////////////////////////////////////////////////////////////////
-//// 
-// !adds a general column entry
+/**
+ * * 
+ *  adds a general column entry
+ *
+ */
 function add_columnecg($db,$tablename2,$colname2,$label,$datatype,$Rdis,$Tdis,$req,$modifiable,$sort) {
    global $string;
 
@@ -400,9 +410,11 @@ function add_columnecg($db,$tablename2,$colname2,$label,$datatype,$Rdis,$Tdis,$r
    }
 }
 
-/////////////////////////////////////////////////////////////////////////
-//// 
-// !modifies a general column entry
+/**
+ * * 
+ *  modifies a general column entry
+ *
+ */
 function mod_columnECG($db,$sort,$offset) {
    global $string,$HTTP_POST_VARS;
 
@@ -438,9 +450,11 @@ function mod_columnECG($db,$sort,$offset) {
    return false;	
 }
 
-/////////////////////////////////////////////////////////////////////////
-////
-// !Modifies an entry for a report
+/**
+ * *
+ *  Modifies an entry for a report
+ *
+ */
 function mod_report($db,$offset) {
    global $HTTP_POST_VARS,$HTTP_GET_VARS,$HTTP_POST_FILES,$system_settings;
 
@@ -469,9 +483,11 @@ function mod_report($db,$offset) {
       $r=$db->Execute("UPDATE reports SET label='$label', sortkey=$sortkey WHERE id='$id'");    
 }
 
-/////////////////////////////////////////////////////////////////////////
-////
-// !Deletes an entry for a report
+/**
+ * *
+ *  Deletes an entry for a report
+ *
+ */
 function rm_report($db,$offset) {
    global $HTTP_POST_VARS,$system_settings;
 
@@ -480,9 +496,11 @@ function rm_report($db,$offset) {
    @unlink ($system_settings["templatedir"]."/$id.tpl");
 }
 
-/////////////////////////////////////////////////////////////////////////
-////
-// !Deletes an entry for a report
+/**
+ * *
+ *  Deletes an entry for a report
+ *
+ */
 function test_report($db,$offset,$tablename) {
    global $HTTP_POST_VARS,$HTTP_GET_VARS,$system_settings;
    $HTTP_GET_VARS["tablename"]=$tablename;
@@ -506,9 +524,11 @@ function test_report($db,$offset,$tablename) {
    return $report;
    
 }
-/////////////////////////////////////////////////////////////////////////
-////
-// ! Streams a template back to the user
+/**
+ * *
+ *   Streams a template back to the user
+ *
+ */
 function export_report($db,$offset) {
    global $HTTP_POST_VARS,$system_settings;
 
@@ -525,9 +545,11 @@ function export_report($db,$offset) {
    }
 }
 
-/////////////////////////////////////////////////////////////////////////
-////
-// ! Adds a new entry for a report
+/**
+ * *
+ *   Adds a new entry for a report
+ *
+ */
 function add_report($db) {
    global $HTTP_POST_VARS,$HTTP_POST_FILES,$HTTP_GET_VARS,$system_settings;
 
@@ -600,8 +622,10 @@ function rm_columnecg($db,$tablename,$id,$colname,$datatype) {
 }
 
 
-////
-// !helper function for show_table_column_page
+/**
+ *  helper function for show_table_column_page
+ *
+ */
 function make_column_js_array($db,$r) {
    $result="new Array(\n";
    $rb=$db->Execute("SELECT label,id FROM ".$r->fields["table_desc_name"]." WHERE label NOT IN ('access','date','ownerid','magic','lastmoddate','lastmodby') ORDER BY label");
@@ -616,8 +640,10 @@ function make_column_js_array($db,$r) {
 }
 
 
-////
-// ! show active link page 
+/**
+ *   show active link page 
+ *
+ */
 function show_active_link_page ($db,$table_name,$addcol_name,$addcol_label,$link_part_a=false,$link_part_b=false) {
    echo "<form method='post' id='active_link'>\n";
    echo "<input type='hidden' name='table_name' value='$table_name'></input>\n";
@@ -633,8 +659,10 @@ function show_active_link_page ($db,$table_name,$addcol_name,$addcol_label,$link
 }
 
 
-////
-// !Stores active link data
+/**
+ *  Stores active link data
+ *
+ */
 function add_active_link ($db,$table,$column,$link_a,$link_b) {
    $r=$db->Execute("SELECT table_desc_name FROM tableoftables WHERE tablename='$table'");
    $table_desc=$r->fields["table_desc_name"];
@@ -644,8 +672,10 @@ function add_active_link ($db,$table,$column,$link_a,$link_b) {
 }
 
 
-////
-// ! show page with choice of tables, dynamically generate list with columns
+/**
+ *   show page with choice of tables, dynamically generate list with columns
+ *
+ */
 function show_table_column_page ($db,$table_name,$addcol_name,$addcol_label) {
    global $HTTP_GET_VARS;
 
@@ -694,10 +724,12 @@ function show_table_column_page ($db,$table_name,$addcol_name,$addcol_label) {
    echo "</table>\n</form>\n";
 }
 
-////
-// !Associates given column with a column in another table
-//  if there is already an association with the other table, that association
-//  will be used as a key
+/**
+ *  Associates given column with a column in another table
+ *
+ *  if there is already an association with the other table, that association
+ *  will be used as a key
+ */
 function add_associated_table($db,$table,$column,$table_ass,$column_ass) {
    global $HTTP_POST_VARS;
 

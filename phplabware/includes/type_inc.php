@@ -13,9 +13,11 @@
   *  option) any later version.                                              *
   \**************************************************************************/
 
-////
-// !Generates a javascript array used to dynamically alter pulldown items
-// after the pulldown list has been changed by the user in another window
+/**
+ *  Generates a javascript array used to dynamically alter pulldown items
+ *
+ * after the pulldown list has been changed by the user in another window
+ */
 function update_opener_js ($db,$table) {
    global $HTTP_GET_VARS;
 
@@ -41,9 +43,11 @@ function update_opener_js ($db,$table) {
 }
 
 
-////
-// !Generates the page with info on pulldown items
-// Allows for addition, modifying and deleting pulldown items
+/**
+ *  Generates the page with info on pulldown items
+ *
+ * Allows for addition, modifying and deleting pulldown items
+ */
 function show_type ($db,$table,$name, $tablename=false) {
    global $HTTP_POST_VARS,$PHP_SELF,$HTTP_GET_VARS;
 
@@ -129,10 +133,12 @@ function show_type ($db,$table,$name, $tablename=false) {
 
 }
 
-////
-// !Deletes an entry in the type table
-// Currently, there can be only 1 related table ($table2)
-// When more are needed,make $table2 into an array 
+/**
+ *  Deletes an entry in the type table
+ *
+ * Currently, there can be only 1 related table ($table2)
+ * When more are needed,make $table2 into an array 
+ */
 
 function del_type ($db,$table,$index,$tableinfo) {
    global $HTTP_POST_VARS, $HTTP_GET_VARS;
@@ -172,9 +178,11 @@ function del_type ($db,$table,$index,$tableinfo) {
    return false;
 }
 
-////
-// !Modifies an entry in the type table
-//
+/**
+ *  Modifies an entry in the type table
+ *
+ *
+ */
 function mod_type ($db,$table,$index) {
    global $HTTP_POST_VARS;
    
@@ -195,9 +203,11 @@ function mod_type ($db,$table,$index) {
    return false;
 }
 
-////
-// !Adds a new entry in the type table
-//
+/**
+ *  Adds a new entry in the type table
+ *
+ *
+ */
 function add_type ($db,$table) {
    global $HTTP_POST_VARS;
 

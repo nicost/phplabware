@@ -14,8 +14,10 @@
   *  option) any later version.                                              *
   \**************************************************************************/
 
-////
-// !Formats record(s) into xml
+/**
+ *  Formats record(s) into xml
+ *
+ */
 function make_xml ($db,$data,$tableinfo) {
    $xml.="<{$tableinfo->label} record>\n";
    foreach ($data as $column) {
@@ -27,12 +29,14 @@ function make_xml ($db,$data,$tableinfo) {
    return $xml;
 }
 
-////
-// !Takes a template and data and generates a report
-// $target: 1=screen(html), 2=file
-// $value are translated into the text value
-// %value are translated into the actual value
-// &value are translated into the sum of all values seen so far
+/**
+ *  Takes a template and data and generates a report
+ *
+ * $target: 1=screen(html), 2=file
+ * $value are translated into the text value
+ * %value are translated into the actual value
+ * &value are translated into the sum of all values seen so far
+ */
 function make_report ($db,$template,$data,$tableinfo,$target=1,$counter=false) {
    global $sums;
    foreach ($data as $column) {

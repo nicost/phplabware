@@ -21,8 +21,10 @@ include ('includes/functions_inc.php');
 include ('includes/init_inc.php');
 include ('includes/db_inc.php');
 
-////
-// !Writes the index files needed for full text searches of files
+/**
+ *  Writes the index files needed for full text searches of files
+ *
+ */
 function doindexfile ($db,$filetext,$fileid,$indextable,$recordid,$pagenr)
 {
    if (!$pagenr)
