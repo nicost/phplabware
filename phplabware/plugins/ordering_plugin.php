@@ -22,7 +22,7 @@ function plugin_display_add_post($db,$nowfield)
 {
 	global $title, $date, $USER, $system_settings; 
 	
-	$dateformat=get_cell($db,"dateformats","dateformat","id",$system_settings["dateformat"]);
+	$dateformat=get_cell($db,'dateformats','dateformat','id',$system_settings["dateformat"]);
 	$date=(time()); $date=date($dateformat,$date);	
 	echo "<input type='hidden' name='date_requested' value='$date'>\n";  
 
@@ -40,27 +40,24 @@ function plugin_display_add_post($db,$nowfield)
 // modified to duplicatean entry for reordering
 function plugin_display_show ($db,$Allfields,$id)
 {
-echo "<script language='JavaScript'><!--window.name='mainwin'; </script>";
+   global $PHP_SELF, $md, $USER, $tableinfo, $system_settings;
 
-   global $PHP_SELF, $db_type, $md, $USER, $tableinfo,$system_settings;
    $dbstring=$PHP_SELF;$dbstring.="?";$dbstring.="tablename=".$tableinfo->name."&";
-   $j2="target=\"mainwin\" onSubmit=\"setTimeout('window.close()',2000)\"";
-   echo "<form method='post' id='protocolform' enctype='multipart/form-data' $j2 action='$dbstring";
-?><?=SID?>'><?php
+   echo "<form name='order_form' method='post' id='protocolform' enctype='multipart/form-data' $j2 action='$dbstring'>\n";
 
    echo "<input type='hidden' name='md' value='$md'>\n";
    echo "<table border=0 align='center'>\n";   
 
-/* initailize a blank array*/
-$Allfields2=array();
+   // initailize a blank array
+   $Allfields2=array();
 
-/* Define variables to be cleared from the arrays*/
-$badnames=array("date_ordered","confirmed");
+   // Define variables to be cleared from the arrays
+   $badnames=array('date_ordered','confirmed');
 
-/*variables to not be messed with, rather these are explicitly defined later or system set*/
-$notouch=array("date","ordered_by","date_requested","ownerid","magic");
+   // variables to not be messed with, rather these are explicitly defined later or system set*/
+   $notouch=array('date','ordered_by','date_requested','ownerid','magic');
 
-foreach ($Allfields as $nowfield2) 
+   foreach ($Allfields as $nowfield2) 
 	{
 	$flag=1;
 	foreach($badnames as $nolike)
@@ -72,34 +69,31 @@ foreach ($Allfields as $nowfield2)
 	elseif($flag == 0)
 		{echo "<input type='hidden' name='$nowfield2[name]' value=''>\n";}	
 
-}
+	}
 
-/* set the magic variable*/
-$magic=time(); echo "<input type='hidden' name='magic' value='$magic'>\n";
+   /* set the magic variable*/
+   $magic=time(); echo "<input type='hidden' name='magic' value='$magic'>\n";
 
-/* Put in the date requested, who requested it, etc*/
-$dateformat=get_cell($db,"dateformats","dateformat","id",$system_settings["dateformat"]);
-$date=(time()); $date=date($dateformat,$date);
-$date.="-reorder";
-echo "<input type='hidden' name='date_requested' value='$date'>\n";  
-
-
-$r=$db->Execute("SELECT firstname,lastname,email FROM users WHERE id=$USER");
-$myname=$USER["firstname"];$myname.=" "; $myname.=$USER["lastname"];
-echo "<input type='hidden' name='ordered_by' value='$myname'>\n"; 
+   /* Put in the date requested, who requested it, etc*/
+   $dateformat=get_cell($db,'dateformats','dateformat','id',$system_settings['dateformat']);
+   $date=(time()); 
+   $date=date($dateformat,$date);
+   $date.='-reorder';
+   echo "<input type='hidden' name='date_requested' value='$date'>\n";  
 
 
+   $r=$db->Execute("SELECT firstname,lastname,email FROM users WHERE id=$USER");
+   $myname=$USER['firstname'] .' ' . $USER['lastname'];
+   echo "<input type='hidden' name='ordered_by' value='$myname'>\n"; 
 
-   echo "<th>Click this button to reorder</th>";
-   $value="Add Record";
 
-   echo "<td colspan=7 align='center'><input type='submit' name='submit' value='$value'>\n";
-   echo "&nbsp;&nbsp;<input type='submit' name='submit' value='Cancel'></td>\n";
-   echo "</tr>\n</table>\n</form>\n";
+   echo "<input type='hidden' name='subm' value=''>\n";
+   echo "<td colspan=7 align='center'><input type='button' name='sub' value='Re-order' onClick='document.order_form.subm.value=\"Add Record\"; document.order_form.submit(); window.opener.document.g_form.search.value=\"Search\"; setTimeout(\"window.opener.document.g_form.submit(); window.opener.focus(); window.close();\",300); '>\n";
+
+   echo "&nbsp;&nbsp;<input type='button' name='sub' value='Cancel' onClick='window.opener.focus(); window.close();'></td>\n";
 
    //end of table
-    $dbstring=$PHP_SELF;$dbstring.="?";$dbstring.="tablename=$tableinfo[name]&";
-    echo "<form method='post' id='protocolform' enctype='multipart/form-data' action='$dbstring";
- ?><?=SID?>'><?php
+   echo "</tr>\n</table>\n</form>\n";
+
 
 }
