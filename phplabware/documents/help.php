@@ -9,6 +9,8 @@
 </pre></li>
 <li>A footer section that will be displayed once at the bottom of the report. It should be preceded with:<br><pre>
 &lt;!--/fields--&gt;
-</pre></li>
+</pre><br>
+In the footer section, every SQL columnname preceded with the '&' sign will be replaced by the sum of all entries with that columnname.
+</li>
 </ul>
 <p>Both the header and footer sections are optional.  As an example, look at the file reports.txt.</p>
