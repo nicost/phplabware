@@ -26,6 +26,16 @@ $editreport=$HTTP_GET_VARS["editreport"];
 $post_vars="newtable_name,newtable_label,newtable_sortkey,newtable_plugincode,addtable,table_id,table_name,table_display,addcol_name,addcol_label,addcol_sort,addcol_dtable,addcol_drecord,addcol_required,addcol_modifiable,addcol_datatype";
 globalize_vars($post_vars, $HTTP_POST_VARS);
 
+// this needs to be done before headers are sent in printheader
+while((list($key, $val) = each($HTTP_POST_VARS))) {
+   if (substr($key, 0, 9) == "expreport") { 
+      $modarray = explode("_", $key);
+      export_report($db,$modarray[1]);
+      exit;
+   }
+}
+reset($HTTP_POST_VARS);
+
 $permissions=$USER["permissions"];
 if ($addcol_datatype=="table") 
    $jsfile="includes/js/tablemanage.js";
@@ -112,6 +122,11 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
    elseif (substr($key, 0, 9) == "delreport") { 
       $modarray = explode("_", $key);
       rm_report($db,$modarray[1]);
+      break;
+   }
+   elseif (substr($key, 0, 10) == "testreport") { 
+      $modarray = explode("_", $key);
+      $tplmessage=test_report($db,$modarray[1],$editreport);
       break;
    }
    elseif ($key=="addreport") {
@@ -346,9 +361,11 @@ elseif ($editreport)	{
       else
          echo "<td>No</td>\n";
       $modstring = "<input type='submit' name='modreport"."_$rownr' value='Modify'>\n";
+      $exportstring = "<input type='submit' name='expreport"."_$rownr' value='Export'>\n";
+      $teststring = "<input type='submit' name='testreport"."_$rownr' value='Test'>\n";
       $delstring = "<input type='submit' name='delreport"."_$rownr' value='Remove' ";
       $delstring .= "Onclick=\"if(confirm('Are you absolutely sure that the report ".$rp->fields["label"] ." should be removed? (No undo possible!)')){return true;}return false;\">";  
-      echo "<td>$modstring &nbsp; $delstring</td>\n";
+      echo "<td>$modstring &nbsp;\n$delstring &nbsp;\n$exportstring &nbsp;\n$teststring</td>\n";
       echo "</tr>\n";
       $rp->MoveNext();
       $rownr++;
