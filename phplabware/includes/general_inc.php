@@ -594,6 +594,7 @@ function display_add($db,$tableinfo,$Allfields,$id,$namein,$system_settings) {
 	    echo "</tr></table><br>\n\n";
 	 }
          elseif ($nowfield['datatype']=='mpulldown') {
+            unset ($valueArray);
             // get previous value	
             $r=$db->Execute("SELECT typeshort,id FROM {$nowfield['ass_t']} ORDER BY sortkey,typeshort");
             $rbv=$db->Execute("SELECT typeid FROM {$nowfield['key_t']} WHERE recordid=$id");
