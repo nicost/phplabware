@@ -191,6 +191,35 @@ function plugin_check_data($db,&$field_values,$table_desc,$modify=false)
 }
 
 /**
+ * Reads data from a http connection (webserver)
+ * 
+ * Optionally quites after reading just the header
+ *
+ * Returns the website as an array with 'header' and 'body' as members
+ */
+function read_web_page($host,$getstring,&$body,$headersonly=false,&$header,$timeout=5) 
+{
+   $fp=fsockopen($host,80,$errno,$errstr,$timeout);
+   if ($fp) {
+       $out="GET $getstring HTTP/1.0\r\n"; $out.="Host: $host\r\n";
+       $out.="Connection: Close\r\n\r\n";
+       fwrite($fp,$out);
+       $header='';
+       while ($str=trim(fgets($fp,4096))) {
+          $header.=$str."\n"; 
+       }
+       if (!$headersonly) {
+          $body='';
+          while (!feof($fp) ) {
+             $body.=fgets($fp,4096);
+          }
+       }
+       return true;
+   }
+   return false;
+}
+
+/**
  * Finds the journal link through eutils elink
  *
  * When it knows the journal, will try to download the pdf directly
@@ -216,10 +245,6 @@ function fetch_pdf($pmid,$journal)
           }
       }
        
-      //$link=$search->parser->content['eLinkResult']['LinkSet']['IdUrlList']['IdUrlSet']['ObjUrl']['Url'];
-// echo "<br>link: ";
-// print_r($links);
-// echo ".<br>";
       foreach($links as $link) {
          // grep the base of the url and handle all know cases accordingly.
          // This is where we'll have to write grabbers for each journal
@@ -228,6 +253,70 @@ function fetch_pdf($pmid,$journal)
          $getstring=substr($link,strlen($matches[0]));
 //echo "host: $host, getstring: $getstring.<br>";
          switch ($host) {
+         case 'linkinghub.elsevier.com':
+            // elsevier offers the choise between science direct and journal specific links.  For now, explore science direct:
+            if ($website=read_web_page($host,$getstring,$body,false,$header,5)) { 
+               // find the sciencedirect link in the page we just downloaded
+               $line=strtok($body,"\n");
+               while ($line) {
+                  if ($sdirect=strstr($line,'http://www.sciencedirect.com')) {
+//echo "FOUND SCIENCE DIRECT LINK<br>";
+                     $sdirect=substr($sdirect,28,-2);
+                     unset($line);
+                  } else {
+                     $line=strtok("\n");
+                  }
+               }
+//echo "Sdirect: $sdirect.<br>";
+               if ($sdirect) {
+                  $sdirect=str_replace("&amp;",'&',$sdirect);
+                  // Now follow a 'Moved Permanently in the header
+                  $host='www.sciencedirect.com';
+                  unset($header);
+                  if (read_web_page($host,$sdirect,$dummy,true,$header,5)) { 
+//echo "$host.<br>";
+//echo "$out.<br>";
+//echo $header;
+                     $line=strtok($header,"\n");
+                     while ($line) {
+//echo "$line.<br>\n";
+                        if ($pdflink=strstr($line,'http://www.sciencedirect.com')) {
+                           $pdflink=substr($pdflink,28);
+                           unset($line);
+                        } else {
+                           $line=strtok("\n");
+                        }
+                     }
+//echo "PDFLINK: $pdflink.<br>\n";
+                     unset($header);
+                     unset($body);
+                     // we finally get to the page with the link to the pdf
+                     if (isset($pdflink) && read_web_page($host,$pdflink,$body,false,$header,5) ) {
+                        // This one is tricky. Easiest way seems to be to spot the first part of the link.  The link is also split over mulitple lines
+                        $line=strtok($body,"\n");
+                        while ($line) {
+                           if ($pdflink2=strstr($line,'http://www.sciencedirect.com/science?_ob=M')) {
+                              while (!$position=strpos($line,">")) {
+                                 $line=strtok("\n");
+                                 $pdflink2.=$line;
+                              }
+                              $pdflink2=substr($pdflink2,0,strpos($pdflink2,'>'));
+                              unset($line);
+                           } else {
+                              $line=strtok("\n");
+                           }
+                       }
+echo "PDFLINK2: $pdflink2.<br>";
+                       // if we have it we can do the real download
+                        if (do_pdf_download($host,$pdflink2,'file')) {
+                           return true;
+             /          }
+                     }
+                  }
+               }
+            }
+         break; // end of linkinghub.elsevier.com
+               
          case 'www.jcb.org':
             // jcb gives a page with a redirect on it.  The redirect has the link to the pdf on it, however, once the redirect address is known, we can simply construct  the link to the pdf and grab it.
             $fp=fsockopen($host,80,$errno,$errstr,5);
@@ -252,36 +341,35 @@ function fetch_pdf($pmid,$journal)
                   }
                }
             }
-            break;
-            case 'www.pubmedcentral.gov' :
-               /**
-                * For pubmed central we need the 'artid'.  Retrieve this using elink
-                */
-               $searchid= new eutils_link($pmid);
-               $searchid->setMaxResults(5);
-               $searchid->setManualSearchParam('db','pmc');
-               if ($searchid->doSearch()) {
-                  foreach($searchid->parser->content as $hit) {
-                     if (isset($hit['eLinkResult']['LinkSet']['LinkSetDb']['Link']['Id'])) {
-                        $artid=$hit['eLinkResult']['LinkSet']['LinkSetDb']['Link']['Id'];
-// echo "<br>Artid=$artid.<br>";
-                        if (is_numeric($artid)) { 
-                           $url="/picrender.fcgi?artid=$artid&action=stream&blobtype=pdf";
-                           if (do_pdf_download($host,$url,'file')) {
-                                return true;
-                           }
-                           
-                         }
+         break;
+
+         case 'www.pubmedcentral.gov' :
+            /**
+             * For pubmed central we need the 'artid'.  Retrieve this using elink
+             */
+            $searchid= new eutils_link($pmid);
+            $searchid->setMaxResults(5);
+            $searchid->setManualSearchParam('db','pmc');
+            if ($searchid->doSearch()) {
+               foreach($searchid->parser->content as $hit) {
+                  if (isset($hit['eLinkResult']['LinkSet']['LinkSetDb']['Link']['Id'])) {
+                     $artid=$hit['eLinkResult']['LinkSet']['LinkSetDb']['Link']['Id'];
+// echo ">Artid=$artid.<br>";
+                     if (is_numeric($artid)) { 
+                        $url="/picrender.fcgi?artid=$artid&action=stream&blobtype=pdf";
+                        if (do_pdf_download($host,$url,'file')) {
+                             return true;
+                        }
                      }
                   }
                }
-           break;
-           }
+            }
+         break;
+         }
       }
- 
    }
-
 }
+
 
 
 /**
@@ -310,9 +398,22 @@ function do_pdf_download ($host,$url,$fieldname)
          $header.=$data;
       }
       /**
-       * Todo: Check headers that the mime type is pdf
+       * Check headers that the mime type is pdf, if not bail out
        */
-echo $header.".<br>";
+//echo "Final link headers:<br>\n";
+//echo $header.".<br>";
+      $headers=explode("\r\n",$header);
+      foreach ($headers as $line) {
+         $content=explode(': ',$line);
+         if ($content[0]=='Content-Type') {
+            $mime=$content[1];
+         }
+      }
+//echo "Mime; $mime.<br>"; 
+      if ($mime!='application/pdf') {
+         fclose($fp);
+         return false;
+      }
       /**
        * Construct tmp filename, it would be best to put the file in the upload_temp_dir, but we can not always reliably determine what that is
        */
