@@ -33,8 +33,9 @@ navbar($USER["permissions"]);
 
 // find id associated with table
 if (!$edit_type) {
-   $r=$db->Execute("SELECT id FROM tableoftables WHERE tablename='$tablename'");
+   $r=$db->Execute("SELECT id,shortname FROM tableoftables WHERE tablename='$tablename'");
    $id=$r->fields["id"];
+   $tableshort=$r->fields["shortname"];
    if (!$id) {
       echo "<h3 align='center'> Table: <i>$tablename</i> does not exist.</h3>";
       printfooter();
@@ -42,6 +43,8 @@ if (!$edit_type) {
    }
    $real_tablename=$tablename."_".$id;
    $table_desname=$real_tablename."_desc";
+   $queryname=$tableshort."_query_";
+   $pagename=$tableshort."_curr_page";
    // read all fields in from the description file
    $fields=comma_array_SQL($db,$table_desname,label);
 }
@@ -146,7 +149,7 @@ else {
          // to not interfere with search form 
          unset ($HTTP_POST_VARS);
 	 // or we won't see the new record
-	 unset ($HTTP_SESSION_VARS["p_query"]);
+	 unset ($HTTP_SESSION_VARS["{$queryname}"]);
       }
    }
    // then look whether it should be modified
@@ -184,8 +187,8 @@ else {
    if ($search=="Show All") {
       $num_p_r=$HTTP_POST_VARS["num_p_r"];
       unset ($HTTP_POST_VARS);
-      $p_curr_page=1;
-      session_unregister("p_query");
+      ${$pagename}=1;
+      session_unregister($queryname);
    }
    $column=strtok($fields,",");
    while ($column) {
@@ -197,27 +200,25 @@ else {
    $num_p_r=paging($num_p_r,$USER);
 
    // get current page
-   $p_curr_page=current_page($p_curr_page,"p");
+   ${$pagename}=current_page(${$pagename},$tableshort);
  
    // prepare the search statement and remember it
    $fields="id,".$fields;
-   $p_query=make_search_SQL($db,$real_tablename,$short_tablename,$fields,$USER,$search);
+   ${$queryname}=make_search_SQL($db,$real_tablename,$tableshort,$fields,$USER,$search);
    // loop through all entries for next/previous buttons
-   $r=$db->PageExecute($p_query,$num_p_r,$p_curr_page);
+   $r=$db->PageExecute(${$queryname},$num_p_r,${$pagename});
    while (!($r->EOF) && $r) {
       $r->MoveNext();
    }
 
-   // print form;
-   $dbstring=$PHP_SELF."?"."tablename=$tablename&";
-   echo "<form name=g_form method='post' id='generalform' enctype='multipart/form-data' action='$dbstring";
-	?><?=SID?>'><?php
-
-   // row with action links
+   // get variables for links 
    $sid=SID;
    if ($sid) $sid="&".$sid;
    if ($tablename) $sid.="&tablename=$tablename";
 
+   // print form;
+   $dbstring=$PHP_SELF."?"."tablename=$tablename&";
+   echo "<form name=g_form method='post' id='generalform' enctype='multipart/form-data' action='$PHP_SELF?$sid'>\n";
 
    // Need to put in a singular name
    echo "<table border=0 width='50%' align='center'>\n<tr>\n";
@@ -230,21 +231,76 @@ else {
    // print header of table
    echo "<table border='1' align='center'>\n";
 
-
    // get a list with ids we may see
-   $r=$db->Execute($p_query);
+   $r=$db->Execute(${$queryname});
    $lista=make_SQL_csf ($r,false,"id",$nr_records);
 
    // and a list with all records we may see
    $listb=may_read_SQL($db,$real_tablename,$USER);
-   if ($title) $list=$listb; else $list=$lista;   
 
    //  get a list of all fields that are displayed in the table
    $Fieldscomma=comma_array_SQL_where($db,$table_desname,"label","display_table","Y");
    $Allfields=getvalues($db,$real_tablename,$table_desname,$Fieldscomma,display_table,"Y");	
-   display_tablehead($db,$tablename,$real_tablename,$table_desname,$Allfields,$list);
+   
+   // javascript to automatically execute search when pulling down 
+   $jscript="onChange='document.g_form.searchj.value=\"Search\"; document.g_form.submit()'";
+
+   // row with search form
+   echo "<tr align='center'>\n";
+   echo "<input type='hidden' name='searchj' value=''>\n";
+
+   foreach($Allfields as $nowfield)  {
+      if ($HTTP_POST_VARS[$nowfield[name]]) 
+         $list=$listb; 
+      else 
+         $list=$lista;   
+      if ($nowfield[datatype]== "link")
+         echo "<td style='width: 10%'>&nbsp;</td>\n";
+      if ($nowfield[datatype]== "text") {
+         // show titles we may see, when too many, revert to text box
+         if ($list && ($nr_records < $max_menu_length) )  {
+  	     $r=$db->Execute("SELECT $nowfield[name] FROM $real_tablename WHERE id IN ($list)");
+             $text=$r->GetMenu("$nowfield[name]",$HTTP_POST_VARS[$nowfield[name]],true,false,0,"style='width: 80%' $jscript");
+             echo "<td style='width: 10%'>$text</td>\n";
+         }
+	 else
+    	    echo  " <td style='width: 10%'><input type='text' name='$nowfield[name]' value='".$HTTP_POST_VARS[$nowfield[name]]."'size=8></td>\n";
+      }
+      if ($nowfield[datatype]== "textlong")
+    	    echo  " <td style='width: 10%'><input type='text' name='$nowfield[name]' value='".$HTTP_POST_VARS[$nowfield[name]]."'size=8></td>\n";
+        // echo "<td style='width: 10%'>&nbsp;</td>\n";
+      if ($nowfield[datatype]== "pulldown") {
+         echo "<td style='width: 10%'>";
+         if ($USER["permissions"] & $LAYOUT)  {
+            echo "<a href='$PHP_SELF?tablename=$tablename&edit_type=$nowfield[ass_t]&<?=SID?>";
+            echo "'>Edit $nowfield[name]</a><br>\n";
+         }	 		 			
+         $r=$db->Execute("SELECT $nowfield[name] FROM $real_tablename WHERE id IN ($list)");
+         $list2=make_SQL_ids($r,false,"$nowfield[name]");
+         if ($list2) { 
+            if ($nowfield[name]=="authors") {
+               if ($db_type=="mysql") // mysql does not use the ansi SQL || operator
+                  $r=$db->Execute("SELECT CONCAT(type, ' ', typeshort),id from $nowfield[ass_t] WHERE id IN ($list2) ORDER by typeshort");
+               else
+                  $r=$db->Execute("SELECT type || ' ' || typeshort,id from $nowfield[ass_t] WHERE id IN ($list) ORDER by typeshort");
+            }
+            else 
+               $r=$db->Execute("SELECT typeshort,id from $nowfield[ass_t] WHERE id IN ($list2) ORDER by typeshort");
+    		
+            $text=$r->GetMenu2("$nowfield[name]","",true,false,0,"style='width: 80%' $jscript");   
+    	    echo "$text</td>\n";
+         }  
+      }
+      if ($nowfield[datatype] == "file")
+         echo "<td style='width: 10%'>&nbsp;</td>";
+   }	 
+   echo "<td><input type=\"submit\" name=\"search\" value=\"Search\">&nbsp;";
+   echo "<input type=\"submit\" name=\"search\" value=\"Show All\"></td>";
+   echo "</tr>\n";
+
+
    display_midbar($Fieldscomma);
-   display_table_info($db,$tablename,$real_tablename,$table_desname,$Fieldscomma,$p_query,$num_p_r,$p_curr_page);
+   display_table_info($db,$tablename,$real_tablename,$table_desname,$Fieldscomma,${$queryname},$num_p_r,${$pagename});
    printfooter($db,$USER);
 }
 ?>

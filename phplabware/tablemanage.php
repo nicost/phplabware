@@ -242,41 +242,47 @@ $rownr=0;
 
 // print all entries
 while (!($r->EOF) && $r) {
-// get results of each row
-      $id = $r->fields["id"];
-      $name = $r->fields["tablename"];
-      $Display = $r->fields["Display"];
-      $sortkey = $r->fields["sortkey"];
- 	 $Custom = $r->fields["Custom"];
+   // get results of each row
+   $id = $r->fields["id"];
+   $name = $r->fields["tablename"];
+   $Display = $r->fields["display"];
+   $sortkey = $r->fields["sortkey"];
+   $Custom = $r->fields["custom"];
    
-      // print start of row of selected group
-      if ($rownr % 2) echo "<tr class='row_odd' align='center'>\n";
-      else echo "<tr class='row_even' align='center'>\n";
+   // print start of row of selected group
+   if ($rownr % 2) 
+      echo "<tr class='row_odd' align='center'>\n";
+   else 
+      echo "<tr class='row_even' align='center'>\n";
          
-      echo "<input type='hidden' name='table_id[]' value='$id'>\n";
-      echo "<input type='hidden' name='table_name[]' value='$name'>\n";
-      echo "<td><b>$name</b></td>";
-	  if($Display=="Y")
-   	{echo "<td><input type='radio' checked value='Y' name='table_display[$rownr]'>yes<input type='radio' value='N' name='table_display[$rownr]'>no</td>\n";}
-	  else
-	   {echo "<td><input type='radio' value='Y' name='table_display[$rownr]'>yes<input type='radio' checked value='N' name='table_display[$rownr]'>no</td>\n";}
-      echo "<td><input type='text' name='table_sortkey[]' value='$sortkey'></td>\n";
-	  if ($Custom==""){echo "<td>Yes</td>\n";}
-	  else{echo "<td>Pre-Built</td>\n";}
-	  $modstring = "<input type='submit' name='modtable"."_$rownr' value='Modify'>";
-      $delstring = "<input type='submit' name='deltable"."_$rownr' value='Remove' ";
-      $delstring .= "Onclick=\"if(confirm('Are you sure that the table $name should be removed?')){return true;}return false;\">";  
-      if ($Custom==""){echo "<td align='center'>$modstring $delstring</td>\n";echo "<td><a href='$PHP_SELF?editfield=$name&'>Edit Fields</td></a>";}
-  	else{echo "<td align='center'>$modstring</td><td></td>";} 			
-
- 	 echo "</tr>\n";
-      $r->MoveNext();
-      $rownr+=1;
+   echo "<input type='hidden' name='table_id[]' value='$id'>\n";
+   echo "<input type='hidden' name='table_name[]' value='$name'>\n";
+   echo "<td><b>$name</b></td>";
+   if($Display=="Y")
+      echo "<td><input type='radio' checked value='Y' name='table_display[$rownr]'>yes<input type='radio' value='N' name='table_display[$rownr]'>no</td>\n";
+   else
+      echo "<td><input type='radio' value='Y' name='table_display[$rownr]'>yes<input type='radio' checked value='N' name='table_display[$rownr]'>no</td>\n";
+   echo "<td><input type='text' name='table_sortkey[]' value='$sortkey'></td>\n";
+   if ($Custom=="")
+      echo "<td>Yes</td>\n";
+   else
+      echo "<td>Pre-Built</td>\n";
+   $modstring = "<input type='submit' name='modtable"."_$rownr' value='Modify'>";
+   $delstring = "<input type='submit' name='deltable"."_$rownr' value='Remove' ";
+   $delstring .= "Onclick=\"if(confirm('Are you sure that the table $name should be removed?')){return true;}return false;\">";  
+   if ($Custom=="") {
+      echo "<td align='center'>$modstring $delstring</td>\n";
+      echo "<td><a href='$PHP_SELF?editfield=$name&'>Edit Fields</td></a>";
    }
-   // Dismiss button
-   echo "<tr><td colspan=4 align='center'>\n";
-   echo "<input type='submit' name='submit' value='Dismiss'>\n";
-   echo "</td></tr>\n";echo "</table>\n";
+   else
+      echo "<td align='center'>$modstring</td><td></td>";
+
+   echo "</tr>\n";
+   $r->MoveNext();
+   $rownr+=1;
+}
+
+echo "</table>\n";
    
 // user based links section
 echo "<hr><table align='center'>\n";
@@ -322,7 +328,7 @@ if($linkdis=="1")
 		$Lid=$r->fields["id"];
 		$Llabel=$r->fields["label"];
 		$Lurl=$r->fields["linkurl"];
-		$LDisplay=$r->fields["Display"];
+		$LDisplay=$r->fields["display"];
 		$Lsortkey=$r->fields["sortkey"];
 		$Ltarget=$r->fields["target"];
 
