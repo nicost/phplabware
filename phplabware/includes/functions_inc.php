@@ -264,7 +264,7 @@ function navbar($permissions) {
                   $Tlinkname=$linkr->fields[0];
                   $urlname=$linkr->fields[1];
                   // we use 'target ' as a code for js linkmenu to open a new win
-                  if ($linkr->fields[2]=="S")
+                  if ($linkr->fields[2]=="N")
                      $urlname="target ".$urlname;
                   $linkmenu.="<option value='$urlname'>$Tlinkname</option>\n";    
                   $linkr->MoveNext(); 
