@@ -1,7 +1,7 @@
 <?php
 
 // import.php - imports delimited data into phplabware tables 
-// impoert.php - author: Nico Stuurman <nicost@soureforge.net>
+// import.php - author: Nico Stuurman <nicost@sourceforge.net>
 
   /***************************************************************************
   * This script imports data into phplabware tables                          *
@@ -38,7 +38,7 @@ if (!($permissions & $SUPER)) {
 navbar($USER["permissions"]);
 
 ////
-// !returns variable delimiter, based on delimiter_type
+// !returns variable delimiter, based on delimiter_type (a POST variable)
 function get_delimiter ($delimiter,$delimiter_type) {
    if ($delimiter)
       return $delimiter;
@@ -85,12 +85,19 @@ if ($HTTP_POST_VARS["assign"]=="Import Data") {
    $table=$r->fields[1];
    $table_label=$r->fields[2];
    $table_custom=$r->fields[3];
+
+   // Columns with datatype 'sequence' are going to be automatically updated:
+   // Here we query for them 
+   $rseq=$db->Execute("SELECT columnname FROM $desc WHERE datatype='sequence'");
+
    if ($table_custom)
       $table_link="$table_custom?".SID;
    else
       $table_link="general.php?tablename=$table_label"."&".SID;
 
    // find out to which columns each parsed file text will be assigned to
+   // Array $to_fields contains the target column ids,
+   // Array $to_types contains the target column types
    for ($i=0;$i<$nrfields;$i++) {
       $the_field=$HTTP_POST_VARS["fields_$i"];
       if ($the_field) {
@@ -134,18 +141,29 @@ if ($HTTP_POST_VARS["assign"]=="Import Data") {
          while ($line=chop(fgets($fh,1000000))) {
             $fields=check_input (explode($delimiter,$line),$to_types,$nrfields);
             $worthit=false;
+
+            // if there is a column being used as primary key, we do an SQL
+            // UPDATE, otherwise an insert
             if (isset($pkey)) {
                // check if we already had such a record
                $r=$db->Execute("SELECT id FROM $table WHERE $to_fields[$pkey]='$fields[$pkey]'");
                $recordid=$r->fields[0];
                if (isset($recordid) && $pkeypolicy=="overwrite") {
                   $query="UPDATE $table SET ";
+                  // import data from file into SQL statement
                   for ($i=0; $i<$nrfields;$i++) {
                      if ($to_fields[$i]) {
                         $worthit=true;
                         $query.="$to_fields[$i]='$fields[$i]',";
                      }
                   }
+                  while ($rseq && !$rseq->EOF) {
+                     $rmax=$db->Execute("SELECT max(".$rseq->fields[0].") FROM $table");
+                     $vmax=$rmax->fields[0]+1;
+                     $query.=$rseq->fields[0]."='$vmax',";
+                     $rseq->MoveNext();
+                  }
+                  $rseq->MoveFirst();
                   if ($worthit) {
                      // strip last comma
                      // $query.=" WHERE $to_fields[$pkey]='$fields[$pkey]'";
@@ -158,7 +176,8 @@ if ($HTTP_POST_VARS["assign"]=="Import Data") {
                }
             }
 
-            if ( !(isset($pkey) || isset($recorid)) ) {
+            // if there is no primary key set, we simply INSERT a new record
+            if ( !(isset($pkey) || isset($recordid)) ) {
                $query_start="INSERT INTO $table (";
                $query_end=" VALUES (";
                $newid=false;
@@ -171,6 +190,14 @@ if ($HTTP_POST_VARS["assign"]=="Import Data") {
                         $newid=$fields[$i];
                   }
                }
+               while ($rseq && !$rseq->EOF) {
+                  $rmax=$db->Execute("SELECT max(".$rseq->fields[0].") FROM $table");
+                  $vmax=$rmax->fields[0]+1;
+                  $query_start.=$rseq->fields[0].",";
+                  $query_end.="'$vmax',";
+                  $rseq->MoveNext();
+               }
+               $rseq->MoveFirst();
                // delete last commas and combine into SQL INSERT query
                if ($worthit) {
                   if (!$newid) {
@@ -273,7 +300,7 @@ if ($HTTP_POST_VARS["dataupload"]=="Continue") {
          echo "</tr>\n";
          echo "<tr>\n   <th>Assign to Column:</th>\n";
          $desc=get_cell($db,"tableoftables","table_desc_name","id",$tableid);
-         $r=$db->Execute("SELECT label,id FROM $desc WHERE (display_record='Y' OR display_table='Y' OR columnname='id') AND datatype<>'file' ORDER BY sortkey");
+         $r=$db->Execute("SELECT label,id FROM $desc WHERE (display_record='Y' OR display_table='Y' OR columnname='id') AND datatype<>'file' AND datatype<>'sequence' ORDER BY sortkey");
          for($i=0;$i<$nrfields;$i++) {
             $menu=$r->GetMenu2("fields_$i");
             echo "   <td align='center'>$menu</td>\n";
