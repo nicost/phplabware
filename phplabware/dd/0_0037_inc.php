@@ -2,7 +2,6 @@
 
 
 
-
 $newtableid=$db->GenID("tableoftables_gen_id_seq");
 $newtablename=pdfsw;
 $newtablelabel="pdfs";
@@ -44,22 +43,22 @@ if ($r) {
       link_last text,
       modifiable char(1) )");
    if ($rb) {
-      $newid=$db->GenID("newtable_desc_name"."_id");
-      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'100','id','id','N','N','N','int','text','','','','','','','','')");
-      $newid=$db->GenID("newtable_desc_name"."_id");
-      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'110','access','access','N','N','N','varchar(9)','text','','','','','','','','')");
-      $newid=$db->GenID("newtable_desc_name"."_id");
-      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'120','ownerid','ownerid','N','N','N','int','text','','','','','','','','')");
-      $newid=$db->GenID("newtable_desc_name"."_id");
-      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'130','magic','magic','N','N','N','int','text','','','','','','','','')");
-      $newid=$db->GenID("newtable_desc_name"."_id");
-      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'150','lastmoddate','lastmoddate','N','N','N','int','text','','','','','','','','')");
-      $newid=$db->GenID("newtable_desc_name"."_id");
-      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'160','lastmodby','lastmodby','N','N','N','int','text','','','','','','','','')");
-      $newid=$db->GenID("newtable_desc_name"."_id");
-      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'170','date','date','N','N','N','int','text','','','','','','','','')");
-      $newid=$db->GenID("newtable_desc_name"."_id");
-      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'200','Category','category','Y','Y','N','text','pulldown','pdfs_new_10015ass_21','','','','','','','Y')");
+      $newid=$db->GenID("$newtable_desc_name"."_id");
+      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,100,'id','id','N','N','N','int','text',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL)");
+      $newid=$db->GenID("$newtable_desc_name"."_id");
+      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'110','access','access','N','N','N','varchar(9)','text',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL)");
+      $newid=$db->GenID("$newtable_desc_name"."_id");
+      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'120','ownerid','ownerid','N','N','N','int','text',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL)");
+      $newid=$db->GenID("$newtable_desc_name"."_id");
+      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'130','magic','magic','N','N','N','int','text',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL)");
+      $newid=$db->GenID("$newtable_desc_name"."_id");
+      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'150','lastmoddate','lastmoddate','N','N','N','int','text',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL)");
+      $newid=$db->GenID("$newtable_desc_name"."_id");
+      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'160','lastmodby','lastmodby','N','N','N','int','text',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL)");
+      $newid=$db->GenID("$newtable_desc_name"."_id");
+      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'170','date','date','N','N','N','int','text',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL)");
+      $newid=$db->GenID("$newtable_desc_name"."_id");
+      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'200','Category','category','Y','Y','N','text','pulldown','pdfs_new_10015ass_21',NULL,NULL,NULL,NULL,NULL,NULL,'Y')");
       $ass_tablec=$newtable_realname."ass";
       $id_ass=$db->GenId($ass_tablec,20);
       $ass_tablec.="_$id_ass";
@@ -69,13 +68,13 @@ if ($r) {
          type text,
          typeshort text)");
       $db->Execute("UPDATE $newtable_desc_name SET associated_table='$ass_tablec' WHERE id=$newid");
-      $newid=$db->GenID("newtable_desc_name"."_id");
+      $newid=$db->GenID("$newtable_desc_name"."_id");
       $filecolumnid=$newid;
-      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'300','PDF File','file','Y','Y','N','text','file','','','','','','','','Y')");
-      $newid=$db->GenID("newtable_desc_name"."_id");
-      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'180','Author(s)','author','Y','Y','N','text','text','','','','','','','','N')");
-      $newid=$db->GenID("newtable_desc_name"."_id");
-      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'210','Journal','journal','Y','Y','N','text','pulldown','pdfs_new_10015ass_23','','','','','','','N')");
+      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'300','PDF File','file','Y','Y','N','text','file',NULL,NULL,NULL,NULL,NULL,NULL,NULL,'Y')");
+      $newid=$db->GenID("$newtable_desc_name"."_id");
+      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'180','Author(s)','author','Y','Y','N','text','text',NULL,NULL,NULL,NULL,NULL,NULL,NULL,'N')");
+      $newid=$db->GenID("$newtable_desc_name"."_id");
+      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'210','Journal','journal','Y','Y','N','text','pulldown','pdfs_new_10015ass_23',NULL,NULL,NULL,NULL,NULL,NULL,'N')");
       $ass_tablej=$newtable_realname."ass";
       $id_ass=$db->GenId($ass_tablej,20);
       $ass_tablej.="_$id_ass";
@@ -85,22 +84,22 @@ if ($r) {
          type text,
          typeshort text)");
       $db->Execute("UPDATE $newtable_desc_name SET associated_table='$ass_tablej' WHERE id=$newid");
-      $newid=$db->GenID("newtable_desc_name"."_id");
-      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'240','First page','fpage','Y','Y','N','int','int','','','','','','','','N')");
-      $newid=$db->GenID("newtable_desc_name"."_id");
-      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'260','Last Page','lpage','N','Y','N','int','int','','','','','','','','N')");
-      $newid=$db->GenID("newtable_desc_name"."_id");
-      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'140','Title','title','Y','Y','N','text','text','','','','','','','','N')");
-      $newid=$db->GenID("newtable_desc_name"."_id");
-      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'205','Abstract','abstract','Y','Y','N','text','textlong','','','','','','','','N')");
-      $newid=$db->GenID("newtable_desc_name"."_id");
-      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'300','Notes','notes','N','Y','N','text','textlong','','','','','','','','Y')");
-      $newid=$db->GenID("newtable_desc_name"."_id");
-      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'219','Volume','volume','Y','Y','N','int','int','','','','','','','','N')");
-      $newid=$db->GenID("newtable_desc_name"."_id");
-      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'215','Year','pubyear','Y','Y','N','int','int','','','','','','','','N')");
-      $newid=$db->GenID("newtable_desc_name"."_id");
-      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'160','PMID','pmid','N','Y','N','int','int','','','','','','','','Y')");
+      $newid=$db->GenID("$newtable_desc_name"."_id");
+      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'240','First page','fpage','Y','Y','N','int','int',NULL,NULL,NULL,NULL,NULL,NULL,NULL,'N')");
+      $newid=$db->GenID("$newtable_desc_name"."_id");
+      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'260','Last Page','lpage','N','Y','N','int','int',NULL,NULL,NULL,NULL,NULL,NULL,NULL,'N')");
+      $newid=$db->GenID("$newtable_desc_name"."_id");
+      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'140','Title','title','Y','Y','N','text','text',NULL,NULL,NULL,NULL,NULL,NULL,NULL,'N')");
+      $newid=$db->GenID("$newtable_desc_name"."_id");
+      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'205','Abstract','abstract','Y','Y','N','text','textlong',NULL,NULL,NULL,NULL,NULL,NULL,NULL,'N')");
+      $newid=$db->GenID("$newtable_desc_name"."_id");
+      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'300','Notes','notes','N','Y','N','text','textlong',NULL,NULL,NULL,NULL,NULL,NULL,NULL,'Y')");
+      $newid=$db->GenID("$newtable_desc_name"."_id");
+      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'219','Volume','volume','Y','Y','N','int','int',NULL,NULL,NULL,NULL,NULL,NULL,NULL,'N')");
+      $newid=$db->GenID("$newtable_desc_name"."_id");
+      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'215','Year','pubyear','Y','Y','N','int','int',NULL,NULL,NULL,NULL,NULL,NULL,NULL,'N')");
+      $newid=$db->GenID("$newtable_desc_name"."_id");
+      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'160','PMID','pmid','N','Y','N','int','int',NULL,NULL,NULL,NULL,NULL,NULL,NULL,'Y')");
       // and finally create the table
       $rc=$db->Execute(" CREATE TABLE $newtable_realname (
          id int  NOT NULL,
@@ -173,18 +172,17 @@ if ($r) {
    if ($failed)
       echo "Failed copying contents of table pdbs.<br>";
    else {
-      //echo "Succes!<br>";
       $rpdn=$db->Execute("SELECT * FROM $newtable_realname");
       if ($rpdn->Numrows==$rcb->Numrows) {
          $db->Execute("DROP TABLE pdfs");
          $db->execute("DROP TABLE pdfs_id_seq");
          $db->Execute("DROP SEQUENCE pdfs_id_seq");
-         $db->Execute("DROp TABLE pd_type1");
-         $db->Execute("DROp TABLE pd_type1_id_seq");
-         $db->Execute("DROp SEQUENCE pd_type1_id_seq");
-         $db->Execute("DROp TABLE pd_type2");
-         $db->Execute("DROp TABLE pd_type2_id_seq");
-         $db->Execute("DROp SEQUENCE pd_type2_id_seq");
+         $db->Execute("DROP TABLE pd_type1");
+         $db->Execute("DROP TABLE pd_type1_id_seq");
+         $db->Execute("DROP SEQUENCE pd_type1_id_seq");
+         $db->Execute("DROP TABLE pd_type2");
+         $db->Execute("DROP TABLE pd_type2_id_seq");
+         $db->Execute("DROP SEQUENCE pd_type2_id_seq");
          $db->Execute("DELETE FROM tableoftables WHERE tablename='pdfs'");
          $db->Execute("UPDATE tableoftables SET label='pdfs' WHERE id='$newtableid'");
       }
@@ -192,4 +190,6 @@ if ($r) {
          echo "Failed to copy contents of old table pdfs to new table pdfs.<br>";
    }
 }
+
+
 ?>

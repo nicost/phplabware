@@ -44,28 +44,28 @@ if ($r) {
       link_last text,
       modifiable char(1) )");
    if ($rb) {
-      $newid=$db->GenID("newtable_desc_name"."_id");
-      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'100','id','id','N','N','N','int','text','','','','','','','','')");
-      $newid=$db->GenID("newtable_desc_name"."_id");
-      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'110','access','access','N','N','N','varchar(9)','text','','','','','','','','')");
-      $newid=$db->GenID("newtable_desc_name"."_id");
-      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'120','ownerid','ownerid','N','N','N','int','text','','','','','','','','')");
-      $newid=$db->GenID("newtable_desc_name"."_id");
-      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'130','magic','magic','N','N','N','int','text','','','','','','','','')");
-      $newid=$db->GenID("newtable_desc_name"."_id");
-      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'150','lastmoddate','lastmoddate','N','N','N','int','text','','','','','','','','')");
-      $newid=$db->GenID("newtable_desc_name"."_id");
-      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'160','lastmodby','lastmodby','N','N','N','int','text','','','','','','','','')");
-      $newid=$db->GenID("newtable_desc_name"."_id");
-      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'170','date','date','N','N','N','int','text','','','','','','','','')");
-      $newid=$db->GenID("newtable_desc_name"."_id");
-      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'140','Name','title','Y','Y','Y','text','text','','','','','','','','Y')");
-      $newid=$db->GenID("newtable_desc_name"."_id");
-      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'160','Antigen','antigen','Y','Y','N','text','text','','','','','','','','Y')");
-      $newid=$db->GenID("newtable_desc_name"."_id");
-      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'180','Notes','notes','Y','Y','N','text','textlong','','','','','','','','Y')");
-      $newid=$db->GenID("newtable_desc_name"."_id");
-      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'200','Prim/Sec','type1','Y','Y','N','int','pulldown','antibodiesnew_10061ass_20','','','','','','','Y')");
+      $newid=$db->GenID("$newtable_desc_name"."_id");
+      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'100','id','id','N','N','N','int','text',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL)");
+      $newid=$db->GenID("$newtable_desc_name"."_id");
+      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'110','access','access','N','N','N','varchar(9)','text',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL)");
+      $newid=$db->GenID("$newtable_desc_name"."_id");
+      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'120','ownerid','ownerid','N','N','N','int','text',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL)");
+      $newid=$db->GenID("$newtable_desc_name"."_id");
+      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'130','magic','magic','N','N','N','int','text',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL)");
+      $newid=$db->GenID("$newtable_desc_name"."_id");
+      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'150','lastmoddate','lastmoddate','N','N','N','int','text',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL)");
+      $newid=$db->GenID("$newtable_desc_name"."_id");
+      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'160','lastmodby','lastmodby','N','N','N','int','text',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL)");
+      $newid=$db->GenID("$newtable_desc_name"."_id");
+      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'170','date','date','N','N','N','int','text',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL)");
+      $newid=$db->GenID("$newtable_desc_name"."_id");
+      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'140','Name','title','Y','Y','Y','text','text',NULL,NULL,NULL,NULL,NULL,NULL,NULL,'Y')");
+      $newid=$db->GenID("$newtable_desc_name"."_id");
+      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'160','Antigen','antigen','Y','Y','N','text','text',NULL,NULL,NULL,NULL,NULL,NULL,NULL,'Y')");
+      $newid=$db->GenID("$newtable_desc_name"."_id");
+      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'180','Notes','notes','Y','Y','N','text','textlong',NULL,NULL,NULL,NULL,NULL,NULL,NULL,'Y')");
+      $newid=$db->GenID("$newtable_desc_name"."_id");
+      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'200','Prim/Sec','type1','Y','Y','N','int','pulldown','antibodiesnew_10061ass_20',NULL,NULL,NULL,NULL,NULL,NULL,'Y')");
       $ass_table_t1=$newtable_realname."ass";
       $id_ass=$db->GenId($ass_table_t1,20);
       $ass_table_t1.="_$id_ass";
@@ -75,8 +75,8 @@ if ($r) {
          type text,
          typeshort text)");
       $db->Execute("UPDATE $newtable_desc_name SET associated_table='$ass_table_t1' WHERE id=$newid");
-      $newid=$db->GenID("newtable_desc_name"."_id");
-      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'220','Label','type5','Y','Y','N','int','pulldown','antibodiesnew_10061ass_21','','','','','','','Y')");
+      $newid=$db->GenID("$newtable_desc_name"."_id");
+      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'220','Label','type5','Y','Y','N','int','pulldown','antibodiesnew_10061ass_21',NULL,NULL,NULL,NULL,NULL,NULL,'Y')");
       $ass_table_t5=$newtable_realname."ass";
       $id_ass=$db->GenId($ass_table_t5,20);
       $ass_table_t5.="_$id_ass";
@@ -86,8 +86,8 @@ if ($r) {
          type text,
          typeshort text)");
       $db->Execute("UPDATE $newtable_desc_name SET associated_table='$ass_table_t5' WHERE id=$newid");
-      $newid=$db->GenID("newtable_desc_name"."_id");
-      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'240','Mono-/Polyclonal','type2','Y','Y','N','int','pulldown','antibodiesnew_10061ass_22','','','','','','','Y')");
+      $newid=$db->GenID("$newtable_desc_name"."_id");
+      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'240','Mono-/Polyclonal','type2','Y','Y','N','int','pulldown','antibodiesnew_10061ass_22',NULL,NULL,NULL,NULL,NULL,NULL,'Y')");
       $ass_table_t2=$newtable_realname."ass";
       $id_ass=$db->GenId($ass_table_t2,20);
       $ass_table_t2.="_$id_ass";
@@ -97,8 +97,8 @@ if ($r) {
          type text,
          typeshort text)");
       $db->Execute("UPDATE $newtable_desc_name SET associated_table='$ass_table_t2' WHERE id=$newid");
-      $newid=$db->GenID("newtable_desc_name"."_id");
-      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'260','Host','type3','Y','Y','N','int','pulldown','antibodiesnew_10061ass_23','','','','','','','Y')");
+      $newid=$db->GenID("$newtable_desc_name"."_id");
+      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'260','Host','type3','Y','Y','N','int','pulldown','antibodiesnew_10061ass_23',NULL,NULL,NULL,NULL,NULL,NULL,'Y')");
       $ass_table_t3=$newtable_realname."ass";
       $id_ass=$db->GenId($ass_table_t3,20);
       $ass_table_t3.="_$id_ass";
@@ -108,8 +108,8 @@ if ($r) {
          type text,
          typeshort text)");
       $db->Execute("UPDATE $newtable_desc_name SET associated_table='$ass_table_t3' WHERE id=$newid");
-      $newid=$db->GenID("newtable_desc_name"."_id");
-      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'280','Class','type4','Y','Y','N','int','pulldown','antibodiesnew_10061ass_24','','','','','','','Y')");
+      $newid=$db->GenID("$newtable_desc_name"."_id");
+      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'280','Class','type4','Y','Y','N','int','pulldown','antibodiesnew_10061ass_24',NULL,NULL,NULL,NULL,NULL,NULL,'Y')");
       $ass_table_t4=$newtable_realname."ass";
       $id_ass=$db->GenId($ass_table_t4,20);
       $ass_table_t4.="_$id_ass";
@@ -119,19 +119,19 @@ if ($r) {
          type text,
          typeshort text)");
       $db->Execute("UPDATE $newtable_desc_name SET associated_table='$ass_table_t4' WHERE id=$newid");
-      $newid=$db->GenID("newtable_desc_name"."_id");
-      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'300','Location','location','Y','Y','N','text','text','','','','','','','','Y')");
-      $newid=$db->GenID("newtable_desc_name"."_id");
+      $newid=$db->GenID("$newtable_desc_name"."_id");
+      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'300','Location','location','Y','Y','N','text','text',NULL,NULL,NULL,NULL,NULL,NULL,NULL,'Y')");
+      $newid=$db->GenID("$newtable_desc_name"."_id");
       $filecolumnid=$newid;
-      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'300','Files','files','Y','Y','N','text','file','','','','','','','','Y')");
-      $newid=$db->GenID("newtable_desc_name"."_id");
-      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'340','Buffer','buffer','N','Y','N','text','text','','','','','','','','Y')");
-      $newid=$db->GenID("newtable_desc_name"."_id");
-      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'360','Concentration (mg/ml)','concentration','Y','Y','N','float','float','','','','','','','','Y')");
-      $newid=$db->GenID("newtable_desc_name"."_id");
-      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'380','Source','source','N','Y','N','text','text','','','','','','','','Y')");
-      $newid=$db->GenID("newtable_desc_name"."_id");
-      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'170','Epitope','epitope','N','Y','N','text','text','','','','','','','','Y')");
+      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'300','Files','files','Y','Y','N','text','file',NULL,NULL,NULL,NULL,NULL,NULL,NULL,'Y')");
+      $newid=$db->GenID("$newtable_desc_name"."_id");
+      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'340','Buffer','buffer','N','Y','N','text','text',NULL,NULL,NULL,NULL,NULL,NULL,NULL,'Y')");
+      $newid=$db->GenID("$newtable_desc_name"."_id");
+      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'360','Concentration (mg/ml)','concentration','Y','Y','N','float','float',NULL,NULL,NULL,NULL,NULL,NULL,NULL,'Y')");
+      $newid=$db->GenID("$newtable_desc_name"."_id");
+      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'380','Source','source','N','Y','N','text','text',NULL,NULL,NULL,NULL,NULL,NULL,NULL,'Y')");
+      $newid=$db->GenID("$newtable_desc_name"."_id");
+      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'170','Epitope','epitope','N','Y','N','text','text',NULL,NULL,NULL,NULL,NULL,NULL,NULL,'Y')");
       // and finally create the table
       $rc=$db->Execute(" CREATE TABLE $newtable_realname (
          id int  NOT NULL,
@@ -201,7 +201,6 @@ if ($r) {
    if ($failed)
       echo "Failed copying contents of table protocols.<br>";
    else {
-      echo "Succes!<br>";
       // delete the old tables
       $rnt=$db->Execute("SELECT * FROM $newtable_realname");
       if ($rnt->Numrows==$rcb->Numrows) {
@@ -227,7 +226,7 @@ if ($r) {
          $db->Execute("UPDATE tableoftables SET label='antibodies' WHERE id='$newtableid'");
       }
       else
-         echo "Problems copying the content of table protocols to the new table protocols.<br>";
+         echo "Problems copying the content of table antibodies to the new table antibodies.<br>";
    }
 }
 

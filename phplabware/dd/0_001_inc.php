@@ -27,7 +27,7 @@
       $test=false;
    }
 
-   $result=$db->Execute("INSERT INTO settings VALUES (1,0.001,'',".$db->DBDate(time()).")");
+   $result=$db->Execute("INSERT INTO settings VALUES (1,0.001,NULL,".$db->DBDate(time()).")");
    if (!$result) $test=false;
    $query="CREATE TABLE authmethods 
       (id int PRIMARY KEY, 
@@ -135,7 +135,7 @@
    if (!$result) $test=false;
    if (!$test) {
       echo "<h3 align='center'>Problems creating database tables!\n";
-      echo "Some function might not work.</h3>\n";
+      echo "Some functions might not work.</h3>\n";
    }
    else {
       $version=0.001;

@@ -44,22 +44,22 @@ if ($r) {
       link_last text,
       modifiable char(1) )");
    if ($rb) {
-      $newid=$db->GenID("newtable_desc_name"."_id");
-      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'100','id','id','N','N','N','int','text','','','','','','','','')");
-      $newid=$db->GenID("newtable_desc_name"."_id");
-      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'110','access','access','N','N','N','varchar(9)','text','','','','','','','','')");
-      $newid=$db->GenID("newtable_desc_name"."_id");
-      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'120','ownerid','ownerid','N','N','N','int','text','','','','','','','','')");
-      $newid=$db->GenID("newtable_desc_name"."_id");
-      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'130','magic','magic','N','N','N','int','text','','','','','','','','')");
-      $newid=$db->GenID("newtable_desc_name"."_id");
-      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'150','lastmoddate','lastmoddate','N','N','N','int','text','','','','','','','','')");
-      $newid=$db->GenID("newtable_desc_name"."_id");
-      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'160','lastmodby','lastmodby','N','N','N','int','text','','','','','','','','')");
-      $newid=$db->GenID("newtable_desc_name"."_id");
-      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'170','date','date','N','N','N','int','text','','','','','','','','')");
-      $newid=$db->GenID("newtable_desc_name"."_id");
-      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'500','Category','type1','Y','Y','N','int','pulldown','protocols_new_10042ass_20','','','','','','','Y')");
+      $newid=$db->GenID("$newtable_desc_name"."_id");
+      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'100','id','id','N','N','N','int','text',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL)");
+      $newid=$db->GenID("$newtable_desc_name"."_id");
+      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'110','access','access','N','N','N','varchar(9)','text',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL)");
+      $newid=$db->GenID("$newtable_desc_name"."_id");
+      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'120','ownerid','ownerid','N','N','N','int','text',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL)");
+      $newid=$db->GenID("$newtable_desc_name"."_id");
+      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'130','magic','magic','N','N','N','int','text',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL)");
+      $newid=$db->GenID("$newtable_desc_name"."_id");
+      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'150','lastmoddate','lastmoddate','N','N','N','int','text',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL)");
+      $newid=$db->GenID("$newtable_desc_name"."_id");
+      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'160','lastmodby','lastmodby','N','N','N','int','text',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL)");
+      $newid=$db->GenID("$newtable_desc_name"."_id");
+      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'170','date','date','N','N','N','int','text',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL)");
+      $newid=$db->GenID("$newtable_desc_name"."_id");
+      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'500','Category','type1','Y','Y','N','int','pulldown','protocols_new_10042ass_20',NULL,NULL,NULL,NULL,NULL,NULL,'Y')");
       $ass_table1="ass$newtableid";
       $id_ass=$db->GenId($ass_table1,20);
       $ass_table1.="_$id_ass";
@@ -69,8 +69,8 @@ if ($r) {
          type text,
          typeshort text)");
       $db->Execute("UPDATE $newtable_desc_name SET associated_table='$ass_table1' WHERE id=$newid");
-      $newid=$db->GenID("newtable_desc_name"."_id");
-      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'200','Authors','type2','Y','Y','N','int','pulldown','protocols_new_10042ass_21','','','','','','','Y')");
+      $newid=$db->GenID("$newtable_desc_name"."_id");
+      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'200','Authors','type2','Y','Y','N','int','pulldown','protocols_new_10042ass_21',NULL,NULL,NULL,NULL,NULL,NULL,'Y')");
       $ass_table2="ass$newtableid";
       $id_ass=$db->GenId($ass_table2,20);
       $ass_table2.="_$id_ass";
@@ -80,13 +80,13 @@ if ($r) {
          type text,
          typeshort text)");
       $db->Execute("UPDATE $newtable_desc_name SET associated_table='$ass_table2' WHERE id=$newid");
-      $newid=$db->GenID("newtable_desc_name"."_id");
-      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'140','Title','title','Y','Y','Y','text','text','','','','','','','','Y')");
-      $newid=$db->GenID("newtable_desc_name"."_id");
-      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'400','Notes','notes','Y','Y','N','text','textlong','','','','','','','','Y')");
-      $newid=$db->GenID("newtable_desc_name"."_id");
+      $newid=$db->GenID("$newtable_desc_name"."_id");
+      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'140','Title','title','Y','Y','Y','text','text',NULL,NULL,NULL,NULL,NULL,NULL,NULL,'Y')");
+      $newid=$db->GenID("$newtable_desc_name"."_id");
+      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'400','Notes','notes','Y','Y','N','text','textlong',NULL,NULL,NULL,NULL,NULL,NULL,NULL,'Y')");
+      $newid=$db->GenID("$newtable_desc_name"."_id");
       $filecolumnid=$newid;
-      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'600','File','file','Y','Y','N','text','file','','','','','','','','Y')");
+      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'600','File','file','Y','Y','N','text','file',NULL,NULL,NULL,NULL,NULL,NULL,NULL,'Y')");
       $filecolumnid=$newid;
       // and finally create the table
       $rc=$db->Execute(" CREATE TABLE $newtable_realname (
@@ -154,7 +154,6 @@ if ($r) {
    if ($failed)
       echo "Failed copying contents of table protocols.<br>";
    else {
-      //echo "Succes!<br>";
       // delete the old tables
       $rnt=$db->Execute("SELECT * FROM $newtable_realname");
       if ($rnt->Numrows==$rcb->Numrows) {

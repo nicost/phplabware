@@ -19,7 +19,7 @@
 // Avoid clashes between user generated and 'system' tables
 // ids up to 9999 are reserved for system tables
 $id=$db->GenID("tableoftables_gen_id_seq",10000);
-$db->Execute("INSERT INTO tableoftables (id,sortkey,tablename,shortname,Display,Permission,Custom) VALUES($id,'0','files','fi','Y','Users','')");
+$db->Execute("INSERT INTO tableoftables (id,sortkey,tablename,shortname,Display,Permission,Custom) VALUES($id,'0','files','fi','Y','Users',NULL)");
 $db->Execute("CREATE TABLE files_$id (
 		id int PRIMARY KEY,
 		title text,
@@ -46,25 +46,25 @@ $db->Execute("CREATE TABLE $desc(
 		associated_sql text)");  
 $fieldstring="id,label,sortkey,display_table,display_record, required, type, datatype, associated_table, associated_sql"; 
 $descid=$db->GenId("$desc"."_id");  
-$db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'id','100','N','N','N','int(11)','text','','')");
+$db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'id','100','N','N','N','int(11)','text',NULL,NULL)");
 $descid=$db->GenId("$desc"."_id");  
-$db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'access','110','N','N','N','varchar(9)','text','','')");
+$db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'access','110','N','N','N','varchar(9)','text',NULL,NULL)");
 $descid=$db->GenId("$desc"."_id");  
-$db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'ownerid','120','N','N','N','int(11)','text','','')");
+$db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'ownerid','120','N','N','N','int(11)','text',NULL,NULL)");
 $descid=$db->GenId("$desc"."_id");  
-$db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'magic','130','N','N','N','int(11)','text','','')");
+$db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'magic','130','N','N','N','int(11)','text',NULL,NULL)");
 $descid=$db->GenId("$desc"."_id");  
-$db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'title','140','Y','Y','Y','text','text','','')");
+$db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'title','140','Y','Y','Y','text','text',NULL,NULL)");
 $descid=$db->GenId("$desc"."_id");  
-$db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'lastmoddate','150','N','N','N','int(11)','text','','')");
+$db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'lastmoddate','150','N','N','N','int(11)','text',NULL,NULL)");
 $descid=$db->GenId("$desc"."_id");  
-$db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'lastmodby','160','N','N','N','int(11)','text','','')");
+$db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'lastmodby','160','N','N','N','int(11)','text',NULL,NULL)");
 $descid=$db->GenId("$desc"."_id");  
-$db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'date','170','N','N','N','int(11)','text','','')");
+$db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'date','170','N','N','N','int(11)','text',NULL,NULL)");
 $descid=$db->GenId("$desc"."_id");  
-$db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'file','180','Y','Y','N','int','file','','')");
+$db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'file','180','Y','Y','N','int','file',NULL,NULL)");
 $descid=$db->GenId("$desc"."_id");  
-$db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'notes','200','Y','Y','N','text','textlong','','')");
+$db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'notes','200','Y','Y','N','text','textlong',NULL,NULL)");
 $descid=$db->GenId("$desc"."_id");  
 $ass_tablename="files_$id"."ass_1";
 $db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'category','190','Y','Y','N','id','pulldown','$ass_tablename','category FROM $ass_tablename WHERE ')");

@@ -16,7 +16,6 @@
   *  option) any later version.                                              *
   \**************************************************************************/ 
   
-  
 $query="CREATE TABLE antibodies (
 	id int PRIMARY KEY,
 	access char(9),
@@ -141,5 +140,6 @@ if (!$db->Execute($query)) $test=false;
 $tablesid=$db->GenID("tableoftables_id_seq");
 $query="INSERT INTO tableoftables VALUES ($tablesid,100,'antibodies','ab')";
 if (!$db->Execute($query)) $test=false;
+
 
 ?>

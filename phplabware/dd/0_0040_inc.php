@@ -43,18 +43,18 @@ if ($r) {
       link_last text,
       modifiable char(1) )");
    if ($rb) {
-      $newid=$db->GenID("newtable_desc_name"."_id");
-      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'175','online','online','Y','Y','N','text','text','','','','','','','','N')");
-      $newid=$db->GenID("newtable_desc_name"."_id");
-      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'140','Computer/User','title','Y','Y','Y','text','text','','','','','','','','Y')");
-      $newid=$db->GenID("newtable_desc_name"."_id");
-      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'180','Apple talk Name','atalkname','Y','Y','N','text','text','','','','','','','','Y')");
-      $newid=$db->GenID("newtable_desc_name"."_id");
-      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'200','Other','other','Y','Y','N','text','text','','','','','','','','Y')");
-      $newid=$db->GenID("newtable_desc_name"."_id");
-      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'160','IP','ipnumber','Y','Y','N','text','text','','','','','','','','Y')");
-      $newid=$db->GenID("newtable_desc_name"."_id");
-      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'170','OS','osother','Y','Y','N','text','pulldown','ipnumbers_10005ass_1','osother from ipnumbers_10005ass_1 where ','','','','','','Y')");
+      $newid=$db->GenID("$newtable_desc_name"."_id");
+      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'175','online','online','Y','Y','N','text','text',NULL,NULL,NULL,NULL,NULL,NULL,NULL,'N')");
+      $newid=$db->GenID("$newtable_desc_name"."_id");
+      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'140','Computer/User','title','Y','Y','Y','text','text',NULL,NULL,NULL,NULL,NULL,NULL,NULL,'Y')");
+      $newid=$db->GenID("$newtable_desc_name"."_id");
+      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'180','Apple talk Name','atalkname','Y','Y','N','text','text',NULL,NULL,NULL,NULL,NULL,NULL,NULL,'Y')");
+      $newid=$db->GenID("$newtable_desc_name"."_id");
+      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'200','Other','other','Y','Y','N','text','text',NULL,NULL,NULL,NULL,NULL,NULL,NULL,'Y')");
+      $newid=$db->GenID("$newtable_desc_name"."_id");
+      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'160','IP','ipnumber','Y','Y','N','text','text',NULL,NULL,NULL,NULL,NULL,NULL,NULL,'Y')");
+      $newid=$db->GenID("$newtable_desc_name"."_id");
+      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'170','OS','osother','Y','Y','N','text','pulldown','ipnumbers_10005ass_1','osother from ipnumbers_10005ass_1 where ',NULL,NULL,NULL,NULL,NULL,'Y')");
       $ass_table=$newtable_realname."ass";
       $id_ass=$db->GenId($ass_table,20);
       $ass_table.="_$id_ass";
@@ -64,20 +64,20 @@ if ($r) {
          type text,
          typeshort text)");
       $db->Execute("UPDATE $newtable_desc_name SET associated_table='$ass_table' WHERE id=$newid");
-      $newid=$db->GenID("newtable_desc_name"."_id");
-      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'100','id','id','N','N','N','int','text','','','','','','','','N')");
-      $newid=$db->GenID("newtable_desc_name"."_id");
-      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'110','access','access','N','N','N','varchar(9)','text','','','','','','','','N')");
-      $newid=$db->GenID("newtable_desc_name"."_id");
-      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'120','ownerid','ownerid','N','N','N','int','text','','','','','','','','N')");
-      $newid=$db->GenID("newtable_desc_name"."_id");
-      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'130','magic','magic','N','N','N','int','text','','','','','','','','N')");
-      $newid=$db->GenID("newtable_desc_name"."_id");
-      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'150','lastmoddate','lastmoddate','N','N','N','int','text','','','','','','','','N')");
-      $newid=$db->GenID("newtable_desc_name"."_id");
-      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'160','lastmodby','lastmodby','N','N','N','int','text','','','','','','','','N')");
-      $newid=$db->GenID("newtable_desc_name"."_id");
-      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'170','date','date','N','N','N','int','text','','','','','','','','N')");
+      $newid=$db->GenID("$newtable_desc_name"."_id");
+      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'100','id','id','N','N','N','int','text',NULL,NULL,NULL,NULL,NULL,NULL,NULL,'N')");
+      $newid=$db->GenID("$newtable_desc_name"."_id");
+      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'110','access','access','N','N','N','varchar(9)','text',NULL,NULL,NULL,NULL,NULL,NULL,NULL,'N')");
+      $newid=$db->GenID("$newtable_desc_name"."_id");
+      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'120','ownerid','ownerid','N','N','N','int','text',NULL,NULL,NULL,NULL,NULL,NULL,NULL,'N')");
+      $newid=$db->GenID("$newtable_desc_name"."_id");
+      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'130','magic','magic','N','N','N','int','text',NULL,NULL,NULL,NULL,NULL,NULL,NULL,'N')");
+      $newid=$db->GenID("$newtable_desc_name"."_id");
+      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'150','lastmoddate','lastmoddate','N','N','N','int','text',NULL,NULL,NULL,NULL,NULL,NULL,NULL,'N')");
+      $newid=$db->GenID("$newtable_desc_name"."_id");
+      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'160','lastmodby','lastmodby','N','N','N','int','text',NULL,NULL,NULL,NULL,NULL,NULL,NULL,'N')");
+      $newid=$db->GenID("$newtable_desc_name"."_id");
+      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'170','date','date','N','N','N','int','text',NULL,NULL,NULL,NULL,NULL,NULL,NULL,'N')");
       // and finally create the table
       $rc=$db->Execute(" CREATE TABLE $newtable_realname (
          online text ,

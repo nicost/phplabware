@@ -44,33 +44,33 @@ if ($r) {
       link_last text,
       modifiable char(1) )");
    if ($rb) {
-      $newid=$db->GenID("newtable_desc_name"."_id");
-      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'100','id','id','N','N','N','int','text','','','','','','','','')");
-      $newid=$db->GenID("newtable_desc_name"."_id");
-      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'110','access','access','N','N','N','varchar(9)','text','','','','','','','','')");
-      $newid=$db->GenID("newtable_desc_name"."_id");
-      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'120','ownerid','ownerid','N','N','N','int','text','','','','','','','','')");
-      $newid=$db->GenID("newtable_desc_name"."_id");
-      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'130','magic','magic','N','N','N','int','text','','','','','','','','')");
-      $newid=$db->GenID("newtable_desc_name"."_id");
-      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'150','lastmoddate','lastmoddate','N','N','N','int','text','','','','','','','','')");
-      $newid=$db->GenID("newtable_desc_name"."_id");
-      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'160','lastmodby','lastmodby','N','N','N','int','text','','','','','','','','')");
-      $newid=$db->GenID("newtable_desc_name"."_id");
-      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'170','date','date','N','N','N','int','text','','','','','','','','')");
-      $newid=$db->GenID("newtable_desc_name"."_id");
-      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'140','title','title','Y','Y','N','text','text','','','','','','','','Y')");
-      $newid=$db->GenID("newtable_desc_name"."_id");
-      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'160','Authors','author','Y','Y','N','text','text','','','','','','','','Y')");
-      $newid=$db->GenID("newtable_desc_name"."_id");
-      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'180','Notes','notes','Y','Y','N','text','textlong','','','','','','','','Y')");
-      $newid=$db->GenID("newtable_desc_name"."_id");
-      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'100','PDBID','pdbid','Y','Y','N','text','text','','','','','','http://www.rcsb.org/cgi/explre.cgi?pdbId=','','Y')");
-      $newid=$db->GenID("newtable_desc_name"."_id");
+      $newid=$db->GenID("$newtable_desc_name"."_id");
+      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'100','id','id','N','N','N','int','text',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL)");
+      $newid=$db->GenID("$newtable_desc_name"."_id");
+      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'110','access','access','N','N','N','varchar(9)','text',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL)");
+      $newid=$db->GenID("$newtable_desc_name"."_id");
+      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'120','ownerid','ownerid','N','N','N','int','text',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL)");
+      $newid=$db->GenID("$newtable_desc_name"."_id");
+      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'130','magic','magic','N','N','N','int','text',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL)");
+      $newid=$db->GenID("$newtable_desc_name"."_id");
+      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'150','lastmoddate','lastmoddate','N','N','N','int','text',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL)");
+      $newid=$db->GenID("$newtable_desc_name"."_id");
+      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'160','lastmodby','lastmodby','N','N','N','int','text',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL)");
+      $newid=$db->GenID("$newtable_desc_name"."_id");
+      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'170','date','date','N','N','N','int','text',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL)");
+      $newid=$db->GenID("$newtable_desc_name"."_id");
+      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'140','title','title','Y','Y','N','text','text',NULL,NULL,NULL,NULL,NULL,NULL,NULL,'Y')");
+      $newid=$db->GenID("$newtable_desc_name"."_id");
+      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'160','Authors','author','Y','Y','N','text','text',NULL,NULL,NULL,NULL,NULL,NULL,NULL,'Y')");
+      $newid=$db->GenID("$newtable_desc_name"."_id");
+      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'180','Notes','notes','Y','Y','N','text','textlong',NULL,NULL,NULL,NULL,NULL,NULL,NULL,'Y')");
+      $newid=$db->GenID("$newtable_desc_name"."_id");
+      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'100','PDBID','pdbid','Y','Y','N','text','text',NULL,NULL,NULL,NULL,NULL,'http://www.rcsb.org/cgi/explre.cgi?pdbId=',NULL,'Y')");
+      $newid=$db->GenID("$newtable_desc_name"."_id");
       $filecolumnid=$newid;
-      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'220','File','file','Y','Y','N','text','file','','','','','','','','Y')");
-      $newid=$db->GenID("newtable_desc_name"."_id");
-      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'200','Webmol','webmol','Y','Y','N','text','text','','','','','','webmol.php?pdbid=','','N')");
+      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'220','File','file','Y','Y','N','text','file',NULL,NULL,NULL,NULL,NULL,NULL,NULL,'Y')");
+      $newid=$db->GenID("$newtable_desc_name"."_id");
+      $db->Execute("INSERT INTO $newtable_desc_name VALUES($newid,'200','Webmol','webmol','Y','Y','N','text','text',NULL,NULL,NULL,NULL,NULL,'webmol.php?pdbid=',NULL,'N')");
       // and finally create the table
       $rc=$db->Execute(" CREATE TABLE $newtable_realname (
          id int  NOT NULL,
@@ -115,7 +115,6 @@ if ($r) {
    if ($failed)
       echo "Failed copying contents of table pdbs.<br>";
    else {
-      //echo "Succes!<br>";
       // delete the old tables
       $rnt=$db->Execute("SELECT * FROM $newtable_realname");
       if ($rnt->Numrows==$rcb->Numrows) {
