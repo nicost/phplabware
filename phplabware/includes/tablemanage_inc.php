@@ -265,7 +265,11 @@ function add_columnecg($db,$tablename2,$colname2,$label,$datatype,$Rdis,$Tdis,$r
          $filecolumnfound=true;
    }
    $colname=strtolower($colname);
-   if ($colname=="")
+   // check whether this name exists, the query should fail
+   $rb=$db->Execute("SELECT $colname FROM $real_tablename");
+   if ($rb)
+      $string=("This columnname is in use.  Please choose something else.");
+   elseif ($colname=="")
       $string="Please enter a columnname";
    elseif ($label=="")
       $string="Please enter a Label";
@@ -276,8 +280,9 @@ function add_columnecg($db,$tablename2,$colname2,$label,$datatype,$Rdis,$Tdis,$r
    else {
       if ($datatype=="pulldown") {
          // create an associated table, not overwriting old ones, using a max number
-         $ALLTABLES=$db->MetaTables();  
-         $tablestr=$real_tablename;$tablestr.="ass";
+         $tablestr=$real_tablename;
+	 $tablestr.="ass";
+/*         $ALLTABLES=$db->MetaTables();  
 	 $tables=array();
 	 $tables=preg_grep("/$tablestr/",$ALLTABLES); 
 	 $tables2=array_values($tables);
@@ -291,7 +296,10 @@ function add_columnecg($db,$tablename2,$colname2,$label,$datatype,$Rdis,$Tdis,$r
 	    array_push($allnums,$nownumber);
 	 }		
 	 $maxnum=max($allnums);$newnum=$maxnum+1;
-	 $tablestr.="_$newnum";	
+*/
+         // simple and robust way to get UID.  Start at 20 to avoid clashes	
+         $assid=$db->GenID($tablestr,20);
+	 $tablestr.="_$assid";	
 	 $r=$db->Execute("INSERT INTO $desc ($fieldstring) Values($fieldid,'$colname','$label','$sort','$Tdis','$Rdis','$req','text','$datatype','$tablestr','$colname from $tablestr where ')");
 	 $rs=$db->Execute("CREATE TABLE $tablestr (id int PRIMARY KEY, sortkey int, type text, typeshort text)");
 	 $rsss=$db->Execute("ALTER table $real_tablename add column $colname int");
@@ -337,7 +345,6 @@ function mod_columnECG($db,$id,$sort,$tablename,$colname,$label,$datatype,$Rdis,
 // !deletes a general column entry
 function rm_columnecg($db,$tablename,$id,$colname,$datatype) {
    global $string,$USER;
-
    // find the id of the table and therewith the tablename
    $r=$db->Execute("SELECT id FROM tableoftables WHERE tablename='$tablename'");
    $tableid=$r->fields["id"];
@@ -350,7 +357,7 @@ function rm_columnecg($db,$tablename,$id,$colname,$datatype) {
       while (!$r->EOF)
          delete_file($db,$r->fields["id"],$USER);
    } 
-   $r=$db->Execute("ALTER TABLE $real_tablename DROP COLUMN $colname");
+   $r=$db->Execute("ALTER TABLE $real_tablename DROP COLUMN '$colname'");
    $rv=$db->Execute("select associated_table from $desc where id ='$id'");
    $tempTAB=array();
    if ($rv) {
