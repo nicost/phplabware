@@ -60,12 +60,17 @@ if ($use_sessions) {
                $test = exec ("echo $esc_pass | $pam_prg $esc_user", $dummy,$result);
                if ($result) {  // we are authenticated
                   $auth = true; 
+                  $authmethod="pam";
                }
             }
          }       
  
          // if authenticated, this session is OK:
          if ($auth) {
+            if (!$authmethod)
+               $authmethod="sql";
+            $HTTP_SESSION_VARS["authmethod"]=$authmethod;
+            session_register ("authmethod");
             $HTTP_SESSION_VARS["PHP_AUTH_USER"]=$PHP_AUTH_USER;
             session_register ("PHP_AUTH_USER");
             // when the login was secure but user does not wanna stay secure
