@@ -22,8 +22,7 @@ $title .= "Antibodies";
 $fields="id,access,ownerid,magic,name,type1,type2,type3,type4,type5,antigen,epitope,concentration,buffer,notes,location,source,date";
 
 // register variables
-$get_vars = "id,";
-globalize_vars ($get_vars,$HTTP_GET_VARS);
+$showid=$HTTP_GET_VARS["showid"];
 $post_vars = "add,submit,search,";
 globalize_vars ($post_vars, $HTTP_POST_VARS);
 
@@ -159,6 +158,8 @@ function add_ab_form ($db,$fields,$field_values,$id,$USER,$PHP_SELF,$system_sett
 ////
 // !Shows a page with nice information on the antibody
 function show_ab ($db,$fields,$id,$USER,$system_settings) {
+   global $PHP_SELF;
+
    if (!may_read($db,"antibodies",$id,$USER))
       return false;
 
@@ -253,9 +254,13 @@ function show_ab ($db,$fields,$id,$USER,$system_settings) {
       }
       echo "</tr>\n";
    }
+   
+   echo "<tr><th>Link:</th><td colspan=7><a href='$PHP_SELF?showid=$id&";
+   echo SID;
+   echo "'>".$system_settings["baseURL"].getenv("SCRIPT_NAME")."?showid=$id</a></td></tr>\n";
 
 ?>   
-<form method='post' id='antibodyview action='<?php echo $PHP_SELF?>?<?=SID?>'> 
+<form method='post' id='antibodyview' action='<?php echo $PHP_SELF?>?<?=SID?>'> 
 <?php
    echo "<tr>";
    echo "<td colspan=7 align='center'><input type='submit' name='submit' value='Dismiss'></td>\n";
@@ -299,6 +304,13 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
       printfooter();
       exit();
    }
+}
+
+// provide a means to hyperlink directly to a record
+if ($showid) {
+   show_ab($db,$fields,$showid,$USER,$system_settings);
+   printfooter();
+   exit();
 }
 
 
