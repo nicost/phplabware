@@ -29,6 +29,18 @@ function make_xml ($db,$data,$tableinfo) {
    return $xml;
 }
 
+
+/**
+ * Helper function to sort the array $data according to the length of the its field 'name'
+ */
+function compareData($a,$b) {
+   if (strlen($a['name']) < strlen($b['name'])) {
+      return true;
+   } else {
+      return false;
+   }
+}
+
 /**
  *  Takes a template and data and generates a report
  *
@@ -39,6 +51,11 @@ function make_xml ($db,$data,$tableinfo) {
  */
 function make_report ($db,$template,$data,$tableinfo,$target=1,$counter=false) {
    global $sums;
+   // to do the replacements 'greedy', we need to sort $data so that the longest names come first 
+   // first add a field with the sring length
+
+   usort ($data,'compareData');
+
    foreach ($data as $column) {
       if ($column['name']) {
          $sums[$column['name']]+=$column['values'];
