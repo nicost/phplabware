@@ -15,41 +15,41 @@
   \**************************************************************************/
 
 
-require("include.php");
-require("includes/db_inc.php");
-require("includes/general_inc.php");
-require("includes/tablemanage_inc.php");
+require('include.php');
+require('includes/db_inc.php');
+require('includes/general_inc.php');
+require('includes/tablemanage_inc.php');
 include ('includes/defines_inc.php');
 
-$post_vars="delimiter,delimiter_type,quote,quote_type,tableid,nrfields,pkey,pkeypolicy,skipfirstline,tmpfile,ownerid";
+$post_vars='delimiter,delimiter_type,quote,quote_type,tableid,nrfields,pkey,pkeypolicy,skipfirstline,tmpfile,ownerid';
 globalize_vars($post_vars, $HTTP_POST_VARS);
 
-$permissions=$USER["permissions"];
-$httptitle.=" Import data";
+$permissions=$USER['permissions'];
+$httptitle.=' Import data';
 printheader($httptitle,false,$jsfile);
 
 if (!($permissions & $SUPER)) {
-	navbar($USER["permissions"]);
+	navbar($USER['permissions']);
 	echo "<h3 align='center'><b>Sorry, this page is not for you</B></h3>";
 	printfooter($db,$USER);
 	exit;
 }
 
-navbar($USER["permissions"]);
+navbar($USER['permissions']);
 
 ////
 // !returns variable delimiter, based on delimiter_type (a POST variable)
 function get_delimiter ($delimiter,$delimiter_type) {
    if ($delimiter)
       return $delimiter;
-   if ($delimiter_type=="space")
+   if ($delimiter_type=='space')
       $delimiter=" ";
-   elseif ($delimiter_type=="tab")
+   elseif ($delimiter_type=='tab')
       $delimiter="\t";
-   elseif ($delimiter_type=="comma")
-      $delimiter=",";
-   elseif ($delimiter_type=="semi-colon")
-      $delimiter=";";
+   elseif ($delimiter_type=='comma')
+      $delimiter=',';
+   elseif ($delimiter_type=='semi-colon')
+      $delimiter=';';
    return $delimiter;
 } 
  
@@ -58,11 +58,11 @@ function get_delimiter ($delimiter,$delimiter_type) {
 function get_quote ($quote,$quote_type) {
    if ($$quote)
       return $$quote;
-   if ($quote_type=="doublequote")
+   if ($quote_type=='doublequote')
       $quote="\"";
-   elseif ($quote_type=="singlequote")
+   elseif ($quote_type=='singlequote')
       $quote="'";
-   elseif ($quote_type=="none")
+   elseif ($quote_type=='none')
       $quote=false;
    return $quote;
 } 
@@ -78,10 +78,10 @@ function check_input ($fields, $field_types, $nrfields)
          if ($fields[$i]{0}==$fields[$i]{strlen($fields[$i])-1} &&
              ($fields[$i]{0}=="\"" || $fields[$i]{0}=="'") )
             $fields[$i]=substr($fields[$i],1,-1);
-         if ($field_types[$i]=="int"){
+         if ($field_types[$i]=='int'){
             $fields[$i]=(int)$fields[$i];
          }
-         elseif($field_types[$i]=="float")
+         elseif($field_types[$i]=='float')
             $fields[$i]=(float)$fields[$i];
          else
             $fields[$i]=addslashes($fields[$i]);
@@ -96,13 +96,15 @@ function check_input ($fields, $field_types, $nrfields)
 function check_line(&$line,$quote,$delimiter) {
    if ($quote) {
       // delimiters without quotes can be a problem, so add quotes to them
-      $newlength=1;$length=0;
+      $newlength=1;
+      $length=0;
       while ($newlength!=$length) {
          $length=strlen($line);
          $line=str_replace($quote.$delimiter.$delimiter,$quote.$delimiter.$quote.$quote.$delimiter,$line);
          $newlength=strlen($line);
       }
-      $newlength=1;$length=0;
+      $newlength=1;
+      $length=0;
       while ($newlength!=$length) {
          $length=strlen($line);
          $line=str_replace($delimiter.$delimiter.$quote,$delimiter.$quote.$quote.$delimiter.$quote,$line);
@@ -114,9 +116,9 @@ function check_line(&$line,$quote,$delimiter) {
 
 
 // do the final parsing (part 3)
-if ($HTTP_POST_VARS["assign"]=="Import Data") {
+if ($HTTP_POST_VARS['assign']=='Import Data') {
    // set longer time-out
-   ini_set("max_execution_time","0");
+   ini_set('max_execution_time','0');
    // get description table name
    $r=$db->Execute("SELECT table_desc_name,real_tablename,tablename,custom FROM tableoftables WHERE id='$tableid'");
    $desc=$r->fields[0];
@@ -139,19 +141,19 @@ if ($HTTP_POST_VARS["assign"]=="Import Data") {
    for ($i=0;$i<$nrfields;$i++) {
       $the_field=$HTTP_POST_VARS["fields_$i"];
       if (isset($the_field) && $the_field && $the_field!="") {
-         $to_fields[$i]=get_cell($db,$desc,"columnname","id",$the_field);
-         if ($to_fields[$i]=="id")
+         $to_fields[$i]=get_cell($db,$desc,'columnname','id',$the_field);
+         if ($to_fields[$i]=='id')
             $id_chosen=true;
-         $to_types[$i]=get_cell($db,$desc,"type","id",$the_field);
+         $to_types[$i]=get_cell($db,$desc,'type','id',$the_field);
          // type checking and cleanup for database upload
          // since we can have int(11) etc...
-         if (substr($to_types[$i],0,3)=="int"){
-            $to_types[$i]="int";
+         if (substr($to_types[$i],0,3)=='int'){
+            $to_types[$i]='int';
             $fields[$i]=(int)$fields[$i];
          }
          // and float8...
-         elseif(substr($to_types[$i],0,5)=="float") {
-            $to_types[$i]="float";
+         elseif(substr($to_types[$i],0,5)=='float') {
+            $to_types[$i]='float';
             $fields[$i]=(float)$fields[$i];
          }
          else
@@ -162,19 +164,19 @@ if ($HTTP_POST_VARS["assign"]=="Import Data") {
    $freq_array=array_count_values($to_fields);
    if (sizeof($freq_array) < sizeof($to_fields)) {
        $error_string="<h3 align='center'>Some columns in the database were selected more than once.  Please correct this and try again.</h3>";
-       $HTTP_POST_VARS["dataupload"]="Continue";
+       $HTTP_POST_VARS['dataupload']='Continue';
    }
    // do the database upload
    else {
       $delimiter=get_delimiter($delimiter,$delimiter_type);
       $quote=get_quote($quote,$quote_type);
-      $tmpdir=$system_settings["tmpdir"];
-      $fh=fopen("$tmpdir/$tmpfile","r");
+      $tmpdir=$system_settings['tmpdir'];
+      $fh=fopen("$tmpdir/$tmpfile",'r');
       if ($fh) {
-         $access=$system_settings["access"];
+         $access=$system_settings['access'];
          $lastmoddate=time();
-         $lastmodby=$USER["id"];
-         if ($skipfirstline=="yes")
+         $lastmodby=$USER['id'];
+         if ($skipfirstline=='yes')
             $line=chop(fgets($fh,1000000));
          // fgets should not need second parameter, but my php version does...
          while ($line=chop(fgets($fh,1000000))) {
@@ -251,9 +253,9 @@ if ($HTTP_POST_VARS["assign"]=="Import Data") {
                      // let's make sure the 'next' id will be higher
                      if ($newid)
                         while ($id<$newid)
-                           $id=$db->GenID($table."_id_seq");
+                           $id=$db->GenID($table.'_id_seq');
                      // check whether this id was used
-                     if (get_cell($db,$table,"id","id",$newid))
+                     if (get_cell($db,$table,'id','id',$newid))
                         $duplicateid++;
                      $query="$query_start access,date,lastmoddate,lastmodby,ownerid) $query_end '$access','$lastmoddate','$lastmoddate','$lastmodby','$ownerid')";
                   }
@@ -271,17 +273,17 @@ if ($HTTP_POST_VARS["assign"]=="Import Data") {
          if (!isset($duplicateid))
             $duplicateid=0;
          if ($inserted==1)
-            $inserted_text="record was";
+            $inserted_text='record was';
          else
-            $inserted_text="records were";
+            $inserted_text='records were';
          if ($modified==1)
-            $modified_text="record was";
+            $modified_text='record was';
          else
-            $modified_text="records were";
+            $modified_text='records were';
          if ($duplicateid==1)
-            $duplicate_text="record was";
+            $duplicate_text='record was';
          else
-            $duplicate_text="records were";
+            $duplicate_text='records were';
          echo "<h3 align='center'>$inserted $inserted_text inserted, and $modified $modified_text modified in Database <a href='$table_link'>$table_label</a></h3>";
          if ($duplicateid)
             echo "<h3 align='center'>$duplicateid $duplicate_text rejected because their ids have already been used.</h3>\n";
@@ -296,23 +298,23 @@ if ($HTTP_POST_VARS["assign"]=="Import Data") {
 
 
 // interpret uploaded file and get information for final parsing (part 2)
-if ($HTTP_POST_VARS["dataupload"]=="Continue") {
+if ($HTTP_POST_VARS['dataupload']=='Continue') {
    if ($error_string)
       echo $error_string;
-   $filename=$HTTP_POST_FILES["datafile"]["name"];
+   $filename=$HTTP_POST_FILES['datafile']['name'];
    $delimiter=get_delimiter($delimiter,$delimiter_type);
    $quote=get_quote($quote,$quote_type);
    if ($delimiter && $tableid && $ownerid && ($filename || $tmpfile) ) {
-      if (!$system_settings["filedir"]) {
+      if (!$system_settings['filedir']) {
          echo "<h3><i>Filedir</i> was not set.  Please correct this first in <i>setup</i></h3>\n";
          printfooter();
          exit();
       }
-      $tmpdir=$system_settings["tmpdir"];
-      if ($tmpfile || move_uploaded_file($HTTP_POST_FILES["datafile"]["tmp_name"],"$tmpdir/$filename")) {
+      $tmpdir=$system_settings['tmpdir'];
+      if ($tmpfile || move_uploaded_file($HTTP_POST_FILES['datafile']['tmp_name'],"$tmpdir/$filename")) {
          if ($tmpfile)
             $filename=$tmpfile;
-         $fh=fopen("$tmpdir/$filename","r");
+         $fh=fopen("$tmpdir/$filename",'r');
          if ($fh) {
             $firstline=chop(fgets($fh,1000000));
             // if quoted delete first and last char
@@ -330,7 +332,7 @@ if ($HTTP_POST_VARS["dataupload"]=="Continue") {
             $nrfields=sizeof($fields);
             fclose($fh);
          }
-         $tablename=get_cell($db,"tableoftables","tablename","id",$tableid);
+         $tablename=get_cell($db,'tableoftables','tablename','id',$tableid);
          echo "<h3 align='center'>Import Data(2): Assign fields to Columns of table <i>$tablename</i></h3>\n";
          echo "<form method='post' id='procesdata' enctype='multipart/form-data' ";
          $dbstring=$PHP_SELF;
@@ -352,7 +354,7 @@ if ($HTTP_POST_VARS["dataupload"]=="Continue") {
             echo "   <td align='center'>$fields2[$i]</td>\n";
          echo "</tr>\n";
          echo "<tr>\n   <th>Assign to Column:</th>\n";
-         $desc=get_cell($db,"tableoftables","table_desc_name","id",$tableid);
+         $desc=get_cell($db,'tableoftables','table_desc_name','id',$tableid);
          $r=$db->Execute("SELECT label,id FROM $desc WHERE (display_record='Y' OR display_table='Y' OR columnname='id') AND datatype<>'file' AND datatype<>'sequence' ORDER BY sortkey");
          for($i=0;$i<$nrfields;$i++) {
             $menu=$r->GetMenu2("fields_$i");
@@ -410,7 +412,11 @@ echo "<th>Table</th>\n";
 echo "<th>Assign new records to:</th>\n";
 echo "</tr>\n";
 
-echo "<tr><td><input type='file' name='datafile' value='' ></td>\n";
+echo "<tr><td><input type='file' name='datafile' value='' ><br>\n";
+$localfile=$system_settings['tmpdir'].'/phplabwaredump/dumpcontent.txt';
+if (file_exists($localfile))
+   echo "<b>Or:</b><input type='checkbox' name='localfile'> use $localfile";
+echo "</td>\n";
 echo "<td align='center'> <table><tr>
    <td><input type='radio' name='delimiter_type' value='comma' checked> comma</td>
    <td><input type='radio' name='delimiter_type' value='tab'> tab</td>
