@@ -14,6 +14,39 @@
   *  option) any later version.                                              *
   \**************************************************************************/
 
+/**
+ * Returns an array with all essential info about the given user
+ *
+ * $user_tag can be a userid (when numeric) or the user login (when text)
+ * Be sure not to allow numeric logins!
+ */
+function getUserInfo ($db, $username,$userid) 
+{
+   if ($userid) {
+      $db_query = "SELECT * FROM users WHERE id=$userid";
+   } elseif ($username) {
+      $db_query = "SELECT * FROM users WHERE login='$username'";
+   }
+   $db_result = $db->Execute($db_query);
+   if (! ($db_result) ) {
+      echo "Fatal database error.<br>";
+      return false;
+   }
+   // save frequently used variables
+   $USER=$db_result->fields;
+   $USER['settings']=unserialize($USER['settings']);
+   $USER['group_list']=$USER['groupid'];
+   $USER['group_array'][]=$USER['groupid'];
+   $rg=$db->Execute("SELECT groupsid FROM usersxgroups WHERE usersid='".$USER["id"]."'");
+   while ($rg && !$rg->EOF) {
+      $USER['group_list'].=','.$rg->fields['groupsid'];
+      $USER['group_array'][]=$rg->fields['groupsid'];
+      $rg->MoveNext();
+   }
+   return $USER;
+}
+
+
 
 $client = new cl_client;
 
@@ -130,24 +163,15 @@ echo "$permissions2 $URL_LOGIN";
    } 
    else {
       // we must have been authenticated directly or through the session
-      $db_query = "SELECT * FROM users WHERE login='$PHP_AUTH_USER'";
-      $db_result = $db->Execute($db_query);
-      if (! ($db_result) ) {
-         echo "Fatal database error.<br>";
-         exit();
-      }
-      // save frequently used variables
-      $USER=$db_result->fields;
-      $USER['settings']=unserialize($USER['settings']);
-      $USER['group_list']=$USER['groupid'];
-      $USER['group_array'][]=$USER['groupid'];
-      $rg=$db->Execute("SELECT groupsid FROM usersxgroups WHERE usersid='".$USER["id"]."'");
-      while ($rg && !$rg->EOF) {
-         $USER['group_list'].=','.$rg->fields['groupsid'];
-	 $USER['group_array'][]=$rg->fields['groupsid'];
-	 $rg->MoveNext();
-      }
-      
+      // get all the info about this user we might need:
+      if (!is_int($PHP_AUTH_USER)) {
+         $USER=getUserInfo($db,$PHP_AUTH_USER,false);
+         if (!isset($USER)) {
+            exit;
+         }
+      } else {
+         echo "Numeric logins are not allowed.<br>";
+      }  
       // check whether account allows logins
       $active = $USER['permissions'] & $ACTIVE;
       if ($active) {
