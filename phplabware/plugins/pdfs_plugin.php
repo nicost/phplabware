@@ -488,33 +488,7 @@ Location: ') {
                }
             }
          break; // end of linkinghub.elsevier.com
-/*               
-         case 'www.jcb.org':
-            // jcb gives a page with a redirect on it.  The redirect has the link to the pdf on it, however, once the redirect address is known, we can simply construct  the link to the pdf and grab it.
-            $fp=fsockopen($host,80,$errno,$errstr,5);
-            if ($fp) {
-               $out="GET $getstring HTTP/1.0\r\n"; $out.="Host: $host\r\n";
-               $out.="Connection: Close\r\n\r\n";
-               fwrite($fp,$out);
-               while (!feof($fp)) {
-                  $redirect.=fgets($fp,128);
-               }
-               fclose($fp);  
-               // The header has the Location: field in it, that is what we need:
-               $start=strpos($redirect,'Location: ') + 10;
-               $end=strpos($redirect,'Connection');
-               $url=substr($redirect,$start,$end-$start);
-               // et voila, the url to the pdf:
-               $url=str_replace('full','pdf',$url);
-//echo "Url is: $host$url.<br>";
-               if (isset($url)) {
-                  if (do_pdf_download($host,$url,'file')) {
-                     return true;
-                  }
-               }
-            }
-         break;
-*/
+
          case 'www.pubmedcentral.gov' :
             /**
              * For pubmed central we need the 'artid'.  Retrieve this using elink
