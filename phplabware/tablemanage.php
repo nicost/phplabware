@@ -117,8 +117,9 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
 }
 
 if ($editfield)	{
-   $noshow=array("id","access","ownerid","magic","lastmoddate","lastmodby","date");
-   $nodel=array("title","date","lastmodby","lastmoddate");
+   $noshow=array("id","access","magic","lastmoddate","lastmodby");
+   $nodel=array("title","date","ownerid","lastmodby","lastmoddate");
+   $nomodifiable=array("ownerid","date","lastmodby","lastmoddate");
    navbar($USER["permissions"]);
 
    $r=$db->Execute("SELECT id,table_desc_name,label FROM tableoftables WHERE tablename='$editfield'");
@@ -231,7 +232,9 @@ if ($editfield)	{
             echo" <input type='radio' name='column_required[$rownr]' checked value='N'> no </td>\n";
          }
 	  		 		
-         if($modifiable=="Y") {
+         if (in_array($columnname,$nomodifiable))
+            echo "<td>no</td>\n";
+         elseif($modifiable=="Y") {
             echo "<td><input type='radio' name='column_modifiable[$rownr]' value='Y' CHECKED>yes";
             echo" <input type='radio' name='column_modifiable[$rownr]' value='N'> no </td>\n";
          }
@@ -260,9 +263,13 @@ if ($editfield)	{
          $delstring .= "Onclick=\"if(confirm('Are you absolutely sure that the column $label should be removed? (No undo possible!)')){return true;}return false;\">";  
    	 echo "<td align='center'>$modstring".$alinkstring;
    	 $candel=1;
-   	 foreach($nodel as $checkme){if ($label==$checkme){$candel=0;}}
-            if ($candel==1)
-               echo "$delstring</td>\n";
+   	 foreach($nodel as $checkme){
+            if ($columnname==$checkme){
+               $candel=0;
+            }
+         }
+         if ($candel==1)
+            echo "$delstring</td>\n";
  	 echo "</tr>\n";
       }
       $r->MoveNext();

@@ -213,7 +213,7 @@ function add_table ($db,$tablename,$tablelabel,$sortkey,$plugincode) {
          $descid=$db->GenId("$desc"."_id");  
          $db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'access','access','110','N','N','N','varchar(9)','text',NULL,NULL)");
          $descid=$db->GenId("$desc"."_id");  
-         $db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'ownerid','ownerid','120','N','N','N','int(11)','text',NULL,NULL)");
+         $db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'owner','ownerid','120','N','N','N','int(11)','text',NULL,NULL)");
          $descid=$db->GenId("$desc"."_id");  
          $db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'magic','magic','130','N','N','N','int(11)','text',NULL,NULL)");
          $descid=$db->GenId("$desc"."_id");  
