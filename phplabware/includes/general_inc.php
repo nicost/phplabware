@@ -673,7 +673,25 @@ function process_file($db,$fileid,$system_settings) {
    }
    return false;
 }
-
+////
+// !Helper function for indexfile
+function doindexfile ($db,$filetext,$fileid,$indextable,$recordid,$pagenr)
+{
+   if (!$pagenr)
+      $pagenr=1;
+   $thetext=split("[ ,.:;\"\n]",$filetext);
+   foreach ($thetext as $word) {
+      if (strlen($word)>3) {
+         $r=$db->Execute("SELECT id FROM words WHERE word='$word'");
+         $wordid=$r->fields[0];
+         if (!$wordid) {
+            $wordid=$db->GenID("word_seq");
+            $db->Execute("INSERT INTO words VALUES ($wordid,'$word')");
+         }
+         $db->Execute("INSERT INTO $indextable VALUES ($wordid,$fileid,$recordid,$pagenr)");
+      }
+   }
+}
 ////
 // !Indexes the content of the given file
 // The file is converted to a text file (pdfs with ghost script,
@@ -681,7 +699,10 @@ function process_file($db,$fileid,$system_settings) {
 // all words are lowercased, it is checked whether an entry in the table words
 // already exists, if not, it is added.  A relation to the word is made in 
 // the table associated with the given column
-function indexfile ($db,$tableinfo,$indextable,$recordid,$fileid,$htmlfileid) {
+function indexfile ($db,$tableinfo,$indextable,$recordid,$fileid,$htmlfileid) 
+{
+   if (!$indextable)
+      return false;
    // if the html file exists, we'll work with that one
    if ($htmlfileid) {
       $fp=fopen(file_path($db,$htmlfileid),"r");
@@ -692,7 +713,7 @@ function indexfile ($db,$tableinfo,$indextable,$recordid,$fileid,$htmlfileid) {
          fclose($fp);
       }
       $filetext=strtolower($filetext);
-      //echo "$filetext.<br>";
+      doindexfile ($db,$filetext,$htmlfileid,$indextable,$recordid,$pagenr);
    }
 }
 
