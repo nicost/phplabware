@@ -415,6 +415,7 @@ else {
          exit;
       }
       else {  
+         $HTTP_POST_FILES["file"]["name"][0]=$HTTP_POST_VARS["pmid"].".pdf";
 	 $fileid=upload_files($db,"pdfs",$id,$USER,$system_settings);
 	 if ($system_settings["pdfs_file"])
 	    report_pdf_addition ($db,$id,$system_settings,$PHP_SELF);
