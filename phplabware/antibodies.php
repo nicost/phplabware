@@ -24,6 +24,7 @@ $fields="id,access,ownerid,magic,name,type1,type2,type3,type4,type5,antigen,epit
 // register variables
 $showid=$HTTP_GET_VARS["showid"];
 $edit_type=$HTTP_GET_VARS["edit_type"];
+$add=$HTTP_GET_VARS["add"];
 $post_vars = "add,submit,search,searchj";
 globalize_vars ($post_vars, $HTTP_POST_VARS);
 if ($searchj)

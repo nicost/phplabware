@@ -24,6 +24,7 @@ $fields="id,access,ownerid,magic,title,type1,type2,notes,date,lastmodby,lastmodd
 // register variables
 $showid=$HTTP_GET_VARS["showid"];
 $edit_type=$HTTP_GET_VARS["edit_type"];
+$add=$HTTP_GET_VARS["add"];
 $post_vars = "add,submit,search,searchj";
 globalize_vars ($post_vars, $HTTP_POST_VARS);
 if ($searchj)
@@ -260,8 +261,9 @@ function process_file($db,$fileid,$system_settings) {
       $word2html=$system_settings["word2html"];
       $filepath=file_path($db,$fileid);
       $temp=$system_settings["tmpdir"]."/".uniqid("file");
-      `$word2html $filepath $temp`;
-      if (@is_readable($temp)) {
+      $command= "$word2html $filepath $temp";
+      $result=exec($command);
+      if (is_readable($temp)) {
          unset ($HTTP_POST_FILES);
          $r=$db->query ("SELECT filename,mime,title,tablesfk,ftableid FROM files WHERE id=$fileid");
          if ($r && !$r->EOF) {

@@ -22,7 +22,7 @@ $httptitle .= "PDFs";
 $fields="id,access,ownerid,magic,pmid,title,author,type1,type2,notes,date,lastmodby,lastmoddate,volume,fpage,lpage,abstract,year";
 
 // register variables
-$get_vars="edit_type,showid,search";
+$get_vars="add,edit_type,showid,search";
 globalize_vars($get_vars, $HTTP_GET_VARS);
 $post_vars = "add,submit,search,searchj";
 globalize_vars ($post_vars, $HTTP_POST_VARS);
