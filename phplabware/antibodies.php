@@ -125,7 +125,8 @@ function delete ($db, $table, $id, $USER) {
 
 ////
 // !Returns an SQL SELECT statement with ids of records the user may see
-function may_read_SQL ($db,$table,$USER,$clause=false) {
+// Since it uses subqueries it does not work with MySQL
+function may_read_SQL_postgres ($db,$table,$USER,$clause=false) {
    include ('includes/defines_inc.php');
    $query="SELECT id FROM $table ";
    if ($USER["permissions"] & $SUPER) {
@@ -150,13 +151,64 @@ function may_read_SQL ($db,$table,$USER,$clause=false) {
 }
 
 ////
+// !returns an comma-separated list of quoted values from a SQL search
+// helper function for may_read_SQL
+function make_SQL_ids ($r,$ids) {
+   $id=$r->fields["id"];
+   if (!$id)
+      return false;
+   $ids .="'$id'";
+   $r->MoveNext();
+   while (!$r->EOF) {
+      $id=$r->fields["id"];
+      $ids .=",'$id'";
+      $r->MoveNext();
+   }
+   return ($ids);
+}
+
+
+////
+// !Returns an array with ids of records the user may see in SQL format
+function may_read_SQL ($db,$table,$USER) {
+   include ('includes/defines_inc.php');
+   if (!($USER["permissions"] & $SUPER)) {
+      $query="SELECT id FROM $table ";
+      $usergroup=get_cell($db,"users","groupid","id",$USER["id"]);
+      $userid=$USER["id"];
+      $query .= " WHERE ";
+      // owner
+      $query .= "( (ownerid=$userid AND SUBSTRING(access FROM 1 FOR 1)='r') ";
+      $query .= "OR (SUBSTRING(access FROM 7 FOR 1)='r')";
+      $query .=")";
+      $r=$db->Execute($query);
+      if ($r) {
+         $ids=make_SQL_ids($r,$ids);
+      }
+      // group
+      $query="SELECT $table.id FROM $table LEFT JOIN users ON $table.ownerid=users.id WHERE users.groupid=$usergroup";
+      $r=$db->Execute($query);
+   }
+   else {     // superuser
+      $query="SELECT id FROM $table ";
+      $r=$db->Execute($query);
+   }
+   if ($r)
+      return make_SQL_ids($r,$ids);
+}
+
+
+////
 // !determines whether or not the user may read this record
 function may_read ($db,$table,$id,$USER) {
-   $query=may_read_SQL($db,$table,$USER,"id=$id");
+   $list=may_read_SQL($db,$table,$USER);
+   $query="SELECT id FROM $table WHERE $id IN ($list)";
    $r=$db->Execute($query);
+   if (!$r)
+      return false;
    if ($r->EOF)
       return false;
-   if($r->fields["id"]==$id)
+   else
       return true;
 }
 
@@ -170,8 +222,8 @@ function may_write ($db,$table,$id,$USER) {
    if ( ($USER["permissions"] & $WRITE) && (!$id))
       return true;
    $usergroup=get_cell($db,"users","groupid","id",$USER["id"]);
-   $r=$db->Execute("SELECT groupid FROM users WHERE id IN (
-                    SELECT ownerid FROM $table WHERE id=$id) ");
+   $r=$db->Execute("SELECT groupid FROM users LEFT JOIN $table ON 
+                    users.id=$table.ownerid WHERE antibodies.id=$id");
    $ownergroup=$r->fields["groupid"];
    if ($USER["permissions"] & $ADMIN) {
       if ($usergroup==$ownergroup)
@@ -180,11 +232,11 @@ function may_write ($db,$table,$id,$USER) {
    if ($id) {
       $userid=$USER["id"];
       if ($r=$db->Execute("SELECT * FROM $table WHERE id=$id AND
-            ownerid=$userid AND SUBSTRING (access FROM 2 FOR 1)='w'")) 
+            ownerid=$userid AND SUBSTRING(access FROM 2 FOR 1)='w'")) 
          if (!$r->EOF)
             return true;
       if ($r=$db->Execute("SELECT * FROM $table WHERE id=$id AND
-            ownerid=$userid AND SUBSTRING (access FROM 5 FOR 1)='w'")) 
+            ownerid=$userid AND SUBSTRING(access FROM 5 FOR 1)='w'")) 
          if (!$r->EOF && ($usergroup==$ownergroup) )
             return true;
    }
@@ -435,17 +487,22 @@ else {
          printfooter ();
          exit;
       }
+      else  // to not interfere with search form 
+         unset ($HTTP_POST_VARS);
    }
    // then look whether it should be modified
    elseif ($submit =="Modify Antibody") {
+      echo "Trying to modify.<br>";
       if (! (check_ab_data($HTTP_POST_VARS) && modify ($db,"antibodies",$fields,$HTTP_POST_VARS,$HTTP_POST_VARS["id"],$USER)) ) {
          echo "</caption>\n</table>\n";
          add_ab_form ($db,$fields,$HTTP_POST_VARS,$HTTP_POST_VARS["id"],$USER);
          printfooter ();
          exit;
       }
+      else  // to not interfere with search form 
+         unset ($HTTP_POST_VARS);
    } 
-  // or deleted
+   // or deleted
    elseif ($HTTP_POST_VARS) {
       reset ($HTTP_POST_VARS);
       while((list($key, $val) = each($HTTP_POST_VARS))) {
@@ -513,10 +570,11 @@ else {
    // retrieve all antibodies and their info from database
    $whereclause=may_read_SQL ($db,"antibodies",$USER);
    $query = "SELECT $fields FROM antibodies WHERE id IN ($whereclause) ORDER BY date DESC";
+   //$db->debug=true;
    $r=$db->Execute($query);
    $rownr=1;
    // print all entries
-   while (!($r->EOF)) {
+   while ($r && !($r->EOF)) {
  
       // get results of each row
       $id = $r->fields["id"];
