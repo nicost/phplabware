@@ -165,9 +165,9 @@ function viewmenu($db, $tableinfo,$viewid) {
    
    // first find views accessible to user
    if ($db_type=='mysql') 
-      $r=$db->Execute("SELECT DISTINCT viewname,viewnames.viewnameid FROM viewnames LEFT JOIN tableviews ON viewnames.viewnameid=tableviews.viewnameid WHERE tableviews.userid IN ({$USER['group_list']}) AND tableviews.tableid={$tableinfo->id} AND tableviews.viewmode=1");
+      $r=$db->Execute("SELECT DISTINCT viewname,viewnames.viewnameid FROM viewnames LEFT JOIN tableviews ON viewnames.viewnameid=tableviews.viewnameid WHERE tableviews.userid ={$USER['id']} AND tableviews.tableid={$tableinfo->id} AND tableviews.viewmode=1");
    else
-      $r=$db->Execute("SELECT viewname,viewnameid FROM viewnames WHERE viewnameid IN (SELECT viewnameid FROM tableviews WHERE userid IN ({$USER['group_list']}) AND tableid={$tableinfo->id} AND viewmode=1)"); 
+      $r=$db->Execute("SELECT viewname,viewnameid FROM viewnames WHERE viewnameid IN (SELECT viewnameid FROM tableviews WHERE userid ={$USER['id']} AND tableid={$tableinfo->id} AND viewmode=1)"); 
    if ($r) {
       $viewname.= 'View: '.$r->GetMenu2('viewid',$viewid,true,false,0,'OnClick="document.g_form.submit()"');
    }
@@ -589,8 +589,8 @@ function display_add($db,$tableinfo,$Allfields,$id,$namein,$system_settings) {
          if ($nowfield['modifiable']=='N' && $nowfield['datatype']!='sequence') {
             echo "<input type='hidden' name='$nowfield[name]' value='$nowfield[values]'>\n";
             if ($nowfield['text'] && $nowfield['text']!="" && $nowfield['text']!=" ") {
-               echo "<tr><th>$nowfield[label]:</th>"; 
-               echo "<td>$nowfield[text]";
+               echo "<tr><th>{$nowfield['label']}:</th>"; 
+               echo "<td>{$nowfield['text']}";
             }
          }
          elseif ($nowfield['modifiable']=='Y' && ($nowfield['datatype']=='text' || $nowfield['datatype']=='int' || $nowfield['datatype']=='float' || $nowfield['datatype']=='date')) {
