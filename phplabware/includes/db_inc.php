@@ -616,11 +616,11 @@ function search ($table,$fields,$fieldvalues,$whereclause=false,$wcappend=true) 
 
 
 ////
-// !Displays the nex and previous buttons
+// !Displays the next and previous buttons
 // $r is the result of a $db->Execute query used to display the table with records
 // When $paging is true, the records per page field will also be displayed
 // $num_p_r holds the (global) records per page variable
-function next_previous_buttons($r,$paging=false,$num_p_r=false) {
+function next_previous_buttons($r,$paging=false,$num_p_r=false,$numrows=false,$pagenr=false) {
    echo "<table border=0 width=100%>\n<tr width=100%>\n<td align='left'>";
    if ($r && !$r->AtFirstPage())
       echo "<input type=\"submit\" name=\"previous\" value=\"Previous\"></td>\n";
@@ -630,6 +630,17 @@ function next_previous_buttons($r,$paging=false,$num_p_r=false) {
       else
          echo "&nbsp;</td>\n";
    if ($paging) {
+      if ($numrows>0) {
+         echo "<td align='center'>$numrows Records found. ";
+         if ($pagenr) {
+            $start=($pagenr-1)*$num_p_r+1;
+            $end=$pagenr*$num_p_r;
+            if ($end > $numrows)
+               $end=$numrows;
+            echo "Showing $start through $end. ";
+         }
+         echo "</td>\n";
+      }
       echo "<td align='center'>\n";
       echo "<input type='text' name='num_p_r'value='$num_p_r' size=3>&nbsp;";
       echo "Records per page</td>\n";
