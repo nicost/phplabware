@@ -406,7 +406,7 @@ else {
    if ($search=="Show All") {
       $num_p_r=$HTTP_POST_VARS["num_p_r"];
       unset ($HTTP_POST_VARS);
-      $curr_page=1;
+      $ab_curr_page=1;
       session_unregister("ab_query");
    }
    $column=strtok($fields,",");
@@ -415,43 +415,21 @@ else {
       $column=strtok(",");
    }
 
-   // prepare SQl search statement
-   $whereclause=may_read_SQL ($db,"antibodies",$USER);
-   if ($search=="Search")
-      $ab_query=search("antibodies",$fields,$HTTP_POST_VARS," id IN ($whereclause) ORDER BY name");
-   elseif (session_is_registered ("ab_query") && isset($HTTP_SESSION_VARS["ab_query"]))
-      $ab_query=$HTTP_SESSION_VARS["ab_query"];
-   else
-      $ab_query = "SELECT $fields FROM antibodies WHERE id IN ($whereclause) ORDER BY date DESC";
-   $HTTP_SESSION_VARS["ab_query"]=$ab_query;   
-   session_register("ab_query");
-   
    // paging stuff
-   if (!$num_p_r)
-      $num_p_r=$USER["settings"]["num_p_r"];
-   if (isset($HTTP_POST_VARS["num_p_r"]))
-      $num_p_r=$HTTP_POST_VARS["num_p_r"];
-   if (!isset($num_p_r))
-      $num_p_r=10;
-   $USER["settings"]["num_p_r"]=$num_p_r;
-   if (!isset($curr_page))
-      $curr_page=$HTTP_SESSION_VARS["curr_page"];
-   if (isset($HTTP_POST_VARS["next"]))
-      $curr_page+=1;
-   if (isset($HTTP_POST_VARS["previous"]))
-      $curr_page-=1;
-   if ($curr_page<1)
-      $curr_page=1;
-   $HTTP_SESSION_VARS["curr_page"]=$curr_page; 
-   session_register("curr_page");
+   $num_p_r=paging($num_p_r,$USER);
 
+   // get current page
+   $ab_curr_page=current_page($ab_curr_page,"ab");
+
+   // prepare SQL search statement, and remember it
+   $ab_query=make_search_SQL($db,"antibodies","ab",$fields,$USER,$search,"name");
    // print form
 ?>
 <form name='ab_form' method='post' action='<?php echo $PHP_SELF?>?<?=SID?>'>  
 <?php
 
    // loop through all entries for next/previous buttons
-   $r=$db->PageExecute($ab_query,$num_p_r,$curr_page);
+   $r=$db->PageExecute($ab_query,$num_p_r,$ab_curr_page);
    while (!($r->EOF) && $r) {
       $r->MoveNext();
    }
@@ -467,23 +445,7 @@ else {
    //echo "Show All</button></td></tr>\n";
    echo "</table>\n";
 
-   // next/previous buttons
-   echo "<table border=0 align=center width=100%>\n";
-   echo "<tr><td align='left'>";
-   if ($r && !$r->AtFirstPage())
-      echo "<input type=\"submit\" name=\"previous\" value=\"Previous\"></td>\n";
-   else
-      echo "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp&nbsp;</td>\n";
-   echo "<td align='center'>";
-   echo "<input type='text' name='num_p_r' value='$num_p_r' size=3>";
-   echo "Records per page</td>\n";
-   echo "<td align='right'>";
-   if ($r && !$r->AtLastPage())
-      echo "<input type=\"submit\" name=\"next\" value=\"Next\"></td>\n";
-   else
-      echo "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp&nbsp;</td>\n";
-   echo "</tr>\n";
-   echo "</table>\n";
+   next_previous_buttons($r,true,$num_p_r);
 
    // print header of table
    echo "<table border='1' align='center' width='100%'>\n";
@@ -607,7 +569,7 @@ else {
    echo "</tr>\n";
 
 
-   $r=$db->PageExecute($ab_query,$num_p_r,$curr_page);
+   $r=$db->PageExecute($ab_query,$num_p_r,$ab_curr_page);
    $rownr=1;
    // print all entries
    while (!($r->EOF) && $r) {
@@ -675,22 +637,7 @@ else {
    }
 
    echo "</table>\n";
-
-   // next/previous buttons
-   echo "<table border=0 width=100%>\n<tr width=100%>\n<td align='left'>";
-   if ($r && !$r->AtFirstPage())
-      echo "<input type=\"submit\" name=\"previous\" value=\"Previous\"></td>\n";
-   else
-      echo "&nbsp;</td>\n";
-   echo "<td align='right'>";
-   if ($r && !$r->AtLastPage())
-      echo "<input type=\"submit\" name=\"next\" value=\"Next\"></td>\n";
-   else
-      echo "&nbsp;</td>\n";
-   echo "</tr>\n";
-
-   echo "</table>\n";
-
+   next_previous_buttons($r);
    echo "</form>\n";
 
 }

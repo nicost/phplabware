@@ -433,36 +433,15 @@ else {
       $column=strtok(",");
    }
 
-   // prepare search SQL statement
-   $whereclause=may_read_SQL ($db,"protocols",$USER);
-   if ($search=="Search")
-      $pr_query=search("protocols",$fields,$HTTP_POST_VARS," id IN ($whereclause) ORDER BY title");
-   elseif (session_is_registered ("pr_query") && isset($HTTP_SESSION_VARS["pr_query"]))
-      $pr_query=$HTTP_SESSION_VARS["pr_query"];
-   else
-      $pr_query = "SELECT $fields FROM protocols WHERE id IN ($whereclause) ORDER BY date DESC";
-   $HTTP_SESSION_VARS["pr_query"]=$pr_query;   
-   session_register("pr_query");
-
    // paging stuff
-   if (!$num_p_r)
-      $num_p_r=$USER["settings"]["num_p_r"];
-   if (isset($HTTP_POST_VARS["num_p_r"]))
-      $num_p_r=$HTTP_POST_VARS["num_p_r"];
-   if (!isset($num_p_r))
-      $num_p_r=10;
-   $USER["settings"]["num_p_r"]=$num_p_r;
-   if (!isset($pr_curr_page))
-      $pr_curr_page=$HTTP_SESSION_VARS["pr_curr_page"];
-   if (isset($HTTP_POST_VARS["next"]))
-      $pr_curr_page+=1;
-   if (isset($HTTP_POST_VARS["previous"]))
-      $pr_curr_page-=1;
-   if ($pr_curr_page<1)
-      $pr_curr_page=1;
-   $HTTP_SESSION_VARS["pr_curr_page"]=$pr_curr_page; 
-   session_register("pr_curr_page");
+   $num_p_r=paging($num_p_r,$USER);
+
+   // get current page
+   $pr_curr_page=current_page($pr_curr_page,"pr");
  
+   // prepare the search statement and remember it
+   $pr_query=make_search_SQL($db,"protocols","pr",$fields,$USER,$search);
+
    // loop through all entries for next/previous buttons
    $r=$db->PageExecute($pr_query,$num_p_r,$pr_curr_page);
    while (!($r->EOF) && $r) {
@@ -480,28 +459,9 @@ else {
    echo "<table border=0 width='50%' align='center'>\n<tr>\n";
    if (may_write($db,"pdfs",false,$USER)) 
       echo "<td align='center'><a href='$PHP_SELF?add=Add Protocol$sid'>Add Protocol</a></td>\n";
-   //echo "<td align='center'><a href='$PHP_SELF?search=Show%20All$sid'>Show All</a></td>\n</tr>\n";
-   //echo "<td align='center'><button type='submit' name='search' value='Show All'>";
-   //echo "Show All</button></td></tr>\n";
    echo "</table>\n";
 
-   // next/previous buttons
-   echo "<table border=0 align=center width=100%>\n";
-   echo "<tr><td align='left'>";
-   if ($r && !$r->AtFirstPage())
-      echo "<input type=\"submit\" name=\"previous\" value=\"Previous\"></td>\n";
-   else
-      echo "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp&nbsp;</td>\n";
-   echo "<td align='center'>";
-   echo "<input type='text' name='num_p_r' value='$num_p_r' size=3>";
-   echo "Records per page</td>\n";
-   echo "<td align='right'>";
-   if ($r && !$r->AtLastPage())
-      echo "<input type=\"submit\" name=\"next\" value=\"Next\"></td>\n";
-   else
-      echo "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp&nbsp;</td>\n";
-   echo "</tr>\n";
-   echo "</table>\n";
+   next_previous_buttons($r,true,$num_p_r);
 
    // print header of table
    echo "<table border='1' align='center'>\n";
@@ -644,21 +604,7 @@ else {
    }
 
    echo "</table>\n";
-
-   // next/previous buttons
-   echo "<table border=0 width=100%>\n<tr width=100%>\n<td align='left'>";
-   if ($r && !$r->AtFirstPage())
-      echo "<input type=\"submit\" name=\"previous\" value=\"Previous\"></td>\n";
-   else
-      echo "&nbsp;</td>\n";
-   echo "<td align='right'>";
-   if ($r && !$r->AtLastPage())
-      echo "<input type=\"submit\" name=\"next\" value=\"Next\"></td>\n";
-   else
-      echo "&nbsp;</td>\n";
-   echo "</tr>\n";
-
-   echo "</table>\n";
+   next_previous_buttons($r);
    echo "</form>\n";
 
 }
