@@ -120,7 +120,7 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
       exit();
    }
 
-////////////This is the modification of the type variables
+// Add/modify/delete pulldown menu items 
    if (substr($key, 0, 7) == "addtype") {
       $modarray = explode("_", $key);
       $table=$modarray[1]."_".$modarray[2]."_".$modarray[3];
@@ -283,8 +283,9 @@ else {
    echo "<form name=g_form method='post' id='generalform' enctype='multipart/form-data' action='$PHP_SELF?$sid'>\n";
    echo "<input type='hidden' name='md' value='$md'>\n";
 
-   // Need to put in a singular name
    echo "<table border=0 width='50%' align='center'>\n<tr>\n";
+   
+   // variable md containd edit/view mode setting.  Propagated as post var to remember state.  md can only be changed as a get variable
    $modetext="<a href='$PHP_SELF?tablename=$tablename&md=";
  
    $may_write=may_write($db,$tableid,false,$USER);
@@ -344,14 +345,13 @@ else {
       }
       elseif ($nowfield[datatype]== "textlong")
     	    echo  " <td style='width: 10%'><input type='text' name='$nowfield[name]' value='".$HTTP_POST_VARS[$nowfield[name]]."'size=8></td>\n";
-        // echo "<td style='width: 10%'>&nbsp;</td>\n";
-      elseif ($nowfield[datatype]== "pulldown") {
+      elseif ($nowfield["datatype"]== "pulldown") {
          echo "<td style='width: 10%'>";
          if ($USER["permissions"] & $LAYOUT)  {
             echo "<a href='$PHP_SELF?tablename=$tablename&edit_type=$nowfield[ass_t]&<?=SID?>";
             echo "'>Edit $nowfield[label]</a><br>\n";
          }	 		 			
-         $r=$db->CacheExecute(2,"SELECT $nowfield[name] FROM $real_tablename WHERE id IN ($list)");
+         $r=$db->Execute("SELECT $nowfield[name] FROM $real_tablename WHERE id IN ($list)");
          $list2=make_SQL_ids($r,false,"$nowfield[name]");
          if ($list2) { 
             $r=$db->Execute("SELECT typeshort,id from $nowfield[ass_t] WHERE id IN ($list2) ORDER by typeshort");
@@ -360,7 +360,23 @@ else {
     	    echo "$text</td>\n";
          }  
       }
-      elseif ($nowfield[datatype] == "file")
+      elseif ($nowfield["datatype"]== "table") {
+         echo "<td style='width: 10%'>";
+         if ($nowfield["ass_local_key"])
+            $text="&nbsp;"; 
+         else {
+            $r=$db->Execute("SELECT $nowfield[name] FROM $real_tablename WHERE id IN ($list)");
+            $list2=make_SQL_ids($r,false,"$nowfield[name]");
+            if ($list2) {
+               $r=$db->Execute("SELECT $nowfield[ass_column_name],id FROM $nowfield[ass_table_name] WHERE id IN ($list2)");
+               $text=$r->GetMenu2($nowfield["name"],$HTTP_POST_VARS[$nowfield[name]],true,false,0,"style='width: 80%' $jscript");
+            }
+            else
+               $text="&nbsp;";
+         }
+         echo "$text</td>\n";
+      }
+      elseif ($nowfield["datatype"] == "file")
          echo "<td style='width: 10%'>&nbsp;</td>";
       elseif ($nowfield[datatype] == "table")
          echo "<td style='width: 10%'>&nbsp;</td>";
