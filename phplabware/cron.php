@@ -12,6 +12,10 @@
   *  option) any later version.                                              *
   \**************************************************************************/                                                                             
 
+
+// This might take a while:
+ini_set("max_execution_time","0");
+
 include ("includes/defines_inc.php");
 include ("includes/functions_inc.php");
 include ("includes/init_inc.php");
@@ -55,6 +59,13 @@ if (! ($host=="localhost" ||$host=="127.0.0.1") ) {
    exit ();
 }
 
+$gs=$system_settings["gs"];
+if (!@is_readable($gs))
+   echo "Could not read ghostscipt binary (gs) at '$gs'.<br>";
+   
+echo "gs: $gs.<br>";
+
+   
 // find unindexed files with mime types we can work with
 $rfiles=$db->Execute("SELECT id,filename,tablesfk,ftableid,mime,ftablecolumnid FROM files WHERE indexed IS NULL AND (mime LIKE '%text%' OR mime LIKE '%pdf%')");
 
@@ -81,17 +92,13 @@ while ($rfiles && !($rfiles->EOF)) {
             }
          }
          // for pdf files we use ghostscript.  Part of this code was taken from docmgr
-         elseif (strstr($rfiles->fields[mime],"pdf")) {
+         elseif (strstr($rfiles->fields[mime],"pdf") && $gs) {
             //first we have to figure out how many pages
             //are in the file.  this is a rough method.
             //we have gs kick up an error after it opens
             //the file and sees how many pages there are
 
             $filepath=file_path($db,$rfiles->fields[id]);
-            $gs=$system_settings[gs];
-            if (!@is_readable($gs))
-               echo "Could not read ghostscipt binary (gs) at '$gs'.<br>";
-               // we don't need to quit since the rest will simply fail
             $numpages = `$gs -dNODISPLAY "$filepath" -c quit`;
             $pos1 = strpos($numpages,"through");
             $numpages = substr($numpages,$pos1);
