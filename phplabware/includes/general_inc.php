@@ -361,8 +361,10 @@ function display_add($db,$tableinfo,$Allfields,$id,$namein,$system_settings) {
       // see if display_record is set
       if ( (($nowfield['display_record']=="Y") || ($nowfield['display_table']=='Y')) ) {
          // To persist between multiple invocation, grab POST vars 
-         if ($nowfield['modifiable']=='Y' && isset($HTTP_POST_VARS[$nowfield['name']]) && $HTTP_POST_VARS[$nowfield['name']] && isset($HTTP_POST_VARS['submit']))
+         if ($nowfield['modifiable']=='Y' && isset($HTTP_POST_VARS[$nowfield['name']]) && $HTTP_POST_VARS[$nowfield['name']] && isset($HTTP_POST_VARS['submit'])) {
             $nowfield['values']=$HTTP_POST_VARS[$nowfield['name']];
+            $nowfield['text']=$HTTP_POST_VARS[$nowfield['name']];
+         }
          if ($nowfield['modifiable']=='N' && $nowfield['datatype']!='sequence') {
             echo "<input type='hidden' name='$nowfield[name]' value='$nowfield[values]'>\n";
             if ($nowfield['text'] && $nowfield['text']!="" && $nowfield['text']!=" ") {
@@ -612,11 +614,11 @@ function getvalues($db,$tableinfo,$fields,$qfield=false,$field=false) {
 ////
 // !Checks input data to addition
 // returns false if something can not be fixed     
-function check_g_data ($db,&$field_values, $DB_DESNAME,$modify=false) {
+function check_g_data ($db,&$field_values,$tableinfo,$modify=false) {
    global $max_menu_length;
 
    // make sure all the required fields are there 
-   $rs = $db->Execute("SELECT columnname,datatype FROM $DB_DESNAME where required='Y' and (datatype != 'file')");
+   $rs = $db->Execute("SELECT columnname,datatype FROM {$tableinfo->desname} where required='Y' and (datatype != 'file')");
    while (!$rs->EOF) {
       $fieldA=$rs->fields[0];
       if (!$field_values["$fieldA"]) {
@@ -627,7 +629,7 @@ function check_g_data ($db,&$field_values, $DB_DESNAME,$modify=false) {
    }
 
    // make sure ints and floats are correct, try to set the UNIX date
-   $rs = $db->Execute("SELECT columnname,datatype,associated_table,associated_column FROM $DB_DESNAME WHERE datatype IN ('int','float','table','date','sequence')");
+   $rs = $db->Execute("SELECT columnname,datatype,label,associated_table,associated_column FROM {$tableinfo->desname} WHERE datatype IN ('int','float','table','date','sequence')");
    while ($rs && !$rs->EOF) {
       $fieldA=$rs->fields[0];
       if (isset($field_values["$fieldA"]) && (strlen($field_values[$fieldA]) >0)) {
@@ -646,8 +648,22 @@ function check_g_data ($db,&$field_values, $DB_DESNAME,$modify=false) {
          elseif ($rs->fields[1]=='sequence') {
             $field_values["$fieldA"]=(int)$field_values["$fieldA"];
 	    if ($field_values["$fieldA"]<1)
-	       $field_values["$fieldA"]=0;
+	       unset($field_values["$fieldA"]);
+            // check if this number was given out before:
+            if (get_cell($db,$tableinfo->realname,$rs->fields[0],$rs->fields[0],$field_values["$fieldA"])) {
+               $rmax=$db->Execute("SELECT max({$rs->fields[0]}) FROM {$tableinfo->realname}");
+               if ($rmax->fields[0])
+                  $nextmax=$rmax->fields[0]+1;
+               echo "<h3 color='red' align='center'>The number <i>{$field_values[$fieldA]}</i> has already been used in field <i>{$rs->fields[2]}</i>. ";
+               if ($nextmax) {
+                  echo "Try <i>$nextmax</i> instead.";
+                  $field_values[$fieldA]=$nextmax;
+               }
+               echo "</h3>\n";
+	       return false;
+            }
          }   
+
       }
       $rs->MoveNext();
    }
