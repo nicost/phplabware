@@ -325,7 +325,7 @@ function add_columnecg($db,$tablename2,$colname2,$label,$datatype,$Rdis,$Tdis,$r
       elseif ($datatype=="file") {
          // this table links words found in files to specific records
          $tablestr=$real_tablename."_wi"."_$fieldid";
-         $rs=$db->Execute("CREATE TABLE $tablestr (wordid int, fileid int, pagenr int, recordid int)");
+         $rs=$db->Execute("CREATE TABLE $tablestr (wordid int, fileid int, pagenr int, recordid int,UNIQUE (wordid,fileid,pagenr,recordid))");
          $db->Execute("CREATE INDEX $tablestr"."_wi ON $tablestr (wordid)");
          $db->Execute("CREATE INDEX $tablestr"."_fi ON $tablestr (fileid)");
          $db->Execute("CREATE INDEX $tablestr"."_ri ON $tablestr (recordid)");
