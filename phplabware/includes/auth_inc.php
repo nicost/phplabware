@@ -1,12 +1,12 @@
 <?php
 
   // auth_inc.php - Takes care of authorization.  
-  // auth_inc.php - author: Nico Stuurman  
+  // auth_inc.php - author: Nico Stuurman <nicost@sourceforge.net> 
   /***************************************************************************
+  * Copyright (c) 2001 by Nico Stuurman                                      *
+  * ------------------------------------------------------------------------ *
+  *  Part of phplabware, a web-driven groupware suite for research labs      *
   *                                                                          *
-  * Author: Nico Stuurman                                                    *
-  * email: nicos@itsa.ucsf.edu                                               *
-  * Copyright (c) 2000, 2001 by Nico Stuurman                                *
   * ------------------------------------------------------------------------ *
   *  This program is free software; you can redistribute it and/or modify it *
   *  under the terms of the GNU General Public License as published by the   *
