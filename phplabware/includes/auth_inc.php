@@ -110,10 +110,10 @@ function randomImage($imagedir) {
 ////
 // !presents the login screen when authenticating witth sessions
 function loginscreen ($message="<h3>Login to PhpLabWare</h3>") {
-   global $HTTP_SERVER_VARS, $safe_login, $secure_server;
+   global $HTTP_SERVER_VARS, $settings;
 
    $PHP_SELF=$HTTP_SERVER_VARS["PHP_SELF"];
-   if ($safe_login && $secure_server) {
+   if ($settings["secure_server"]) {
       $server= getenv ("HTTP_HOST");
       $addres="https://$server$PHP_SELF";
    }
@@ -134,7 +134,7 @@ function loginscreen ($message="<h3>Login to PhpLabWare</h3>") {
    echo "<tr><td>Password:</td>\n";
    echo "<td><input type='password' name='pwd' size=10 value=''></td></tr>\n";
    echo "<tr><td colspan=2 align='center'>";
-   if ($secure_server) {
+   if ($settings["secure_server"]) {
       echo "<input type='checkbox' name='ssl'>Keep a secure connection";
    }
    echo "</td></tr>\n";
