@@ -83,22 +83,22 @@ function searchfield ($db,$tableinfo,$nowfield,$HTTP_POST_VARS,$jscript) {
       echo "<td style='width: 10%'>&nbsp;</td>\n";
    // datatype of column ownerid is text (historical oversight...)
    elseif ($nowfield['name']=='ownerid') {
-       if ($list) {
-          $rowners=$db->Execute("SELECT ownerid FROM $tableinfo->realname WHERE $list");
-         while ($rowners && !$rowners->EOF) {
-             $ownerids[]=$rowners->fields[0];
-             $rowners->MoveNext();
-          }
-   if ($ownerids)
-             $ownerlist=implode(',',$ownerids);
-       }
-       if ($ownerlist) {   
-          $rowners2=$db->Execute("SELECT lastname,id FROM users WHERE id IN ($ownerlist)");
-           $text=$rowners2->GetMenu2("$nowfield[name]",${$nowfield[name]},true,false,0,"style='width: 80%' $jscript");
-          echo "<td style='width:10%'>$text</td>\n";
-       }   
-       else
-          echo "<td style='width:10%'>test</td>\n";
+       //if ($list) {
+      $rowners=$db->Execute("SELECT ownerid FROM $tableinfo->realname WHERE $list");
+      while ($rowners && !$rowners->EOF) {
+         $ownerids[]=$rowners->fields[0];
+         $rowners->MoveNext();
+      }
+      if ($ownerids)
+          $ownerlist=implode(',',$ownerids);
+     // }
+      if ($ownerlist) {   
+         $rowners2=$db->Execute("SELECT lastname,id FROM users WHERE id IN ($ownerlist)");
+          $text=$rowners2->GetMenu2("$nowfield[name]",${$nowfield[name]},true,false,0,"style='width: 80%' $jscript");
+         echo "<td style='width:10%'>$text</td>\n";
+      }   
+      else
+         echo "<td style='width:10%'>&nbsp;</td>\n";
     }
     elseif ($nowfield['datatype']=='int' || $nowfield['datatype']=='float' || $nowfield['datatype']=='sequence' || $nowfield['datatype']=='date') {
   	    echo  " <td style='width: 10%'><input type='text' name='$nowfield[name]' value='".${$nowfield[name]}."'size=8 align='center'></td>\n";
