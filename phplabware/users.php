@@ -60,11 +60,9 @@ function check_input () {
 // !Generates a comma-separated list of tables holding data
 // tablenames are read from tableoftables
 function tablestring ($db) {
-   $r=$db->Execute("SELECT id,tablename FROM tableoftables WHERE tablename <> 'settings' AND permission <> 'System' ORDER BY id");
+   $r=$db->Execute("SELECT id,real_tablename FROM tableoftables WHERE tablename <> 'settings' AND permission <> 'System' ORDER BY id");
    while (!$r->EOF) {
-      $string.=$r->fields["tablename"];
-      if ($r->fields["id"] >=10000)
-         $string.="_".$r->fields["id"];
+      $string.=$r->fields['real_tablename'];
       $string.=",";
       $r->Movenext();
    }
