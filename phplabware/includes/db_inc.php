@@ -592,4 +592,39 @@ function current_page($curr_page, $sname) {
    return ${$varname};
 }
 
+////
+// !Assembles the search SQL statement and remembers it in HTTP_SESSION_VARS
+function make_search_SQL($db,$table,$tableshort,$fields,$USER,$search) {
+   global $HTTP_POST_VARS, $HTTP_SESSION_VARS;
+
+   $fieldvarsname=$tableshort."_fieldvars";
+   global ${$fieldvarsname};
+   ${$fieldvarsname}=$HTTP_POST_VARS;
+   $queryname=$tableshort."_query";
+   $whereclause=may_read_SQL ($db,$table,$USER);
+   if ($search=="Search")
+      ${$queryname}=search($table,$fields,$HTTP_POST_VARS," id IN ($whereclause) ORDER BY title");
+   elseif (session_is_registered ($queryname) && isset($HTTP_SESSION_VARS[$queryname])) {
+      ${$queryname}=$HTTP_SESSION_VARS[$queryname];
+      ${$fieldvarsname}=$HTTP_SESSION_VARS[$fieldvarsname];
+   }
+   else
+      ${$queryname} = "SELECT $fields FROM $table WHERE id IN ($whereclause) ORDER BY date DESC";
+   $HTTP_SESSION_VARS[$queryname]=${$queryname};   
+   session_register($queryname);
+   $HTTP_SESSION_VARS[$fieldvarsname]=${$fieldvarsname};   
+   session_register($fieldvarsname);
+
+   // globalize HTTP_POST_VARS 
+   $column=strtok($fields,",");
+   while ($column) {
+      global ${$column};
+      ${$column}=$HTTP_POST_VARS[$column];
+      $column=strtok(",");
+   }
+   // extract variables from session
+   globalize_vars ($fields, ${$fieldvarsname});
+   return ${$queryname};
+}
+
 ?>
