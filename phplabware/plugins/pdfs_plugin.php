@@ -96,7 +96,7 @@ function plugin_check_data($db,&$field_values,$table_desc,$modify=false)
          $HTTP_POST_FILES['file']['name'][0]=$field_values['pmid'].'.pdf';
       }
       // get data from pubmed and parse
-      $pubmedinfo=@file("http://www.ncbi.nlm.nih.gov/entrez/utils/pmfetch.fcgi?db=PubMed&id=$pmid&report=abstract&report=abstract&mode=text");
+      $pubmedinfo=@file("http://www.ncbi.nlm.nih.gov/entrez/utils/pmfetch.fcgi?db=PubMed&id=$pmid&report=abstract&mode=text");
       if ($pubmedinfo) {
          // lines appear to be broken randomly, but parts are separated by empty lines
          // get them into array $line
@@ -355,6 +355,7 @@ Location: ') {
          case 'www.genetics.org':
          case 'hmg.oupjournals.org':
          case 'www.bloodjournal.org':
+         case 'www.annalsnyas.org':
              $website=read_web_page($host,$getstring,$header,$body,true,5); 
              $link=get_location($header);
              $link=str_replace('content/full','reprint',$link);
