@@ -24,6 +24,11 @@ if (!file_exists("includes/config_inc.php")) {
 include ('includes/config_inc.php');
 include ("includes/defines_inc.php");
 include ('adodb/adodb.inc.php');
+$adodb_version=(float)substr($ADODB_vers,1);
+if ($adodb_version<1.71) {
+   echo "The adodb version you are using ($adodb_version) is too old.  Please download version 1.71 or greater from <a href='http://php.weblogs.com'>php.weblogs.com</a>.";
+   exit();
+}
 
 $post_vars="access,action,authmethod,baseURL,homeURL,checkpwd,dateformat,filedir,pwd,protocols_file,pdfs_file,secure_server_new,submit,tmpdir,word2html";
 globalize_vars($post_vars, $HTTP_POST_VARS);
