@@ -199,6 +199,33 @@ function add_pd_form ($db,$fields,$field_values,$id,$USER,$PHP_SELF,$system_sett
 }
 
 ////
+// ! outputs a reference plus link to a file
+function report_pdf_addition ($db,$id,$system_settings,$PHP_SELF) {
+   $r=$db->Execute("SELECT ownerid,title,type1,year,volume,fpage,lpage,author FROM pdfs WHERE id=$id");
+   $fid=fopen($system_settings["pdfs_file"],w);
+   if ($fid) {
+      $link= $system_settings["baseURL"].getenv("SCRIPT_NAME")."?showid=$id";
+      $journal=get_cell($db,"pd_type1","type","id",$r->fields["type1"]);
+      $query="SELECT firstname,lastname,email FROM users WHERE id=".$r->fields["ownerid"];
+      $rr=$db->Execute($query);
+      if ($rr->fields["email"]) {
+         $submitter="<a href='mailto:".$rr->fields["email"]."'>";
+         $submitter.= $rr->fields["firstname"]." ".$rr->fields["lastname"]."</a> ";
+      }
+      else {
+         $submitter=$rr->fields["firstname"]." ";
+         $submitter.=$rr->fields["lastname"] ." ";
+      }
+      $text="<a href='$link'><b>".$r->fields["title"];
+      $text.="</b></a> $journal (".$r->fields["year"]."), <b>".$r->fields["volume"];
+      $text.="</b>:".$r->fields["fpage"]."-".$r->fields["lpage"];
+      $text.= ". ".$r->fields["author"]." Submitted by $submitter.";
+      fwrite($fid,$text);
+      fclose($fid);
+   }
+}
+
+////
 // !Shows a page with nice information on the pdf
 function show_pd ($db,$fields,$id,$USER,$system_settings) {
    global $PHP_SELF;
@@ -396,6 +423,8 @@ else {
       }
       else {  
 	 $fileid=upload_files($db,"pdfs",$id,$USER,$system_settings);
+	 if ($system_settings["pdfs_file"])
+	    report_pdf_addition ($db,$id,$system_settings,$PHP_SELF);
          // to not interfere with search form 
          unset ($HTTP_POST_VARS);
 	 // or we won't see the new record
