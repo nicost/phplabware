@@ -326,6 +326,8 @@ else {
    if ($tableinfo->name) $sid.="&tablename=$tableinfo->name";
 
    // print form;
+   $headers = getallheaders();
+
    $dbstring=$PHP_SELF."?"."tablename=$tableinfo->name&";
    echo "<form name=g_form method='post' id='generalform' enctype='multipart/form-data' action='$PHP_SELF?$sid'>\n";
    echo "<input type='hidden' name='md' value='$md'>\n";
