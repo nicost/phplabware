@@ -68,16 +68,13 @@ if ($jsnewwindow && $showid && $tablename) {
 if ($HTTP_GET_VARS["md"])
    $md=$HTTP_GET_VARS["md"];
 
-// check if sortup or sortdown arrow has been pressed
+// check if sortup or sortdown arrow was been pressed
 foreach($HTTP_POST_VARS as $key =>$value) {
    list($testkey,$testvalue)=explode("_",$key);
-   // images add _x and _y, remove these here
    if ($testkey=="sortup"){
-//      $testvalue=substr($testvalue,0,-2);
       $sortup=$testvalue;
    }
    if ($testkey=="sortdown") {
-//      $testvalue=substr($testvalue,0,-2);
       $sortdown=$testvalue;
    }
 } 
