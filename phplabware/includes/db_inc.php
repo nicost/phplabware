@@ -233,9 +233,10 @@ function add ($db,$table,$fields,$fieldvalues,$USER,$tableid) {
                   $fieldvalues['ownerid']=$USER['id'];
             }
             // set default access rights, 
-            elseif (in_array($column, array('gr','gw','er','ew')))
+            elseif (in_array($column, array('gr','gw','er','ew'))) {
                $fieldvalues[$column]=get_access($fieldvalues,$column);
-
+            }
+ 
             // set timestamp
             if ($column=='date') {
                $date=(time());
@@ -308,8 +309,6 @@ function modify ($db,$table,$fields,$fieldvalues,$id,$USER,$tableid) {
    while ($column) {
       if (! ($column=='id' || $column=='date' || $column=='ownerid' || is_array($fieldvalues[$column]) ) ) {
          $test=true;
-         //if ($column=="access")
-         //   $fieldvalues["access"]=get_access($fieldvalues);
          if (in_array($column, array('gr','gw','er','ew')))
             $fieldvalues[$column]=get_access($fieldvalues,$column);
          if ($column=='lastmodby')
@@ -743,8 +742,10 @@ function get_access ($fieldvalues,$column) {
    global $system_settings;
    $gr=0; $gw=0; $er=0; $ew=0;
 
+   ${$column}=$fieldvalues[$column];
+
    if (!$fieldvalues) {
-      $system_settings["access"];
+      $access=$system_settings['access'];
       // translate the $access string into our new format
       if ($access{3}=='r')
          $gr=1;
