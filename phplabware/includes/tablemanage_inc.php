@@ -286,8 +286,8 @@ function add_columnecg($db,$tablename2,$colname2,$label,$datatype,$Rdis,$Tdis,$r
    $real_tablename=$r->fields["real_tablename"];
    $desc=$r->fields["table_desc_name"];
    $tablelabel=$r->fields["label"];
-   $search=array("' '","','","';'","'\"'");
-   $replace=array("_","_","","");
+   $search=array("' '","','","';'","'\"'","'_'","'-'");
+   $replace=array("");
    $colname=preg_replace ($search,$replace, $colname2);
 
    $fieldstring="id,columnname,label,sortkey,display_table,display_record,required,modifiable,type,datatype,associated_table,associated_column"; 
