@@ -390,8 +390,6 @@ function may_read_SQL_subselect ($db,$table,$tableid,$USER,$clause=false) {
          $query .= "WHERE $clause";
    }
    else {
-      //$usergroup=get_cell($db,"users","groupid","id",$USER["id"]);
-      $usergroup=$USER["usergroup"];
       $grouplist=$USER["group_list"];
       $userid=$USER["id"];
       $query .= " WHERE ";
@@ -400,8 +398,7 @@ function may_read_SQL_subselect ($db,$table,$tableid,$USER,$clause=false) {
       // owner
       $query .= "( (ownerid=$userid AND SUBSTRING (access FROM 1 FOR 1)='r') ";
       // group
-      $query .= "OR (CAST( (SELECT groupid FROM users WHERE users.id=$table.ownerid) AS int) IN($grouplist) AND SUBSTRING (access FROM 4 FOR 1)='r') ";
-      //$query .= "OR ($usergroup=CAST( (SELECT groupid FROM users WHERE users.id=$table.ownerid) AS int) AND SUBSTRING (access FROM 4 FOR 1)='r') ";
+      $query .= "OR (CAST( (SELECT groupid FROM users WHERE users.id=$table.ownerid) AS int) IN ($grouplist) AND SUBSTRING (access FROM 4 FOR 1)='r') ";
       // world
       $query .= "OR (SUBSTRING (access FROM 7 FOR 1)='r')";
       // and also
@@ -433,11 +430,14 @@ function make_SQL_ids ($r,$ids,$field="id") {
 
 ////
 // !Returns an array with ids of records the user may see in SQL format
+// Works with MySQL but not with early postgres 7 versions (current ones should
+// work
 function may_read_SQL_JOIN ($db,$table,$USER) {
    include ('includes/defines_inc.php');
    if (!($USER["permissions"] & $SUPER)) {
       $query="SELECT id FROM $table ";
-      $usergroup=get_cell($db,"users","groupid","id",$USER["id"]);
+      $usergroup=$USER["groupid"];
+      $group_list=$USER["group_list"];
       $userid=$USER["id"];
       $query .= " WHERE ";
       // owner
@@ -449,7 +449,7 @@ function may_read_SQL_JOIN ($db,$table,$USER) {
          $ids=make_SQL_ids($r,$ids);
       }
       // group
-      $query="SELECT $table.id FROM $table LEFT JOIN users ON $table.ownerid=users.id WHERE users.groupid=$usergroup";
+      $query="SELECT $table.id FROM $table LEFT JOIN users ON $table.ownerid=users.id WHERE users.groupid IN ($group_list) AND (SUBSTRING($table.access FROM 4 FOR 1)='r')";
       $r=$db->Execute($query);
    }
    else {     // superuser
@@ -501,14 +501,10 @@ function may_write ($db,$tableid,$id,$USER) {
       return true;
    if ( ($USER["permissions"] & $WRITE) && (!$id))
       return true;
-   $usergroup=get_cell($db,"users","groupid","id",$USER["id"]);
    $ownerid=get_cell($db,$table,"ownerid","id",$id);
    $ownergroup=get_cell($db,"users","groupid","id",$ownerid);
-  // $r=$db->Execute("SELECT groupid FROM users LEFT JOIN $table ON 
-  //                  users.id=$table.ownerid WHERE $table.id=$id");
-   //$ownergroup=$r->fields["groupid"];
    if ($USER["permissions"] & $ADMIN) {
-      if ($usergroup==$ownergroup)
+      if ($USER["groupid"]==$ownergroup)
          return true;
    }
    if ( ($USER["permissions"] & $WRITE) && $id) {
@@ -521,7 +517,7 @@ function may_write ($db,$tableid,$id,$USER) {
       // 'group' write access
       if ($r=$db->Execute("SELECT * FROM $table WHERE id=$id AND
             SUBSTRING(access FROM 5 FOR 1)='w'")) 
-         if (!$r->EOF && ($usergroup==$ownergroup) )
+         if (!$r->EOF && in_array($ownergroup, $USER["group_array"]))
             return true;
       // 'world' write access
       if ($r=$db->Execute("SELECT * FROM $table WHERE id=$id AND
@@ -729,6 +725,23 @@ function make_search_SQL($db,$table,$tableshort,$tableid,$fields,$USER,$search,$
       globalize_vars ($fields, ${$fieldvarsname});
    }
    return ${$queryname};
+}
+
+
+////
+// !Checks whether a user has access to a given table
+//
+function may_see_table($db,$USER,$tableid) {
+   include ('includes/defines_inc.php');
+   // Sysadmin may see it all
+   if ($USER["permissions"] & $SUPER)
+      return true;
+   $group_list=$USER["group_list"];
+   $r=$db->Execute ("SELECT tableid FROM groupxtable_display WHERE groupid IN ($group_list) AND tableid='$tableid'");
+   if ($r && !$r->EOF)
+      return true;
+   else
+      return false;
 }
 
 ?>
