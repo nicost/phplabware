@@ -12,7 +12,7 @@
   *  option) any later version.                                              *
   \**************************************************************************/                                                                             
 
-$version_code=0.0041;
+$version_code=0.1;
 $localdir=exec("pwd");
 include ('includes/functions_inc.php');
 if (!file_exists("includes/config_inc.php")) {
@@ -71,7 +71,8 @@ if (! ($version || $pwd) ) {
 <?php
    echo "<h3>After submitting the following form the phplabware database will ";
    echo "be created and you will be asked to login.<br>";
-   echo "Login as <i>sysadmin</i> using the password you enter here.</h3>\n";
+   echo "Login as <i>sysadmin</i> using the password you enter here.<br>\n";
+   echo "After logging in, examine the system settings, and press the submit button.</h3>\n";
    echo "<table border=0>\n";
    echo "<tr>\n";
    echo "<td><h3>Please provide a password for <i>sysadmin</i>:</td>\n";
