@@ -24,12 +24,13 @@ $title = "Admin Users";
 require("include.php");
 
 // register variables
-$get_vars = "modify,id,audit_add,user_add,userdel";
-$post_vars = "email,id,firstname,homedir,lastname,login,modify,outdir,perms,pwd,pwdcheck,status,user_group,";
-$post_vars .= "create,trust_array,audit_add,";
+$get_vars = "modify,id,";
+$post_vars = "email,id,firstname,lastname,login,modify,perms,pwd,pwdcheck,user_group,";
+$post_vars .= "create,user_add,";
 
 globalize_vars ($get_vars, "HTTP_GET_VARS");
 globalize_vars ($post_vars, "HTTP_POST_VARS");
+
 
 ////
 // !check the form input data for validity
@@ -56,13 +57,17 @@ function check_input () {
    return false;
 }
 
+
 ////
-// !Deletes users after seom checks
+// !Deletes users after some checks
 function delete_user ($db, $id) {
    global $USER;
 
    include ('includes/defines_inc.php');
    $original_permissions=get_cell ($db,"users","permissions","id",$id);
+   $original_login=get_cell($db,"users","login","id",$id);
+   if (!$original_login)
+      return true;
 
    // check whether this is illegitimate
    if (! (($USER["permissions"] & $SUPER) || 
@@ -72,13 +77,32 @@ function delete_user ($db, $id) {
       echo "You are not allowed to do this. <br>";
       return false;
    }
-   // checks/cleanup should be build in here eventually
-
+   // cleanup records owned by this user
+   $db->BeginTrans();
+   $test=true;
+   if ($tables) {
+      $table=strtok($tables,",");
+      while ($table) {
+         $query="DELETE FROM $table WHERE userid='$id'";
+         if (!$db->Execute($query))
+            $test=false;
+         $table=strtok (",");
+       }
+   }
    $query="DELETE FROM users WHERE id='$id'";
-   if ($db->Execute($query) )
-      echo "Deleted user<br>";
-
+   if (!$db->Execute($query) )
+      $test=false;
+   if ($test) {
+      if ($db->CommitTrans()) {
+         echo "User <i>$original_login</i> was succesfully deleted.";
+         return true;
+      }
+   }
+   $db->RollbackTrans();
+   echo "Failed to remove user <i>$original_login</i>.";
+   return true;
 }
+
 
 ////
 // !Interacts with the SQL database to create/modify users
@@ -121,9 +145,9 @@ function modify ($db, $type) {
       }
       $query .= " WHERE id='$id';";
       if ($db->Execute($query))
-         echo "User <b>$firstname $lastname</b> modified.<br>\n";
+         echo "User <i>$firstname $lastname</i> modified.<br>\n";
       else
-         echo "Could not modify user: <b>$firstname $lastname</b>.<br>\n";
+         echo "Could not modify user: <i>$firstname $lastname</i>.<br>\n";
    }
    elseif ($type =="create") {
          $id=$db->GenID("users_id_seq");
@@ -132,9 +156,9 @@ function modify ($db, $type) {
          $query .= "VALUES('$id','$login','$pwd','$user_group','$firstname','$lastname', '$permissions', '$email')"; 
 
          if ($db->Execute($query))
-            echo "User <b>$firstname $lastname</b> added.<br>\n";
+            echo "User <i>$firstname $lastname</i> added.<br>\n";
          else
-            echo "Failed to add user: <b>$firstname $lastname</b>.<br>\n";
+            echo "Failed to add user: <i>$firstname $lastname</i>.<br>\n";
    }
    else 
       echo "Strange error!< Please report to your system administrator<br>\n";
@@ -143,8 +167,7 @@ function modify ($db, $type) {
 ////
 // !can be called to create (type=create) or modify (type=modify) other users or oneselves (type=me) 
 function show_user_form ($type) {
-   global $userfields, $HTTP_SERVER_VARS, $perms;
-   global $USER, $impose_folder, $infolder, $outfolder, $db;
+   global $userfields, $HTTP_SERVER_VARS, $perms, $USER, $db;
 
    include ('includes/defines_inc.php');
  
@@ -168,15 +191,13 @@ function show_user_form ($type) {
          && ($USER["permissions"] > $status) ) || 
             ($USER["id"] == $id) ) ) {
 
-      echo "groupid=$groupid<br>";
-
-      echo "You are not allowed to do this. <br>";
+      echo "<h3 align='center'>You are not allowed to do this. </h3>";
       return false;
    }
 
    echo "<form method='post' action='$PHP_SELF'>\n";
    echo "<input type='hidden' name='id' value='$id'>\n";
-   echo "<table>\n";
+   echo "<table align='center'>\n";
 
    echo "<tr><td>First name:</td>\n";
    if ($type=="create" || $type=="modify")
@@ -273,7 +294,24 @@ allowonly($ADMIN,$USER["permissions"]);
 printheader($title);
 navbar($USER["permissions"]);
 
-if ($user_add =="true") {
+// Check whether modify or delete button has been chosen
+$del=false;
+$mod=false;
+if ($HTTP_POST_VARS) {
+   //determine wether or not the remove-command is given and act on it
+   while((list($key, $val) = each($HTTP_POST_VARS))) {
+      if (substr($key, 0, 3) == "del") {
+         $delarray = explode("_", $key);
+         $del = true; 
+      }
+      if (substr($key, 0, 3) == "mop") {
+         $modarray = explode ("_", $key);
+         $mod = true;
+      } 
+   }
+} 
+
+if ($user_add =="Add User") {
    show_user_form ("create");
 }
 elseif ( ($create == "Create User") && get_cell($db,"users","login","login",
@@ -291,9 +329,9 @@ elseif ( ($modify == "Modify User") && !(check_input() )) {
    show_user_form ("modify");
 }   
 
-elseif ($modify == "true") {
+elseif ($mod==true) {
    // pull existing data from database
-   $query = "SELECT $userfields FROM users WHERE id=$id;";
+   $query = "SELECT $userfields FROM users WHERE id=$modarray[1];";
    $r = $db->Execute($query);
    // and translate into global variables
    $fieldname = strtok ($userfields,",");
@@ -306,58 +344,34 @@ elseif ($modify == "true") {
 }
 
 else {
+   echo "<table align='center' border='1'><caption><h5>";
    if ($modify == "Modify User") {
       modify ($db, "modify");
    }
    if ($create == "Create User") {
       modify ($db, "create");
    }
-   elseif ($audit_add == 'Add guest') {
-      $auditor = last_array_value ($trust_array);
-      // first check wether user is indeed outside of group:
-      if ($auditor) {
-         $query = "SELECT groupid FROM users WHERE id='$auditor';";
-         $result = do_database_query ($query);
-         $r_array = db_fetch_array ($result,0);
-         $groupid = $r_array["groupid"];
-      
-         if ($S_GROUPID <> $groupid) {
-            $query = "INSERT INTO auditors VALUES ($auditor, $S_GROUPID);";
-            do_database_query ($query);
-         }
+   if ($del==true) {
+      if (!delete_user($db,$delarray[1])) {
+         echo "</table>\n";
+         printfooter();
+         exit();
       }
    }
-   elseif ($HTTP_POST_VARS) {
-      //determine wether or not the remove-command is given and act on it
-      while((list($key, $val) = each($HTTP_POST_VARS))) {
-         if (substr($key, 0, 3) == "del") {
-            $delarray = explode("_", $key);
-            auditdel($delarray[1], $S_GROUPID);
-            $del = true;
-         }
-      }
-   }     
- 
-   if ($userdel=="true") {
-      delete_user($db,$id);
-   }
-
+   echo "</h5></caption>\n";
    echo "<form name='form' method='post' action='$PHP_SELF'>\n";
 
    // set database query
    $db_query = "SELECT * FROM users";
 
    // if user is not sysadmin then only list users of admin's group
-   if ($S_GROUPID != 0):
-      $db_query .= " WHERE groupid='$S_GROUPID'";
-   endif;
-
+   if (! ($USER["permissions"] & $SUPER))
+      $db_query .= " WHERE groupid='" .$USER[groupid]."'";
 
    // extend query to order output list on login name
    $db_query .= " ORDER BY login";
 
    // print header of table which will list users
-   echo "<table border='1'><caption><h5>Users</h5></caption>\n";
    echo "<tr>\n";
    echo "<th>Login</th>\n";
    echo "<th>Real Name</th>\n";
@@ -402,65 +416,31 @@ else {
       // don't delete/modify yourself, and, except for sysadmin, 
       // do not let admins fool around with other admins in group
       $id = $r->fields["id"];
-      if ( ($USER["id"] <> $id) &&  ( !($r->fields["permissions"] & $ADMIN) || ($USER["permissions"] & $SUPER)) ) {
-         echo "<td><a href=\"$PHP_SELF?modify=true&id=".$id."\">Modify</a></td>\n";
-         echo "<td><a href=\"$PHP_SELF?userdel=true&id=".$id."\">Delete</a></td>\n";
+      if ( ($USER["id"] <> $id) &&  ( !($r->fields["permissions"] & $ADMIN) 
+                                    || ($USER["permissions"] & $SUPER)) ) {
+         $modstring="<input type=\"submit\" name=\"mop_".$id."\" value=\"Modify\">";
+         $delstring="<input type=\"submit\" name=\"del_".$id."\" value=\"Remove\" ";
+         $delstring.="Onclick=\"if(confirm('Do you really want to delete user: ";
+         $delstring.= $r->fields["firstname"]." ".$r->fields["lastname"]. 
+               ", and all his/her database entries?')){return true;}return false;\">";
+         echo "<td align=\"center\">$modstring</td>\n";
+         echo "<td align=\"center\">$delstring</td>\n";
       }
       else
-         echo "<td>none</td><td>none</td>";
+         echo "<td align='center'>none</td><td align='center'>none</td>";
      
       echo "</tr>\n";
       $r->MoveNext();
    }
 
-   // print end of table
-   echo "</table>";
-
-   // print link to perform adjustements made
-   echo "<p><a href='$PHP_SELF?user_add=true'>Add User</a></p><br>";
-
-   // if there are any, show a list with auditors
-   if ($S_USERID <> $G_SUPER) {
-      $query = "SELECT * FROM USERS WHERE id IN (SELECT id FROM auditors WHERE groupid=$S_GROUPID) 
-             ORDER BY login";
-
-      // get result and number of rows in result
-      $db_result = do_database_query($query);
-      $db_rows = db_numrows($db_result);          
-      if ($db_rows > 0) {
-         // print header of table which will list users
-         echo "<table border='1'><caption><h5>Auditors (outside users who may see your group's images)</h5></caption>\n";
-         echo "<tr>\n";
-         echo "<th>Login</th>\n";
-         echo "<th>Real Name</th>\n";
-         echo "<th>Group</th>\n";
-         echo "<th>Action</th>\n";
-         echo "</tr>\n";
+   echo "<tr border=0><td colspan=9 align='center'>";
+   echo "<INPUT align='center' TYPE='submit' NAME='user_add' VALUE='Add User'></INPUT>\n";
+   echo "</td></tr>\n";
+   echo "</form>\n";
+ 
+  echo "</table>";
 
 
-         // for each row, print result in table cells
-         for ($i=0; $i<$db_rows; $i++) {
-            // set database result per row
-            $db_row_result = db_fetch_array($db_result, $i);
-
-            // print table output per row
-            echo "<tr>\n";
-            echo "<td><b><a href=\"mailto:".$db_row_result["email"]."\">".$db_row_result["login"]."</a></b></td>\n";
-            echo "<td>".$db_row_result["real_name"]."</td>\n";
-            echo "<td>".groupname($db_row_result["groupid"])."</td>\n";
-            $delstring = "<input type=\"submit\" name=\"del_" . $db_row_result["id"] . "\" value=\"Remove\" ";
-            $delstring .= "Onclick=\"if(confirm('Are you sure this persons ability to see images from this group ";
-            $delstring .= "should be revoked?')){return true;}return false;\">";
-            echo "<td align=\"center\">$delstring</td></tr>\n";
-            echo "</tr>\n";
-         }
-         echo "</table>\n";
-      }
-      // and a link to add so-called auditors
-      echo "<p><a href=\"$PHP_SELF?audit_add=true\">Give an outsider the right to see images from this group</a></p>\n";
-
-      echo "</form>\n";
-   }
 }
 printfooter();
 
