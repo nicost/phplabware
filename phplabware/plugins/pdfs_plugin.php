@@ -3,19 +3,25 @@
 // plugin_inc.php - skeleton file for plugin codes
 // plugin_inc.php - author: Nico Stuurman
 
-/* 
-Copyright 2002, Nico Stuurman
-
-This is a skeleton file to code your own plugins.
-To use it, rename this file to something meaningfull,
-add the path and name to this file (relative to the phplabware root)
-in the column 'plugin_code' of 'tableoftables', and code away.  
-And, when you make something nice, please send us a copy!
-
-This program is free software: you can redistribute it and/ormodify it under
-the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version.
-
-*/
+/** 
+ * Plugin functions for  the pdfs table
+ *
+ * @author Nico Stuurman
+ *
+ * Copyright Nico STuurman, 2002
+ *
+ *
+ *
+ * This is a skeleton file to code your own plugins.
+ * To use it, rename this file to something meaningfull,
+ * add the path and name to this file (relative to the phplabware root)
+ * in the column 'plugin_code' of 'tableoftables', and code away.  
+ * And, when you make something nice, please send us a copy!
+ * 
+ * This program is free software: you can redistribute it and/ormodify it under
+ * the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version.
+ *
+ */
 
 
 ////
@@ -161,18 +167,21 @@ function plugin_check_data($db,&$field_values,$table_desc,$modify=false)
 
    // check if there is a file (in database for modify, in _POST_FILES for add)
    if ($modify) {
-      // check in database
-      $file_uploaded=true;
+      // check in database TO BE DONE!!
+      $file_uploaded=false;
    } elseif (isset($HTTP_POST_FILES['tmp_name'][0])) {
          $file_uploaded=true;
-   }
-   if (!$file_uploaded) {
-      // no file uploaded, try to fetch it directly 
-      fetch_pdf($pmid,$journal);
    }
 
    // some stuff goes wrong when this remains on
    set_magic_quotes_runtime(0);
+
+   if (!$file_uploaded) {
+      // no file uploaded, try to fetch it directly 
+echo "Calling fetch_pdf with: $pmid and $journal.<br>";
+      fetch_pdf($pmid,$journal);
+   }
+
    return true;
 }
 
@@ -184,6 +193,52 @@ function plugin_check_data($db,&$field_values,$table_desc,$modify=false)
  */
 function fetch_pdf($pmid,$journal)
 {
+   include_once('./plugins/elink/eutils_elink_class.php');
+   include_once ('./plugins/elink/simple_parser_xml.inc.php');
+
+   if (! (isset($pmid) && isset($journal) )) {
+      return false;
+   }
+
+   $search= new eutils_link($pmid);
+   $search->setMaxResults(5);
+   if ($search->doSearch()) {
+      //print_r($search->parser->content);
+      $link=$search->parser->content['eLinkResult']['LinkSet']['IdUrlList']['IdUrlSet']['ObjUrl']['Url'];
+      echo "<br>link: $link.<br>";
+      if (isset ($link)) {
+         // grep the base of the url and handle all know cases accordingly.
+         // This is where we'll have to write grabbers for each journal
+         preg_match("/^(http:\/\/)?([^\/]+)/i", $link, $matches);
+         $host = $matches[2];
+         $getstring=substr($link,strlen($matches[0]));
+         echo "host: $host, getstring: $getstring.<br>";
+         switch ($host) {
+         case 'www.jcb.org':
+            // jcb gives a page with a redirect on it.  The redirect has the link to the pdf on it, however, once the redirect address is known, we can simply construct  the link to the pdf and grab it.
+            $fp=fsockopen($host,80,$errno,$errstr,5);
+            if ($fp) {
+               $out="GET $getstring HTTP/1.0\r\n";
+               $out.="Host: $host\r\n";
+               $out.="Connection: Close\r\n\r\n";
+               fwrite($fp,$out);
+               while (!feof($fp)) {
+                  $redirect.=fgets($fp,128);
+               }
+               fclose($fp);  
+               // The header has the Location: field in it, that is what we need:
+               $start=strpos($redirect,'Location: ') + 10;
+               $end=strpos($redirect,'Connection');
+               $url=substr($redirect,$start,$end-$start);
+               // et voila, the url to the pdf:
+               $url=str_replace('full','pdf',$url);
+               echo "Url is: $host$url.<br>";
+            }
+            break;
+          }
+      }
+ 
+   }
 
 }
 
@@ -335,7 +390,7 @@ function plugin_getvalues($db,&$allfields)
 // !Extends display_add
 function plugin_display_add($db,$tableid,$nowfield)
 {
-   if ($nowfield[name]=="pmid") {
+   if ($nowfield['name']=='pmid') {
       echo "<br>Find the Pubmed ID for this article at <a target='_BLANK' href='http://www.ncbi.nlm.nih.gov/entrez/query.fcgi?db=PubMed'>PubMed</a>. Enter the Pubmed ID <b>OR</b> enter title, authors, journal, Year, Volume, First page and Last Page.";
    }
 }
