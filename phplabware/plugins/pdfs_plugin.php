@@ -400,7 +400,11 @@ Location: ') {
                  */
                  $pdfgetstring=str_replace('abs','pdf',$pdfgetstring);
                  $start=strpos($pdfgetstring,'DynaPage.taf?file=')+18;
+                 // this is not robust yet:
                  $end=strpos($pdfgetstring,'_');
+                 if (!$end) {
+                    $end=strpos($pdfgetstring,'.html');
+                 }
                  $pdfgetstring=substr($pdfgetstring,$start,$end-$start).'.pdf';
                  if (do_pdf_download($pdfhost,$pdfgetstring,'file')) {
                      return true;
