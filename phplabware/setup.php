@@ -182,7 +182,7 @@ if ($version) {
             if (!isset ($system_settings["tmpdir"]))
                $system_settings["tmpdir"]=session_save_path();
          }
-      if ($tmpdirpsql) 
+      if ($tmpdirpsql) {
          if (is_writeable($tmpdirpsql))
             $system_settings["tmpdirpsql"]=$tmpdirpsql;
 	 else {
@@ -190,6 +190,9 @@ if ($version) {
             if (!isset ($system_settings["tmpdirpsql"]))
                $system_settings["tmpdirpsql"]="/tmp";
          }
+      }
+ 
+      // wvHtml
       if (isset($word2html) && @is_readable($word2html)) {
          $system_settings["word2html"]=$word2html;
          // attempt to discover version of wvWare used
@@ -210,6 +213,17 @@ if ($version) {
 	 if (isset($word2html) && $word2html)
 	    echo "<h3 align='center'>wvHtml was not found at '$word2html'.</h3>";
       }
+
+      // ghostscript
+      if (isset($gs) && @is_readable($gs)) {
+         $system_settings["gs"]=$gs;
+      }
+      else {
+         unset($system_settings["gs"]);
+	 if (isset($gs))
+	    echo "<h3 align='center'>Ghostscript was not found at '$gs'.</h3>";
+      }
+
       if ($baseURL)
          $system_settings["baseURL"]=$baseURL;
       $system_settings["homeURL"]=$homeURL;
@@ -321,6 +335,15 @@ if ($version) {
          $system_settings["word2html"]=$tok;
    }
    echo "<td><input type='text' name='word2html' value='".$system_settings["word2html"]."'></td></tr>\n";
+
+   echo "<tr><td>Ghostscript (gs, needed to index pdf files):</td>\n";
+   if (!$system_settings["gs"]) { 
+      $temp=`which gs`;
+      $tok=strtok($temp," ");
+      if (!strtok(" "))
+         $system_settings["gs"]=$tok;
+   }
+   echo "<td><input type='text' name='gs' value='".$system_settings["gs"]."'></td></tr>\n";
 
 
    echo "<tr><td colspan='2' align='center'><i>Localization</i></th></tr>\n";
