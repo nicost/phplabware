@@ -460,12 +460,7 @@ else {
    // get total number of hits
    $r=$db->Execute($ab_query);
    $numrows=$r->RecordCount();
-   // loop through all entries for next/previous buttons
-/*   $r=$db->CachePageExecute(1,$ab_query,$num_p_r,$ab_curr_page);
-   while (!($r->EOF) && $r) {
-      $r->MoveNext();
-   }
-*/
+
    first_last_page ($r,$ab_curr_page,$num_p_r,$numrows);
 
    // row with action links
@@ -487,8 +482,8 @@ else {
    echo "<tr align='center'>\n";   
    //javascript that submits the form when a select was chosen
    $jscript="onChange='document.ab_form.searchj.value=\"Search\"; document.ab_form.submit()'";
+   
    echo "<input type='hidden' name='searchj' value=''>\n";
-   //$r=$db->CacheExecute(1,$ab_query);
    $lista=make_SQL_csf ($r,false,"id",$nr_records);
    // show title we may see, when too many, revert to text box
    if ($name) $list=$listb; else $list=$lista;
