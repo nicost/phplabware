@@ -521,44 +521,6 @@ function getvalues($db,$tableinfo,$fields,$qfield=false,$field=false) {
 }
 
 
-//////////////////////////////////////////////////////
-////
-// !SQL where search that returns a comma delimited string
-function comma_array_SQL_where($db,$tablein,$column,$searchfield,$searchval)
-	{
-	$tempa=array();
-	$rs = $db->Execute("select $column from $tablein where $searchfield='$searchval' order by sortkey");
-
-	if ($rs)
-		{
-		while (!$rs->EOF) {
-		$fieldA=$rs->fields[0];
-		array_push($tempa, $fieldA);
-		$rs->MoveNext();
-		}
-	}
-$out=join(",",$tempa);
-return $out;
-}
-
-//////////////////////////////////////////////////////
-////
-// !SQL search (entrire column) that returns a comma delimited string
-function comma_array_SQL($db,$tablein,$column,$where=false) {
-	$tempa=array();
-	$rs = $db->Execute("select $column from $tablein $where order by sortkey");
-	if ($rs)
-		{
-		while (!$rs->EOF) {
-			$fieldA=$rs->fields[0];
-			array_push($tempa, $fieldA);
-			$rs->MoveNext();
-			}
-		}
-$out=join(",",$tempa);
-return $out;
-}
-
 
 //////////////////////////////////////////////////////////////////////
 ////  general functions
