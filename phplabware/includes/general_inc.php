@@ -169,17 +169,8 @@ function viewmenu($db, $tableinfo,$viewid) {
    else
       $r=$db->Execute("SELECT viewname,viewnameid FROM viewnames WHERE viewnameid IN (SELECT viewnameid FROM tableviews WHERE userid ={$USER['id']} AND tableid={$tableinfo->id} AND viewmode=1)"); 
    if ($r) {
-      $viewname.= 'View: '.$r->GetMenu2('viewid',$viewid,true,false,0,'OnClick="document.g_form.submit()"');
+      $viewname.= 'View: '.$r->GetMenu2('viewid',$viewid,true,false,0,'OnChange="document.g_form.submit()"');
    }
-/*
-   if ($r[0]) {
-      $viewmenu='View: ';
-      while ($r && !$r->EOF) {
-         $rv=$db->Execute("SELECT viewname FROM viewnames WHERE viewnameid={$r->fields[0]}");
-         $r->MoveNext();
-      }
-   }
-*/
    if ($viewid)
       $viewidtext="&viewid=$viewid";
    $viewname.="<a href='views.php?tablename={$tableinfo->name}$viewidtext'>Edit views</a>";
