@@ -117,6 +117,40 @@ function delete ($db, $table, $id, $USER) {
 }
 
 
+
+////
+// !Upload files and enters then into table $tablexfiles
+// files should be called file[] in HTTP_POST_FILES
+// filetitle in HTTP_POST_VARS will be inseret in the title field of table files
+function upload_files ($db,$table,$id,$USER,$system_settings) {
+   global $HTTP_POST_FILES,$HTTP_POST_VARS;
+   if (!$db && $table && $id)
+      return false;
+   if (!may_write($db,$table,$id,$USER))
+      return false;
+   if (!$filedir=$system_settings["filedir"])
+      return false;
+print_r($HTTP_POST_FILES["file"]); 
+echo "<br>\n";
+//print_r($HTTP_POST_VARS); 
+   for ($i=0;$i<sizeof($HTTP_POST_FILES);$i++) {
+      if (!$fileid=$db->GenID("files_id_seq"))
+         return false;
+      $originalname=$HTTP_POST_FILES["file"][$i]["name"];
+      $mime=$HTTP_POST_FILES["file"][$i]["type"];
+      $size=$HTTP_POST_FILES["file"][$i]["size"];
+      $title=$HTTP_POST_VARS["filetitle"][$i];
+      // this works asof php 4.02
+      if (move_uploaded_file($HTTP_POST_FILES["file"][$i]["tmp_name"],"$filedir/$fileid"."$originalname")) {
+         $query="INSERT INTO files VALUES (id=$fileid,filename='$originalname',mime='$mime',size='$size',title='$title')";
+	 $db->Execute($query);
+	 // couple to original entry
+	 $query="INSERT INTO $tables"."xfiles VALUES($tables"."id=$id,filesid=$fileid";
+	 $db->Execute($query);
+      }
+   }
+   return true;
+}
 ////
 // !Returns an SQL SELECT statement with ids of records the user may see
 // Since it uses subqueries it does not work with MySQL
