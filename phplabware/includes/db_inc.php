@@ -336,18 +336,23 @@ function delete_column_file($db,$tableid,$columnid,$recordid,$USER) {
 ////
 // !Deletes file identified with id.
 // Checks 'mother table' whether this is allowed
+// Also deletes entries in index table for this file
 // Returns name of deleted file on succes
 function delete_file ($db,$fileid,$USER) {
    global $system_settings;
 
    $tableid=get_cell($db,"files","tablesfk","id",$fileid);
+   $tabledesc=get_cell($db,"tableoftables","table_desc_name","id",$tableid);
    $ftableid=get_cell($db,"files","ftableid","id",$fileid);
+   $columnid=get_cell($db,"files","ftablecolumnid","id",$fileid);
+   $associated_table=get_cell($db,$tabledesc,"associated_table","id",$columnid);
    $filename=get_cell($db,"files","filename","id",$fileid);
    if (!may_write($db,$tableid,$ftableid,$USER))
       return false;
-   // if unlink fails we should really remove the entry from the database:
-   //if (@unlink($system_settings["filedir"]."/$fileid"."_$filename")) {
+   // even if unlink fails we should really remove the entry from the database:
    $db->Execute("DELETE FROM files WHERE id=$fileid");
+   // remove indexing of file content
+   $db->Execute ("DELETE FROM $associated_table WHERE fileid=$fileid");
    return $filename;
 }
 
