@@ -171,7 +171,9 @@ function modify ($db, $type) {
                      email='$email'";  
       if ($pwd) {
           $pwd=md5($pwd);
-          $query.=", pwd='$pwd'";
+          // require at least write permissions to change the password
+          if ($USER["permissions"] >= $WRITE) 
+             $query.=", pwd='$pwd'";
       }
       $query .= " WHERE id='$id';";
       echo "\n<table border=0 align='center'>\n  <tr>\n    <td align='center'>\n      ";
@@ -231,14 +233,17 @@ function show_user_form ($type) {
       echo "<tr><td>Login Name: </td><td>$login</td></tr>\n";
       echo "<input type='hidden' name='login' value='$login'>\n";
    }
-   echo "<tr><td>Password (max. 20 characters):</td><td><input type='password' name='pwd' maxlength=20 size=20 value=''>";
-   if ($type=="create")
-      echo "<sup style='color:red'>&nbsp(required)</sup></td></tr>\n";
-   echo "<tr><td>Password reType(max. 20 characters):</td><td><input type='password' name='pwdcheck' maxlength=20 size=20 value=''>";
-   if ($type=="create")
-      echo "<sup style='color:red'>&nbsp(required)</sup></td></tr>\n";
-   if ($type=="modify" || $type=="me")
-      echo "<tr><td colspan=2 align='center'>Leave the password fields blank to retain the current password</td></tr>\n";
+
+   if ($USER["permissions"] >= $WRITE) {
+      echo "<tr><td>Password (max. 20 characters):</td><td><input type='password' name='pwd' maxlength=20 size=20 value=''>";
+      if ($type=="create")
+         echo "<sup style='color:red'>&nbsp(required)</sup></td></tr>\n";
+      echo "<tr><td>Password reType(max. 20 characters):</td><td><input type='password' name='pwdcheck' maxlength=20 size=20 value=''>";
+      if ($type=="create")
+         echo "<sup style='color:red'>&nbsp(required)</sup></td></tr>\n";
+      if ($type=="modify" || $type=="me")
+         echo "<tr><td colspan=2 align='center'>Leave the password fields blank to retain the current password</td></tr>\n";
+   }
 
    if ($USER["permissions"] & $SUPER) {
       echo "<tr>\n<td>Group:</td>\n<td>";
