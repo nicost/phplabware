@@ -95,15 +95,13 @@ function add_pr_form ($db,$fields,$field_values,$id,$USER,$PHP_SELF,$system_sett
    echo "<th>Files: </th>\n";
    echo "<td colspan=4><table border=0>";
    for ($i=0;$i<sizeof($files);$i++) {
-      echo "<tr><td>".$files[$i]["link"]."</td>\n";
-      echo "<td>".$files[$i]["type"]."</td>\n";
+      echo "<tr><td colspan=2>".$files[$i]["link"];
+      echo "&nbsp;&nbsp;(".$files[$i]["type"]." file)</td>\n";
       echo "<td><input type='submit' name='def_".$files[$i]["id"]."' value='Delete' Onclick=\"if(confirm('Are you sure the file ".$files[$i]["name"]." should be removed?')){return true;}return false;\"></td></tr>\n";
    }
-   echo "<tr><td colspan=2><input type='file' name='file[]' value='$filename'></td>\n";
-   echo "<td></td><th>File Title:</th><td><input type='text' name='filetitle[]' value='$filetile' size=30></td><td>&nbsp;</td>\n";
-   $r=$db->Execute("SELECT typeshort,id FROM filetypes");
-   $text=$r->GetMenu2("filetype",$filetype,true,false,0,"style='width: 80%'");
-   echo "<td style='width: 10%'>$text</td>\n";
+   echo "<tr><th>Replace file(s) with:</th>\n";
+   echo "<td><input type='file' name='file[]' value='$filename'></td>\n";
+   echo "<th>File Title:</th><td><input type='text' name='filetitle[]' value='$filetile' size=30></td><td>&nbsp;</td>\n";
    
    echo "</tr>\n";
    echo "</table></td>\n\n";
@@ -146,8 +144,7 @@ function show_pr ($db,$fields,$id,$USER,$system_settings) {
    echo "<table border=0 align='center'>\n";
    echo "<tr align='center'>\n";
    echo "<td colspan=2></td>\n";
-   echo "<th>Primary/Second.</th>\n<th>Label</th>\n<th>Mono-/Polyclonal</th>\n";
-   echo "<th>Host</th>\n<th>Class</th>\n";
+   echo "<td></td>\n<th>Category</th>\n<th>Keywords</th>\n";
    echo "</tr>\n";
    echo "<tr>\n";
    echo "<th>Name: <sup style='color:red'>&nbsp;*</sup></th>\n";
@@ -178,7 +175,26 @@ function show_pr ($db,$fields,$id,$USER,$system_settings) {
    $date=date($dateformat,$date);
    echo "<th>Date entered: </th><td colspan=3>$date</td>\n";
    echo "</tr>\n";
-   
+
+   if ($lastmodby && $lastmoddate) {
+      echo "<tr>";
+      $query="SELECT firstname,lastname,email FROM users WHERE id=$lastmodby";
+      $r=$db->Execute($query);
+      if ($r->fields["email"]) {
+         echo "<th>Last modified by: </th><td><a href='mailto:".$r->fields["email"]."'>";
+         echo $r->fields["firstname"]." ".$r->fields["lastname"]."</a></td>\n";
+      }
+      else {
+         echo "<th>Last modified by: </th><td>".$r->fields["firstname"]." ";
+         echo $r->fields["lastname"] ."</td>\n";
+      }
+      echo "<td>&nbsp;</td>";
+      $dateformat=get_cell($db,"dateformats","dateformat","id",$system_settings["dateformat"]);
+      $lastmoddate=date($dateformat,$lastmoddate);
+      echo "<th>Date modified: </th><td colspan=3>$lastmoddate</td>\n";
+      echo "</tr>\n";
+   }
+
    echo "<tr>";
    $notes=nl2br(htmlentities($notes));
    echo "<th>Notes: </th><td colspan=6>$notes</td>\n";
@@ -188,7 +204,8 @@ function show_pr ($db,$fields,$id,$USER,$system_settings) {
    if ($files) {
       echo "<tr><th>Files:</th>\n<td colspan=5>";
       for ($i=0;$i<sizeof($files);$i++) {
-         echo $files[$i]["link"]."<br>\n";
+         echo $files[$i]["link"]."&nbsp;&nbsp;(".$files[$i]["type"];
+         echo " file)<br>\n";
       }
       echo "</tr>\n";
    }
@@ -218,17 +235,17 @@ function process_file($db,$fileid,$system_settings) {
       $filepath=file_path($db,$fileid);
       $temp=$system_settings["tmpdir"]."/".uniqid("file");
       `$word2html $filepath $temp`;
-      echo "$word2html $filepath $temp<br>";
       if (is_readable($temp)) {
          unset ($HTTP_POST_FILES);
          $r=$db->query ("SELECT filename,mime,title,tablesfk,ftableid FROM files WHERE id=$fileid");
          if ($r && !$r->EOF) {
             $filename=$r->fields("filename");
-            
+            // change .doc to .html in a lousy way
+            $filename=str_replace(".doc",".htm",$filename); 
             $type="text/html";
             $size=filesize($temp);
             $id=$db->GenID("files_id_seq");
-            $query="INSERT INTO files (id,filename,mime,size,title,tablesfk,ftableid) VALUES ($id,'".$r->fields("filename")."','$type','$size','".$r->fields("title")."','".$r->fields("tablesfk")."','".$r->fields("ftableid")."')";
+            $query="INSERT INTO files (id,filename,mime,size,title,tablesfk,ftableid) VALUES ($id,'$filename','$type','$size','".$r->fields("title")."','".$r->fields("tablesfk")."','".$r->fields("ftableid")."')";
             if ($db->execute($query)) {
                 $newloc=file_path($db,$id);
                `mv $temp $newloc`;
