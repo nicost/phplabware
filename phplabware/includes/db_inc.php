@@ -268,7 +268,7 @@ function upload_files ($db,$tableid,$id,$USER,$system_settings) {
 // files associated with the given record
 function get_files ($db,$table,$id,$format=1) {
    $tableid=get_cell($db,"tableoftables","id","tablename",$table);
-   $r=$db->Execute("SELECT id,filename,title,mime,type FROM files WHERE tablesfk=$tableid AND ftableid=$id");
+   $r=$db->Execute("SELECT id,filename,title,mime,type,size FROM files WHERE tablesfk=$tableid AND ftableid=$id");
    if ($r && !$r->EOF) {
       $i=0;
       $sid=SID;
@@ -278,6 +278,7 @@ function get_files ($db,$table,$id,$format=1) {
          $filestitle=$files[$i]["title"]=$r->fields("title");
          $mime=$files[$i]["mime"]=$r->fields("mime");
          $filestype=$files[$i]["type"]=$r->fields("type");
+         $filesize=$files[$i]["size"]=nice_bytes($r->fields("size"));
 	 if ($format==1) {
             if ($filestitle)
                $text=$filestitle;
