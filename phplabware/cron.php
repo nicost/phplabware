@@ -27,7 +27,7 @@ function doindexfile ($db,$filetext,$fileid,$indextable,$recordid,$pagenr)
 {
    if (!$pagenr)
       $pagenr=1;
-   $thetext=split("[ ,.:;\"\n]",$filetext);
+   $thetext=split("[ ,.:;\"'\n]",$filetext);
    foreach ($thetext as $word) {
       if (strlen($word)>2) {
          $r=$db->Execute("SELECT id FROM words WHERE word='$word'");
@@ -36,7 +36,12 @@ function doindexfile ($db,$filetext,$fileid,$indextable,$recordid,$pagenr)
             $wordid=$db->GenID('word_seq');
             $db->Execute("INSERT INTO words VALUES ($wordid,'$word')");
          }
-         $db->Execute("INSERT INTO $indextable VALUES ($wordid,$fileid,$pagenr,$recordid)");
+         // only add this entry if we did not have it before
+         // we are not keeping track any more on which page this word occurred, only the first one
+         $r=$db->Execute("SELECT wordid FROM $indextable WHERE wordid=$wordid AND fileid=$fileid AND recordid=$recordid");
+         if ($r->RecordCount()==0)  {
+            $db->Execute("INSERT INTO $indextable VALUES ($wordid,$fileid,$pagenr,$recordid)");
+         }
       }
    }
    return true;
@@ -87,7 +92,7 @@ while ($rfiles && !($rfiles->EOF)) {
                fclose($fp);
             }
             $filetext=strtolower($filetext)."\n".$filename;
-            if (doindexfile ($db,$filetext,$rfiles->fields['id'],$rindextable->fields['associated_table'],$rfiles->fields['tableid'],1)) {
+            if (doindexfile ($db,$filetext,$rfiles->fields['id'],$rindextable->fields['associated_table'],$rfiles->fields['ftableid'],1)) {
                $db->Execute ("UPDATE files SET indexed=1 WHERE id=".$rfiles->fields['id']);
                $textfilecounter++;
             }
