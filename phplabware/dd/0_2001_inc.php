@@ -12,6 +12,7 @@ $fields="
    er L,
    ew L
 ";
+$fieldstring="id,label,columnname,sortkey,display_table,display_record, required, type, datatype, associated_table, associated_column, modifiable"; 
 while (!($ra->EOF)) {
    if($ra->fields['real_tablename']) {
       $shortname=$ra->fields['shortname']; 
@@ -27,16 +28,15 @@ while (!($ra->EOF)) {
       $dict->ExecuteSQLArray($sqlArray);
 
       // update description tables
-      $fieldstring="id,label,columnname,sortkey,display_table,display_record, required, type, datatype, associated_table, associated_column"; 
       $desc=$ra->fields['table_desc_name'];
       $descid=$db->GenId("$desc"."_id");  
-      $db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'gr','group read','111','N','N','N','smallint','int',NULL,NULL)");
+      $db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'group read','gr','111','N','N','N','smallint','int',NULL,NULL,'Y')");
       $descid=$db->GenId("$desc"."_id");  
-      $db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'gw','group write','112','N','N','N','smallint','int',NULL,NULL)");
+      $db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'group write','gw','112','N','N','N','smallint','int',NULL,NULL,'Y')");
       $descid=$db->GenId("$desc"."_id");  
-      $db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'er','everyone read','113','N','N','N','smallint','int',NULL,NULL)");
+      $db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'everyone read','er','113','N','N','N','smallint','int',NULL,NULL,'Y')");
       $descid=$db->GenId("$desc"."_id");  
-      $db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'ew','everyone write','114','N','N','N','smallint','int',NULL,NULL)");
+      $db->Execute("INSERT INTO $desc ($fieldstring) Values($descid,'everyone write','ew','114','N','N','N','smallint','int',NULL,NULL,'Y')");
    }
    $ra->MoveNext();
 }
