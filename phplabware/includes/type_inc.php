@@ -13,6 +13,37 @@
   *  option) any later version.                                              *
   \**************************************************************************/
 
+////
+// !Generates a javascript array used to dynamically alter pulldown items
+// after the pulldown list has been changed by the user in another window
+function update_opener_js ($db,$table) {
+   global $HTTP_GET_VARS;
+
+   $result="<script type='text/javascript'>\n<!--\n";
+   $result.="typeinfo=new Array(\n";
+   $result.=" new Array(\n";
+   //leave first choice blank:
+   $result.="   new Array(\"\",\"\")";
+   $query = "SELECT id,typeshort FROM $table ORDER BY sortkey";
+   $r=$db->Execute($query);
+   $rownr=0;
+   // enter all entries into array
+   while (!($r->EOF) && $r) {
+      $result.=",\n   new Array(\"".$r->fields[1]."\",\"".$r->fields[0]."\")";
+      $r->MoveNext();
+   }
+   $result.="\n )\n)\n";
+   $form=$HTTP_GET_VARS["formname"];
+   $select=$HTTP_GET_VARS["selectname"];
+   $result.="fillSelectFromArray(opener.document.$form.$select,typeinfo[0])\n";
+   $result.="// End of Javascript -->\n</script>\n";
+   return $result;
+}
+
+
+////
+// !Generates the page with info on pulldown items
+// Allows for addition, modifying and deleting pulldown items
 function show_type ($db,$table,$name, $tablename=false) {
    global $HTTP_POST_VARS,$PHP_SELF,$HTTP_GET_VARS;
 
@@ -20,7 +51,12 @@ function show_type ($db,$table,$name, $tablename=false) {
    if ($tablename)
       $dbstring.="tablename=$tablename&"; 
    $dbstring.="edit_type=$table&";
-   if($HTTP_POST_VARS[type_name]) {$name=$HTTP_POST_VARS[type_name];}
+   // propagate the form and select name as GET variables to be able to manipulate the select list with javascript
+   $dbstring.="formname=".$HTTP_GET_VARS["formname"]."&";
+   $dbstring.="selectname=".$HTTP_GET_VARS["selectname"]."&";
+   if($HTTP_POST_VARS[type_name]) {
+      $name=$HTTP_POST_VARS[type_name];
+   }
    echo "<form method='post' id='typeform' enctype='multipart/form-data' ";
    echo "action='$dbstring".SID."'>\n"; 
    echo "<input type='hidden' name='edit_type' value='$table'>\n";
@@ -84,7 +120,7 @@ function show_type ($db,$table,$name, $tablename=false) {
       $dbstring.="tablename=$tablename&";
    echo "<form method='post' id='typeform' enctype='multipart/form-data' ";
    echo "action='$dbstring".SID."'>\n"; 
-   echo "<input type='submit' name='submit' value='Back'>\n";
+   echo "<input type='submit' name='submit' value='Close' onclick='opener.focus();\nself.close()'>\n";
    echo "</form>\n";
    echo "</td></tr>\n";
 
@@ -108,8 +144,10 @@ function del_type ($db,$table,$index,$tableinfo) {
          $r=$db->Execute("UPDATE $tableinfo->realname SET $recordref=NULL WHERE $recordref='$id'");
          if ($r) 
 	    $r=$db->Execute("DELETE FROM $table WHERE id=$id");
-	 if ($r)
+	 if ($r) {
 	    $string="<h3 align='center'>Record removed</h3>\n";
+            echo update_opener_js ($db,$table);
+         }
       }
       else  
          $string="<h3 align='center'>Please enter all fields</h3>\n";
@@ -121,8 +159,10 @@ function del_type ($db,$table,$index,$tableinfo) {
                        $table_array[1]."=$id");
       	 if ($r) // keep database structure intact
       	    $r=$db->Execute("DELETE FROM $table WHERE id=$id");
-      	 if ($r)
+      	 if ($r) {
 	    $string="<h3 align='center'>Record removed</h3>\n";
+            echo update_opener_js ($db,$table);
+         }
       }
       else 
          $string="<h3 align='center'>Please enter all fields</h3>\n";
@@ -146,6 +186,7 @@ function mod_type ($db,$table,$index) {
       $r=$db->Execute("UPDATE $table SET type='$type',typeshort='$typeshort',sortkey=$sortkey WHERE id=$id"); 
       if ($r) {
          echo "<h3 align='center'>Succesfully changed Record</h3>\n";
+         echo update_opener_js ($db,$table);
          return ($id);
       }
 	 else echo "<h3 align='center'>Please enter all fields</h3>\n";
@@ -167,8 +208,10 @@ function add_type ($db,$table) {
    if ($type && $typeshort && is_int($sortkey)) {
        $r=$db->query("INSERT INTO $table (id,type,typeshort,sortkey) 
                       VALUES ($id,'$type','$typeshort',$sortkey)");
-       if ($r)
+       if ($r) {
+         echo update_opener_js ($db,$table);
          return ($id);
+      }
    }
    else
       echo "<h3 align='center'>Please enter all fields</h3>\n";

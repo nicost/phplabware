@@ -304,12 +304,10 @@ function make_link($id,$DBNAME) {
 ////
 // !display addition and modification form
 function display_add($db,$tableinfo,$Allfields,$id,$namein,$system_settings) { 
-   global $PHP_SELF, $db_type, $md, $USER;
+   global $PHP_SELF, $db_type, $md, $USER, $LAYOUT, $HTTP_POST_VARS;
 
-//   $tablename=get_cell($db,"tableoftables","tablename","id",$tableid);
-//   $tablelabel=get_cell($db,"tableoftables","label","id",$tableid);
    $dbstring=$PHP_SELF;$dbstring.="?";$dbstring.="tablename=".$tableinfo->name."&";
-   echo "<form method='post' id='protocolform' enctype='multipart/form-data' action='$dbstring";
+   echo "<form method='post' id='protocolform' enctype='multipart/form-data' name='form' action='$dbstring";
 	?><?=SID?>'><?php
 
    if (!$magic)
@@ -326,8 +324,11 @@ function display_add($db,$tableinfo,$Allfields,$id,$namein,$system_settings) {
    }
    echo "<table border=0 align='center'>\n<tr align='center'>\n<td colspan=2></td>\n";
    foreach ($Allfields as $nowfield) {
-      //see if display_record is set
+      // see if display_record is set
       if ( (($nowfield["display_record"]=="Y") || ($nowfield["display_table"]=="Y")) ) {
+         // To persist between multiple invocation, grab POST vars 
+         if ($nowfield["modifiable"]=="Y" && isset($HTTP_POST_VARS[$nowfield["name"]]))
+            $nowfield["values"]=$HTTP_POST_VARS[$nowfield["name"]];
          if ($nowfield["modifiable"]=="N" && $nowfield["datatype"]!="sequence") {
             echo "<input type='hidden' name='$nowfield[name]' value='$nowfield[values]'>\n";
             if ($nowfield[text] && $nowfield[text]!="" && $nowfield[text]!=" ") {
@@ -384,13 +385,14 @@ function display_add($db,$tableinfo,$Allfields,$id,$namein,$system_settings) {
             $r=$db->Execute("SELECT typeshort,id FROM $nowfield[ass_t] ORDER BY sortkey");
             $text=$r->GetMenu2("$nowfield[name]",$nowfield[values],true,false);
             echo "<tr><th>$nowfield[label]:";
-            if ($USER["permissions"] && $LAYOUT) {
-               echo "<a href='$PHP_SELF?tablename=$tableinfo[name]&edit_type=$nowfield[ass_t]&<?=SID?>'>";
-               echo "<FONT size=1 color='#00ff00'> <small>(edit)</small></font></a>";
-            }
             if ($nowfield[required]=="Y")
                echo"<sup style='color:red'>&nbsp;*</sup>";
-            echo "</th>\n<td>$text<br>";
+            echo "</th>\n<td>";
+            if ($USER["permissions"] & $LAYOUT) {
+               $jscript=" onclick='MyWindow=window.open (\"general.php?tablename=".$tableinfo->name."&edit_type=$nowfield[ass_t]&jsnewwindow=true&formname=form&selectname=$nowfield[name]".SID."\",\"type\",\"scrollbar=yes,resizable=yes,width=600,height=400\");MyWindow.focus()'";
+               echo "<input type='button' name='edit_button' value='Edit $nowfield[label]' $jscript><br>\n";
+            }
+            echo "$text<br>";
          }
          elseif ($nowfield[datatype]=="table") {
             // only display primary key here

@@ -77,12 +77,22 @@ if ($searchj || $sortup || $sortdown)
    $search="Search";
 
 /*****************************BODY*******************************/
+/*
 printheader($httptitle);
-navbar($USER["permissions"]);
+if (!$edit_type)
+   navbar($USER["permissions"]);
+
+// name this window so that javascript code can refer back to it
+$head="<script language=\"Javascript\">\n<!--\n";
+$head.="   this.window.name=\"".$tableinfo->name."\"\n";
+$head.="-->\n</script>\n";
+*/
 
 
 // check wether user may see this table
 if (!may_see_table($db,$USER,$tableinfo->id)) {
+   printheader($httptitle);
+   navbar($USER["permissions"]);
    echo "<h3 align='center'>These data are not for you.  Sorry;(</h3>\n";
    printfooter();
    exit();
@@ -92,6 +102,8 @@ if (!may_see_table($db,$USER,$tableinfo->id)) {
 while((list($key, $val) = each($HTTP_POST_VARS))) {	
    // display form with information regarding the record to be changed
    if (substr($key, 0, 3) == "mod") {
+      printheader($httptitle);
+      navbar($USER["permissions"]);
       $modarray = explode("_", $key);
       $r=$db->Execute("SELECT $tableinfo->fields FROM ".$tableinfo->realname." WHERE id=$modarray[1]"); 
       add_g_form($db,$tableinfo,$r->fields,$modarray[1],$USER,$PHP_SELF,$system_settings);
@@ -116,6 +128,8 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
    } 
    // delete file and show protocol form
    if (substr($key, 0, 3) == "def") {
+      printheader($httptitle);
+      navbar($USER["permissions"]);
       $modarray = explode("_", $key);
       $filename=delete_file($db,$modarray[1],$USER);
       $id=$HTTP_POST_VARS["id"];
@@ -129,6 +143,8 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
    }
    // show the record only when javascript is not active
    if (substr($key, 0, 4) == "view" && !$HTTP_SESSION_VARS["javascript_enabled"]) {
+      printheader($httptitle);
+      navbar($USER["permissions"]);
       $modarray = explode("_", $key);
       if (function_exists("plugin_show"))
          plugin_show($db,$tableinfo,$showid,$USER,$system_settings,false);
@@ -139,7 +155,8 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
    }
 
 // Add/modify/delete pulldown menu items 
-   if (substr($key, 0, 7) == "addtype") {
+   if (substr($key, 0, 7) == "addtype" && ($USER["permissions"] & $LAYOUT)) {
+      printheader($httptitle,"","includes/js/tablemanage.js");
       $modarray = explode("_", $key);
       include("includes/type_inc.php");
       add_type($db,$edit_type);
@@ -147,7 +164,8 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
       printfooter();
       exit();
    }
-   if (substr($key, 0, 6) == "mdtype") {
+   if (substr($key, 0, 6) == "mdtype" && ($USER["permissions"] & $LAYOUT)) {
+      printheader($httptitle,"","includes/js/tablemanage.js");
       $modarray = explode("_", $key);
       include("includes/type_inc.php");
       mod_type($db,$edit_type,$modarray[1]);
@@ -155,7 +173,8 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
       printfooter();
       exit();
    }
-   if (substr($key, 0, 6) == "dltype") {
+   if (substr($key, 0, 6) == "dltype" && ($USER["permissions"] & $LAYOUT)) {
+      printheader($httptitle,"","includes/js/tablemanage.js");
       $modarray = explode("_", $key);
       include("includes/type_inc.php");
       del_type($db,$edit_type,$modarray[1],$tableinfo);
@@ -166,12 +185,16 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
 }
 
 if ($edit_type && ($USER["permissions"] & $LAYOUT)) {
+   printheader($httptitle);
    include("includes/type_inc.php");
    $assoc_name=get_cell($db,$tableinfo->desname,label,associated_table,$edit_type);
    show_type($db,$edit_type,$assoc_name,$tableinfo->name);
    printfooter();
    exit();
 }
+
+printheader($httptitle);
+navbar($USER["permissions"]);
 
 // provide a means to hyperlink directly to a record
 if ($showid && !$jsnewwindow) {
@@ -329,7 +352,8 @@ else {
    $headers = getallheaders();
 
    $dbstring=$PHP_SELF."?"."tablename=$tableinfo->name&";
-   echo "<form name=g_form method='post' id='generalform' enctype='multipart/form-data' action='$PHP_SELF?$sid'>\n";
+   $formname="g_form";
+   echo "<form name='$formname' method='post' id='generalform' enctype='multipart/form-data' action='$PHP_SELF?$sid'>\n";
    echo "<input type='hidden' name='md' value='$md'>\n";
 
    echo "<table border=0 width='50%' align='center'>\n<tr>\n";
@@ -427,14 +451,16 @@ else {
     	    echo  " <td style='width: 10%'><input type='text' name='$nowfield[name]' value='".${$nowfield[name]}."'size=8></td>\n";
       }
       elseif ($nowfield[datatype]== "text" || $nowfield[datatype]=="file")
-    	    echo  " <td style='width: 25%'><input type='text' name='$nowfield[name]' value='".${$nowfield[name]}."'size=8></td>\n";
+         echo  " <td style='width: 25%'><input type='text' name='$nowfield[name]' value='".${$nowfield[name]}."'size=8></td>\n";
       elseif ($nowfield[datatype]== "textlong")
-    	    echo  " <td style='width: 10%'><input type='text' name='$nowfield[name]' value='".${$nowfield[name]}."'size=8></td>\n";
+         echo  " <td style='width: 10%'><input type='text' name='$nowfield[name]' value='".${$nowfield[name]}."'size=8></td>\n";
       elseif ($nowfield["datatype"]== "pulldown") {
          echo "<td style='width: 10%'>";
          if ($USER["permissions"] & $LAYOUT)  {
-            echo "<a href='$PHP_SELF?tablename=$tableinfo->name&edit_type=$nowfield[ass_t]&".SID;
-            echo "'>Edit $nowfield[label]</a><br>\n";
+            $jscript=" onclick='MyWindow=window.open (\"general.php?tablename=".$tableinfo->name."&edit_type=$nowfield[ass_t]&jsnewwindow=true&formname=$formname&selectname=$nowfield[name]".SID."\",\"type\",\"scrollbar=yes,resizable=yes,width=600,height=400\")'";
+            echo "<input type='button' name='edit_button' value='Edit $nowfield[label]' $jscript><br>\n";
+            //echo "<a href='$PHP_SELF?tablename=$tableinfo->name&edit_type=$nowfield[ass_t]&".SID;
+            //echo "'>Edit $nowfield[label]</a><br>\n";
          }	 		 			
          $rpull=$db->Execute("SELECT typeshort,id from $nowfield[ass_t] ORDER by sortkey,typeshort");
          if ($rpull)
