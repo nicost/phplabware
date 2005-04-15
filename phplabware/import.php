@@ -220,6 +220,17 @@ function check_input ($tableinfo, &$fields, $to_fields, $field_types, $field_dat
                    }
                 }
              }
+          } elseif ($field_datatypes[$i]=='table') {
+            // Links to other tables are only made if this field istthe primary key and it matches to the entry in the associated table
+             if ($fields[$i]=="&nbsp;") {
+                unset ($fields[$i]);
+             } else {
+                $Allfields=getvalues($db,$tableinfo,$to_fields[$i]);
+                print_r($Allfields);
+                // only continue if this is the local key:
+                exit;
+
+             }
          } elseif ($field_datatypes[$i]!='mpulldown') {
           // for mpulldowns we have a problem since we do not have the new id yet
           // we'll deal with these later
@@ -298,6 +309,7 @@ function addmpulldown($db,$tableinfo,$id,$to_field,$field)
       }
    }
 }
+
 
 
 /**
@@ -462,11 +474,11 @@ if ($HTTP_POST_VARS['assign']=='Import Data') {
                $query="UPDATE $table SET ";
                // import data from file into SQL statement
                for ($i=0; $i<$nrfields;$i++) {
-                  if ($fields[$i] && $to_fields[$i] && $to_datatypes[$i]!='file' && $to_datatypes[$i]!='mpulldown') {
-                     // if date is an int, assume it is UNIX date, otherwise convert 
+                  if ($fields[$i] && $to_fields[$i] && $to_datatypes[$i]!='file' && $to_datatypes[$i]!='mpulldown') { // if date is an int, assume it is UNIX date, otherwise convert 
                      if ($to_datatypes[$i]=='date') {
-                        if (!is_int($fields[$i]))
+                        if (!is_int($fields[$i])) {
                            $fields[$i]=mymktime($fields[$i]);
+                        }
                      }
                      $worthit=true;
                      $query.="$to_fields[$i]='$fields[$i]',";
@@ -497,69 +509,6 @@ if ($HTTP_POST_VARS['assign']=='Import Data') {
 //$db->debug=false;
                }
 
-            // if there is no primary key set, we simply INSERT a new record
-            //if ( !(isset($pkey) || isset($recordid)) ) 
-/*
-            } elseif ($pkeypolicy!='onlyupdate') {
-//$db->debug=true;
-               $query_start="INSERT INTO $table (";
-               $query_end=" VALUES (";
-               $newid=false;
-               for ($i=0;$i<$nrfields;$i++) {
-                  if ($fields[$i] && $to_fields[$i] && $to_datatypes[$i]!='file' && $to_datatypes[$i]!='mpulldown') {
-                     // if date is an int, assume it is UNIX date, otherwise convert 
-                     if ($to_datatypes[$i]=='date') {
-                        if (!is_int($fields[$i]))
-                           $fields[$i]=mymktime($fields[$i]);
-                     }
-                     //  
-                     if ($to_fields[$i]=='date') {
-                        $newdate=true;
-                     }
-                     $worthit=true;
-                     $query_start.="$to_fields[$i],";  
-                     $query_end.="'$fields[$i]',";
-                     if ($to_fields[$i]=="id")
-                        $newid=$fields[$i];
-                  }
-               }
-               $rseq->MoveFirst();
-               // delete last commas and combine into SQL INSERT query
-               if ($worthit) {
-                  if (!$newid) {
-                     $id=$db->GenID($table."_id_seq");
-                     if ($id && $newdate)
-                        $query="$query_start id,gr,gw,er,ew,lastmoddate,lastmodby,ownerid) $query_end '$id',$gr,$gw,$er,$ew,'$lastmoddate','$lastmodby','$ownerid')";
-                     else
-                        $query="$query_start id,gr,gw,er,ew,date,lastmoddate,lastmodby,ownerid) $query_end '$id',$gr,$gw,$er,$ew,'$lastmoddate','$lastmoddate','$lastmodby','$ownerid')";
-                  } else {
-                     // let's make sure the 'next' id will be higher
-                     if ($newid)
-                        while ($id<$newid)
-                           $id=$db->GenID($table.'_id_seq');
-                     // check whether this id was used
-                     if (get_cell($db,$table,'id','id',$newid))
-                        $duplicateid++;
-                     if ($newdate)
-                     $query="$query_start gr,gw,er,ew,lastmoddate,lastmodby,ownerid) $query_end $gr,$gw,$er,$ew,'$lastmoddate','$lastmodby','$ownerid')";
-                     else
-                        $query="$query_start gr,gw,er,ew,date,lastmoddate,lastmodby,ownerid) $query_end $gr,$gw,$er,$ew,'$lastmoddate','$lastmoddate','$lastmodby','$ownerid')";
-                  }
-                  if ($r=$db->Execute($query)) {
-                      $inserted++;
-                      for ($i=0; $i<$nrfields;$i++) {
-                         // add files and mpulldowns to newly added record
-                         if ($to_datatypes[$i]=='file') {
-                            $fileids=explode(',',$fields[$i]);
-                            foreach ($fileids as $fileid)
-                               import_file ($db,$tableid,$id,$HTTP_POST_VARS["fields_$i"],$to_fields[$i],$fileid,$system_settings);
-                          } elseif($to_datatypes[$i]=='mpulldown') {
-                             addmpulldown($db,$tableinfo,$id,$to_fields[$i],$fields[$i]);
-                         }
-                      }
-                  }
-               } 
-*/
             }
          }
          
@@ -735,11 +684,6 @@ echo "<td align='center'> <table><tr>
 $r=$db->Execute("SELECT label,id FROM tableoftables LEFT JOIN groupxtable_display on tableoftables.id=groupxtable_display.tableid where display='Y' AND permission='Users' AND groupid={$USER['group_array'][0]} ORDER BY sortkey");
 $menu=$r->GetMenu2('tableid',$tableid);
 echo "<td>$menu</td>\n";
-/*
-} else {
-   echo "<td><input type='hidden' name='tableid' value='$tableid'>$tablelabel</td>\n";
-}
-*/
 
 if ($permissions & $SUPER) {
    $query = 'SELECT login,id FROM users ORDER By login';
