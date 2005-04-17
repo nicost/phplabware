@@ -42,7 +42,7 @@ function submit_changes ($tableid,$recordid,$field,$datatype,$newvalue) {
    }
 
    //newForm += "<input type='submit' name='Submit' value='Submit'>\n";
-   newForm += "</form>\n</body>\n</html>\n";
+   newForm += "<\/form>\n<\/body>\n<\/html>\n";
 
    newWindow.document.write(newForm);
 
