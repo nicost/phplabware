@@ -1016,7 +1016,7 @@ function getvalues($db,$tableinfo,$fields,$qfield=false,$field=false)
  */
 /****************************FUNCTIONS***************************/
 /**
- *  Checks input data to addition
+ *  Checks input data before they are entered in the database
  *
  * returns false if something can not be fixed     
  */
@@ -1036,7 +1036,7 @@ function check_g_data ($db,&$field_values,$tableinfo,$modify=false) {
    }
 
    // make sure ints and floats are correct, try to set the UNIX date
-   $rs = $db->Execute("SELECT columnname,datatype,label,associated_table,associated_column FROM {$tableinfo->desname} WHERE datatype IN ('int','float','table','date','sequence')");
+   $rs = $db->Execute("SELECT columnname,datatype,label,associated_table,associated_column FROM {$tableinfo->desname} WHERE datatype IN ('int','float','table','date','sequence', 'textlong')");
    while ($rs && !$rs->EOF) {
       $fieldA=$rs->fields[0];
       if (isset($field_values["$fieldA"]) && (strlen($field_values[$fieldA]) >0)) {
@@ -1063,6 +1063,15 @@ function check_g_data ($db,&$field_values,$tableinfo,$modify=false) {
             $field_values[$fieldA]=strtotime($field_values[$fieldA]);
             if ($field_values[$fieldA] < 0)
                $field_values[$fieldA]="";
+         }
+         // Firefox on the Mac has issues with very long words
+         // cut off words at 80 characters and insert a line break
+         elseif ($rs->fields[1]=='textlong') {
+             $longtxts = explode(' ',$field_values[$fieldA]);
+             unset($field_values[$fieldA]);
+             foreach ($longtxts  as $longtxt) {
+                $field_values[$fieldA].=wordwrap($longtxt, 80, ' ',1) . ' ';
+             }
          }
          elseif ($rs->fields[1]=='sequence') {
             $field_values[$fieldA]=(int)$field_values[$fieldA];
