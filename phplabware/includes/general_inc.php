@@ -233,12 +233,29 @@ function display_table_change($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr
             echo "<td><input type='hidden' name='{$nowfield['name']}_$id' value=\"{$nowfield['values']}\">\n";
             echo "{$nowfield['text']}</td>\n";
          } elseif ($nowfield['datatype']=='text') {
-     	    echo "<td><input type='text' name='{$nowfield['name']}_$id' value='{$nowfield['values']}' size=15 $js>$thestar</td>\n";
+            // for comfortable input calculate size and present accordingly
+            $maxwidth=40;
+            if (strlen($nowfield['values'])) {
+                $rows=floor (strlen($nowfield['values']) / $maxwidth) + 1;
+                if ($rows <= 1) {
+                   $columns=(strlen($nowfield['values']) % $maxwidth) + 1;
+                } else {
+                   $columns = $maxwidth;
+                }
+            } else { // no pre-exsisting value 
+               $rows = 1;
+               $columns = 10;
+            }
+            if ($rows == 1) {
+     	       echo "<td><input type='text' name='{$nowfield['name']}_$id' value='{$nowfield['values']}' size=$columns $js>$thestar</td>\n";
+            } else {
+               echo "<td>$thestar<textarea name='{$nowfield['name']}_$id' cols=$columns rows=$rows $js>{$nowfield['values']}</textarea></td>\n";
+            }
          } elseif ($nowfield['datatype']=='date') {
      	    echo "<td><input type='text' name='{$nowfield['name']}_$id' value='{$nowfield['text']}' size=12 $js>$thestar</td>\n";
          } elseif ($nowfield['datatype']=='int' || $nowfield['datatype']=='sequence') {
             $js="onchange='if (isAnInt(this.value)) { submit_changes($tableinfo->id,$id,\"{$nowfield['name']}\",\"{$nowfield['datatype']}\",this.value); } else {this.value=\"\"; this.focus(); return false;}'";
-     	    echo "<td><input type='text' name='{$nowfield['name']}_$id' value='{$nowfield['values']}' size=8 $js>$thestar</td>\n";
+     	    echo "<td>$thestar<input type='text' name='{$nowfield['name']}_$id' value='{$nowfield['values']}' size=6 $js></td>\n";
          } elseif ($nowfield['datatype']=='float') {
             $js="onchange='if (isAFloat(this.value)) { submit_changes($tableinfo->id,$id,\"{$nowfield['name']}\",\"{$nowfield['datatype']}\",this.value); } else {this.value=\"\"; return false;}'";
      	    echo "<td><input type='text' name='{$nowfield['name']}_$id' value='{$nowfield['values']}' size=8 $js>$thestar</td>\n";
