@@ -238,12 +238,17 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
       exit();
    }
    if (substr($key, 0, 6) == 'mdtype' && ($USER['permissions'] & $LAYOUT)) {
-      printheader($httptitle,"",'./includes/js/tablemanage.js');
       $modarray = explode("_", $key);
       include('./includes/type_inc.php');
-      mod_type($db,$edit_type,$modarray[1]);
-      show_type($db,$edit_type,"",$tableinfo->name);
-      printfooter();
+      // Ajax-based request do not need much in terms of an answer:
+      if ($HTTP_POST_VARS['jsrequest']) {
+         mod_type($db,$edit_type,$modarray[1]);
+      } else {
+         printheader($httptitle,"",'./includes/js/tablemanage.js');
+         mod_type($db,$edit_type,$modarray[1]);
+         show_type($db,$edit_type,"",$tableinfo->name);
+         printfooter();
+      }
       exit();
    }
    if (substr($key, 0, 6) == 'dltype' && ($USER['permissions'] & $LAYOUT)) {
@@ -258,7 +263,7 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
 }
 
 if ($edit_type && ($USER['permissions'] & $LAYOUT)) {
-   printheader($httptitle);
+   printheader($httptitle, "", './includes/js/tablemanage.js');
    include('./includes/type_inc.php');
    $assoc_name=get_cell($db,$tableinfo->desname,label,associated_table,$edit_type);
    show_type($db,$edit_type,$assoc_name,$tableinfo->name);
@@ -444,11 +449,13 @@ if ($add && $md!='edit') {
       session_unregister($queryname);
       ${$queryname}=make_search_SQL($db,$tableinfo,$fields_table,$USER,$search,$sortstring,$listb['sql']);
       $r=$db->Execute(${$queryname});
-/*
+
+      /*
       if (!isset($r)) {
          echo "${$queryname}.<br>";
       }
-*/
+      */
+
    }
 
    // set variables needed for paging

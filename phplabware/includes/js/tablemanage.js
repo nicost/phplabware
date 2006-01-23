@@ -32,3 +32,65 @@ function fillSelectFromArray(selectCtrl, itemArray) {
          selectCtrl.options[0].selected = true;
    }
 }
+
+function displayResponse() {
+   // Server has responded when we get readyState=4
+   if (http.readyState == 4) {
+      //alert (http.status);
+      //alert (http.responseText);
+   }
+}
+
+
+
+// tell the server what changed without having to reload the whole page
+function tellServer (url, id) {
+   // read out the values in the row in which the change occurred
+   var type = document.getElementById("type_type_" + id).value;
+   var typeshort = document.getElementById("type_typeshort_" + id).value;
+   var typesortkey = document.getElementById("type_sortkey_" + id).value;
+
+   var request = url +  "&typeid=" + id ;
+
+   // send a post form to the server, ascynchronous
+   http.open('POST', request, true);
+   // This header must be set for a POST request
+   http.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+   // function displayResponse actually does not do anything
+   http.onreadystatechange = displayResponse; 
+   // prepare POST variables
+   var postrequest = "jsrequest=true&type_type_" + id + "=" + type + "&type_typeshort_" + id + "=" + typeshort + "&type_sortkey_" + id + "=" + typesortkey + "&mdtype_" + id + "=Modify";
+   // and now really send it
+   http.send(postrequest);
+}
+
+
+function getHTTPObject() 
+{ 
+   var xmlhttp; 
+   /*@cc_on 
+   @if (@_jscript_version >= 5) 
+      try { 
+         xmlhttp = new ActiveXObject("Msxml2.XMLHTTP"); 
+      } catch (e) { 
+         try { 
+            xmlhttp = new ActiveXObject("Microsoft.XMLHTTP"); 
+         } catch (E) { 
+            xmlhttp = false; 
+         } 
+      } @else 
+         xmlhttp = false; 
+      @end 
+   @*/  
+   if (!xmlhttp && typeof XMLHttpRequest != 'undefined') { 
+      try { 
+         xmlhttp = new XMLHttpRequest(); 
+      } catch (e) { 
+         xmlhttp = false; 
+      } 
+   } 
+   return xmlhttp; 
+} 
+
+var http = getHTTPObject(); // Create the HTTP Object immediately rather than waiting to throw an error only once it is needed
+

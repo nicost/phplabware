@@ -49,7 +49,7 @@ function update_opener_js ($db,$table) {
  * Allows for addition, modifying and deleting pulldown items
  */
 function show_type ($db,$table,$name, $tablename=false) {
-   global $HTTP_POST_VARS,$PHP_SELF,$HTTP_GET_VARS;
+   global $HTTP_POST_VARS,$PHP_SELF,$HTTP_GET_VARS, $HTTP_SESSION_VARS;
 
    $dbstring=$PHP_SELF.'?';
    if ($tablename)
@@ -100,13 +100,17 @@ function show_type ($db,$table,$name, $tablename=false) {
          echo "<tr class='row_odd' align='center'>\n";
       else
          echo "<tr class='row_even' align='center'>\n";
-      echo "<input type='hidden' name='type_id[]' value='$id'>\n";
-      echo "<input type='hidden' name='type_name' value='$name'>\n";
-      echo "<td><input type='text' name='type_type[]' value='$type'></td>\n";
-      echo "<td><input type='text' name='type_typeshort[]' value='$typeshort'></td>\n";
-      echo "<td><input type='text' name='type_sortkey[]' value='$sortkey'></td>\n";
-      $modstring = "<input type='submit' name='mdtype"."_$rownr' value='Modify'>";
-      $delstring = "<input type='submit' name='dltype"."_$rownr' value='Remove' ";
+      echo "<input type='hidden' name='type_id_$id' value='$id'>\n";
+      echo "<input type='hidden' name='type_name_$id' value='$name'>\n";
+      // Javascript tellServer sends modification to the server directly
+      echo "<td><input type='text' id='type_type_$id' name='type_type_$id' value='$type' onchange='tellServer(\"$dbstring".SID."\", $id, \"type\");'></td>\n";
+      echo "<td><input type='text' id='type_typeshort_$id' name='type_typeshort_$id' value='$typeshort' onchange='tellServer(\"$dbstring".SID."\", $id, \"typeshort\");'></td>\n";
+      echo "<td><input type='text' id='type_sortkey_$id' name='type_sortkey_$id' value='$sortkey' onchange='tellServer(\"$dbstring".SID."\", $id, \"sortkey\");'></td>\n";
+      // When Javascript is on we do not need Modify buttons here:
+      if (!$HTTP_SESSION_VARS['javascript_enabled']) {
+         $modstring = "<input type='submit' name='mdtype"."_$id' value='Modify'>";
+      }
+      $delstring = "<input type='submit' name='dltype"."_$id' value='Remove' ";
       $delstring .= "Onclick=\"if(confirm('Are you sure the $name \'$type\' ";
       $delstring .= "should be removed?')){return true;}return false;\">";                                           
       echo "<td align='center'>$modstring $delstring</td>\n";
@@ -140,12 +144,14 @@ function show_type ($db,$table,$name, $tablename=false) {
  * When more are needed,make $table2 into an array 
  */
 
-function del_type ($db,$table,$index,$tableinfo) {
+function del_type ($db,$table,$id,$tableinfo) {
    global $HTTP_POST_VARS, $HTTP_GET_VARS;
 
-   $id=$HTTP_POST_VARS['type_id'][$index]; 
+   if (! $id == $HTTP_POST_VARS["type_id_$id"]) {
+      echo "ERROR";
+   }
    if ($tableinfo->realname) {
-      $recordref=get_cell($db,$tableinfo->desname,"columnname","associated_table",$table);
+      $recordref=get_cell($db,$tableinfo->desname,'columnname','associated_table',$table);
       if ($id) {
          $r=$db->Execute("UPDATE $tableinfo->realname SET $recordref=NULL WHERE $recordref='$id'");
          if ($r) 
@@ -183,13 +189,15 @@ function del_type ($db,$table,$index,$tableinfo) {
  *
  *
  */
-function mod_type ($db,$table,$index) {
+function mod_type ($db,$table,$id) {
    global $HTTP_POST_VARS;
    
-   $id=$HTTP_POST_VARS['type_id'][$index]; 
-   $type=$HTTP_POST_VARS['type_type'][$index]; 
-   $typeshort=$HTTP_POST_VARS['type_typeshort'][$index]; 
-   $sortkey=(int) $HTTP_POST_VARS['type_sortkey'][$index];
+   if (! $id == $HTTP_POST_VARS["type_id_$id"]) {
+      echo "ERROR";
+   }
+   $type=$HTTP_POST_VARS['type_type_' . $id]; 
+   $typeshort=$HTTP_POST_VARS['type_typeshort_' . $id]; 
+   $sortkey=(int) $HTTP_POST_VARS['type_sortkey_' . $id];
    if ($type && $typeshort && is_int($sortkey)) {
       $r=$db->Execute("UPDATE $table SET type='$type',typeshort='$typeshort',sortkey=$sortkey WHERE id=$id"); 
       if ($r) {
