@@ -46,9 +46,9 @@ function displayResponse() {
 // tell the server what changed without having to reload the whole page
 function tellServer (url, id) {
    // read out the values in the row in which the change occurred
-   var type = document.getElementById("type_type_" + id).value;
-   var typeshort = document.getElementById("type_typeshort_" + id).value;
-   var typesortkey = document.getElementById("type_sortkey_" + id).value;
+   var type = document.getElementsByName("type_type_" + id)[0].value;
+   var typeshort = document.getElementsByName("type_typeshort_" + id)[0].value;
+   var typesortkey = document.getElementsByName("type_sortkey_" + id)[0].value;
 
    var request = url +  "&typeid=" + id ;
 
