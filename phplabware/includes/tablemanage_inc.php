@@ -415,24 +415,24 @@ function add_columnecg($db,$tablename2,$colname2,$label,$datatype,$Rdis,$Tdis,$r
  *  modifies a general column entry
  *
  */
-function mod_columnECG($db,$sort,$offset) {
+function mod_columnECG($db,$sort,$id) {
    global $string,$HTTP_POST_VARS;
 
-   $id=$HTTP_POST_VARS["column_id"][$offset]; 
-   $colname=$HTTP_POST_VARS["column_name"][$offset];
-   $label=$HTTP_POST_VARS["column_label"][$offset];
-   $datatype=$HTTP_POST_VARS["column_datatype"][$offset];
-   $thumbsize=$HTTP_POST_VARS["thumbsize"."_$offset"];
+   //$id=$HTTP_POST_VARS["column_id_$id"]; 
+   $colname=$HTTP_POST_VARS["column_name_$id"];
+   $label=$HTTP_POST_VARS["column_label_$id"];
+   $datatype=$HTTP_POST_VARS["column_datatype_$id"];
+   $thumbsize=$HTTP_POST_VARS["thumbsize_$id"];
    if (!$thumbsize)
       $thumbsize="NULL";
-   $Rdis=$HTTP_POST_VARS["column_drecord"][$offset];
-   $Tdis=$HTTP_POST_VARS["column_dtable"][$offset];
-   $sort=$HTTP_POST_VARS["column_sort"][$offset];
-   $req=$HTTP_POST_VARS["column_required"][$offset];
-   $modifiable=$HTTP_POST_VARS["column_modifiable"][$offset];
+   $Rdis=$HTTP_POST_VARS["column_drecord_$id"];
+   $Tdis=$HTTP_POST_VARS["column_dtable_$id"];
+   $sort=$HTTP_POST_VARS["column_sort_$id"];
+   $req=$HTTP_POST_VARS["column_required_$id"];
+   $modifiable=$HTTP_POST_VARS["column_modifiable_$id"];
 
    // find the id of the table and therewith the tablename
-   $tablename=$HTTP_POST_VARS["table_name"];
+   $tablename=$HTTP_POST_VARS['table_name'];
    $r=$db->Execute("SELECT id FROM tableoftables WHERE tablename='$tablename'");
    $tableid=$r->fields["id"];
    $real_tablename=get_cell($db,"tableoftables","real_tablename","id",$tableid);

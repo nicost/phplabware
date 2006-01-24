@@ -225,53 +225,51 @@ if ($editfield)	{
       } 	   
       // print start of row of selected group
       if ($show==1) {
-         echo "<input type='hidden' name='column_id[$rownr]' value='$id'>\n";
-	 echo "<input type='hidden' name='column_datatype[$rownr]' value='$datatype'>\n";
-  	 if ($rownr % 2) 
-	     echo "<tr class='row_odd' align='center'>\n";	
-  	 else 
-	     echo "<tr class='row_even' align='center'>\n";         
- 	 echo "<input type='hidden' name='column_name[$rownr]' value='$columnname'>\n";echo "<td>$columnname</td>\n";  
-	 echo "<td><input type='text' name='column_label[$rownr]' value='$label' size='10'></td>\n";
-	 echo "<td><input type='text' name='column_sort[$rownr]' value='$sort' size='5'></td>\n";
-	 if($display_table=='Y') {
-            echo "<td><input type='radio' name='column_dtable[$rownr]' value='Y' CHECKED >yes";
-	    echo "<input type='radio' name='column_dtable[$rownr]' value='N'>no</td>\n";
-	 }
-         else {
-            echo "<td><input type='radio' name='column_dtable[$rownr]' value='Y'>yes";
-            echo" <input type='radio' name='column_dtable[$rownr]' value='N' CHECKED >no</td>";
+         echo "<input type='hidden' name='column_id_$id' value='$id'>\n";
+         echo "<input type='hidden' name='column_datatype_$id' value='$datatype'>\n";
+  	      if ($rownr % 2) 
+	         echo "<tr class='row_odd' align='center'>\n";	
+  	      else 
+	         echo "<tr class='row_even' align='center'>\n";         
+ 	      echo "<input type='hidden' name='column_name_$id' value='$columnname'>\n";
+         echo "<td>$columnname</td>\n";  
+         echo "<td><input type='text' name='column_label_$id' value='$label' size='10'></td>\n";
+         echo "<td><input type='text' name='column_sort_$id' value='$sort' size='5'></td>\n";
+         if ($display_table=='Y') {
+            echo "<td><input type='radio' name='column_dtable_$id' value='Y' CHECKED >yes";
+            echo "<input type='radio' name='column_dtable_$id' value='N'>no</td>\n";
+	      } else {
+            echo "<td><input type='radio' name='column_dtable_$id' value='Y'>yes";
+            echo" <input type='radio' name='column_dtable_$id' value='N' CHECKED >no</td>";
          }
-         if($display_record=='Y') {
-            echo "<td><input type='radio' name='column_drecord[$rownr]' value='Y' CHECKED>yes";
-            echo" <input type='radio' name='column_drecord[$rownr]' value='N'> no </td>\n";
-         }
-         else {
-            echo "<td><input type='radio' name='column_drecord[$rownr]' value='Y'>yes";
-            echo" <input type='radio' name='column_drecord[$rownr]' checked value='N'> no </td>\n";
+         if ($display_record=='Y') {
+            echo "<td><input type='radio' name='column_drecord_$id' value='Y' CHECKED>yes";
+            echo" <input type='radio' name='column_drecord_$id' value='N'> no </td>\n";
+         } else {
+            echo "<td><input type='radio' name='column_drecord_$id' value='Y'>yes";
+            echo" <input type='radio' name='column_drecord_$id' checked value='N'> no </td>\n";
          }
 	  	
          if($display_required=='Y') {
-            echo "<td><input type='radio' name='column_required[$rownr]' value='Y' CHECKED>yes";
-            echo" <input type='radio' name='column_required[$rownr]' value='N'> no </td>\n";
-         }
-         else {
-            echo "<td><input type='radio' name='column_required[$rownr]' value='Y'>yes";
-            echo" <input type='radio' name='column_required[$rownr]' checked value='N'> no </td>\n";
+            echo "<td><input type='radio' name='column_required_$id' value='Y' CHECKED>yes";
+            echo" <input type='radio' name='column_required_$id' value='N'> no </td>\n";
+         } else {
+            echo "<td><input type='radio' name='column_required_$id' value='Y'>yes";
+            echo" <input type='radio' name='column_required_$id' checked value='N'> no </td>\n";
          }
 	  		 		
          if (in_array($columnname,$nomodifiable))
             echo "<td>no</td>\n";
          elseif($modifiable=='Y') {
-            echo "<td><input type='radio' name='column_modifiable[$rownr]' value='Y' CHECKED>yes";
-            echo" <input type='radio' name='column_modifiable[$rownr]' value='N'> no </td>\n";
+            echo "<td><input type='radio' name='column_modifiable_$id' value='Y' CHECKED>yes";
+            echo" <input type='radio' name='column_modifiable_$id' value='N'> no </td>\n";
          }
          else {
-            echo "<td><input type='radio' name='column_modifiable[$rownr]' value='Y'>yes";
-            echo" <input type='radio' name='column_modifiable[$rownr]' checked value='N'> no </td>\n";
+            echo "<td><input type='radio' name='column_modifiable_$id' value='Y'>yes";
+            echo" <input type='radio' name='column_modifiable_$id' checked value='N'> no </td>\n";
          }
 	  		 		
-      	 echo "<input type='hidden' name='column_datatype[]' value='$label'>\n";
+         echo "<input type='hidden' name='column_datatype_$id' value='$label'>\n";
          echo "<td>$datatype</td>\n";
          if ($ass_table || $ass_column) {
             echo "<td>";
@@ -291,29 +289,29 @@ if ($editfield)	{
             echo "<td>Y</td>\n";
          else
             echo "<td>N</td>\n";
-	 $modstring = "<input type='submit' name='modcolumn"."_$rownr' value='Modify'>\n";
+         $modstring = "<input type='submit' name='modcolumn"."_$id' value='Modify'>\n";
          if ($datatype=="image") {
-	    $alinkstring = "<input type='hidden' name='thumbsize"."_$rownr' value='$thumbsize'>\n";
-            $alinkstring.="<input type='submit' name='modcolumn"."_$rownr' value='Thumbnail size' Onclick='var temp=window.prompt(\"Please enter the maximum thumbnail size (in pixels):\",\"$thumbsize\");if (temp) {document.tableform.thumbsize"."_$rownr.value=temp} else {return false}; return true;' >\n";
+            $alinkstring = "<input type='hidden' name='thumbsize"."_$id' value='$thumbsize'>\n";
+            $alinkstring.="<input type='submit' name='modcolumn"."_$id' value='Thumbnail size' Onclick='var temp=window.prompt(\"Please enter the maximum thumbnail size (in pixels):\",\"$thumbsize\");if (temp) {document.tableform.thumbsize"."_$id.value=temp} else {return false}; return true;' >\n";
          }
          else
-	    $alinkstring = "<input type='submit' name='alinkcolumn"."_$rownr' value='Active Link'>\n";
+	         $alinkstring = "<input type='submit' name='alinkcolumn"."_$rownr' value='Active Link'>\n";
          $delstring = "<input type='submit' name='delcolumn"."_$rownr' value='Remove' ";
          $delstring .= "Onclick=\"if(confirm('Are you absolutely sure that the column $label should be removed? (No undo possible!)')){return true;}return false;\">";  
    	 echo "<td align='center'>$modstring".$alinkstring;
    	 $candel=1;
    	 foreach($nodel as $checkme){
-            if ($columnname==$checkme){
-                  $candel=0;
-               }
-            }
-            if ($candel==1)
-               echo "$delstring</td>\n";
- 	    echo "</tr>\n";
-         }
-         $r->MoveNext();
-         $rownr+=1;		
-      }
+           if ($columnname==$checkme){
+               $candel=0;
+           }
+        }
+        if ($candel==1)
+           echo "$delstring</td>\n";
+        echo "</tr>\n";
+     }
+     $r->MoveNext();
+     $rownr+=1;		
+   }
 
    echo "</table></form>\n";
    printfooter($db,$USER);
