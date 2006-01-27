@@ -300,7 +300,7 @@ function mod_table($db,$id,$offset) {
 function add_columnecg($db,$tablename2,$colname2,$label,$datatype,$Rdis,$Tdis,$req,$modifiable,$sort) {
    global $string;
 
-   $SQL_reserved=",absolute,action,add,allocate,alter,are,assertion,at,between,bit,bit_length,both,cascade,cascaded,case,cast,catalog,char_length,charachter_length,cluster,coalsce,collate,collation,column,connect,connection,constraint,constraints,convert,corresponding,cross,current_date,current_time,current_timestamp,current_user,date,day,deallocate,deferrrable,deferred,describe,descriptor,diagnostics,disconnect,domain,drop,else,end-exec,except,exception,execute,external,extract,false,first,full,get,global,hour,identity,immediate,initially,inner,input,insensitive,intersect,interval,isolation,join,last,leading,left,level,local,lower,match,minute,month,names,national,natural,nchar,next,no,nullif,octet_length,only,outer,output,overlaps,pad,partial,position,prepare,preserve,prior,read,relative,restrict,revoke,right,rows,scroll,second,session,session_user,size,space,sqlstate,substring,system_user,temporary,then,time,timepstamp,timezone_hour,timezone_minute,trailing,transaction,translate,translation,trim,true,unknown,uppper,usage,using,value,varchar,varying,when,write,year,zone,";
+   $SQL_reserved=",absolute,action,add,allocate,alter,are,assertion,at,between,bit,bit_length,both,cascade,cascaded,case,cast,catalog,char_length,charachter_length,cluster,coalsce,collate,collation,column,connect,connection,constraint,constraints,convert,corresponding,cross,current_date,current_time,current_timestamp,current_user,date,day,deallocate,deferrrable,deferred,describe,descriptor,diagnostics,disconnect,domain,drop,else,end-exec,except,exception,execute,external,extract,false,first,full,get,global,hour,identity,immediate,initially,inner,input,insensitive,intersect,interval,isolation,join,last,leading,left,level,local,lower,match,minute,month,names,national,natural,nchar,next,no,nullif,octet_length,only,outer,output,overlaps,pad,partial,position,prepare,preserve,prior,read,relative,restrict,revoke,right,rows,scroll,second,session,session_user,size,some,space,sqlstate,substring,system_user,temporary,then,time,timepstamp,timezone_hour,timezone_minute,trailing,transaction,translate,translation,trim,true,unknown,uppper,usage,using,value,varchar,varying,when,write,year,zone,";
 
    // find the id of the table and therewith the tablename
    $r=$db->Execute("SELECT id,real_tablename,table_desc_name,label,shortname FROM tableoftables WHERE tablename='$tablename2'"); 
@@ -449,6 +449,61 @@ function mod_columnECG($db,$sort,$id) {
       $string="Failed to modify column $colname.";
    return false;	
 }
+
+
+/******************************************************************************
+ * 
+ * modcolumnjs - modified only a single setting for the given column
+ *
+ * Used for modifying table settings using AJAX and the like
+ *
+ */
+
+function mod_columnjs($db,$id) {
+   global $HTTP_POST_VARS;
+
+   // Figure out which column will be changed:
+   $variable=explode('_',$HTTP_POST_VARS['variable']);
+   // naming has not been very fortunate in the past, fix it here
+   $variable=$variable[1];
+   switch ($variable) {
+      case 'sort' : 
+         $variable='sortkey';
+         break;
+      case 'drecord' : 
+         $variable='display_record';
+         break;
+      case 'dtable' : 
+         $variable='display_table';
+         break;
+   }
+          
+   // Set the column to this value:
+   $value=$HTTP_POST_VARS['value'];
+
+   if ($id && $variable && $value) {
+      // find the id of the table and therewith the tablename
+      $tablename=$HTTP_POST_VARS['table_name'];
+      $r=$db->Execute("SELECT id FROM tableoftables WHERE tablename='$tablename'");
+      $tableid=$r->fields['id'];
+      $real_tablename=get_cell($db,'tableoftables','real_tablename','id',$tableid);
+      $desc=$real_tablename."_desc";
+
+      // escape bad stuffin label
+      $value=strtr($value,",'","  ");
+      //$db->debug=true;
+      $r=$db->Execute("UPDATE $desc SET $variable='$value' WHERE id=$id");   	
+      //$db->debug=false;
+   }
+   // Report back so that the javascript code can take appropriate action
+   if ($r) {
+      echo 'SUCCESS!';
+   } else {
+      echo 'FAILED!';
+   }
+}
+
+
 
 /**
  * *

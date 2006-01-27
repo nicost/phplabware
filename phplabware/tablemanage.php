@@ -35,11 +35,22 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
    }
 }
 reset($HTTP_POST_VARS);
+//print_r($HTTP_SESSION_VARS);
+//print_r($HTTP_POST_VARS);
+
+// when editing columns of a table include this javascript file:
+if (isset($editfield)) {
+   $jsfiles[]='./includes/js/editfields.js';
+}
 
 $permissions=$USER['permissions'];
 if ($addcol_datatype=='table') 
-   $jsfile='./includes/js/tablemanage.js';
-printheader($httptitle,false,$jsfile);
+   $jsfiles[]='./includes/js/tablemanage.js';
+
+// Except for ajax requests, we'll send the general headers now
+if (!isset($HTTP_POST_VARS['jsrequest'])) {
+   printheader($httptitle,false,$jsfiles);
+} 
 
 if (!($permissions & $SUPER)) {
 	navbar($USER['permissions']);
@@ -47,7 +58,7 @@ if (!($permissions & $SUPER)) {
 	printfooter($db,$USER);
 	exit;
 }
- 
+
 while((list($key, $val) = each($HTTP_POST_VARS))) {
    if ($key == "addtable") {
       add_table($db,$newtable_name,$newtable_label,$newtable_sortkey,$newtable_plugincode);
@@ -88,6 +99,13 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
       }
       break;
    }   	
+   // when editing columns use Ajax to set this POST variable as well as the columnname that needs to be changed and the new value.  Handle this and exit (no HTML output needed).
+   elseif (substr($key, 0, 11) == 'modcolumnjs') {  
+      $modarray = explode("_", $key);
+      mod_columnjs($db,$modarray[1]);
+      exit;
+      break;
+   }
    elseif (substr($key, 0, 9) == "modcolumn") {  
       $modarray = explode("_", $key);
       mod_columnECG($db,$sort,$modarray[1]);
@@ -146,7 +164,7 @@ if ($editfield)	{
    navbar($USER["permissions"]);
 
    $r=$db->Execute("SELECT id,table_desc_name,label FROM tableoftables WHERE tablename='$editfield'");
-   $id=$r->fields["id"];
+   $id=$r->fields['id'];
    $currdesc=$r->fields['table_desc_name'];
    $tablelabel=$r->fields['label'];
    echo "<h3 align='center'>$string</h3>";
@@ -202,7 +220,7 @@ if ($editfield)	{
    while (!($r->EOF) && $r) {
       $label = $r->fields['label'];
       $columnname = $r->fields['columnname'];
-      $id = $r->fields["id"];
+      $id = $r->fields['id'];
       $display_table = $r->fields['display_table'];
       $display_record = $r->fields['display_record'];
       $display_required= $r->fields['required'];
@@ -233,84 +251,89 @@ if ($editfield)	{
 	         echo "<tr class='row_even' align='center'>\n";         
  	      echo "<input type='hidden' name='column_name_$id' value='$columnname'>\n";
          echo "<td>$columnname</td>\n";  
-         echo "<td><input type='text' name='column_label_$id' value='$label' size='10'></td>\n";
-         echo "<td><input type='text' name='column_sort_$id' value='$sort' size='5'></td>\n";
+         echo "<td><input type='text' name='column_label_$id' value='$label' size='10' onchange='tellServer(\"$dbstring\", $id, this.name, this.value)'></td>\n";
+         echo "<td><input type='text' name='column_sort_$id' value='$sort' size='5' onchange='tellServer(\"$dbstring\",$id, this.name, this.value)'></td>\n";
          if ($display_table=='Y') {
-            echo "<td><input type='radio' name='column_dtable_$id' value='Y' CHECKED >yes";
-            echo "<input type='radio' name='column_dtable_$id' value='N'>no</td>\n";
+            echo "<td><input type='radio' name='column_dtable_$id' value='Y' CHECKED onchange='tellServer(\"$dbstring\",$id, this.name, this.value)'>yes";
+            echo "<input type='radio' name='column_dtable_$id' value='N' onchange='tellServer(\"$dbstring\",$id, this.name, this.value)'>no</td>\n";
 	      } else {
-            echo "<td><input type='radio' name='column_dtable_$id' value='Y'>yes";
-            echo" <input type='radio' name='column_dtable_$id' value='N' CHECKED >no</td>";
+            echo "<td><input type='radio' name='column_dtable_$id' value='Y' onchange='tellServer(\"$dbstring\",$id, this.name, this.value)'>yes";
+            echo" <input type='radio' name='column_dtable_$id' value='N' CHECKED onchange='tellServer(\"$dbstring\",$id, this.name, this.value)'>no</td>";
          }
          if ($display_record=='Y') {
-            echo "<td><input type='radio' name='column_drecord_$id' value='Y' CHECKED>yes";
-            echo" <input type='radio' name='column_drecord_$id' value='N'> no </td>\n";
+            echo "<td><input type='radio' name='column_drecord_$id' value='Y' onchange='tellServer(\"$dbstring\",$id, this.name, this.value)' CHECKED>yes";
+            echo" <input type='radio' name='column_drecord_$id' value='N' onchange='tellServer(\"$dbstring\",$id, this.name, this.value)'> no </td>\n";
          } else {
-            echo "<td><input type='radio' name='column_drecord_$id' value='Y'>yes";
-            echo" <input type='radio' name='column_drecord_$id' checked value='N'> no </td>\n";
+            echo "<td><input type='radio' name='column_drecord_$id' value='Y' onchange='tellServer(\"$dbstring\",$id, this.name, this.value)'>yes";
+            echo" <input type='radio' name='column_drecord_$id' checked value='N' onchange='tellServer(\"$dbstring\",$id, this.name, this.value)'> no </td>\n";
          }
 	  	
          if($display_required=='Y') {
-            echo "<td><input type='radio' name='column_required_$id' value='Y' CHECKED>yes";
-            echo" <input type='radio' name='column_required_$id' value='N'> no </td>\n";
-         } else {
-            echo "<td><input type='radio' name='column_required_$id' value='Y'>yes";
-            echo" <input type='radio' name='column_required_$id' checked value='N'> no </td>\n";
-         }
-	  		 		
-         if (in_array($columnname,$nomodifiable))
-            echo "<td>no</td>\n";
-         elseif($modifiable=='Y') {
-            echo "<td><input type='radio' name='column_modifiable_$id' value='Y' CHECKED>yes";
-            echo" <input type='radio' name='column_modifiable_$id' value='N'> no </td>\n";
-         }
-         else {
-            echo "<td><input type='radio' name='column_modifiable_$id' value='Y'>yes";
-            echo" <input type='radio' name='column_modifiable_$id' checked value='N'> no </td>\n";
-         }
-	  		 		
-         echo "<input type='hidden' name='column_datatype_$id' value='$label'>\n";
-         echo "<td>$datatype</td>\n";
-         if ($ass_table || $ass_column) {
-            echo "<td>";
-            if (! $r->fields['associated_local_key']) {
-               echo "<b>primary key</b><br>";
-               echo "$ass_table<br>$ass_column</td>\n";
-            }
-            else {
-               $ass_local_column=get_cell($db,$currdesc,'label','id',$r->fields['associated_local_key']);
-               echo "primary key: $ass_local_column<br>\n"; 
-               echo "$ass_column</td>\n";
-            }
-         }
-         else
-            echo "<td>&nbsp;</td>\n";
-         if ($link_first)
-            echo "<td>Y</td>\n";
-         else
-            echo "<td>N</td>\n";
-         $modstring = "<input type='submit' name='modcolumn"."_$id' value='Modify'>\n";
-         if ($datatype=="image") {
-            $alinkstring = "<input type='hidden' name='thumbsize"."_$id' value='$thumbsize'>\n";
-            $alinkstring.="<input type='submit' name='modcolumn"."_$id' value='Thumbnail size' Onclick='var temp=window.prompt(\"Please enter the maximum thumbnail size (in pixels):\",\"$thumbsize\");if (temp) {document.tableform.thumbsize"."_$id.value=temp} else {return false}; return true;' >\n";
-         }
-         else
-	         $alinkstring = "<input type='submit' name='alinkcolumn"."_$rownr' value='Active Link'>\n";
-         $delstring = "<input type='submit' name='delcolumn"."_$rownr' value='Remove' ";
-         $delstring .= "Onclick=\"if(confirm('Are you absolutely sure that the column $label should be removed? (No undo possible!)')){return true;}return false;\">";  
-   	 echo "<td align='center'>$modstring".$alinkstring;
-   	 $candel=1;
-   	 foreach($nodel as $checkme){
-           if ($columnname==$checkme){
-               $candel=0;
+            echo "<td><input type='radio' name='column_required_$id' value='Y' onchange='tellServer(\"$dbstring\",$id, this.name, this.value)' CHECKED>yes";
+            echo" <input type='radio' name='column_required_$id' value='N' onchange='tellServer(\"$dbstring\",$id, this.name, this.value)'> no </td>\n";
+        } else {
+            echo "<td><input type='radio' name='column_required_$id' value='Y' onchange='tellServer(\"$dbstring\",$id, this.name, this.value)'>yes";
+            echo" <input type='radio' name='column_required_$id' checked value='N' onchange='tellServer(\"$dbstring\",$id, this.name, this.value)'> no </td>\n";
+        }
+	  	 		
+        if (in_array($columnname,$nomodifiable))
+           echo "<td>no</td>\n";
+        elseif($modifiable=='Y') {
+           echo "<td><input type='radio' name='column_modifiable_$id' value='Y' onchange='tellServer(\"$dbstring\",$id, this.name, this.value)' CHECKED>yes";
+           echo" <input type='radio' name='column_modifiable_$id' value='N' onchange='tellServer(\"$dbstring\",$id, this.name, this.value)'> no </td>\n";
+        }
+        else {
+           echo "<td><input type='radio' name='column_modifiable_$id' value='Y' onchange='tellServer(\"$dbstring\",$id, this.name, this.value)'>yes";
+           echo" <input type='radio' name='column_modifiable_$id' checked value='N' onchange='tellServer(\"$dbstring\",$id, this.name, this.value)'> no </td>\n";
+        }
+	  	 		
+        echo "<input type='hidden' name='column_datatype_$id' value='$label'>\n";
+        echo "<td>$datatype</td>\n";
+        if ($ass_table || $ass_column) {
+           echo "<td>";
+           if (! $r->fields['associated_local_key']) {
+              echo "<b>primary key</b><br>";
+              echo "$ass_table<br>$ass_column</td>\n";
+           }
+           else {
+              $ass_local_column=get_cell($db,$currdesc,'label','id',$r->fields['associated_local_key']);
+              echo "primary key: $ass_local_column<br>\n"; 
+              echo "$ass_column</td>\n";
            }
         }
-        if ($candel==1)
-           echo "$delstring</td>\n";
-        echo "</tr>\n";
-     }
-     $r->MoveNext();
-     $rownr+=1;		
+        else
+           echo "<td>&nbsp;</td>\n";
+        if ($link_first)
+           echo "<td>Y</td>\n";
+        else
+           echo "<td>N</td>\n";
+        $modstring = "<input type='submit' name='modcolumn"."_$id' value='Modify'>\n";
+        if ($datatype=="image") {
+           $alinkstring = "<input type='hidden' name='thumbsize"."_$id' value='$thumbsize'>\n";
+           $alinkstring.="<input type='submit' name='modcolumn"."_$id' value='Thumbnail size' Onclick='var temp=window.prompt(\"Please enter the maximum thumbnail size (in pixels):\",\"$thumbsize\");if (temp) {document.tableform.thumbsize"."_$id.value=temp} else {return false}; return true;' >\n";
+        } else
+	        $alinkstring = "<input type='submit' name='alinkcolumn"."_$rownr' value='Active Link'>\n";
+        $delstring = "<input type='submit' name='delcolumn"."_$rownr' value='Remove' ";
+        $delstring .= "Onclick=\"if(confirm('Are you absolutely sure that the column $label should be removed? (No undo possible!)')){return true;}return false;\">";  
+
+   	  echo "<td align='center'>";
+        // the "modify button is only needed when javascript does not work
+        if (! $HTTP_SESSION_VARS['javascript_enabled']) {
+           echo $modstring;
+        }
+        echo $alinkstring;
+   	  $candel=1;
+   	  foreach($nodel as $checkme){
+           if ($columnname==$checkme){
+                $candel=0;
+            }
+         }
+         if ($candel==1)
+            echo "$delstring</td>\n";
+         echo "</tr>\n";
+      }
+      $r->MoveNext();
+      $rownr+=1;		
    }
 
    echo "</table></form>\n";
