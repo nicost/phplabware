@@ -122,10 +122,10 @@ function searchfield ($db,$tableinfo,$nowfield,$HTTP_POST_VARS,$jscript) {
           $jscript2=" onclick='MyWindow=window.open (\"general.php?tablename=".$tableinfo->name."&amp;edit_type=$nowfield[ass_t]&amp;jsnewwindow=true&amp;formname=$formname&amp;selectname=$nowfield[name]".SID."\",\"type\",\"scrollbars,resizable,toolbar,status,menubar,width=600,height=400\");MyWindow.focus()'";
           echo "<input type='button' name='edit_button' value='Edit $nowfield[label]' $jscript2><br>\n";
       }	 		 			
-      $rpull=$db->Execute("SELECT typeshort,id from $nowfield[ass_t] ORDER by sortkey,typeshort");
+      $rpull=$db->Execute("SELECT typeshort,id from $nowfield[ass_t] ORDER by sortkey,type");
       if ($rpull)
          if ($nowfield['datatype']=='mpulldown')
-            $text=$rpull->GetMenu2("$nowfield[name]",${$nowfield[name]},true,true,0,"style='width: 80%' ");   
+            $text=$rpull->GetMenu2("$nowfield[name]",${$nowfield[name]},true,true,0,"style='width: 80%' align='left'");   
          else 
             $text=$rpull->GetMenu2("$nowfield[name]",${$nowfield[name]},true,false,0,"style='width: 80%' $jscript");   
       else
@@ -950,7 +950,7 @@ function getvalues($db,$tableinfo,$fields,$qfield=false,$field=false)
             }
             // datatype pulldown
             elseif ($rb->fields['datatype']=='pulldown') {
-               ${$column}['text']=get_cell($db,${$column}['ass_t'],'typeshort','id',${$column}['values']); 
+               ${$column}['text']=get_cell($db,${$column}['ass_t'],'type','id',${$column}['values']); 
             }
             // datatype mpulldown
             elseif ($rb->fields['datatype']=='mpulldown') {
@@ -964,7 +964,7 @@ function getvalues($db,$tableinfo,$fields,$qfield=false,$field=false)
                }
                if ($typeids){
                   $typeids=substr($typeids,0,-1);
-                  $rasst2=$db->Execute("SELECT typeshort from {${$column}['ass_t']} where id IN ($typeids) ORDER BY sortkey");
+                  $rasst2=$db->Execute("SELECT type from {${$column}['ass_t']} where id IN ($typeids) ORDER BY sortkey");
                   while ($rasst2 && !$rasst2->EOF) {
                      ${$column}['text'].=$rasst2->fields[0].'<br>'; 
                      $rasst2->MoveNext();
@@ -1022,8 +1022,9 @@ function getvalues($db,$tableinfo,$fields,$qfield=false,$field=false)
       //array_push ($Allfields, ${$column});
       //$Allfields[${$column}['name']]=${$column};
    }
-   if (function_exists("plugin_getvalues"))
+   if (function_exists("plugin_getvalues")) {
       plugin_getvalues($db,$Allfields,$id,$tableinfo->id);
+   }
    return $Allfields;
 }
 
