@@ -468,8 +468,9 @@ function add_js ($script) {
 /**
  *  Prints initial part of webpage
  *
+ * jsfiles can be a single file or an array containing a list of files
  */
-function printheader($title,$head=false, $jsfile=false) {
+function printheader($title,$head=false, $jsfiles=false) {
    global $client,$db,$version,$active,$USER,$HTTP_SESSION_VARS;
 
    // let Netscape 4 users use their back button
@@ -489,8 +490,18 @@ function printheader($title,$head=false, $jsfile=false) {
 echo $head;
 if ($HTTP_SESSION_VARS['javascript_enabled'] && $USER['settings']['menustyle']) {
    echo "\n<script type='text/javascript' language='Javascript'>\n<!--\n";
-   if ($jsfile && is_readable($jsfile))
+
+   // include single or multiple javascript files
+   if (is_array($jsfiles)) {
+      foreach ($jsfiles as $jsfile) {
+         if ($jsfile && is_readable($jsfile)) {
+            readfile($jsfile);
+         }
+      }
+   } elseif ($jsfile && is_readable($jsfile)) {
       readfile($jsfile);
+   }
+   // always include the javascript code to build the drop down menu
    readfile('./includes/js/linkmenu.js');
    echo "\n// End Javascript -->\n</script>\n\n";
    $mode='menu';
