@@ -125,7 +125,7 @@ function searchfield ($db,$tableinfo,$nowfield,$HTTP_POST_VARS,$jscript) {
       $rpull=$db->Execute("SELECT typeshort,id from $nowfield[ass_t] ORDER by sortkey,type");
       if ($rpull)
          if ($nowfield['datatype']=='mpulldown')
-            $text=$rpull->GetMenu2("$nowfield[name]",${$nowfield[name]},true,true,0,"style='width: 80%' align='left'");   
+            $text=$rpull->GetMenu2("$nowfield[name]",${$nowfield[name]},false,true,0,"style='width: 80%' align='left'");   
          else 
             $text=$rpull->GetMenu2("$nowfield[name]",${$nowfield[name]},true,false,0,"style='width: 80%' $jscript");   
       else
@@ -803,7 +803,7 @@ function display_add($db,$tableinfo,$Allfields,$id,$namein,$system_settings) {
          elseif ($nowfield['datatype']=='mpulldown') {
             unset ($valueArray);
             // get previous value	
-            $r=$db->Execute("SELECT typeshort,id FROM {$nowfield['ass_t']} ORDER BY sortkey,typeshort");
+            $r=$db->Execute("SELECT typeshort,id FROM {$nowfield['ass_t']} ORDER BY sortkey,type");
             $rbv=$db->Execute("SELECT typeid FROM {$nowfield['key_t']} WHERE recordid=$id");
             while ($rbv && !$rbv->EOF) {
                $valueArray[]=$rbv->fields[0];
