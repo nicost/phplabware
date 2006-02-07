@@ -498,8 +498,8 @@ if ($HTTP_SESSION_VARS['javascript_enabled'] && $USER['settings']['menustyle']) 
             readfile($jsfile);
          }
       }
-   } elseif ($jsfile && is_readable($jsfile)) {
-      readfile($jsfile);
+   } elseif ($jsfiles && is_readable($jsfiles)) {
+      readfile($jsfiles);
    }
    // always include the javascript code to build the drop down menu
    readfile('./includes/js/linkmenu.js');
