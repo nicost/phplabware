@@ -323,6 +323,37 @@ function display_table_change($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr
       echo "<input type='hidden' name='evr_$id' value='{$ra->fields['er']}'>\n";
       echo "<input type='hidden' name='grw_$id' value='{$ra->fields['gw']}'>\n";
       echo "<input type='hidden' name='evw_$id' value='{$ra->fields['er']}'>\n";
+
+      // Action column - icons and javascript to enable these by Michael Muller
+      // View action
+      if ($HTTP_SESSION_VARS['javascript_enabled']) {
+         $jscript=" onclick='MyWindow=window.open (\"general.php?tablename=".$tableinfo->name."&amp;showid=$id&amp;jsnewwindow=true&amp;viewid=$viewid\",\"view\",\"status,menubar,toolbar,scrollbars,resizable,titlebar,width=700,height=500\");MyWindow.focus()'";
+         echo "<A href=\"javascript:void(0)\" $jscript> <img src=\"icons/detail.png\" alt=\"detail\" title=\"detail\" border=\"0\"/></A>\n";
+      } else {
+         echo "<input type=\"submit\" name=\"view_" . $id . "\" value=\"View\">\n";
+      }
+      if (may_write($db,$tableinfo->id,$id,$USER)) {
+         // Change action
+         // this works, but how do you go back from the modify window to this one???
+         if ($HTTP_SESSION_VARS['javascript_enabled']) {
+            echo "<input type=\"hidden\" name=\"chg_" . $id . "\">\n";
+            $jscript="Onclick=\"document.g_form.chg_$id.value='Change'; document.g_form.submit();\"";
+            echo "<A href=\"javascript:void(0)\" $jscript> <img src=\"icons/edit_modify.png\" alt=\"modify\" title=\"modify\" border=\"0\"/></A>\n";
+         } else {
+            echo "<input type=\"submit\" name=\"chg_" . $id . "\" value=\"Change\">\n";
+         }
+         // Delete action
+         if (! $HTTP_SESSION_VARS['javascript_enabled']) {
+            $delstring = "<input type=\"submit\" name=\"del_" . $id . "\" value=\"Remove\">\n";
+         } else {
+	         $jstitle=str_replace("'"," ",$title);
+            $delstring = "Onclick=\"if(confirm('Are you sure that you want to remove record $jstitle?'))";
+            $delstring .= "{document.g_form.del_$id.value='Remove';document.g_form.submit();return true;}return false;\""; 
+            $delstring = "<input type='hidden' name='del_$id'>\n<A href=\"javascript:void(0)\" $delstring> <img src=\"icons/delete.png\" alt=\"delete\" title=\"delete\" border=\"0\"/></A>";
+         }
+         echo "$delstring\n";
+      }
+      /*
       if ($HTTP_SESSION_VARS['javascript_enabled']) {
          $jscript=" onclick='MyWindow=window.open (\"general.php?tablename=".$tableinfo->name."&amp;showid=$id&amp;jsnewwindow=true\",\"view\",\"scrollbars,resizable,toolbar,status,menubar,width=700,height=500\");MyWindow.focus()'";
          echo "<input type=\"button\" name=\"view_" . $id . "\" value=\"View\" $jscript>\n";
@@ -336,6 +367,7 @@ function display_table_change($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr
          $delstring .= "{return true;}return false;\">"; 
          echo "$delstring\n";
       }
+      */
       echo "</td>\n";
       echo "</tr>\n";
       $r->MoveNext();
@@ -393,12 +425,24 @@ function display_table_info($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr_c
             $nowfield['datatype']=$nowfield['nested']['datatype'];
             $nowfield['fileids']=$nowfield['nested']['fileids'];
          }
+         // display the contents 
          if ($nowfield['link'])
             echo "<td>{$nowfield['link']}</td>\n";
          elseif ($nowfield['datatype']=='mpulldown')
             echo "<td align='left' cellpadding='5%'>{$nowfield['text']}</td>\n"; 
-         else
+         elseif ( ($nowfield['datatype'] == 'text') && (strlen($nowfield['text']) > 59) && $HTTP_SESSION_VARS['javascript_enabled']) {
+            // provide long text by mouseover -- by MM
+            $startofText = substr($nowfield['text'],0,60);
+            echo "<td><a href=\"javascript:void(0);\"";
+            echo "onmouseover=\"this.T_WIDTH=80;return escape";
+            $escapedText = htmlspecialchars($nowfield['text'], ENT_QUOTES);
+            // returns spoil the party
+            $escapedText = preg_replace("/\r\n|\n|\r/", "<br>", $escapedText);
+            echo '(\''.$escapedText.'\')">'.$startofText."...</a></td>\n";
+         } else {
             echo "<td>{$nowfield['text']}</td>\n"; 
+         }
+
          // write file ids to user settings so that we do not need to check them again when downloading thumbnails
          //if (($nowfield['datatype']=='image' || $nowfield['datatype']=='file') && isset($nowfield['fileids'])) {
          if (isset($nowfield['fileids'])) {
@@ -407,26 +451,33 @@ function display_table_info($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr_c
          }
       }
 
+      // Action column - icons and javascript to enable these by Michael Muller
       echo "<td align='center'>&nbsp;\n";  
+      // View action
       if ($HTTP_SESSION_VARS['javascript_enabled']) {
-         //$jscript=" onclick='MyWindow=window.open (\"general.php?tablename=".$tableinfo->name."&showid=$id&jsnewwindow=true\",\"view\",\"status,menubar,scrollbar,resizable,width=600,height=400\");MyWindow.focus()'";
          $jscript=" onclick='MyWindow=window.open (\"general.php?tablename=".$tableinfo->name."&amp;showid=$id&amp;jsnewwindow=true&amp;viewid=$viewid\",\"view\",\"status,menubar,toolbar,scrollbars,resizable,titlebar,width=700,height=500\");MyWindow.focus()'";
-         echo "<input type=\"button\" name=\"view_" . $id . "\" value=\"View\" $jscript>\n";
-      }
-      else
+         echo "<A href=\"javascript:void(0)\" $jscript> <img src=\"icons/detail.png\" alt=\"detail\" title=\"detail\" border=\"0\"/></A>\n";
+      } else {
          echo "<input type=\"submit\" name=\"view_" . $id . "\" value=\"View\">\n";
+      }
       if (may_write($db,$tableinfo->id,$id,$USER)) {
-// this works, but how do you go back from the modify window to this one???
+         // Modify action
+         // this works, but how do you go back from the modify window to this one???
          if ($HTTP_SESSION_VARS['javascript_enabled']) {
             $jscript="onclick='MyWindow=window.open (\"general.php?tablename=".$tableinfo->name."&amp;jsnewwindow=true&amp;modify=true&amp;mod_".$id."=Modify\",\"modify\",\"scrollbars,resizable,status,menubar,toolbar,width=700,height=500\");MyWindow.focus()'";
-            echo "<input type=\"button\" name=\"mod_" . $id . "\" value=\"Modify\" $jscript>\n";
-         }
-         else
+            echo "<A href=\"javascript:void(0)\" $jscript> <img src=\"icons/edit_modify.png\" alt=\"modify\" title=\"modify\" border=\"0\"/></A>\n";
+         } else {
             echo "<input type=\"submit\" name=\"mod_" . $id . "\" value=\"Modify\">\n";
-         $delstring = "<input type=\"submit\" name=\"del_" . $id . "\" value=\"Remove\" ";
-	 $jstitle=str_replace("'"," ",$title);
-         $delstring .= "Onclick=\"if(confirm('Are you sure that you want to remove record $jstitle?'))";
-         $delstring .= "{return true;}return false;\">"; 
+         }
+         // Delete action
+         if (! $HTTP_SESSION_VARS['javascript_enabled']) {
+            $delstring = "<input type=\"submit\" name=\"del_" . $id . "\" value=\"Remove\">\n";
+         } else {
+	         $jstitle=str_replace("'"," ",$title);
+            $delstring = "Onclick=\"if(confirm('Are you sure that you want to remove record $jstitle?'))";
+            $delstring .= "{document.g_form.del_$id.value='Remove';document.g_form.submit();return true;}return false;\""; 
+            $delstring = "<input type='hidden' name='del_$id'>\n<A href=\"javascript:void(0)\" $delstring> <img src=\"icons/delete.png\" alt=\"delete\" title=\"delete\" border=\"0\"/></A>";
+         }
          echo "$delstring\n";
       }
       echo "</td>\n";
@@ -450,6 +501,7 @@ function display_table_info($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr_c
    echo "</table>\n";
    next_previous_buttons($page_array);
    echo "</form>\n";
+   echo "<script language='JavaScript' type='text/javascript' src='includes/js/wz_tooltip.js'></script>";
 }
 
 /**
@@ -480,6 +532,7 @@ function display_record($db,$Allfields,$id,$tableinfo,$backbutton=true,$previous
          $r->MoveNext();
       }
    }
+   //print_r($Allfields);
 
    foreach ($Allfields as $nowfield) {
 
@@ -491,10 +544,9 @@ function display_record($db,$Allfields,$id,$tableinfo,$backbutton=true,$previous
       }
       else {
          //Only show the entry when display_record is set
-         $thisfield=$nowfield['display_record']=='Y';
+         $thisfield= ($nowfield['display_record']==='Y');
       }
-      
-      if ($thisfield) {
+      if ($thisfield && is_array($nowfield)) {
          // explode nested table links to the current world:
          if (isset($nowfield['nested'])) {
             $nowfield['text']=$nowfield['nested']['text'];
