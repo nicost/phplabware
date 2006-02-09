@@ -397,7 +397,7 @@ if ($add && $md!='edit') {
    elseif ($HTTP_POST_VARS) {
       reset ($HTTP_POST_VARS);
       while((list($key, $val) = each($HTTP_POST_VARS))) {
-         if (substr($key, 0, 3) == 'del') {
+         if ( (substr($key, 0, 3) == 'del') && ($val=='Remove') ) {
             $delarray = explode('_', $key);
             delete ($db,$tableinfo->id,$delarray[1], $USER);
          }
