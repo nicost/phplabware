@@ -2,7 +2,7 @@ BODY
 {
 	background-color : White;
 	font-family : Arial, Helvetica, Symbol, Heisi Mincho W3, sans-serif;
-	font-size : 10pt;
+	font-size : 9pt;
         margin : 0;
 }
 
@@ -26,10 +26,21 @@ A:Visited
 	color: #336699;
 	font-weight : bold;
 }
+A.Tooltip 
+{
+	text-decoration : none;
+	color: #333333;
+	font-weight : normal;
+}
 
 Table, P, DIV, H5, A, OL, TD, UL 
 {
-	font-size : 10pt;
+	font-size : 8pt;
+	border-style : none
+}
+option
+{
+	width : 50px
 }
 
 TR.header
@@ -37,6 +48,29 @@ TR.header
 	background-color : #333388;
 	color: #ffffff;
 	width: 100%
+	
+
+}
+#toolTipBox {
+	display: none;
+	padding: 5;
+	font-size: 12px;
+	border: black solid 1px;
+	font-family: verdana;
+	position: absolute;
+  background-color: #ffd038;
+  color: 000000;
+}
+#dhtmltooltip{
+position: absolute;
+width: 150px;
+border: 2px solid black;
+padding: 2px;
+background-color: lightyellow;
+visibility: hidden;
+z-index: 100;
+/*Remove below line to remove shadow. Below line should always appear last within this CSS*/
+filter: progid:DXImageTransform.Microsoft.Shadow(color=gray,direction=135);
 }
 
 TR.row_odd
@@ -51,7 +85,7 @@ TR.row_even
 
 TH  
 {
-	font-size : 8pt;
+	font-size : 7pt;
 	color: #FFFFFF;
 	background-color : #5555CC;
 	font-weight : bold;
@@ -89,10 +123,11 @@ Col.center
          padding : 1em 2em;
 }
 
+TEXTAREA.customer
 TEXTAREA.read_only
 {
 	background-color : White;
-	font-size : 10pt;
+	font-size : 9pt;
 }
 .nav
 {
