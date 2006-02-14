@@ -433,7 +433,7 @@ function display_table_info($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr_c
          elseif ( ($nowfield['datatype'] == 'text') && (strlen($nowfield['text']) > 59) && $HTTP_SESSION_VARS['javascript_enabled']) {
             // provide long text by mouseover -- by MM
             $startofText = substr($nowfield['text'],0,60);
-            echo "<td><a href=\"javascript:void(0);\"";
+            echo "<td><a class='Tooltip' href=\"javascript:void(0);\"";
             echo "onmouseover=\"this.T_WIDTH=80;return escape";
             $escapedText = htmlspecialchars($nowfield['text'], ENT_QUOTES);
             // returns spoil the party
