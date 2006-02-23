@@ -477,10 +477,26 @@ if ($add && $md!='edit') {
       $actionLink.='&amp;'.$sid;
    }
 
+   // output javascript to cpature enter key and use it start Search:
+   echo "<script language='JavaScript'>
+   function searchOnEnter(e) {
+      var pK = e? e.which: window.event.keyCode;
+      if (pK == 13) {   
+         document.g_form.searchj.value=\"Search\"; 
+         document.g_form.submit();
+      }
+   }
+   document.onkeypress = searchOnEnter;
+   if (document.layers)
+   document.captureEvents(Event.KEYPRESS);
+   </script>
+   ";
+
    // print form;
    $dbstring=$PHP_SELF."?"."tablename=$tableinfo->name&";
    $formname='g_form';
    echo "<form name='$formname' method='post' id='generalform' enctype='multipart/form-data' action='$PHP_SELF?$actionLink'>\n";
+
    echo "<input type='hidden' name='md' value='$md'>\n";
 
    echo "<table border=0 width='75%' align='center'>\n<tr>\n";
