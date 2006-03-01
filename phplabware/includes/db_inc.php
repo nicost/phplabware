@@ -132,10 +132,13 @@ function comma_array_SQL($db,$tablein,$column,$where=false)
  * returns a string with format tablename.columnname, reflecting the data source for the specified column
  */
 function origin_column ($db,$tableinfo,$key){
-   $r=$db->Execute("SELECT associated_table,associated_column FROM $tableinfo->desname WHERE columnname='$key'");
-   if (!$r->fields[0])
+   $r=$db->Execute("SELECT associated_table,associated_column,datatype FROM $tableinfo->desname WHERE columnname='$key'");
+   if (!$r->fields[0]) {
       return $tableinfo->realname.'.'.$key;
-   else {
+   } elseif ($r->fields[2]) {
+      // (m)pulldowns need special care
+      return $r->fields[0] . ".$key ";
+   } else {
       $rtable=$db->Execute("SELECT real_tablename,table_desc_name,id FROM tableoftables WHERE id={$r->fields[0]}");
       $rtkey=$db->Execute("SELECT columnname,datatype,type FROM {$rtable->fields[1]} WHERE id='{$r->fields[1]}'");
        //  $tablecolumnvalues[$rtdesc->fields[0]]=$columnvalues[$column];
@@ -906,13 +909,13 @@ function may_read_SQL_JOIN ($db,$table,$USER) {
  */
 function may_read_SQL ($db,$tableinfo,$USER,$temptable='tempa') {
    global $db_type;
-   if ($db_type=='mysql') {
+ //  if ($db_type=='mysql') {
       $list=may_read_SQL_JOIN ($db,$tableinfo->realname,$USER);
       if (!$list)
          $list='-1';
       $result['sql']= " {$tableinfo->realname}.id IN ($list) ";
       $result['numrows']=substr_count($list,',');
-   }
+  /* }
    else {
       //return may_read_SQL_subselect ($db,$table,$tableid,$USER);
       $r=$db->Execute(may_read_SQL_subselect ($db,$tableinfo->realname,$tableinfo->id,$USER,false));
@@ -920,6 +923,7 @@ function may_read_SQL ($db,$tableinfo,$USER,$temptable='tempa') {
       make_temp_table($db,$temptable,$r); 
       $result['sql'] = " ($tableinfo->realname.id = $temptable.uniqueid) ";
    }
+   */
    return $result;
 }
 
@@ -1351,11 +1355,45 @@ function search ($db,$tableinfo,$fields,&$fieldvalues,$whereclause=false,$wcappe
       $column=strtok (',');
    }
 */
-   if ($whereclause)
+   /*
+   * Ugly hack needed here.  Go through the sort string (in whereclause)
+   * and if there is there an assist tabel in there, we need to make a left join
+   * There must be a nicer way to figure this all out.
+   */
+   if ($whereclause) {
+      // figure out if there assist tables in the ORDER By part
+      $words=split(' ',$whereclause);
+      $counter=0;
+      foreach ($words as $word) {
+         $parts=explode('_',$word);
+         if (substr($parts[1],-3) == 'ass') {
+            // found assist table so add LEFT JOIN
+            $dotparts=explode('.',$word);
+            $query[1] .= 'LEFT JOIN '. $dotparts[0] . " ON {$dotparts[0]}.id={$tableinfo->realname}.$dotparts[1] ";
+            // we'll also need to clean up the order by string
+            $direction='asc';
+            for ($j=1; $j<4; $j++) {
+               if (substr($words[$counter+$j],0,3)=='asc') {
+                  $direction='asc';
+                  break;
+               } elseif (substr($words[$counter+$j],0,4)=='desc') {
+                  $direction='desc';
+                  break;
+               }
+            }
+            $newwhereclause .= $dotparts[0] . '.sortkey '. $direction . ', ' . $dotparts[0] . '.type ';  // the last asc/desc will be added in the next loop (below)
+         } else {
+            $newwhereclause .= $word . ' ';
+         }
+         $counter++;
+      }
+      $whereclause = $newwhereclause;
+
       if ($query[5])
          $query[2] .= "AND $whereclause";
       else
          $query[2] .= $whereclause;
+   }
    if (function_exists('plugin_search'))
       $query[0]=plugin_search($query[0],$columnvalues,$query[1]);
    $result=$query[0].$query[1].$query[2];
@@ -1553,8 +1591,8 @@ function make_search_SQL($db,$tableinfo,$fields,$USER,$search,$searchsort,$where
    elseif (session_is_registered ($queryname) && isset($HTTP_SESSION_VARS[$queryname])) {
       ${$queryname}=$HTTP_SESSION_VARS[$queryname];
       ${$fieldvarsname}=$HTTP_SESSION_VARS[$fieldvarsname];
-   }
-   else {
+   } else {
+      // This must be a 'Show All'
       ${$queryname} = "SELECT $fields FROM $tableinfo->realname WHERE $whereclause ORDER BY date DESC";
       ${$fieldvarsname}=$HTTP_POST_VARS;
    }
