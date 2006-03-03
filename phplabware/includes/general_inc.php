@@ -430,11 +430,11 @@ function display_table_info($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr_c
             echo "<td>{$nowfield['link']}</td>\n";
          elseif ($nowfield['datatype']=='mpulldown')
             echo "<td align='left' cellpadding='5%'>{$nowfield['text']}</td>\n"; 
-         elseif ( ($nowfield['datatype'] == 'text') && (strlen($nowfield['text']) > 59) && $_SESSION['javascript_enabled']) {
+         elseif ( ((($nowfield['datatype'] == 'text') && (strlen($nowfield['text']) > 59)) || $nowfield['datatype'] == 'textlong') && $_SESSION['javascript_enabled']) {
             // provide long text by mouseover -- by MM
             $startofText = substr($nowfield['text'],0,60);
             echo "<td><a class='Tooltip' href=\"javascript:void(0);\"";
-            echo "onmouseover=\"this.T_WIDTH=80;return escape";
+            echo "onmouseover=\"this.T_WIDTH=400;return escape";
             $escapedText = htmlspecialchars($nowfield['text'], ENT_QUOTES);
             // returns spoil the party
             $escapedText = preg_replace("/\r\n|\n|\r/", "<br>", $escapedText);
@@ -933,6 +933,7 @@ function getvalues($db,$tableinfo,$fields,$qfield=false,$field=false)
    foreach ($columns as $column) {
       if($column!='id') {
          if ($r)
+            // Take slashes out that were put in to be able to enter stuff into the database
             ${$column}['values']= stripslashes($r->fields[$column]);
          $rb=$db->CacheExecute(2,"SELECT id,label,datatype,display_table,display_record,associated_table,key_table,associated_column,associated_local_key,required,link_first,link_last,modifiable FROM $tableinfo->desname WHERE columnname='$column'");
          ${$column}['name']=$column;
@@ -1025,11 +1026,17 @@ function getvalues($db,$tableinfo,$fields,$qfield=false,$field=false)
             }
             // datatype textlong
             elseif ($rb->fields['datatype']=='textlong') {
-               if (${$column}['values']=="")
+               if (${$column}['values']=='') {
                   ${$column}['text']='';
-               else 
-                  //${$column}['text']='Click on View';
-                  ${$column}['text']="<input type=\"button\" name=\"view_$id\" value=\"View\" onclick='MyWIndow=window.open(\"general.php?tablename={$tableinfo->name}&amp;showid=$id&amp;jsnewwindow=true\",\"view\",\"scrollbars,resizable,width=600,height=400\")'>\n";
+               }
+               else {
+                  if ($_SESSION['javascript_enabled']) {
+                     // with javascript the tooltip stuff will take care of long text fields
+                     ${$column}['text']=${$column}['values'];
+                  } else {
+                     ${$column}['text']="<input type=\"button\" name=\"view_$id\" value=\"View\" onclick='MyWIndow=window.open(\"general.php?tablename={$tableinfo->name}&amp;showid=$id&amp;jsnewwindow=true\",\"view\",\"scrollbars,resizable,width=600,height=400\")'>\n";
+                  }
+               }
             }
             // datatypes file and image
             elseif ($rb->fields['datatype']=='file' || $rb->fields['datatype']=='image') {
