@@ -1,0 +1,148 @@
+BODY  
+{
+	background-color : White;
+	font-family : Arial, Helvetica, Symbol, Heisi Mincho W3, sans-serif;
+	font-size : 10pt;
+        margin : 0;
+}
+
+A 
+{
+	color: #336699;
+	text-decoration : none;
+	font-weight : bold;
+}
+
+A:Hover
+{
+	color : Navy;
+	text-decoration : none;
+	font-weight : bold;
+}
+
+A:Visited 
+{
+	text-decoration : none;
+	color: #336699;
+	font-weight : bold;
+}
+
+Table, P, DIV, H5, A, OL, TD, UL 
+{
+	font-size : 10pt;
+}
+
+TR.header
+{
+	background-color : #333388;
+	color: #ffffff;
+	width: 100%
+}
+
+TR.row_odd
+{
+	background-color : #EEFFFF;
+}
+
+TR.row_even
+{
+	background-color : #FFEEFF;
+}
+
+TH  
+{
+	font-size : 8pt;
+	color: #FFFFFF;
+	background-color : #5555CC;
+	font-weight : bold;
+}
+
+H1
+{ 
+	font-size : 16pt; 
+	font-weight : bold; 
+	line-height : 18pt; 
+}
+
+H2 
+{ 
+	font-size : 14pt; 
+	font-weight : bold; 
+	line-height : 16pt; 
+}
+
+H3 
+{ 
+	font-size : 12pt; 
+	font-weight : bold; 
+	line-height : 14pt; 
+}
+
+SPAN.right
+{
+        margin-right: 5%;
+        float : right;      
+}
+
+Col.center
+{
+         padding : 1em 2em;
+}
+
+TEXTAREA.read_only
+{
+	background-color : White;
+	font-size : 10pt;
+}
+.nav
+{
+	background-color : #333388;
+        color : White;
+}
+.nav:link
+{
+	background-color : #333388;
+        color : White;
+}
+.nav:active
+{
+	background-color : #333388;
+        color : White;
+}
+.nav:hover
+{
+	background-color : #333388;
+        color : White;
+}
+.nav:visited
+{
+	background-color : #333388;
+        color : White;
+}
+.navorange 
+{ 
+   background-color : White; 
+}
+
+#toolTipBox {
+	display: none;
+	padding: 5;
+	font-size: 12px;
+	border: black solid 1px;
+	font-family: verdana;
+	position: absolute;
+   background-color: #ffd038;
+   color: 000000;
+}
+
+#dhtmltooltip{
+   position: absolute;
+   width: 150px;
+   border: 2px solid black;
+   padding: 2px;
+   background-color: lightyellow;
+   visibility: hidden;
+   z-index: 100;
+   /*Remove below line to remove shadow. Below line should always appear last within this CSS*/
+   filter: progid:DXImageTransform.Microsoft.Shadow(color=gray,direction=135);
+}
