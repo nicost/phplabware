@@ -190,7 +190,8 @@ function sortstring($db,$tableinfo,&$sortdirarray,$sortup,$sortdown) {
  *  Displays header of 'general' table
  *
  */
-function tableheader ($sortdirarray,$nowfield) {
+function tableheader ($sortdirarray,$nowfield) 
+{
    $columnname=$nowfield['name'];
    $columnlabel=$nowfield['label'];
    echo "<th><table align='center' width='100%'><tr><td align='left'>";
@@ -199,14 +200,20 @@ function tableheader ($sortdirarray,$nowfield) {
    } else {
       $sortupicon='icons/sortup.png';
    }
-   echo "<input type='image' name='sortup_$columnname' value='$columnlabel' src='$sortupicon' alt='Sort Up'>";
+   // for mpulldonws, sort button do not make sense:
+   if ($nowfield['datatype']!='mpulldown') {
+      echo "<input type='image' name='sortup_$columnname' value='$columnlabel' src='$sortupicon' alt='Sort Up'>";
+   }
    echo "</td><th align='center'>$columnlabel</th><td align='right'>";
    if ($sortdirarray[$columnname]=='desc') {
       $sortdownicon='icons/sortdown_active.png';
    } else {
       $sortdownicon='icons/sortdown.png';
    }
-   echo "<input type='image' name='sortdown_$columnname' value='$columnlabel' src='$sortdownicon' alt='Sort Down'>";
+   // for mpulldonws, sort button do not make sense:
+   if ($nowfield['datatype']!='mpulldown') {
+      echo "<input type='image' name='sortdown_$columnname' value='$columnlabel' src='$sortdownicon' alt='Sort Down'>";
+   }
    echo "</td></tr></table></th>\n";
 }
 
