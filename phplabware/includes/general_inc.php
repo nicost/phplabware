@@ -76,6 +76,7 @@ function date_entry($id,$real_tablename) {
  */
 function searchfield ($db,$tableinfo,$nowfield,$_POST,$jscript) {
    global $USER;
+
    $LAYOUT=16;
    $column=strtok($tableinfo->fields,",");
    while ($column) {
@@ -84,23 +85,17 @@ function searchfield ($db,$tableinfo,$nowfield,$_POST,$jscript) {
    }
    if ($nowfield['datatype']== 'link')
       echo "<td style='width: 10%'>&nbsp;</td>\n";
-/*
-   // datatype of column date is text (historical oversight...)
-   elseif ($nowfield['name']=='date') 
-      echo "<td style='width: 10%'>&nbsp;</td>\n";
-*/
    // datatype of column ownerid is text (historical oversight...)
    elseif ($nowfield['name']=='ownerid') {
        //if ($list) {
       $rowners=$db->Execute("SELECT ownerid FROM $tableinfo->realname");
-      //$rowners=$db->Execute("SELECT ownerid FROM $tableinfo->realname WHERE $list");
       while ($rowners && !$rowners->EOF) {
          $ownerids[]=$rowners->fields[0];
          $rowners->MoveNext();
       }
-      if ($ownerids)
+      if ($ownerids) {
           $ownerlist=implode(',',$ownerids);
-     // }
+      }
       if ($ownerlist) {   
          $rowners2=$db->Execute("SELECT lastname,id FROM users WHERE id IN ($ownerlist)");
           $text=$rowners2->GetMenu2("$nowfield[name]",${$nowfield[name]},true,false,0,"style='width: 80%' $jscript");
