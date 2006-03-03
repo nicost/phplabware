@@ -263,7 +263,7 @@ function add ($db,$table,$fields,$fieldvalues,$USER,$tableid) {
                if (isset($fieldvalues[$column]) && 
                         !(is_array($fieldvalues[$column])) && 
                         strlen($fieldvalues[$column])>0)
-	          $values.=",'$fieldvalues[$column]'";
+	          $values.=",'".addslashes($fieldvalues[$column])."'";
                else
                   $values.=",NULL";
             }
@@ -336,7 +336,8 @@ function modify ($db,$table,$fields,$fieldvalues,$id,$USER,$tableid) {
          if ($column=='lastmoddate')
             $fieldvalues['lastmoddate']=time();
          if (isset($fieldvalues[$column]) && (strlen($fieldvalues[$column])>0))
-            $query.="$column='$fieldvalues[$column]',";
+            // escape all nasty stuff
+            $query.="$column='".addslashes($fieldvalues[$column]) ."',";
          else
             $query.="$column=NULL,";
       }
@@ -352,6 +353,8 @@ function modify ($db,$table,$fields,$fieldvalues,$id,$USER,$tableid) {
             plugin_modify($db,$tableid,$id);
          }
          return true;
+      } else {
+         echo "<h4>Error making the requested modifications.  </h4>\n";
       }
    }
 }

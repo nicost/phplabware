@@ -230,7 +230,7 @@ function display_table_change($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr
             $thestar=false;
 
          if ( ($nowfield['modifiable']!='Y') || !$may_write) {
-            echo "<td><input type='hidden' name='{$nowfield['name']}_$id' value=\"{$nowfield['values']}\">\n";
+            echo "<td><input type='hidden' name='{$nowfield['name']}_$id' value=\"" . str_replace('"','&quot;',$nowfield['values']) ."\">\n";
             echo "{$nowfield['text']}</td>\n";
          } elseif ($nowfield['datatype']=='text') {
             // for comfortable input calculate size and present accordingly
@@ -247,7 +247,7 @@ function display_table_change($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr
                $columns = 10;
             }
             if ($rows == 1) {
-     	       echo "<td><input type='text' name='{$nowfield['name']}_$id' value='{$nowfield['values']}' size=$columns $js>$thestar</td>\n";
+     	       echo "<td><input type='text' name='{$nowfield['name']}_$id' value=\"".str_replace('"','&quot;',$nowfield['values'])."\" size=$columns $js>$thestar</td>\n";
             } else {
                echo "<td>$thestar<textarea name='{$nowfield['name']}_$id' cols=$columns rows=$rows $js>{$nowfield['values']}</textarea></td>\n";
             }
@@ -933,7 +933,7 @@ function getvalues($db,$tableinfo,$fields,$qfield=false,$field=false)
    foreach ($columns as $column) {
       if($column!='id') {
          if ($r)
-            ${$column}['values']= $r->fields[$column];
+            ${$column}['values']= stripslashes($r->fields[$column]);
          $rb=$db->CacheExecute(2,"SELECT id,label,datatype,display_table,display_record,associated_table,key_table,associated_column,associated_local_key,required,link_first,link_last,modifiable FROM $tableinfo->desname WHERE columnname='$column'");
          ${$column}['name']=$column;
          ${$column}['columnid']=$rb->fields['id'];
