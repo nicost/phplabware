@@ -17,17 +17,17 @@
 // main include thingies
 require("include.php");
 
-allowonly($SUPER, $USER["permissions"]);
+allowonly($SUPER, $USER['permissions']);
 
 // register variables
-$PHP_SELF = $HTTP_SERVER_VARS ["PHP_SELF"];
-$get_vars = "mod,groupid,groupname,";
-globalize_vars ($get_vars,$HTTP_GET_VARS);
+$PHP_SELF = $_SERVER ['PHP_SELF'];
+$get_vars = 'mod,groupid,groupname,';
+globalize_vars ($get_vars,$_GET);
 $post_vars = "add,groupid,groupname,submit,";
-globalize_vars ($post_vars, $HTTP_POST_VARS);
+globalize_vars ($post_vars, $_POST);
 
 // main global vars
-$title = "Admin Groups";
+$title = 'Admin Groups';
 
 /**
  *  Adds group to database.
@@ -42,19 +42,19 @@ function add_new_group ($db,$groupname) {
       $r = $db->Execute($query);
       // test if a result is found
       if (!$r->EOF) {
-          return "groupname already exists; please try again";
+          return 'groupname already exists; please try again';
       }
       else {
-         $id=$db->GenID("groups_id_seq");
+         $id=$db->GenID('groups_id_seq');
          if ($db->Execute("INSERT INTO groups(id,name) VALUES('$id','$groupname') ") ) {
             echo "Group <b>$groupname</b> added,";
          }
          else 
-            echo "Group was not added<br>";
+            echo 'Group was not added<br>';
       }      
    }
    else
-      return "Please enter a groupname!";
+      return 'Please enter a groupname!';
 }
 
 /**
@@ -186,8 +186,8 @@ else {
       }
    } 
   //determine wether or not the remove-command is given and act on it
-   elseif ($HTTP_POST_VARS) {
-      while((list($key, $val) = each($HTTP_POST_VARS))) {
+   elseif ($_POST) {
+      while((list($key, $val) = each($_POST))) {
          if (substr($key, 0, 3) == "del") {
             $delarray = explode("_", $key);
             delete_group($db, $delarray[1]);

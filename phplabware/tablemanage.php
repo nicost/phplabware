@@ -21,22 +21,22 @@ require('./includes/general_inc.php');
 require('./includes/tablemanage_inc.php');
 include ('./includes/defines_inc.php');
 
-$editfield=$HTTP_GET_VARS['editfield'];
-$editreport=$HTTP_GET_VARS['editreport'];
+$editfield=$_GET['editfield'];
+$editreport=$_GET['editreport'];
 $post_vars="newtable_name,newtable_label,newtable_sortkey,newtable_plugincode,addtable,table_id,table_name,table_display,addcol_name,addcol_label,addcol_sort,addcol_dtable,addcol_drecord,addcol_required,addcol_modifiable,addcol_datatype";
-globalize_vars($post_vars, $HTTP_POST_VARS);
+globalize_vars($post_vars, $_POST);
 
 // this needs to be done before headers are sent in printheader
-while((list($key, $val) = each($HTTP_POST_VARS))) {
+while((list($key, $val) = each($_POST))) {
    if (substr($key, 0, 9) == 'expreport') { 
       $modarray = explode("_", $key);
       export_report($db,$modarray[1]);
       exit;
    }
 }
-reset($HTTP_POST_VARS);
-//print_r($HTTP_SESSION_VARS);
-//print_r($HTTP_POST_VARS);
+reset($_POST);
+//print_r($_SESSION);
+//print_r($_POST);
 
 // when editing columns of a table include this javascript file:
 if (isset($editfield)) {
@@ -48,7 +48,7 @@ if ($addcol_datatype=='table')
    $jsfiles[]='./includes/js/tablemanage.js';
 
 // Except for ajax requests, we'll send the general headers now
-if (!isset($HTTP_POST_VARS['jsrequest'])) {
+if (!isset($_POST['jsrequest'])) {
    printheader($httptitle,false,$jsfiles);
 } 
 
@@ -59,26 +59,26 @@ if (!($permissions & $SUPER)) {
 	exit;
 }
 
-while((list($key, $val) = each($HTTP_POST_VARS))) {
+while((list($key, $val) = each($_POST))) {
    if ($key == "addtable") {
       add_table($db,$newtable_name,$newtable_label,$newtable_sortkey,$newtable_plugincode);
       break;
    }
    elseif (substr($key, 0, 8) == 'modtable') {
       $modarray = explode("_", $key);
-      $id=$HTTP_POST_VARS['table_id'][$modarray[1]];
+      $id=$_POST['table_id'][$modarray[1]];
       mod_table($db,$id,$modarray[1]);
       break;
    }
    elseif (substr($key, 0, 8) == 'deltable') {  
       $modarray = explode("_", $key);      
-      $id=$HTTP_POST_VARS['table_id'][$modarray[1]]; 
-      $tablename=$HTTP_POST_VARS['table_name'][$modarray[1]];      
+      $id=$_POST['table_id'][$modarray[1]]; 
+      $tablename=$_POST['table_name'][$modarray[1]];      
       del_table($db,$tablename,$id,$USER);   
       break;
    }
    elseif ($key=='table_column_select') {
-      add_associated_table($db,$table_name,$addcol_name,$HTTP_POST_VARS['table_select'],$HTTP_POST_VARS['table_column_select']);
+      add_associated_table($db,$table_name,$addcol_name,$_POST['table_select'],$_POST['table_column_select']);
       break;
    }
    elseif ($key=="ass_to") {
@@ -86,7 +86,7 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
       break;
    }
    elseif ($key=="link_part_a") {
-      add_active_link($db,$table_name,$addcol_name,$HTTP_POST_VARS["link_part_a"],$HTTP_POST_VARS["link_part_b"]);
+      add_active_link($db,$table_name,$addcol_name,$_POST["link_part_a"],$_POST["link_part_b"]);
       break;
    }
    elseif ($key == "addcolumn") {  
@@ -113,20 +113,20 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
    }   	
    elseif (substr($key, 0, 9) == 'delcolumn') { 
       $modarray = explode("_", $key);
-      $tablename=$HTTP_POST_VARS['table_name'];
-      $id=$HTTP_POST_VARS['column_id'][$modarray[1]]; 
-      $colname=$HTTP_POST_VARS['column_name'][$modarray[1]];
-      $datatype=$HTTP_POST_VARS['column_datatype'][$modarray[1]];
+      $tablename=$_POST['table_name'];
+      $id=$_POST['column_id'][$modarray[1]]; 
+      $colname=$_POST['column_name'][$modarray[1]];
+      $datatype=$_POST['column_datatype'][$modarray[1]];
       rm_columnecg($db,$tablename,$id,$colname,$datatype);
       break;
    }
    elseif (substr($key, 0, 11) == 'alinkcolumn') { 
       $modarray = explode("_", $key);
-      $tablename=$HTTP_POST_VARS['table_name'];
-      $id=$HTTP_POST_VARS['column_id'][$modarray[1]]; 
-      $colname=$HTTP_POST_VARS['column_name'][$modarray[1]];
-      $collabel=$HTTP_POST_VARS['column_label'][$modarray[1]];
-      $datatype=$HTTP_POST_VARS['column_datatype'][$modarray[1]];
+      $tablename=$_POST['table_name'];
+      $id=$_POST['column_id'][$modarray[1]]; 
+      $colname=$_POST['column_name'][$modarray[1]];
+      $collabel=$_POST['column_label'][$modarray[1]];
+      $datatype=$_POST['column_datatype'][$modarray[1]];
       $table_desc=get_cell($db,'tableoftables','table_desc_name','tablename',$tablename);
       $link_a=get_cell($db,$table_desc,"link_first","id",$id);
       $link_b=get_cell($db,$table_desc,"link_last","id",$id);
@@ -318,7 +318,7 @@ if ($editfield)	{
 
    	  echo "<td align='center'>";
         // the "modify button is only needed when javascript does not work
-        if (! $HTTP_SESSION_VARS['javascript_enabled']) {
+        if (! $_SESSION['javascript_enabled']) {
            echo $modstring;
         }
         echo $alinkstring;

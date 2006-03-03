@@ -21,7 +21,6 @@
 require ('./include.php');
 require('./includes/db_inc.php');
 
-//print_r($HTTP_POST_VARS);
 
 $tableinfo=new tableinfo($db,false,$_POST['tableid']);
 

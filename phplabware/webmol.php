@@ -8,9 +8,9 @@
 
 require ("./include.php");
 // pdbid can be transfered as a GET or POST variable
-$pdbid=$HTTP_GET_VARS["pdbid"];
+$pdbid=$_GET["pdbid"];
 if (!$pdbid) 
-   $pdbid=$HTTP_POST_VARS["pdbid"];
+   $pdbid=$_POST["pdbid"];
 if (!$pdbid) {
    echo "It does not make much sense to launch webmol without a molecule...";
    exit();

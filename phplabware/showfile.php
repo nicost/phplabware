@@ -19,8 +19,8 @@
 require('./include.php');
 require('./includes/db_inc.php');
 
-$id=$HTTP_GET_VARS['id'];
-$type=$HTTP_GET_VARS['type'];
+$id=$_GET['id'];
+$type=$_GET['type'];
 
 if (!$id) {
    echo "<html><h3>404. File not found.</h3></html>";
@@ -38,7 +38,7 @@ $mime=$r->fields('mime');
 // we keep a list with fileids that can be seen in the USER settings
 if (! (@in_array($id,$USER['settings']['fileids'])))  {
    $tablename=get_cell($db,'tableoftables','tablename','id',$tableid);
-   $HTTP_GET_VARS['tablename']=$tablename;
+   $_GET['tablename']=$tablename;
    $tableinfo=new tableinfo($db);
    if (!may_read($db,$tableinfo,$tableitemid,$USER))
       echo "<html><h3>401. Forbidden.</h3></html>";

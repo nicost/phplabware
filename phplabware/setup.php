@@ -30,7 +30,7 @@ if ($adodb_version<$adodb_version_required) {
 }
 
 $post_vars="access,action,authmethod,baseURL,homeURL,checkpwd,convert,dateformat,filedir,thumbnaildir,templatedir,gs,pwd,protocols_file,pdfs_file,pdfget,secure_server_new,direct_login_new,smallthumbsize,submit,tmpdir,tmpdirpsql,word2html";
-globalize_vars($post_vars, $HTTP_POST_VARS);
+globalize_vars($post_vars, $_POST);
 
 if ($set_local) {
    // only allow connections from localhost

@@ -159,13 +159,13 @@ function url_get_string ($url) {
  *
  */
 function loginscreen ($message="<h3>Login to PhpLabWare</h3>") {
-   global $HTTP_SERVER_VARS, $system_settings;
+   global $_SERVER, $system_settings;
 
-   $PHP_SELF=$HTTP_SERVER_VARS["PHP_SELF"];
-   if ($system_settings["secure_server"]) {
-      $server= getenv ("HTTP_HOST");
+   $PHP_SELF=$_SERVER['PHP_SELF'];
+   if ($system_settings['secure_server']) {
+      $server= getenv ('HTTP_HOST');
       if (!$server)
-         $server=$HTTP_SERVER_VARS["HTTP_HOST"];
+         $server=$_SERVER['HTTP_HOST'];
       $addres="https://$server$PHP_SELF";
    }
    else
@@ -269,8 +269,8 @@ function get_person_link ($db,$id) {
  */
 function navbar($permissions) {
    include ('./includes/defines_inc.php');
-   global $db, $USER, $PHP_SELF, $HTTP_SESSION_VARS; 
-   if ($HTTP_SESSION_VARS['javascript_enabled'] && $USER['settings']['menustyle']) 
+   global $db, $USER, $PHP_SELF, $_SESSION; 
+   if ($_SESSION['javascript_enabled'] && $USER['settings']['menustyle']) 
       $mode='menu';
    if ($mode=='menu') { 
       // construct link menu
@@ -471,7 +471,7 @@ function add_js ($script) {
  * jsfiles can be a single file or an array containing a list of files
  */
 function printheader($title,$head=false, $jsfiles=false) {
-   global $client,$db,$version,$active,$USER,$HTTP_SESSION_VARS;
+   global $client,$db,$version,$active,$USER,$_SESSION;
 
    // let Netscape 4 users use their back button
    // all others should not cache
@@ -488,7 +488,7 @@ function printheader($title,$head=false, $jsfiles=false) {
 <HEAD>
 <?php 
 echo $head;
-if ($HTTP_SESSION_VARS['javascript_enabled'] && $USER['settings']['menustyle']) {
+if ($_SESSION['javascript_enabled'] && $USER['settings']['menustyle']) {
    echo "\n<script type='text/javascript' language='Javascript'>\n<!--\n";
 
    // include single or multiple javascript files

@@ -23,42 +23,42 @@ include ('./includes/defines_inc.php');
 
 printheader($httptitle);
 
-if (!($USER["permissions"] & $SUPER)) {
-	navbar($USER["permissions"]);
+if (!($USER['permissions'] & $SUPER)) {
+	navbar($USER['permissions']);
 	echo "<h3 align='center'><b>Sorry, this page is not for you</B></h3>";
 	printfooter($db,$USER);
 	exit;
 }
 
 
-while((list($key, $val) = each($HTTP_POST_VARS))) {
+while((list($key, $val) = each($_POST))) {
   if ($key== 'linkdisplay'){
-      $linkch=$HTTP_POST_VARS['link_display'];
+      $linkch=$_POST['link_display'];
       $r=$db->Execute("UPDATE tableoftables SET display = '$linkch' where tablename = 'linkbar'");
    }
    if (substr($key, 0, 7) == 'addlink') {
-      $newlabel=$HTTP_POST_VARS['newlink_label'];
-      $newurl=$HTTP_POST_VARS['newlink_url'];
-      $newdis=$HTTP_POST_VARS['newlink_display'];
-      $newtarget=$HTTP_POST_VARS['newlink_target'];
-      $newsort=$HTTP_POST_VARS['newlink_sortkey'];
+      $newlabel=$_POST['newlink_label'];
+      $newurl=$_POST['newlink_url'];
+      $newdis=$_POST['newlink_display'];
+      $newtarget=$_POST['newlink_target'];
+      $newsort=$_POST['newlink_sortkey'];
       $linkbarid=$db->GenID('linkbar_id_seq');
       $r=$db->Execute("Insert into linkbar(id,label,linkurl,sortkey,display,target) values('$linkbarid','$newlabel','$newurl','$newsort','$newdis','$newtarget')");
    }
    if (substr($key, 0, 7) == 'modlink') {
       $modarray = explode('_', $key);
-      $newid=$HTTP_POST_VARS['link_id'][$modarray[1]];
-      $newlabel=$HTTP_POST_VARS['link_label'][$modarray[1]];
-      $newurl=$HTTP_POST_VARS['link_url'][$modarray[1]];
-      $newdis=$HTTP_POST_VARS['link_display'][$modarray[1]];
-      $newtarget=$HTTP_POST_VARS['link_target'][$modarray[1]];
-      $newsort=$HTTP_POST_VARS['link_sortkey'][$modarray[1]];
+      $newid=$_POST['link_id'][$modarray[1]];
+      $newlabel=$_POST['link_label'][$modarray[1]];
+      $newurl=$_POST['link_url'][$modarray[1]];
+      $newdis=$_POST['link_display'][$modarray[1]];
+      $newtarget=$_POST['link_target'][$modarray[1]];
+      $newsort=$_POST['link_sortkey'][$modarray[1]];
       $r=$db->Execute("UPDATE  linkbar SET label = '$newlabel',linkurl='$newurl',sortkey='$newsort',display='$newdis',target='$newtarget' where id = '$newid'");
    }
    if (substr($key, 0, 7) == 'dellink') {
       $modarray = explode('_', $key);
-      $newid=$HTTP_POST_VARS['link_id'][$modarray[1]];
-      $newlabel=$HTTP_POST_VARS['link_label'][$modarray[1]];
+      $newid=$_POST['link_id'][$modarray[1]];
+      $newlabel=$_POST['link_label'][$modarray[1]];
       $r=$db->Execute("Delete from linkbar where id='$newid' and label='$newlabel'");
    }     
 }

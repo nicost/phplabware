@@ -16,14 +16,43 @@
 // set php parameters here
 set_magic_quotes_runtime(0); // seems to interfere with system settings
 
+
+function _strip_magic_quotes( &$arr )
+{
+   foreach( $arr as $k=>$v ){
+      if( is_array($v) ){
+          $arr[$k] = strip_magic_quotes($v);
+      }else{
+         $arr[$k] = stripslashes($v);
+      }
+   }
+   return $arr;
+}
+
+// undo register globals and magic quote
+foreach( array('_GET','_POST','_COOKIE') as $source ){
+   if (is_array(${$source})) {
+      foreach( ${$source} as $key=>$value ){
+         if( ini_get('register_globals') ){ // If register_globals is enabled
+             unset( ${$key} );
+         }
+      }
+      if( get_magic_quotes_gpc() ){
+          _strip_magic_quotes( ${$source} );
+      }
+      reset(${$source});
+   }
+}
+/*
 // register global really kills some stuff, so let's kill them first
 if (ini_get('register_globals')) {
-   reset($HTTP_POST_VARS);
-   while (list($key,$val)=each($HTTP_POST_VARS)) {
+   reset($_POST);
+   while (list($key,$val)=each($_POST)) {
       unset (${$key});
    }
 }
-reset($HTTP_POST_VARS);
+reset($_POST);
+*/
 
 // essential includes
 include ('./includes/config_inc.php');

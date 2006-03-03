@@ -23,13 +23,13 @@ require('./includes/report_inc.php');
 printheader($httptitle);
 navbar($USER['permissions']);
 
-if (isset ($HTTP_POST_VARS['tablename']))
-   $HTTP_GET_VARS['tablename']=$HTTP_POST_VARS['tablename'];
+if (isset ($_POST['tablename']))
+   $_GET['tablename']=$_POST['tablename'];
 $tableinfo=new tableinfo($db);
-if ($HTTP_GET_VARS['viewid'])
-   $viewid=$HTTP_GET_VARS['viewid'];
+if ($_GET['viewid'])
+   $viewid=$_GET['viewid'];
 else
-   $viewid=$HTTP_POST_VARS['viewid'];
+   $viewid=$_POST['viewid'];
 //make sure that the viewid is in sync with the selected table
 $r=$db->Execute("SELECT viewnameid FROM tableviews WHERE tableid={$tableinfo->id} AND userid={$USER['id']} AND viewnameid={$viewid}");
 if (!($r && $r->fields[0]))
@@ -38,7 +38,7 @@ if (!($r && $r->fields[0]))
 // Analyze user input and take appropriate action
 
 // Delete
-if ($HTTP_POST_VARS['delete']=='Remove' && $viewid) {
+if ($_POST['delete']=='Remove' && $viewid) {
    // do a check for userid to be sure nobody deletes someone elses views
    if ($db->Execute ("DELETE FROM tableviews WHERE viewnameid=$viewid AND userid={$USER['id']}")) {
       $db->Execute ("DELETE FROM viewnames WHERE viewnameid=$viewid");
@@ -46,11 +46,11 @@ if ($HTTP_POST_VARS['delete']=='Remove' && $viewid) {
    }
 }
 // Create new views
-if ($HTTP_POST_VARS['Create']=='Create' && $HTTP_POST_VARS['newview']) {
+if ($_POST['Create']=='Create' && $_POST['newview']) {
    // insert into table viewnames
    $id=$db->GenId('viewnames_id_seq');
    $viewid=$id;
-   $viewname=$db->qstr($HTTP_POST_VARS['newview']);
+   $viewname=$db->qstr($_POST['newview']);
    if ($db->Execute("INSERT INTO viewnames (viewnameid,viewname) VALUES ($id,$viewname)")) {
       // put default values into the tableview table
       $r=$db->Execute("SELECT id,display_table,display_record FROM {$tableinfo->desname}");
@@ -64,11 +64,11 @@ if ($HTTP_POST_VARS['Create']=='Create' && $HTTP_POST_VARS['newview']) {
    }
 }
 // Modify an exising view based on user input
-if ($HTTP_POST_VARS['modify']=='Modify' && $viewid && $tableinfo) {
+if ($_POST['modify']=='Modify' && $viewid && $tableinfo) {
    // First delete all existing entries
    $db->Execute("DELETE FROM tableviews WHERE userid={$USER['id']} AND viewnameid=$viewid AND tableid={$tableinfo->id}");
    // then add them back only if the radiobox was set to 'Y'
-   while (list($key,$value)=each($HTTP_POST_VARS)) {
+   while (list($key,$value)=each($_POST)) {
       if ($value=='Y') {
          $v=explode('_',$key);
          if ($v[0]=='tv')

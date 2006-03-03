@@ -2,8 +2,6 @@
 
 
 // users.php - List, modify, add, and delete users
-// users.php - author: Nico Stuurman<nicost@sourceforge.net>
-// TABLES: users
   /***************************************************************************
   * This script displays a table with users in group of calling admin.       *
   * Functions to add or modify users and add auditors are integrated.        *
@@ -26,8 +24,8 @@ $post_vars = 'email,id,firstname,lastname,login,me,modify,perms,perms2,pwd,pwdch
 $post_vars .= 'create,user_add,';
 
 if (!$type)
-   $type=$HTTP_GET_VARS['type'];
-globalize_vars ($post_vars, $HTTP_POST_VARS);
+   $type=$_GET['type'];
+globalize_vars ($post_vars, $_POST);
 
 /**
  *  check the form input data for validity
@@ -131,17 +129,24 @@ function delete_user ($db, $id) {
  * can be called to create (type=create) or modify (type=modify) other users or oneselves (type=me) 
  */
 function modify ($db, $type) {
-   global $HTTP_POST_VARS, $USER, $perms, $perms2,  $post_vars;
+   global $_POST, $USER, $perms, $perms2,  $post_vars;
 
-   $id=$HTTP_POST_VARS['id'];
-   $login=$HTTP_POST_VARS['login'];
-   $pwd=$HTTP_POST_VARS['pwd'];
-   $user_group=$HTTP_POST_VARS['user_group'];
-   $user_add_groups=$HTTP_POST_VARS['user_add_groups'];
-   $firstname=$HTTP_POST_VARS['firstname'];
-   $lastname=$HTTP_POST_VARS['lastname'];
-   $email=$HTTP_POST_VARS['email'];
-   $USER['settings']['style']=$HTTP_POST_VARS['user_style'];
+   // quote all bad characters:
+   foreach ($_POST as $key=>$value) {
+      if (!is_array($_POST[$key])) {
+         $_POST[$key]=addslashes($value);
+      }
+   }
+ 
+   $id=$_POST['id'];
+   $login=$_POST['login'];
+   $pwd=$_POST['pwd'];
+   $user_group=$_POST['user_group'];
+   $user_add_groups=$_POST['user_add_groups'];
+   $firstname=$_POST['firstname'];
+   $lastname=$_POST['lastname'];
+   $email=$_POST['email'];
+   $USER['settings']['style']=$_POST['user_style'];
 
    if($perms)
       for ($i=0; $i<sizeof($perms); $i++)
@@ -188,13 +193,13 @@ function modify ($db, $type) {
       }
       $query .= " WHERE id='$id';";
       if ($db->Execute($query)) {
-         echo "Modified settings of user <i>$firstname $lastname</i>.<br>\n";
+         echo "Modified settings of user <i>".stripslashes($firstname) . ' ' . stripslashes($lastname)."</i>.<br>\n";
 	 $db->Execute ("DELETE FROM usersxgroups WHERE usersid=$id");
 	 if ($user_add_groups)
 	    foreach ($user_add_groups AS $add_groupid)
 	       $db->Execute("INSERT INTO usersxgroups VALUES ('$id','$add_groupid')");
       } else
-         echo "Could not modify settings of user: <i>$firstname $lastname</i>.<br>\n";
+         echo "Could not modify settings of user: <i>".stripslashes($firstname) . ' ' . stripslashes($lastname) . "</i>.<br>\n";
    } elseif ($type =='create') {
          $id=$db->GenID('users_id_seq');
          $pwd=md5($pwd);
@@ -228,7 +233,7 @@ function modify ($db, $type) {
       $result.="\n<table border=0 align='center'>\n  <tr>\n    <td align='center'>\n      ";
       if ($db->Execute($query)) {
          // modify menu view in settings
-         if ($HTTP_POST_VARS['menustyle']==1)
+         if ($_POST['menustyle']==1)
             $USER['settings']['menustyle']=1;
          else
             $USER['settings']['menustyle']=0;
@@ -254,8 +259,7 @@ function modify ($db, $type) {
  *
  */
 function show_user_form ($type) {
-   global $userfields, $HTTP_SERVER_VARS, $perms, $USER, $db, $system_settings;
-   global $HTTP_SESSION_VARS;
+   global $userfields, $_SERVER, $perms, $USER, $db, $system_settings;
 
    include ('./includes/defines_inc.php');
 
@@ -263,6 +267,7 @@ function show_user_form ($type) {
    $fieldname = strtok ($userfields,",");
    while ($fieldname) {
       global ${$fieldname};
+      ${$fieldname} = str_replace('"','&quot;',${$fieldname});
       $fieldname=strtok(","); 
    }
 
@@ -292,16 +297,16 @@ function show_user_form ($type) {
    echo "<table align='center'>\n";
 
    echo "<tr><td>First name:</td>\n";
-   echo "<td><input type='text' name='firstname' maxlength=50 size=25 value='$firstname'></td></tr>\n";
+   echo "<td><input type='text' name='firstname' maxlength=50 size=25 value=\"$firstname\"></td></tr>\n";
    echo "<tr><td>Last name:</td>\n";
-   echo "<td><input type='text' name='lastname' maxlength=50 size=25 value='$lastname'><sup style='color:red'>&nbsp(required)</sup></td></tr>\n";
-   echo "<tr><td>Email Address:</td><td><input type='text' name='email' maxlength=150 size=25 value='$email'></td></tr>\n";
+   echo "<td><input type='text' name='lastname' maxlength=50 size=25 value=\"$lastname\"><sup style='color:red'>&nbsp(required)</sup></td></tr>\n";
+   echo "<tr><td>Email Address:</td><td><input type='text' name='email' maxlength=150 size=25 value=\"$email\"></td></tr>\n";
 
    if ($type == 'create')
-      echo "<tr><td>Login Name (max. 20 characters):</td><td><input type='text' name='login' maxlength=20 size=20 value='$login'><sup style='color:red'>&nbsp(required)</sup></td></tr>\n";
+      echo "<tr><td>Login Name (max. 20 characters):</td><td><input type='text' name='login' maxlength=20 size=20 value=\"$login\"><sup style='color:red'>&nbsp(required)</sup></td></tr>\n";
    else {
       echo "<tr><td>Login Name: </td><td>$login\n";
-      echo "<input type='hidden' name='login' value='$login'></td></tr>\n";
+      echo "<input type='hidden' name='login' value=\"$login\"></td></tr>\n";
    }
    if ($type=='me') {
       echo "<tr><td>Menu display: </td>";
@@ -346,7 +351,7 @@ function show_user_form ($type) {
       $r=$db->Execute("SELECT groupsid FROM usersxgroups WHERE usersid=$id");
       while ($r && !$r->EOF) {
          $add_groups[]=$r->fields['groupsid'];
-	 $r->MoveNext();
+         $r->MoveNext();
       }
       $r = $db->Execute("SELECT name,id FROM groups");
       echo $r->GetMenu2("user_add_groups[]",$add_groups,true,true,3);
@@ -357,7 +362,7 @@ function show_user_form ($type) {
    }
 
    if ($USER['permissions'] >= $WRITE && ($system_settings['authmethod'] <> 2
-         || ($type=='me' && $HTTP_SESSION_VARS['authmethod']=='sql') 
+         || ($type=='me' && $_SESSION['authmethod']=='sql') 
          || $type=='create') ) {
       echo "<tr><td>Password (max. 20 characters):</td><td><input type='password' name='pwd' maxlength=20 size=20 value=''>";
       if ($type=='create')
@@ -480,9 +485,9 @@ navbar($USER['permissions']);
 // Check whether modify or delete button has been chosen
 $del=false;
 $mod=false;
-if ($HTTP_POST_VARS) {
+if ($_POST) {
    //determine wether or not the remove-command is given and act on it
-   while((list($key, $val) = each($HTTP_POST_VARS))) {
+   while((list($key, $val) = each($_POST))) {
       if (substr($key, 0, 3) == "del") {
          $delarray = explode("_", $key);
          $del = true; 

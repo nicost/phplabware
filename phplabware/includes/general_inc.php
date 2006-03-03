@@ -71,15 +71,15 @@ function date_entry($id,$real_tablename) {
  *  Displays searchbar in table view
  *
  * For data of type table, recursive calls are used
- * The ugly stuff with HTTP_POST_VARS could be done better
+ * The ugly stuff with _POST could be done better
  * it would also be nicer if a string was returned instead of writing directly
  */
-function searchfield ($db,$tableinfo,$nowfield,$HTTP_POST_VARS,$jscript) {
+function searchfield ($db,$tableinfo,$nowfield,$_POST,$jscript) {
    global $USER;
    $LAYOUT=16;
    $column=strtok($tableinfo->fields,",");
    while ($column) {
-      ${$column}=$HTTP_POST_VARS[$column];
+      ${$column}=$_POST[$column];
       $column=strtok(",");
    }
    if ($nowfield['datatype']== 'link')
@@ -139,7 +139,7 @@ function searchfield ($db,$tableinfo,$nowfield,$HTTP_POST_VARS,$jscript) {
        // scary hacks, their ugliness shows that we need to reorganize some stuff
        $ass_Allfields[0]['name']=$nowfield['name']; 
        $ass_tableinfo->fields="{$nowfield['name']}";
-       searchfield($db,$ass_tableinfo,$ass_Allfields[0],$HTTP_POST_VARS,$jscript);
+       searchfield($db,$ass_tableinfo,$ass_Allfields[0],$_POST,$jscript);
     }
     elseif ($nowfield["datatype"]=="image")
        echo "<td style='width: 10%'>&nbsp;</td>";
@@ -197,7 +197,7 @@ function viewmenu($db, $tableinfo,$viewid,$useronly=1,$jscript='OnChange="docume
  *
  */
 function display_table_change($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr_curr_page,$page_array,$r=false) {
-   global $nr_records,$max_menu_length,$USER,$LAYOUT,$HTTP_SESSION_VARS;
+   global $nr_records,$max_menu_length,$USER,$LAYOUT,$_SESSION;
 
    $first_record=($pr_curr_page - 1) * $num_p_r;
    $current_record=$first_record;
@@ -205,7 +205,7 @@ function display_table_change($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr
    if (!$r)
       $r=$db->Execute($pr_query);
    $r->Move($first_record);
-   if ($HTTP_SESSION_VARS['javascript_enabled']) {
+   if ($_SESSION['javascript_enabled']) {
       echo "<script type='text/javascript' language='JavaScript'><!--window.name='mainwin';--></script>\n";
    }
    // print all entries
@@ -326,7 +326,7 @@ function display_table_change($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr
 
       // Action column - icons and javascript to enable these by Michael Muller
       // View action
-      if ($HTTP_SESSION_VARS['javascript_enabled']) {
+      if ($_SESSION['javascript_enabled']) {
          $jscript=" onclick='MyWindow=window.open (\"general.php?tablename=".$tableinfo->name."&amp;showid=$id&amp;jsnewwindow=true&amp;viewid=$viewid\",\"view\",\"status,menubar,toolbar,scrollbars,resizable,titlebar,width=700,height=500\");MyWindow.focus()'";
          echo "<A href=\"javascript:void(0)\" $jscript> <img src=\"icons/detail.png\" alt=\"detail\" title=\"detail\" border=\"0\"/></A>\n";
       } else {
@@ -335,7 +335,7 @@ function display_table_change($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr
       if (may_write($db,$tableinfo->id,$id,$USER)) {
          // Change action
          // this works, but how do you go back from the modify window to this one???
-         if ($HTTP_SESSION_VARS['javascript_enabled']) {
+         if ($_SESSION['javascript_enabled']) {
             echo "<input type=\"hidden\" name=\"chg_" . $id . "\">\n";
             $jscript="Onclick=\"document.g_form.chg_$id.value='Change'; document.g_form.submit();\"";
             echo "<A href=\"javascript:void(0)\" $jscript> <img src=\"icons/edit_modify.png\" alt=\"modify\" title=\"modify\" border=\"0\"/></A>\n";
@@ -343,7 +343,7 @@ function display_table_change($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr
             echo "<input type=\"submit\" name=\"chg_" . $id . "\" value=\"Change\">\n";
          }
          // Delete action
-         if (! $HTTP_SESSION_VARS['javascript_enabled']) {
+         if (! $_SESSION['javascript_enabled']) {
             $delstring = "<input type=\"submit\" name=\"del_" . $id . "\" value=\"Remove\">\n";
          } else {
 	         $jstitle=str_replace("'"," ",$title);
@@ -354,7 +354,7 @@ function display_table_change($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr
          echo "$delstring\n";
       }
       /*
-      if ($HTTP_SESSION_VARS['javascript_enabled']) {
+      if ($_SESSION['javascript_enabled']) {
          $jscript=" onclick='MyWindow=window.open (\"general.php?tablename=".$tableinfo->name."&amp;showid=$id&amp;jsnewwindow=true\",\"view\",\"scrollbars,resizable,toolbar,status,menubar,width=700,height=500\");MyWindow.focus()'";
          echo "<input type=\"button\" name=\"view_" . $id . "\" value=\"View\" $jscript>\n";
       }
@@ -393,7 +393,7 @@ function display_table_change($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr
  *
  */
 function display_table_info($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr_curr_page,$page_array,$r=false,$viewid=false) {
-   global $nr_records,$USER,$LAYOUT,$HTTP_SESSION_VARS;
+   global $nr_records,$USER,$LAYOUT,$_SESSION;
 
    $first_record=($pr_curr_page - 1) * $num_p_r;
    $current_record=$first_record;
@@ -430,7 +430,7 @@ function display_table_info($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr_c
             echo "<td>{$nowfield['link']}</td>\n";
          elseif ($nowfield['datatype']=='mpulldown')
             echo "<td align='left' cellpadding='5%'>{$nowfield['text']}</td>\n"; 
-         elseif ( ($nowfield['datatype'] == 'text') && (strlen($nowfield['text']) > 59) && $HTTP_SESSION_VARS['javascript_enabled']) {
+         elseif ( ($nowfield['datatype'] == 'text') && (strlen($nowfield['text']) > 59) && $_SESSION['javascript_enabled']) {
             // provide long text by mouseover -- by MM
             $startofText = substr($nowfield['text'],0,60);
             echo "<td><a class='Tooltip' href=\"javascript:void(0);\"";
@@ -454,7 +454,7 @@ function display_table_info($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr_c
       // Action column - icons and javascript to enable these by Michael Muller
       echo "<td align='center'>&nbsp;\n";  
       // View action
-      if ($HTTP_SESSION_VARS['javascript_enabled']) {
+      if ($_SESSION['javascript_enabled']) {
          $jscript=" onclick='MyWindow=window.open (\"general.php?tablename=".$tableinfo->name."&amp;showid=$id&amp;jsnewwindow=true&amp;viewid=$viewid\",\"view\",\"status,menubar,toolbar,scrollbars,resizable,titlebar,width=700,height=500\");MyWindow.focus()'";
          echo "<A href=\"javascript:void(0)\" $jscript> <img src=\"icons/detail.png\" alt=\"detail\" title=\"detail\" border=\"0\"/></A>\n";
       } else {
@@ -463,14 +463,14 @@ function display_table_info($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr_c
       if (may_write($db,$tableinfo->id,$id,$USER)) {
          // Modify action
          // this works, but how do you go back from the modify window to this one???
-         if ($HTTP_SESSION_VARS['javascript_enabled']) {
+         if ($_SESSION['javascript_enabled']) {
             $jscript="onclick='MyWindow=window.open (\"general.php?tablename=".$tableinfo->name."&amp;jsnewwindow=true&amp;modify=true&amp;mod_".$id."=Modify\",\"modify\",\"scrollbars,resizable,status,menubar,toolbar,width=700,height=500\");MyWindow.focus()'";
             echo "<A href=\"javascript:void(0)\" $jscript> <img src=\"icons/edit_modify.png\" alt=\"modify\" title=\"modify\" border=\"0\"/></A>\n";
          } else {
             echo "<input type=\"submit\" name=\"mod_" . $id . "\" value=\"Modify\">\n";
          }
          // Delete action
-         if (! $HTTP_SESSION_VARS['javascript_enabled']) {
+         if (! $_SESSION['javascript_enabled']) {
             $delstring = "<input type=\"submit\" name=\"del_" . $id . "\" value=\"Remove\">\n";
          } else {
 	         $jstitle=str_replace("'"," ",$title);
@@ -488,7 +488,7 @@ function display_table_info($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr_c
    // Add Record button
    if (may_write($db,$tableinfo->id,false,$USER)) {
       echo "<tr><td colspan=20 align='center'>";
-      if ($HTTP_SESSION_VARS['javascript_enabled']) {
+      if ($_SESSION['javascript_enabled']) {
          $jscript=" onclick='MyWindow=window.open (\"general.php?tablename=".$tableinfo->name."&amp;add=Add&amp;jsnewwindow=true\",\"view\",\"scrollbars,resizable,toolbar,status,menubar,width=700,height=500\");MyWindow.focus()'";
          echo "<input type=\"button\" name=\"add\" value=\"Add Record\" $jscript>";
       }
@@ -704,7 +704,7 @@ function show_reports($db,$tableinfo,$recordid=false) {
  *
  */
 function display_add($db,$tableinfo,$Allfields,$id,$namein,$system_settings) { 
-   global $PHP_SELF,$md,$max_menu_length,$USER,$LAYOUT,$HTTP_POST_VARS,$HTTP_SESSION_VARS;
+   global $PHP_SELF,$md,$max_menu_length,$USER,$LAYOUT,$_POST,$_SESSION;
    
    $dbstring=$PHP_SELF;$dbstring.="?";$dbstring.="tablename=".$tableinfo->name."&";
    echo "<form method='post' id='protocolform' enctype='multipart/form-data' name='subform' action='$dbstring";
@@ -732,9 +732,9 @@ function display_add($db,$tableinfo,$Allfields,$id,$namein,$system_settings) {
       // see if display_record is set
       if ( (($nowfield['display_record']=='Y') || ($nowfield['display_table']=='Y')) ) {
          // To persist between multiple invocation, grab POST vars 
-         if ($nowfield['modifiable']=='Y' && isset($HTTP_POST_VARS[$nowfield['name']]) && $HTTP_POST_VARS[$nowfield['name']] && isset($HTTP_POST_VARS['submit'])) {
-            $nowfield['values']=$HTTP_POST_VARS[$nowfield['name']];
-            $nowfield['text']=$HTTP_POST_VARS[$nowfield['name']];
+         if ($nowfield['modifiable']=='Y' && isset($_POST[$nowfield['name']]) && $_POST[$nowfield['name']] && isset($_POST['submit'])) {
+            $nowfield['values']=$_POST[$nowfield['name']];
+            $nowfield['text']=$_POST[$nowfield['name']];
          }
          if ($nowfield['modifiable']=='N' && $nowfield['datatype']!='sequence') {
             echo "<input type='hidden' name='$nowfield[name]' value='$nowfield[values]'>\n";
@@ -892,7 +892,7 @@ function display_add($db,$tableinfo,$Allfields,$id,$namein,$system_settings) {
 
    // submit and clear buttons
    echo "<td align='center'>\n";
-   if ($HTTP_SESSION_VARS['javascript_enabled']) {
+   if ($_SESSION['javascript_enabled']) {
       echo "<input type='hidden' name='subm' value=''>\n";
       //echo "<input type='button' name='sub' value='$value' onclick='document.subform.subm.value=\"$value\"; document.subform.submit(); window.opener.document.g_form.search.value=\"Search\"; setTimeout(\"window.opener.document.g_form.submit(); window.opener.focus(); self.close()\",300);'>\n";
       echo "<input type='button' name='sub' value='$value' onclick='document.subform.subm.value=\"$value\"; document.subform.submit(); window.opener.document.g_form.search.value=\"Search\"; window.opener.document.g_form.submit(); window.opener.focus(); '>\n";
@@ -1266,7 +1266,7 @@ function show_g($db,$tableinfo,$id,$USER,$system_settings,$backbutton=true,$prev
  * Returns id of uploaded file
  */
 function process_file($db,$fileid,$system_settings) {
-   global $HTTP_POST_FILES,$HTTP_POST_VARS;
+   global $_FILES,$_POST;
    $mimetype=get_cell($db,'files','mime','id',$fileid);
    if (!strstr($mimetype,'html')) {
       $word2html=$system_settings['word2html'];
@@ -1290,7 +1290,7 @@ function process_file($db,$fileid,$system_settings) {
       if (@is_readable($temp) && filesize($temp)) {
          // we now know this was an MSword file, so lets make sure the mime type is OK
          $db->query("UPDATE files SET mime='application/msword',type='msword' WHERE id=$fileid");
-         unset ($HTTP_POST_FILES);
+         unset ($_FILES);
          $r=$db->query ("SELECT filename,mime,title,tablesfk,ftableid,ftablecolumnid FROM files WHERE id=$fileid");
          if ($r && !$r->EOF) {
             $filename=$r->fields("filename");

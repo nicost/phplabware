@@ -27,7 +27,7 @@ if (!$USER['permissions'] & $SUPER) {
 }
 
 
-$tablename=$HTTP_GET_VARS['tablename'];
+$tablename=$_GET['tablename'];
 $tableid=get_cell($db,'tableoftables','id','tablename',$tablename);
 if (!$tableid) {
    echo "<h3>This script will create a php file with code that will re-create the table you selected in phplabware.  Only the table structure, not its content will be re-created</h3>";

@@ -27,14 +27,14 @@ $tableinfo=new tableinfo($db);
 if (!$tableinfo->id) {
    printheader($httptitle);
    navbar($USER['permissions']);
-   echo "<h3 align='center'> Table: <i>$HTTP_GET_VARS[tablename]</i> does not exist.</h3>";
+   echo "<h3 align='center'> Table: <i>$_GET[tablename]</i> does not exist.</h3>";
    printfooter();
    exit();
 }
 
-$reportid=(int)$HTTP_GET_VARS['reportid'];
-$recordid=(int)$HTTP_GET_VARS['recordid'];
-$tableview=$HTTP_GET_VARS['tableview'];
+$reportid=(int)$_GET['reportid'];
+$recordid=(int)$_GET['recordid'];
+$tableview=$_GET['tableview'];
  
 if (!($reportid && ($recordid || $tableview)) ) {
    printheader($httptitle);
@@ -94,10 +94,10 @@ if ($USER['settings']['reportoutput']==2) {
 }
 
 // displays multiple records in a report (last search statement)
-if ($HTTP_GET_VARS['tableview']) {
+if ($_GET['tableview']) {
    // figure out the current query:
    $queryname=$tableinfo->short.'_query';
-   if (session_is_registered ($queryname) && isset($HTTP_SESSION_VARS[$queryname])) {
+   if (session_is_registered ($queryname) && isset($_SESSION[$queryname])) {
       // get a list with all records we may see, create temp table tempb
       $listb=may_read_SQL($db,$tableinfo,$USER,'tempb');
 

@@ -35,7 +35,7 @@ if (!$USER['permissions'] & $SUPER) {
 // fields - let's you export only a subset of columns
 // valuesOnly - switch wether or not values should be 'expanded'
 
-$tablename=$HTTP_GET_VARS['tablename'];
+$tablename=$_GET['tablename'];
 $tableid=get_cell($db,'tableoftables','id','tablename',$tablename);
 if (!$tableid) {
    echo "<h3>This script will dump the contents of a table in a tab-delimited file. The contents of that file can be imported into phplabware or any other database program.</h3>";
@@ -54,7 +54,7 @@ if (!$tableid) {
 
 $tableinfo=new tableinfo($db);
 
-if (! ($HTTP_GET_VARS['fields'] || $HTTP_POST_VARS['selectfields'])) {
+if (! ($_GET['fields'] || $_POST['selectfields'])) {
    $rfields=$db->Execute("SELECT columnname FROM {$tableinfo->desname}");
    $tr=$rfields->recordCount();
    $menu=$rfields->GetMenu('selectfields'," ",false,true,$tr);
@@ -66,12 +66,12 @@ if (! ($HTTP_GET_VARS['fields'] || $HTTP_POST_VARS['selectfields'])) {
    printfooter($d,$USER);
    exit();
 }
-if ($HTTP_POST_VARS['selectfields']) {
-   foreach($HTTP_POST_VARS['selectfields'] as $field)
+if ($_POST['selectfields']) {
+   foreach($_POST['selectfields'] as $field)
       $fields.=$field.",";
    // strip the last comma
    $fields=substr($fields,0,-1);
-   //print_r($HTTP_POST_VARS['selectfields']);
+   //print_r($_POST['selectfields']);
 }
 
 if (!$tableinfo->id) {
@@ -110,8 +110,8 @@ if (!$ff) {
 fwrite ($ff,"id\tname\tmime\tsize\ttype\n");
 
 if (!$fields) {
-   if ($HTTP_GET_VARS['fields'])  
-      $fields='id,'.$HTTP_GET_VARS['fields'];
+   if ($_GET['fields'])  
+      $fields='id,'.$_GET['fields'];
    else
       $fields='id,'.comma_array_SQL($db,$tableinfo->desname,'columnname');
 }
@@ -121,7 +121,7 @@ else
 $fields=preg_replace('/,id/','',$fields);
 
 $headers=getvalues($db,$tableinfo,$fields);
-if ($HTTP_GET_VARS['valuesOnly'])
+if ($_GET['valuesOnly'])
    $valuesOnly=true;
 
 foreach ($headers as $header) {

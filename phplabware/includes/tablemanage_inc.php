@@ -21,7 +21,7 @@
  *
  */
 function create_new_table($db){
-   global $HTTP_POST_VARS,$PHP_SELF;
+   global $_POST,$PHP_SELF;
    echo "<form method='post' id='tablemanage' enctype='multipart/form-data' ";
    $dbstring=$PHP_SELF;
    echo "action='$dbstring".SID."'>\n"; 
@@ -89,7 +89,7 @@ function create_new_table($db){
  *
  */
 function del_table($db,$tablename,$id,$USER) {
-   global $HTTP_POST_VARS, $string;
+   global $_POST, $string;
 
    $real_tablename=get_cell($db,"tableoftables","real_tablename","id",$id);
    $desc=$real_tablename."_desc";
@@ -256,22 +256,22 @@ function add_table ($db,$tablename,$tablelabel,$sortkey,$plugincode) {
  *
  */
 function mod_table($db,$id,$offset) {
-   global $HTTP_POST_VARS,$string;
+   global $_POST,$string;
 
    // prepare variable to feed into SQL statement
-   if ($HTTP_POST_VARS["table_name"][$offset])
-      $tablename="'".$HTTP_POST_VARS["table_name"][$offset]."'";
+   if ($_POST["table_name"][$offset])
+      $tablename="'".$_POST["table_name"][$offset]."'";
    else
       $tablename="NULL";
-   if ($HTTP_POST_VARS["table_label"][$offset])
-      $label="'".strtr($HTTP_POST_VARS["table_label"][$offset],",'","  ")."'";
+   if ($_POST["table_label"][$offset])
+      $label="'".strtr($_POST["table_label"][$offset],",'","  ")."'";
    else
       $label="NULL";
-   $tablesort=(int) $HTTP_POST_VARS["table_sortkey"][$offset];
-   $tabledisplay= $HTTP_POST_VARS["table_display"][$offset];
-   $tablegroups= $HTTP_POST_VARS["tablexgroups"][$id];
-   if ($HTTP_POST_VARS["table_plugincode"][$offset])
-      $plugincode="'".$HTTP_POST_VARS["table_plugincode"][$offset]."'";
+   $tablesort=(int) $_POST["table_sortkey"][$offset];
+   $tabledisplay= $_POST["table_display"][$offset];
+   $tablegroups= $_POST["tablexgroups"][$id];
+   if ($_POST["table_plugincode"][$offset])
+      $plugincode="'".$_POST["table_plugincode"][$offset]."'";
    else
       $plugincode="NULL";
 
@@ -416,23 +416,23 @@ function add_columnecg($db,$tablename2,$colname2,$label,$datatype,$Rdis,$Tdis,$r
  *
  */
 function mod_columnECG($db,$sort,$id) {
-   global $string,$HTTP_POST_VARS;
+   global $string,$_POST;
 
-   //$id=$HTTP_POST_VARS["column_id_$id"]; 
-   $colname=$HTTP_POST_VARS["column_name_$id"];
-   $label=$HTTP_POST_VARS["column_label_$id"];
-   $datatype=$HTTP_POST_VARS["column_datatype_$id"];
-   $thumbsize=$HTTP_POST_VARS["thumbsize_$id"];
+   //$id=$_POST["column_id_$id"]; 
+   $colname=$_POST["column_name_$id"];
+   $label=$_POST["column_label_$id"];
+   $datatype=$_POST["column_datatype_$id"];
+   $thumbsize=$_POST["thumbsize_$id"];
    if (!$thumbsize)
       $thumbsize="NULL";
-   $Rdis=$HTTP_POST_VARS["column_drecord_$id"];
-   $Tdis=$HTTP_POST_VARS["column_dtable_$id"];
-   $sort=$HTTP_POST_VARS["column_sort_$id"];
-   $req=$HTTP_POST_VARS["column_required_$id"];
-   $modifiable=$HTTP_POST_VARS["column_modifiable_$id"];
+   $Rdis=$_POST["column_drecord_$id"];
+   $Tdis=$_POST["column_dtable_$id"];
+   $sort=$_POST["column_sort_$id"];
+   $req=$_POST["column_required_$id"];
+   $modifiable=$_POST["column_modifiable_$id"];
 
    // find the id of the table and therewith the tablename
-   $tablename=$HTTP_POST_VARS['table_name'];
+   $tablename=$_POST['table_name'];
    $r=$db->Execute("SELECT id FROM tableoftables WHERE tablename='$tablename'");
    $tableid=$r->fields["id"];
    $real_tablename=get_cell($db,"tableoftables","real_tablename","id",$tableid);
@@ -460,10 +460,10 @@ function mod_columnECG($db,$sort,$id) {
  */
 
 function mod_columnjs($db,$id) {
-   global $HTTP_POST_VARS;
+   global $_POST;
 
    // Figure out which column will be changed:
-   $variable=explode('_',$HTTP_POST_VARS['variable']);
+   $variable=explode('_',$_POST['variable']);
    // naming has not been very fortunate in the past, fix it here
    $variable=$variable[1];
    switch ($variable) {
@@ -479,11 +479,11 @@ function mod_columnjs($db,$id) {
    }
           
    // Set the column to this value:
-   $value=$HTTP_POST_VARS['value'];
+   $value=$_POST['value'];
 
    if ($id && $variable && $value) {
       // find the id of the table and therewith the tablename
-      $tablename=$HTTP_POST_VARS['table_name'];
+      $tablename=$_POST['table_name'];
       $r=$db->Execute("SELECT id FROM tableoftables WHERE tablename='$tablename'");
       $tableid=$r->fields['id'];
       $real_tablename=get_cell($db,'tableoftables','real_tablename','id',$tableid);
@@ -511,11 +511,11 @@ function mod_columnjs($db,$id) {
  *
  */
 function mod_report($db,$offset) {
-   global $HTTP_POST_VARS,$HTTP_GET_VARS,$HTTP_POST_FILES,$system_settings;
+   global $_POST,$_GET,$HTTP_POST_FILES,$system_settings;
 
-   $id=$HTTP_POST_VARS["report_id"][$offset];
-   $label=$HTTP_POST_VARS["report_label"][$offset];
-   $sortkey=$HTTP_POST_VARS["report_sortkey"][$offset];
+   $id=$_POST["report_id"][$offset];
+   $label=$_POST["report_label"][$offset];
+   $sortkey=$_POST["report_sortkey"][$offset];
    $sortkey=(int)$sortkey;
    if (!$sortkey)
       $sortkey="NULL";
@@ -544,9 +544,9 @@ function mod_report($db,$offset) {
  *
  */
 function rm_report($db,$offset) {
-   global $HTTP_POST_VARS,$system_settings;
+   global $_POST,$system_settings;
 
-   $id=$HTTP_POST_VARS["report_id"][$offset];
+   $id=$_POST["report_id"][$offset];
    $r=$db->Execute("DELETE FROM reports WHERE id=$id");
    @unlink ($system_settings["templatedir"]."/$id.tpl");
 }
@@ -557,12 +557,12 @@ function rm_report($db,$offset) {
  *
  */
 function test_report($db,$offset,$tablename) {
-   global $HTTP_POST_VARS,$HTTP_GET_VARS,$system_settings;
-   $HTTP_GET_VARS["tablename"]=$tablename;
+   global $_POST,$_GET,$system_settings;
+   $_GET["tablename"]=$tablename;
 
    $tableinfo=new tableinfo($db);
    $real_tablename=get_cell($db,"tableoftables","real_tablename","tablename",$tablename);
-   $reportid=$HTTP_POST_VARS["report_id"][$offset];
+   $reportid=$_POST["report_id"][$offset];
    $r=$db->Execute("SELECT * FROM $real_tablename");
 
    $fields=comma_array_SQL($db,$tableinfo->desname,"columnname");
@@ -585,10 +585,10 @@ function test_report($db,$offset,$tablename) {
  *
  */
 function export_report($db,$offset) {
-   global $HTTP_POST_VARS,$system_settings;
+   global $_POST,$system_settings;
 
    $templatedir=$system_settings["templatedir"];
-   $id=$HTTP_POST_VARS["report_id"][$offset];
+   $id=$_POST["report_id"][$offset];
    if (is_readable("$templatedir/$id.tpl")) {
       header("Accept-Ranges: bytes");
       header("Connection: close");
@@ -606,15 +606,15 @@ function export_report($db,$offset) {
  *
  */
 function add_report($db) {
-   global $HTTP_POST_VARS,$HTTP_POST_FILES,$HTTP_GET_VARS,$system_settings;
+   global $_POST,$HTTP_POST_FILES,$_GET,$system_settings;
 
    $id=$db->GenID("reports"."_gen_id_seq");
-   $tablename=$HTTP_GET_VARS["editreport"];
+   $tablename=$_GET["editreport"];
    $r=$db->Execute("SELECT id FROM tableoftables WHERE tablename='$tablename'");
    $tableid=$r->fields["id"];
-   $label=$HTTP_POST_VARS["addrep_label"];
+   $label=$_POST["addrep_label"];
    $templatedir=$system_settings["templatedir"];
-   $sortkey=$HTTP_POST_VARS["addrep_sortkey"];
+   $sortkey=$_POST["addrep_sortkey"];
    $sortkey=(int)$sortkey;
    if (!$sortkey)
       $sortkey="NULL";
@@ -732,7 +732,7 @@ function add_active_link ($db,$table,$column,$link_a,$link_b) {
  *
  */
 function show_table_column_page ($db,$table_name,$addcol_name,$addcol_label) {
-   global $HTTP_GET_VARS;
+   global $_GET;
 
    echo "<form method='post' id='table_type'>\n";
    echo "<input type='hidden' name='table_name' value='$table_name'></input>\n";
@@ -759,7 +759,7 @@ function show_table_column_page ($db,$table_name,$addcol_name,$addcol_label) {
    echo "<tr><td>".$r->GetMenu2("table_select","",true,false,0,$jscript)."</td>\n";
    echo "<td><select name='table_column_select'></select></td>\n";
    echo "</tr>\n";
-   $HTTP_GET_VARS['tablename']=$table_name;
+   $_GET['tablename']=$table_name;
    $tableinfo=new tableinfo($db);
    $rs=$db->Execute("SELECT id,associated_table,associated_column,associated_local_key,label FROM {$tableinfo->desname} WHERE datatype='table'");
    if ($rs && !$rs->EOF) {
@@ -786,12 +786,12 @@ function show_table_column_page ($db,$table_name,$addcol_name,$addcol_label) {
  *  will be used as a key
  */
 function add_associated_table($db,$table,$column,$table_ass,$column_ass) {
-   global $HTTP_POST_VARS;
+   global $_POST;
 
    $r=$db->Execute("SELECT table_desc_name FROM tableoftables WHERE tablename='$table'");
    $table_desc=$r->fields["table_desc_name"];
    $r=$db->Execute("UPDATE $table_desc SET associated_table='$table_ass', associated_column='$column_ass' WHERE columnname='$column'");
-   $ass_to=(int)$HTTP_POST_VARS['ass_to'];
+   $ass_to=(int)$_POST['ass_to'];
    if ($ass_to) {
       $r=$db->Execute("UPDATE $table_desc SET associated_local_key='$ass_to' WHERE columnname='$column'");
    }

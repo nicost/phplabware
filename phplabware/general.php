@@ -26,7 +26,7 @@ $tableinfo=new tableinfo($db);
 if (!$tableinfo->id) {
    printheader($httptitle);
    navbar($USER['permissions']);
-   echo "<h3 align='center'> Table: <i>$HTTP_GET_VARS[tablename]</i> does not exist.</h3>";
+   echo "<h3 align='center'> Table: <i>$_GET[tablename]</i> does not exist.</h3>";
    printfooter();
    exit();
 }
@@ -37,11 +37,11 @@ $tableinfo->pagename=$pagename=$tableinfo->short.'_curr_page';
 // Acquire active view from settings or get/post vars
 if (isset($USER['settings']['view']["$tableinfo->name"]))
    $viewid=$USER['settings']['view']["$tableinfo->name"];
-if (isset($HTTP_GET_VARS['viewid']))
-   $viewid=$HTTP_GET_VARS['viewid'];
+if (isset($_GET['viewid']))
+   $viewid=$_GET['viewid'];
 else
-   if (isset($HTTP_POST_VARS['viewid']))
-      $viewid=$HTTP_POST_VARS['viewid'];
+   if (isset($_POST['viewid']))
+      $viewid=$_POST['viewid'];
 
 // Activate selected view or default
 if ($viewid) {
@@ -58,8 +58,8 @@ else {
 }
 
 // Activate selected report output or default
-if (isset ($HTTP_POST_VARS['reportoutput'])) {
-   $USER['settings']['reportoutput']=$HTTP_POST_VARS['reportoutput'];
+if (isset ($_POST['reportoutput'])) {
+   $USER['settings']['reportoutput']=$_POST['reportoutput'];
 }
    
 
@@ -70,12 +70,12 @@ if ($plugin_code)
 
 // register variables
 $get_vars='tablename,md,showid,edit_type,add,jsnewwindow,modify,search';
-globalize_vars($get_vars, $HTTP_GET_VARS);
+globalize_vars($get_vars, $_GET);
 $post_vars = 'add,md,edit_type,showid,submit,search,searchj,serialsortdirarray';
-globalize_vars($post_vars, $HTTP_POST_VARS);
+globalize_vars($post_vars, $_POST);
 // hack
-if (isset($HTTP_POST_VARS['subm'])) {
-   $submit=$HTTP_POST_VARS['subm'];
+if (isset($_POST['subm'])) {
+   $submit=$_POST['subm'];
 }
 
 $httptitle .=$tableinfo->label;
@@ -89,7 +89,7 @@ if ($jsnewwindow && $showid && $tableinfo->name) {
    else {
       // find the next and previous ids, so that we can show prev/next buttons
       $listb=may_read_SQL($db,$tableinfo,$USER,'tempb');
-      $r=$db->Execute($HTTP_SESSION_VARS[$tableinfo->queryname]);
+      $r=$db->Execute($_SESSION[$tableinfo->queryname]);
       while ($r && $r->fields['id']!=$showid && !$r->eof) {
          $previousid=$r->fields['id'];
          $r->MoveNext();
@@ -109,27 +109,27 @@ if ($jsnewwindow && $showid && $tableinfo->name) {
 if ($jsnewwindow && $modify) {
    // simply translate a GET variable into a POST variable
    // it will be picked up below
-   while((list($key, $val) = each($HTTP_GET_VARS))) {	
+   while((list($key, $val) = each($_GET))) {	
       // display form with information regarding the record to be changed
       if (substr($key, 0, 4) == 'mod_' && $val=='Modify') {
-         $HTTP_POST_VARS[$key]=$val;
+         $_POST[$key]=$val;
       }
    }
 }
 
 // Mode can be changed through a get var and is perpetuated through post vars
-if ($HTTP_GET_VARS['md'])
-   $md=$HTTP_GET_VARS['md'];
+if ($_GET['md'])
+   $md=$_GET['md'];
 
-foreach($HTTP_POST_VARS as $key =>$value) {
+foreach($_POST as $key =>$value) {
    // for table links, search in the linked table instead of the current one
    if (substr($key, 0, 3) == 'max') {
       $cname=substr($key,4);
       $field=strtok($cname,'_');
-      $value=$HTTP_POST_VARS[$cname];
+      $value=$_POST[$cname];
       // we need to replace this value with an id if appropriate
       if ($value)
-         $HTTP_POST_VARS[$cname]=find_nested_match($db,$tableinfo,$field,$value);
+         $_POST[$cname]=find_nested_match($db,$tableinfo,$field,$value);
    }
    // check if sortup or sortdown arrow was been pressed
    else {
@@ -148,7 +148,7 @@ foreach($HTTP_POST_VARS as $key =>$value) {
       }
    }
 } 
-reset ($HTTP_POST_VARS);
+reset ($_POST);
 if ($searchj || $sortup || $sortdown)
    $search='Search';
 
@@ -163,7 +163,7 @@ if (!may_see_table($db,$USER,$tableinfo->id)) {
    exit();
 }
 // check if something should be modified, deleted or shown
-while((list($key, $val) = each($HTTP_POST_VARS))) {	
+while((list($key, $val) = each($_POST))) {	
    // display form with information regarding the record to be changed
    if (substr($key, 0, 3) == 'mod' && $val=='Modify') {
       printheader($httptitle.' - Modify record ');
@@ -179,8 +179,8 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
       if ($val=='Change') {
          // The extra fields are needed to keep the access permissions right
          $Fieldsarray=explode(',',$Fieldscomma.',grr,grw,evr,evw');
-         reset($HTTP_POST_VARS);
-         while((list($key, $val) = each($HTTP_POST_VARS))) {	
+         reset($_POST);
+         while((list($key, $val) = each($_POST))) {	
             $testarray=explode('_',$key);
             if ( ($testarray[1]==$chgarray[1]) && (in_array ($testarray[0],$Fieldsarray))) {
                if (is_array($val)) {
@@ -205,17 +205,17 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
       navbar($USER['permissions']);
       $modarray = explode('_', $key);
       $filename=delete_file($db,$modarray[1],$USER);
-      $id=$HTTP_POST_VARS['id'];
+      $id=$_POST['id'];
       if ($filename)
          echo "<h3 align='center'>Deleted file <i>$filename</i>.</h3>\n";
       else
          echo "<h3 align='center'>Failed to delete file <i>$filename</i>.</h3>\n";
-      add_g_form ($db,$tableinfo,$HTTP_POST_VARS,$id,$USER,$PHP_SELF,$system_settings);
+      add_g_form ($db,$tableinfo,$_POST,$id,$USER,$PHP_SELF,$system_settings);
       printfooter();
       exit();
    }
    // show the record only when javascript is not active
-   if (substr($key, 0, 4) == 'view' && !$HTTP_SESSION_VARS['javascript_enabled']) {
+   if (substr($key, 0, 4) == 'view' && !$_SESSION['javascript_enabled']) {
       printheader($httptitle);
       navbar($USER['permissions']);
       $modarray = explode('_', $key);
@@ -241,7 +241,7 @@ while((list($key, $val) = each($HTTP_POST_VARS))) {
       $modarray = explode("_", $key);
       include('./includes/type_inc.php');
       // Ajax-based request do not need much in terms of an answer:
-      if ($HTTP_POST_VARS['jsrequest']) {
+      if ($_POST['jsrequest']) {
          mod_type($db,$edit_type,$modarray[1]);
       } else {
          printheader($httptitle,"",'./includes/js/tablemanage.js');
@@ -304,9 +304,9 @@ if ($add && $md!='edit') {
    } 
     // first handle addition of a new record
    if ($submit == 'Add Record') {
-      if (!(check_g_data($db, $HTTP_POST_VARS, $tableinfo) && 
-            $id=add($db,$tableinfo->realname,$tableinfo->fields,$HTTP_POST_VARS,$USER,$tableinfo->id) ) ) {
-         add_g_form($db,$tableinfo,$HTTP_POST_VARS,0,$USER,$PHP_SELF,$system_settings);
+      if (!(check_g_data($db, $_POST, $tableinfo) && 
+            $id=add($db,$tableinfo->realname,$tableinfo->fields,$_POST,$USER,$tableinfo->id) ) ) {
+         add_g_form($db,$tableinfo,$_POST,0,$USER,$PHP_SELF,$system_settings);
          printfooter ();
          exit;
       }
@@ -316,7 +316,7 @@ if ($add && $md!='edit') {
             // mpulldown
             $rd=$db->Execute('SELECT columnname,key_table FROM '.$tableinfo->desname." WHERE datatype='mpulldown'");
             while ($rd && !$rd->EOF){
-               update_mpulldown($db,$rd->fields['key_table'],$id,$HTTP_POST_VARS[$rd->fields['columnname']]);
+               update_mpulldown($db,$rd->fields['key_table'],$id,$_POST[$rd->fields['columnname']]);
                $rd->MoveNext();
             }
             // upload files
@@ -342,19 +342,19 @@ if ($add && $md!='edit') {
                plugin_add($db,$tableinfo->id,$id);
          }
          // to not interfere with search form 
-         unset ($HTTP_POST_VARS);
+         unset ($_POST);
 	 // or we won't see the new record
-	 unset ($HTTP_SESSION_VARS["{$queryname}"]);
+	 unset ($_SESSION["{$queryname}"]);
       }
    }
    // then look whether it should be modified
    elseif ($submit=='Modify Record') {
       $modfields=comma_array_SQL_where($db,$tableinfo->desname,"columnname","modifiable","Y");
       // The pdf plugin wants to modify fields that have been set to modifiable=='N'
-      if (! (check_g_data($db,$HTTP_POST_VARS,$tableinfo,true) && 
-             // modify($db,$tableinfo->realname,$tableinfo->fields,$HTTP_POST_VARS,$HTTP_POST_VARS['id'],$USER,$tableinfo->id)) ) {
-             modify($db,$tableinfo->realname,$modfields,$HTTP_POST_VARS,$HTTP_POST_VARS['id'],$USER,$tableinfo->id)) ) {
-         add_g_form ($db,$tableinfo,$HTTP_POST_VARS,$HTTP_POST_VARS['id'],$USER,$PHP_SELF,$system_settings);
+      if (! (check_g_data($db,$_POST,$tableinfo,true) && 
+             // modify($db,$tableinfo->realname,$tableinfo->fields,$_POST,$_POST['id'],$USER,$tableinfo->id)) ) {
+             modify($db,$tableinfo->realname,$modfields,$_POST,$_POST['id'],$USER,$tableinfo->id)) ) {
+         add_g_form ($db,$tableinfo,$_POST,$_POST['id'],$USER,$PHP_SELF,$system_settings);
          printfooter ();
          exit;
       }
@@ -362,17 +362,17 @@ if ($add && $md!='edit') {
          // mpulldown
          $rd=$db->Execute('SELECT columnname,key_table FROM '.$tableinfo->desname." WHERE datatype='mpulldown'");
          while ($rd && !$rd->EOF){
-            update_mpulldown($db,$rd->fields['key_table'],$HTTP_POST_VARS['id'],$HTTP_POST_VARS[$rd->fields['columnname']]);
+            update_mpulldown($db,$rd->fields['key_table'],$_POST['id'],$_POST[$rd->fields['columnname']]);
             $rd->MoveNext();
          }
          // upload files and images
          $rc=$db->Execute("SELECT id,columnname,datatype,thumb_x_size FROM $tableinfo->desname WHERE datatype='file' OR datatype='image'");
          while (!$rc->EOF) {
-            if ($HTTP_POST_FILES[$rc->fields['columnname']]['name'][0]) {
+            if ($_FILES[$rc->fields['columnname']]['name'][0]) {
                // delete all existing files
-               //delete_column_file ($db,$tableinfo->id,$rc->fields['id'],$HTTP_POST_VARS['id'],$USER);
+               //delete_column_file ($db,$tableinfo->id,$rc->fields['id'],$_POST['id'],$USER);
                // store the file uploaded by the user
-               $fileid=upload_files($db,$tableinfo->id,$HTTP_POST_VARS['id'],$rc->fields['id'],$rc->fields['columnname'],$USER,$system_settings);
+               $fileid=upload_files($db,$tableinfo->id,$_POST['id'],$rc->fields['id'],$rc->fields['columnname'],$USER,$system_settings);
                if ($rc->fields['datatype']=='file') {
                   // try to convert it to an html file
                   if ($fileid)
@@ -387,16 +387,16 @@ if ($add && $md!='edit') {
             $rc->MoveNext(); 
          }
          // to not interfere with search form 
-         unset ($HTTP_POST_VARS);
+         unset ($_POST);
       }
    } 
    elseif ($submit=='Cancel')
       // to not interfere with search form 
-      unset ($HTTP_POST_VARS);
+      unset ($_POST);
    // or deleted
-   elseif ($HTTP_POST_VARS) {
-      reset ($HTTP_POST_VARS);
-      while((list($key, $val) = each($HTTP_POST_VARS))) {
+   elseif ($_POST) {
+      reset ($_POST);
+      while((list($key, $val) = each($_POST))) {
          if ( (substr($key, 0, 3) == 'del') && ($val=='Remove') ) {
             $delarray = explode('_', $key);
             delete ($db,$tableinfo->id,$delarray[1], $USER);
@@ -405,16 +405,16 @@ if ($add && $md!='edit') {
    } 
 
    if ($search=='Show All') {
-      $num_p_r=$HTTP_POST_VARS['num_p_r'];
-      unset ($HTTP_POST_VARS);
+      $num_p_r=$_POST['num_p_r'];
+      unset ($_POST);
       ${$pagename}=1;
-      unset ($HTTP_SESSION_VARS[$queryname]);
+      unset ($_SESSION[$queryname]);
       unset ($serialsortdirarray);
       session_unregister($queryname);
    }
    $column=strtok($tableinfo->fields,',');
    while ($column) {
-      ${$column}=$HTTP_POST_VARS[$column];
+      ${$column}=$_POST[$column];
       $column=strtok(",");
    }
  
@@ -439,11 +439,11 @@ if ($add && $md!='edit') {
    // when search fails we'll revert to Show All after showing an error message
    if (!$r) {
       echo "<h3 align='center'>The server encountered an error executing your search.  Showing all records instead.</h3><br>\n";
-      $num_p_r=$HTTP_POST_VARS['num_p_r'];
-      unset ($HTTP_POST_VARS);
+      $num_p_r=$_POST['num_p_r'];
+      unset ($_POST);
       ${$pagename}=1;
       unset (${$queryname});
-      unset ($HTTP_SESSION_VARS[$queryname]);
+      unset ($_SESSION[$queryname]);
       unset ($serialsortdirarray);
       unset ($sortstring);
       session_unregister($queryname);
@@ -559,7 +559,7 @@ if ($add && $md!='edit') {
    echo "<tr align='center'>\n";
 
    foreach($Allfields as $nowfield)  {
-      if ($HTTP_POST_VARS[$nowfield['name']]) {
+      if ($_POST[$nowfield['name']]) {
          $list=$listb['sql']; 
 	 $count=$listb['numrows'];
       }
@@ -567,7 +567,7 @@ if ($add && $md!='edit') {
          $list=$lista;   
          $count=$listb['numrows'];
       }
-      searchfield($db,$tableinfo,$nowfield,$HTTP_POST_VARS,$jscript);
+      searchfield($db,$tableinfo,$nowfield,$_POST,$jscript);
    }	 
 
    echo "<td style='width: 5%'><input type=\"submit\" name=\"search\" value=\"Search\">&nbsp;";

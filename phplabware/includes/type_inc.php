@@ -19,7 +19,7 @@
  * after the pulldown list has been changed by the user in another window
  */
 function update_opener_js ($db,$table) {
-   global $HTTP_GET_VARS;
+   global $_GET;
 
    $result="<script type='text/javascript'>\n<!--\n";
    $result.="typeinfo=new Array(\n";
@@ -35,8 +35,8 @@ function update_opener_js ($db,$table) {
       $r->MoveNext();
    }
    $result.="\n )\n)\n";
-   $form=$HTTP_GET_VARS['formname'];
-   $select=$HTTP_GET_VARS['selectname'];
+   $form=$_GET['formname'];
+   $select=$_GET['selectname'];
    $result.="fillSelectFromArray(opener.document.$form.$select,typeinfo[0])\n";
    $result.="// End of Javascript -->\n</script>\n";
    return $result;
@@ -49,17 +49,17 @@ function update_opener_js ($db,$table) {
  * Allows for addition, modifying and deleting pulldown items
  */
 function show_type ($db,$table,$name, $tablename=false) {
-   global $HTTP_POST_VARS,$PHP_SELF,$HTTP_GET_VARS, $HTTP_SESSION_VARS;
+   global $_POST,$PHP_SELF,$_GET, $_SESSION;
 
    $dbstring=$PHP_SELF.'?';
    if ($tablename)
       $dbstring.="tablename=$tablename&"; 
    $dbstring.="edit_type=$table&";
    // propagate the form and select name as GET variables to be able to manipulate the select list with javascript
-   $dbstring.='formname='.$HTTP_GET_VARS['formname'].'&';
-   $dbstring.='selectname='.$HTTP_GET_VARS['selectname'].'&';
-   if($HTTP_POST_VARS['type_name']) {
-      $name=$HTTP_POST_VARS['type_name'];
+   $dbstring.='formname='.$_GET['formname'].'&';
+   $dbstring.='selectname='.$_GET['selectname'].'&';
+   if($_POST['type_name']) {
+      $name=$_POST['type_name'];
    }
    echo "<form method='post' id='typeform' enctype='multipart/form-data' ";
    echo "action='$dbstring".SID."'>\n"; 
@@ -107,7 +107,7 @@ function show_type ($db,$table,$name, $tablename=false) {
       echo "<td><input type='text' id='type_typeshort_$id' name='type_typeshort_$id' value='$typeshort' onchange='tellServer(\"$dbstring".SID."\", $id, \"typeshort\");'></td>\n";
       echo "<td><input type='text' id='type_sortkey_$id' name='type_sortkey_$id' value='$sortkey' onchange='tellServer(\"$dbstring".SID."\", $id, \"sortkey\");'></td>\n";
       // When Javascript is on we do not need Modify buttons here:
-      if (!$HTTP_SESSION_VARS['javascript_enabled']) {
+      if (!$_SESSION['javascript_enabled']) {
          $modstring = "<input type='submit' name='mdtype"."_$id' value='Modify'>";
       }
       $delstring = "<input type='submit' name='dltype"."_$id' value='Remove' ";
@@ -145,9 +145,9 @@ function show_type ($db,$table,$name, $tablename=false) {
  */
 
 function del_type ($db,$table,$id,$tableinfo) {
-   global $HTTP_POST_VARS, $HTTP_GET_VARS;
+   global $_POST, $_GET;
 
-   if (! $id == $HTTP_POST_VARS["type_id_$id"]) {
+   if (! $id == $_POST["type_id_$id"]) {
       echo "ERROR";
    }
    if ($tableinfo->realname) {
@@ -190,14 +190,14 @@ function del_type ($db,$table,$id,$tableinfo) {
  *
  */
 function mod_type ($db,$table,$id) {
-   global $HTTP_POST_VARS;
+   global $_POST;
    
-   if (! $id == $HTTP_POST_VARS["type_id_$id"]) {
+   if (! $id == $_POST["type_id_$id"]) {
       echo "ERROR";
    }
-   $type=$HTTP_POST_VARS['type_type_' . $id]; 
-   $typeshort=$HTTP_POST_VARS['type_typeshort_' . $id]; 
-   $sortkey=(int) $HTTP_POST_VARS['type_sortkey_' . $id];
+   $type=$_POST['type_type_' . $id]; 
+   $typeshort=$_POST['type_typeshort_' . $id]; 
+   $sortkey=(int) $_POST['type_sortkey_' . $id];
    if ($type && $typeshort && is_int($sortkey)) {
       $r=$db->Execute("UPDATE $table SET type='$type',typeshort='$typeshort',sortkey=$sortkey WHERE id=$id"); 
       if ($r) {
@@ -217,12 +217,12 @@ function mod_type ($db,$table,$id) {
  *
  */
 function add_type ($db,$table) {
-   global $HTTP_POST_VARS;
+   global $_POST;
 
    $id=$db->GenId($table.'_id_seq');
-   $type=$HTTP_POST_VARS['newtype_type']; 
-   $typeshort=$HTTP_POST_VARS['newtype_typeshort']; 
-   $sortkey=(int) $HTTP_POST_VARS['newtype_sortkey'];
+   $type=$_POST['newtype_type']; 
+   $typeshort=$_POST['newtype_typeshort']; 
+   $sortkey=(int) $_POST['newtype_sortkey'];
    if ($type && $typeshort && is_int($sortkey)) {
        $r=$db->query("INSERT INTO $table (id,type,typeshort,sortkey) 
                       VALUES ($id,'$type','$typeshort',$sortkey)");

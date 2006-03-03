@@ -2,9 +2,9 @@
 require('./include.php');
 
 // register variables
-$pdbid=$HTTP_POST_VARS['pdbid'];
+$pdbid=$_POST['pdbid'];
 
-globalize_vars($post_vars, $HTTP_POST_VARS,$DBNAME,$DB_DESNAME,$system_settings);
+globalize_vars($post_vars, $_POST,$DBNAME,$DB_DESNAME,$system_settings);
 printheader($httptitle);
 if ($pdbid)
 	{

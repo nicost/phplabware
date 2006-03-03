@@ -27,14 +27,14 @@ class tableinfo {
 
    // hackers way of overloading
    function tableinfo ($db,$realname=false,$id=false) {
-      global $HTTP_GET_VARS;
+      global $_GET;
 
       if ($id)
          $r=$db->Execute("SELECT id,shortname,tablename,real_tablename,table_desc_name,label FROM tableoftables WHERE id='$id'");
       elseif ($realname)
          $r=$db->Execute("SELECT id,shortname,tablename,real_tablename,table_desc_name,label FROM tableoftables WHERE real_tablename='$realname'");
       else
-         $r=$db->Execute("SELECT id,shortname,tablename,real_tablename,table_desc_name,label FROM tableoftables WHERE tablename='$HTTP_GET_VARS[tablename]'");
+         $r=$db->Execute("SELECT id,shortname,tablename,real_tablename,table_desc_name,label FROM tableoftables WHERE tablename='$_GET[tablename]'");
       $this->id=$r->fields['id'];
       $this->short=$r->fields['shortname'];
       $this->realname=$r->fields['real_tablename'];
@@ -478,12 +478,12 @@ function process_image($db,$fileid,$bigsize)
 
 /**
  *  !Upload files and enters then into table files
- *  Filetitle in HTTP_POST_VARS will be inserted in the title field of table files
+ *  Filetitle in _POST will be inserted in the title field of table files
   * Returns id of last uploaded file upon succes, false otherwise
   */
 function upload_files ($db,$tableid,$id,$columnid,$columnname,$USER,$system_settings)
 {
-   global $HTTP_POST_FILES,$HTTP_POST_VARS,$system_settings;
+   global $_FILES,$_POST,$system_settings;
 
    $table=get_cell($db,'tableoftables','tablename','id',$tableid);
    $real_tablename=get_cell($db,'tableoftables','real_tablename','id',$tableid);
@@ -496,15 +496,15 @@ function upload_files ($db,$tableid,$id,$columnid,$columnname,$USER,$system_sett
       echo "You do not have permission to write to table $table.<br>";
       return false;
    }
-   if (isset($HTTP_POST_FILES[$columnname]['name'][0]) && !$filedir=$system_settings['filedir']) {
+   if (isset($_FILES[$columnname]['name'][0]) && !$filedir=$system_settings['filedir']) {
       echo "<h3><i>Filedir</i> was not set.  The file was not uploaded. Please contact your system administrator</h3>";
       return false;
    }
-   for ($i=0;$i<sizeof($HTTP_POST_FILES[$columnname]['name']);$i++) {
+   for ($i=0;$i<sizeof($_FILES[$columnname]['name']);$i++) {
       if (!$fileid=$db->GenID('files_id_seq'))
          return false;
-      $originalname=$HTTP_POST_FILES[$columnname]['name'][$i];
-      $mime=$HTTP_POST_FILES[$columnname]['type'][$i];
+      $originalname=$_FILES[$columnname]['name'][$i];
+      $mime=$_FILES[$columnname]['type'][$i];
       // sometimes mime types are not set properly, let's try to fix those
       if (substr($originalname,-4,4)=='.pdf')
          $mime='application/pdf';
@@ -515,17 +515,17 @@ function upload_files ($db,$tableid,$id,$columnid,$columnname,$USER,$system_sett
       // work around php bug??  
       $mime=strtok ($mime,";");
       $filestype=substr(strrchr($mime,'/'),1);
-      $size=$HTTP_POST_FILES["$columnname"]['size'][$i];
-      $title=$HTTP_POST_VARS['filetitle'][$i];
+      $size=$_FILES["$columnname"]['size'][$i];
+      $title=$_POST['filetitle'][$i];
       if (!$title)
          $title='NULL'; 
       else
          $title="'$title'";
-      $type=$HTTP_POST_VARS['filetype'][$i];
+      $type=$_POST['filetype'][$i];
       // this works asof php 4.02
-if (file_exists($HTTP_POST_FILES[$columnname]['tmp_name'][$i])) {
+if (file_exists($_FILES[$columnname]['tmp_name'][$i])) {
 }
-      if (move_uploaded_file($HTTP_POST_FILES["$columnname"]['tmp_name'][$i],"$filedir/$fileid"."_"."$originalname")) {
+      if (move_uploaded_file($_FILES["$columnname"]['tmp_name'][$i],"$filedir/$fileid"."_"."$originalname")) {
          $query="INSERT INTO files (id,filename,mime,size,title,tablesfk,ftableid,ftablecolumnid,type) VALUES ($fileid,'$originalname','$mime','$size',$title,'$tableid',$id,'$columnid','$filestype')";
 	 $db->Execute($query);
       } else {
@@ -533,20 +533,20 @@ if (file_exists($HTTP_POST_FILES[$columnname]['tmp_name'][$i])) {
           * files that are uploaded by other phplabware code are OK
           * Move files that are in the phplabware tmpdir also
           */
-        $dirname=dirname($HTTP_POST_FILES[$columnname]['tmp_name'][$i]);
+        $dirname=dirname($_FILES[$columnname]['tmp_name'][$i]);
         $tmpdir=$system_settings['tmpdir'];
-        if (dirname($HTTP_POST_FILES[$columnname]['tmp_name'][$i]) == $system_settings['tmpdir']) {
-           if (!@rename($HTTP_POST_FILES[$columnname]['tmp_name'][$i],"$filedir/$fileid".'_'.$originalname)) {
+        if (dirname($_FILES[$columnname]['tmp_name'][$i]) == $system_settings['tmpdir']) {
+           if (!@rename($_FILES[$columnname]['tmp_name'][$i],"$filedir/$fileid".'_'.$originalname)) {
               /**
                 * Try copying and deleting the old file instead
                 */
-              if (!copy ($HTTP_POST_FILES[$columnname]['tmp_name'][$i],"$filedir/$fileid".'_'.$originalname)) {
+              if (!copy ($_FILES[$columnname]['tmp_name'][$i],"$filedir/$fileid".'_'.$originalname)) {
                  $fileid=false;
               }
               /**
                * No matter if the copy failed, we can delete this file
                */
-              @unlink ($HTTP_POST_FILES[$columnname]['tmp_name'][$i]);
+              @unlink ($_FILES[$columnname]['tmp_name'][$i]);
                  
             } 
             if ($fileid) {
@@ -1513,11 +1513,11 @@ function next_previous_buttons($r,$paging=false,$num_p_r=false,$numrows=false,$p
  * When no value is found, default to 10
  */
 function paging ($num_p_r,&$USER) {
-   global $HTTP_POST_VARS;
+   global $_POST;
    if (!$num_p_r)
       $num_p_r=$USER['settings']['num_p_r'];
-   if (isset($HTTP_POST_VARS['num_p_r']))
-      $num_p_r=$HTTP_POST_VARS['num_p_r'];
+   if (isset($_POST['num_p_r']))
+      $num_p_r=$_POST['num_p_r'];
    if (!isset($num_p_r))
      $num_p_r=10;
    $USER['settings']['num_p_r']=$num_p_r;
@@ -1531,7 +1531,7 @@ function paging ($num_p_r,&$USER) {
  * The variable name is formed using the short name for the table
  */
 function current_page($curr_page, $sname, $num_p_r, $numrows) {
-   global $HTTP_POST_VARS, $HTTP_SESSION_VARS;
+   global $_POST, $_SESSION;
    // damage control: if settings are absent, $num_p_rt will be 0
    if (!$num_p_r) {
       $num_p_r=10;
@@ -1540,39 +1540,39 @@ function current_page($curr_page, $sname, $num_p_r, $numrows) {
    ${$varname}=$curr_page;
 
    if (!isset($$varname))
-      ${$varname}=$HTTP_SESSION_VARS[$varname];
+      ${$varname}=$_SESSION[$varname];
    // if the current page is out of bound, we'll reset it to 1
    if (${$varname} > ($numrows/$num_p_r))
       ${$varname}=1;
    // the page number can be set directly or by clicking the next/previous buttons (see function next_previous_buttons)
-   if ($HTTP_POST_VARS[$varname]) {
-      ${$varname}=$HTTP_POST_VARS[$varname];
+   if ($_POST[$varname]) {
+      ${$varname}=$_POST[$varname];
    }
-   elseif (isset($HTTP_POST_VARS['next'])) {
+   elseif (isset($_POST['next'])) {
       ${$varname}+=1;
    }
-   elseif (isset($HTTP_POST_VARS['previous'])) {
+   elseif (isset($_POST['previous'])) {
       $$varname-=1;
    }
    if ($$varname<1)
       $$varname=1;
-   $HTTP_SESSION_VARS[$varname]=${$varname}; 
+   $_SESSION[$varname]=${$varname}; 
    session_register($varname);
    return ${$varname};
 }
 
 /**
- *  Assembles the search SQL statement and remembers it in HTTP_SESSION_VARS
+ *  Assembles the search SQL statement and remembers it in _SESSION
  *
  */
 function make_search_SQL($db,$tableinfo,$fields,$USER,$search,$searchsort,$whereclause=false) {
-   global $HTTP_GET_VARS, $HTTP_POST_VARS, $HTTP_SESSION_VARS;
+   global $_GET, $_POST, $_SESSION;
 
    // if any of the search columns has been passed as Get variable, copy them to the POST vars array 
    $column=strtok($fields,',');
    while ($column) {
-      if (isset($HTTP_GET_VARS[$column]) &&  !isset($HTTP_POST_VARS[$column])) {
-         $HTTP_POST_VARS[$column]=$HTTP_GET_VARS[$column];
+      if (isset($_GET[$column]) &&  !isset($_POST[$column])) {
+         $_POST[$column]=$_GET[$column];
       }
       $column=strtok(',');
    }
@@ -1588,30 +1588,30 @@ function make_search_SQL($db,$tableinfo,$fields,$USER,$search,$searchsort,$where
    if (!$whereclause)
       $whereclause=-1;
    if ($search=='Search') {
-      ${$queryname}=search($db,$tableinfo,$fields,$HTTP_POST_VARS," $whereclause ORDER BY $searchsort");
-      ${$fieldvarsname}=$HTTP_POST_VARS;
+      ${$queryname}=search($db,$tableinfo,$fields,$_POST," $whereclause ORDER BY $searchsort");
+      ${$fieldvarsname}=$_POST;
    }
-   elseif (session_is_registered ($queryname) && isset($HTTP_SESSION_VARS[$queryname])) {
-      ${$queryname}=$HTTP_SESSION_VARS[$queryname];
-      ${$fieldvarsname}=$HTTP_SESSION_VARS[$fieldvarsname];
+   elseif (session_is_registered ($queryname) && isset($_SESSION[$queryname])) {
+      ${$queryname}=$_SESSION[$queryname];
+      ${$fieldvarsname}=$_SESSION[$fieldvarsname];
    } else {
       // This must be a 'Show All'
       ${$queryname} = "SELECT $fields FROM $tableinfo->realname WHERE $whereclause ORDER BY date DESC";
-      ${$fieldvarsname}=$HTTP_POST_VARS;
+      ${$fieldvarsname}=$_POST;
    }
-   $HTTP_SESSION_VARS[$queryname]=${$queryname};   
+   $_SESSION[$queryname]=${$queryname};   
    session_register($queryname);
    if (!${$fieldvarsname})
-      ${$fieldvarsname}=$HTTP_POST_VARS;
-   $HTTP_SESSION_VARS[$fieldvarsname]=${$fieldvarsname};   
+      ${$fieldvarsname}=$_POST;
+   $_SESSION[$fieldvarsname]=${$fieldvarsname};   
    session_register($fieldvarsname);
 
    if ($search !='Show All') {
-      // globalize HTTP_POST_VARS 
+      // globalize _POST 
       $column=strtok($fields,',');
       while ($column) {
          global ${$column};
-         ${$column}=$HTTP_POST_VARS[$column];
+         ${$column}=$_POST[$column];
          $column=strtok(',');
       }
       // extract variables from session

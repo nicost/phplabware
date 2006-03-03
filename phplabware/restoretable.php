@@ -25,9 +25,9 @@ if (!$USER['permissions'] & $SUPER) {
    printfooter($db, $USER);
 }
 
-$filename=$HTTP_GET_VARS['filename'];
+$filename=$_GET['filename'];
 if (!isset($filename))
-   $filename=$HTTP_POST_FILES['filename']['tmp_name'];
+   $filename=$_FILES['filename']['tmp_name'];
 
 if (!$filename) {
    echo "<table align='center'>\n";

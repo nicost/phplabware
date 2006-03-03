@@ -22,9 +22,9 @@ require('./includes/tablemanage_inc.php');
 include ('./includes/defines_inc.php');
 
 $post_vars='delimiter,delimiter_type,quote,quote_type,tableid,nrfields,pkey,pkeypolicy,skipfirstline,tmpfile,ownerid,localfile';
-globalize_vars($post_vars, $HTTP_POST_VARS);
+globalize_vars($post_vars, $_POST);
 $get_vars='tableid';
-globalize_vars($get_vars, $HTTP_GET_VARS);
+globalize_vars($get_vars, $_GET);
 
 $permissions=$USER['permissions'];
 /**
@@ -104,8 +104,8 @@ function mymktime($datestring) {
 /**
  *  Upload files and enters then into table files
  *
- * files should be called file[] in HTTP_POST_FILES
- * filetitle in HTTP_POST_VARS will be inserted in the title field of table files
+ * files should be called file[] in _POST
+ * filetitle in _POST will be inserted in the title field of table files
  * returns id of last uploaded file upon succes, false otherwise
  */
 function import_file ($db,$tableid,$id,$columnid,$columnname,$tmpfileid,$system_settings)
@@ -316,7 +316,7 @@ function addmpulldown($db,$tableinfo,$id,$to_field,$field)
  * Start of the main code
  * do the final parsing (part 3)
  */
-if ($HTTP_POST_VARS['assign']=='Import Data') {
+if ($_POST['assign']=='Import Data') {
    // set longer time-out
    ini_set('max_execution_time','0');
    // get description table name
@@ -369,7 +369,7 @@ if ($HTTP_POST_VARS['assign']=='Import Data') {
    // Array $to_fields contains the target column ids,
    // Array $to_types contains the target column types
    for ($i=0;$i<$nrfields;$i++) {
-      $the_field=$HTTP_POST_VARS["fields_$i"];
+      $the_field=$_POST["fields_$i"];
       if (isset($the_field) && $the_field && $the_field!="") {
          $to_fields[$i]=get_cell($db,$desc,'columnname','id',$the_field);
          if ($to_fields[$i]=='id')
@@ -407,7 +407,7 @@ if ($HTTP_POST_VARS['assign']=='Import Data') {
    $freq_array=array_count_values($to_fields);
    if (sizeof($freq_array) < sizeof($to_fields)) {
        $error_string="<h3 align='center'>Some columns in the database were selected more than once.  Please correct this and try again.</h3>";
-       $HTTP_POST_VARS['dataupload']='Continue';
+       $_POST['dataupload']='Continue';
    } else {
       // do the database upload
       $delimiter=get_delimiter($delimiter,$delimiter_type);
@@ -500,7 +500,7 @@ if ($HTTP_POST_VARS['assign']=='Import Data') {
                          if ($to_datatypes[$i]=='file') {
                             $fileids=explode(',',$fields[$i]);
                             foreach ($fileids as $fileid)
-			       import_file ($db,$tableid,$recordid,$HTTP_POST_VARS["fields_$i"],$to_fields[$i],$fileid,$system_settings);
+			       import_file ($db,$tableid,$recordid,$_POST["fields_$i"],$to_fields[$i],$fileid,$system_settings);
                           } elseif($to_datatypes[$i]=='mpulldown') {
                              addmpulldown($db,$tableinfo,$recordid,$to_fields[$i],$fields[$i]);
                          }
@@ -545,10 +545,10 @@ if ($HTTP_POST_VARS['assign']=='Import Data') {
 
 
 // interpret uploaded file and get information for final parsing (part 2)
-if ($HTTP_POST_VARS['dataupload']=='Continue' && may_write($db,$tableid,false,$USERAS)) {
+if ($_POST['dataupload']=='Continue' && may_write($db,$tableid,false,$USERAS)) {
    if ($error_string)
       echo $error_string;
-   $filename=$HTTP_POST_FILES['datafile']['name'];
+   $filename=$_POST['datafile']['name'];
    $delimiter=get_delimiter($delimiter,$delimiter_type);
    $quote=get_quote($quote,$quote_type);
    if ($delimiter && $tableid && $ownerid && ($filename || $tmpfile || $localfile) ) {
@@ -558,7 +558,7 @@ if ($HTTP_POST_VARS['dataupload']=='Continue' && may_write($db,$tableid,false,$U
          exit();
       }
       $tmpdir=$system_settings['tmpdir'];
-      if ($tmpfile || $localfile || move_uploaded_file($HTTP_POST_FILES['datafile']['tmp_name'],"$tmpdir/$filename")) {
+      if ($tmpfile || $localfile || move_uploaded_file($_POST['datafile']['tmp_name'],"$tmpdir/$filename")) {
          if ($tmpfile) {
             $filename=$tmpfile;
          }
