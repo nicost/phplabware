@@ -120,4 +120,30 @@ TEXTAREA.read_only
 	background-color : #333388;
         color : White;
 }
-.navorange { background-color : White; }
+.navorange 
+{ 
+   background-color : White; 
+}
+
+#toolTipBox {
+	display: none;
+	padding: 5;
+	font-size: 12px;
+	border: black solid 1px;
+	font-family: verdana;
+	position: absolute;
+   background-color: #ffd038;
+   color: 000000;
+}
+
+#dhtmltooltip{
+   position: absolute;
+   width: 150px;
+   border: 2px solid black;
+   padding: 2px;
+   background-color: lightyellow;
+   visibility: hidden;
+   z-index: 100;
+   /*Remove below line to remove shadow. Below line should always appear last within this CSS*/
+   filter: progid:DXImageTransform.Microsoft.Shadow(color=gray,direction=135);
+}
