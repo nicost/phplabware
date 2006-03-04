@@ -38,10 +38,6 @@ Table, P, DIV, H5, A, OL, TD, UL
 	font-size : 8pt;
 	border-style : none
 }
-#option
-#{
-#	width : 50px
-#}
 
 TR.header
 {
@@ -139,13 +135,13 @@ TEXTAREA.read_only
 
 #toolTipBox {
 	display: none;
-	padding: 5;
+	padding: 5px;
 	font-size: 12px;
 	border: black solid 1px;
 	font-family: verdana;
 	position: absolute;
    background-color: #ffd038;
-   color: 000000;
+   color: #000000;
 }
 
 #dhtmltooltip{
@@ -156,6 +152,4 @@ TEXTAREA.read_only
    background-color: lightyellow;
    visibility: hidden;
    z-index: 100;
-   /*Remove below line to remove shadow. Below line should always appear last within this CSS*/
-   filter: progid:DXImageTransform.Microsoft.Shadow(color=gray,direction=135);
 }

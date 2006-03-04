@@ -1,56 +1,79 @@
 // Support function for editview.
-// Opens a new window under the existing one, fill in a form with changes, sends the form to the server, and closes the window
 
-var newWindow;
-
-
-function submit_changes ($tableid,$recordid,$field,$datatype,$newvalue) {
-   // Open new window under existing one, make sure it does not yes exist
-   if (!newWindow || newWindow.closed) {
-      newWindow = window.open("","PHPLabware","status,height=10,width=10");
-      newWindow.blur();
-      window.focus();
-      // supposedly needed for IE, current Mozilla does not know it
-      //setTimeout ("writeToWindow()",50);
-   }
-   
-   // for debugging, we give the new window focus
-   //newWindow.focus();
-
-   // Prepare the form data that we will write to the new form
-   var newForm = "<html><body>\n";
-   newForm += "<form name='editMode' method='post' enctype='multipart/form-data' action='actionMode.php'>\n";
-   newForm += "<input type='hidden' name='tableid' value='" + $tableid + "'>\n";
-   newForm += "<input type='hidden' name='recordid' value='" + $recordid + "'>\n";
-   newForm += "<input type='hidden' name='field' value='" + $field + "'>\n";
-   newForm += "<input type='hidden' name='datatype' value='" + $datatype + "'>\n";
-   // for mpulldowns, we have to figure out which values are selected
-   // for all others the value can be passed directly
-   if ($datatype=="mpulldown") {
-      // in this case $newvalue contains a pointer to the select object
-      var valueString="";
-      for (var i=0; i<$newvalue.length; i++ ) {
-         if ($newvalue.options[i].selected) {
-            if ($newvalue.options[i].value != "undefined" ) {
-                valueString += $newvalue.options[i].value + ",";
-            }
-         }
+// Javascript code to send requests to change fields in edit mode to the server
+function displayResponse() {
+   // Server has responded when we get readyState=4
+   if (http.readyState == 4) {
+      //alert (http.status);
+      if (http.responseText != 'SUCCESS!') {
+         //alert(http.responseText);
+         alert ("Failed to send your changes to the server.  This page will reload to bring you back in sync with the server");
+         window.location.reload(true);
       }
-      newForm += "<input type='hidden' name='newvalue' value='" + valueString + "'>\n";
-   } else {
-      newForm += "<input type='hidden' name='newvalue' value='" + $newvalue + "'>\n";
    }
-
-   //newForm += "<input type='submit' name='Submit' value='Submit'>\n";
-   newForm += "<\/form>\n<\/body>\n<\/html>\n";
-
-   newWindow.document.write(newForm);
-
-   newWindow.document.editMode.submit();
-
-   //document.onblur=newWindow.close();
-
 }
+
+// tell the server what changed without having to reload the whole page
+function tellServer (url, tableid, recordid, field, datatype, newvalue) 
+{
+   var request = url;
+
+   // send a post form to the server, ascynchronous
+   http.open('POST', request, true);
+   // This header must be set for a POST request
+   http.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+   // function displayResponse will reload the page upon failure to keep content on client and server in sync
+   http.onreadystatechange = displayResponse; 
+   // prepare POST variables
+   // for mpulldowns, we have to figure out which values are selected
+   // for all others the value can be passed directly                        
+   if (datatype=="mpulldown") {                                             
+      // in this case $newvalue contains a pointer to the select object      
+      var valueString="";                                                    
+      for (var i=0; i<newvalue.length; i++ ) {                              
+         if (newvalue.options[i].selected) {                                
+            if (newvalue.options[i].value != "undefined" ) {                
+               valueString += newvalue.options[i].value + ",";             
+             }                                                                
+         }                                                                   
+      }                                                                      
+      newvalue = valueString;
+   }
+   // construct the request
+   var postrequest = "tableid=" + tableid + "&recordid=" + recordid + " &field=" + field + "&datatype=" + datatype + "&newvalue=" + newvalue;
+   // and send it
+   http.send(postrequest);
+}
+
+
+function getHTTPObject() 
+{ 
+   var xmlhttp; 
+   /*@cc_on 
+   @if (@_jscript_version >= 5) 
+      try { 
+         xmlhttp = new ActiveXObject("Msxml2.XMLHTTP"); 
+      } catch (e) { 
+         try { 
+            xmlhttp = new ActiveXObject("Microsoft.XMLHTTP"); 
+         } catch (E) { 
+            xmlhttp = false; 
+         } 
+      } @else 
+         xmlhttp = false; 
+      @end 
+   @*/  
+   if (!xmlhttp && typeof XMLHttpRequest != 'undefined') { 
+      try { 
+         xmlhttp = new XMLHttpRequest(); 
+      } catch (e) { 
+         xmlhttp = false; 
+      } 
+   } 
+   return xmlhttp; 
+} 
+
+var http = getHTTPObject(); // Create the HTTP Object immediately rather than waiting to throw an error only once it is needed
 
 // simple functions to check input
 

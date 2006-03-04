@@ -86,6 +86,22 @@ function nice_bytes ($bytes) {
    else return "$bytes byte";
 }
 
+/**
+ * file_get_contents
+ * Utility function for php < 4.3
+ */
+if(!function_exists('file_get_contents'))
+{
+   function file_get_contents($filename)
+   {
+      if(($contents = file($filename))) {
+         $contents = implode('', $contents);
+         return $contents;
+      } else {
+            return false;
+      }
+   }
+}
 
 /**
  *  function that checks if user is allowed to view page

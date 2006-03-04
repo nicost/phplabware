@@ -186,6 +186,7 @@ function viewmenu($db, $tableinfo,$viewid,$useronly=1,$jscript='OnChange="docume
 }
 
 
+
 /**
  * * 
  *  Displays information in table in edit mode
@@ -200,9 +201,6 @@ function display_table_change($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr
    if (!$r)
       $r=$db->Execute($pr_query);
    $r->Move($first_record);
-   if ($_SESSION['javascript_enabled']) {
-      echo "<script type='text/javascript' language='JavaScript'><!--window.name='mainwin';--></script>\n";
-   }
    // print all entries
    while (!($r->EOF) && $r && $current_record < $last_record)  {
       // Get required ID and title
@@ -218,7 +216,8 @@ function display_table_change($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr
          echo "<tr class='row_odd' align='center'>\n";
       }
       foreach($Allfields as $nowfield) {
-         $js="onchange='submit_changes($tableinfo->id,$id,\"{$nowfield['name']}\",\"{$nowfield['datatype']}\",this.value)'";
+         // Javascript code that uses XMLHTTPRequest to send requests to the server asynchronously
+         $js="tellServer(\"actionMode.php\",$tableinfo->id,$id,\"{$nowfield['name']}\",\"{$nowfield['datatype']}\",this.value)";
          if ($nowfield['required']=='Y')
             $thestar="<sup style='color:red'>&nbsp;*</sup>";
          else
@@ -242,29 +241,29 @@ function display_table_change($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr
                $columns = 10;
             }
             if ($rows == 1) {
-     	       echo "<td><input type='text' name='{$nowfield['name']}_$id' value=\"".str_replace('"','&quot;',$nowfield['values'])."\" size=$columns $js>$thestar</td>\n";
+     	       echo "<td><input type='text' name='{$nowfield['name']}_$id' value=\"".str_replace('"','&quot;',$nowfield['values'])."\" size=$columns onchange='$js'>$thestar</td>\n";
             } else {
-               echo "<td>$thestar<textarea name='{$nowfield['name']}_$id' cols=$columns rows=$rows $js>{$nowfield['values']}</textarea></td>\n";
+               echo "<td>$thestar<textarea name='{$nowfield['name']}_$id' cols=$columns rows=$rows onchange='$js'>{$nowfield['values']}</textarea></td>\n";
             }
          } elseif ($nowfield['datatype']=='date') {
-     	    echo "<td><input type='text' name='{$nowfield['name']}_$id' value='{$nowfield['text']}' size=12 $js>$thestar</td>\n";
+     	    echo "<td><input type='text' name='{$nowfield['name']}_$id' value='{$nowfield['text']}' size=12 onchange='$js'>$thestar</td>\n";
          } elseif ($nowfield['datatype']=='int' || $nowfield['datatype']=='sequence') {
-            $js="onchange='if (isAnInt(this.value)) { submit_changes($tableinfo->id,$id,\"{$nowfield['name']}\",\"{$nowfield['datatype']}\",this.value); } else {this.value=\"\"; this.focus(); return false;}'";
-     	    echo "<td>$thestar<input type='text' name='{$nowfield['name']}_$id' value='{$nowfield['values']}' size=6 $js></td>\n";
+            $js="if (isAnInt(this.value)) { $js } else {this.value=\"\"; this.focus(); return false;}";
+     	    echo "<td>$thestar<input type='text' name='{$nowfield['name']}_$id' value='{$nowfield['values']}' size=6 onchange='$js'></td>\n";
          } elseif ($nowfield['datatype']=='float') {
-            $js="onchange='if (isAFloat(this.value)) { submit_changes($tableinfo->id,$id,\"{$nowfield['name']}\",\"{$nowfield['datatype']}\",this.value); } else {this.value=\"\"; return false;}'";
-     	    echo "<td><input type='text' name='{$nowfield['name']}_$id' value='{$nowfield['values']}' size=8 $js>$thestar</td>\n";
+            $js="if (isAFloat(this.value)) { $js } else {this.value=\"\"; return false;}";
+     	    echo "<td><input type='text' name='{$nowfield['name']}_$id' value='{$nowfield['values']}' size=8 onchange=$js>$thestar</td>\n";
          } elseif ($nowfield['datatype']=='textlong') {
-     	    echo "<td><textarea name='$nowfield[name]_$id' cols=45 rows=3 $js>$thestar{$nowfield['values']}</textarea></td>\n"; 
+     	    echo "<td><textarea name='$nowfield[name]_$id' cols=45 rows=3 onchange='$js'>$thestar{$nowfield['values']}</textarea></td>\n"; 
          }
          elseif ($nowfield['datatype']=='link') {
-            echo "<td><input type='text' name='$nowfield[name]_$id' value='$nowfield[values]' size=15 $js>$thestar</td>\n";
+            echo "<td><input type='text' name='$nowfield[name]_$id' value='$nowfield[values]' size=15 onchange='$js'>$thestar</td>\n";
          }
          elseif ($nowfield['datatype']=='pulldown') {
             // get previous value	
             $rp=$db->Execute("SELECT typeshort,id FROM {$nowfield['ass_t']} ORDER BY sortkey,typeshort");
-            $text=$rp->GetMenu2("$nowfield[name]_$id",$nowfield['values'],true,false,0,$js);
-            echo "\n<td>$text $thestar</td>\n";
+            $text=$rp->GetMenu2("$nowfield[name]_$id",$nowfield['values'],true,false,0,"onchange='$js'");
+            echo "\n<td>$text $thestar </td>\n";
          }
          elseif ($nowfield['datatype']=='mpulldown') {
             $js="onchange='submit_changes($tableinfo->id,$id,\"{$nowfield['name']}\",\"{$nowfield['datatype']}\",this)'";
@@ -429,17 +428,21 @@ function display_table_info($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr_c
             // provide long text by mouseover -- by MM
             $startofText = substr($nowfield['text'],0,60);
             echo "<td><a class='Tooltip' href=\"javascript:void(0);\"";
+            // single quotes causes javascript problems even when 'htmled'
+            $escapedText = str_replace("'",'"',$escapedText);
             echo "onmouseover=\"this.T_WIDTH=400;return escape";
             $escapedText = htmlspecialchars($nowfield['text'], ENT_QUOTES);
             // returns spoil the party
             $escapedText = preg_replace("/\r\n|\n|\r/", "<br>", $escapedText);
+            // Even when converted to HTML characters, the following kill tooltips.  Remove
+            $escapedText = str_replace('&quot;',' ',$escapedText);
+            $escapedText = str_replace('&#039;',' ',$escapedText);
             echo '(\''.$escapedText.'\')">'.$startofText."...</a></td>\n";
          } else {
             echo "<td>{$nowfield['text']}</td>\n"; 
          }
 
          // write file ids to user settings so that we do not need to check them again when downloading thumbnails
-         //if (($nowfield['datatype']=='image' || $nowfield['datatype']=='file') && isset($nowfield['fileids'])) {
          if (isset($nowfield['fileids'])) {
             foreach ($nowfield['fileids'] as $fileid)
                $USER['settings']['fileids'][]=$fileid;
@@ -731,14 +734,13 @@ function display_add($db,$tableinfo,$Allfields,$id,$namein,$system_settings) {
             $nowfield['values']=$_POST[$nowfield['name']];
             $nowfield['text']=$_POST[$nowfield['name']];
          }
-         if ($nowfield['modifiable']=='N' && $nowfield['datatype']!='sequence') {
+         if ($nowfield['modifiable']!='Y' && $nowfield['datatype']!='sequence') {
             echo "<input type='hidden' name='$nowfield[name]' value='$nowfield[values]'>\n";
             if ($nowfield['text'] && $nowfield['text']!='' && $nowfield['text']!=' ') {
                echo "<tr><th>{$nowfield['label']}:</th>"; 
                echo "<td>{$nowfield['text']}";
             }
-         }
-         elseif ($nowfield['modifiable']=='Y' && ($nowfield['datatype']=='text' || $nowfield['datatype']=='int' || $nowfield['datatype']=='float' || $nowfield['datatype']=='date')) {
+         } elseif ($nowfield['modifiable']=='Y' && ($nowfield['datatype']=='text' || $nowfield['datatype']=='int' || $nowfield['datatype']=='float' || $nowfield['datatype']=='date')) {
             echo "<tr><th>$nowfield[label]:"; 
             if ($nowfield['required']=='Y') {
                echo "<sup style='color:red'>&nbsp;*</sup>";
@@ -758,138 +760,135 @@ function display_add($db,$tableinfo,$Allfields,$id,$namein,$system_settings) {
                $size=10;
      	       echo "<td><input type='text' name='{$nowfield['name']}' value='{$nowfield['values']}' size='$size'>";
             }
+	    } elseif ($nowfield['datatype']=='sequence') {
+          if (!$nowfield['text']) {
+             // find the highest sequence and return that plus one
+             $rmax=$db->Execute("SELECT MAX(${nowfield['name']}) AS ${nowfield['name']} FROM ".$tableinfo->realname);
+             $newseq=$rmax->fields[0]+1;
+          }
+          else
+             $newseq=$nowfield['text'];
+               echo "<input type='hidden' name='$nowfield[name]' value='$newseq'>\n";
+               echo "<tr><th>$nowfield[label]:"; 
+               if ($nowfield['required']=='Y') {
+                  echo "<sup style='color:red'>&nbsp;*</sup>";
+          }
+          echo "</th>\n";
+          if ($nowfield['modifiable']=='N') {
+             echo "<td>$newseq";
+          } else {
+             echo "<td><input type='text' name='$nowfield[name]' value='$newseq' size='10'>";
+          }
+       } elseif ($nowfield['datatype']=='textlong') {
+          echo "<tr><th>{$nowfield['label']}:";
+          if ($nowfield['required']=='Y')  {
+             echo "<sup style='color:red'>&nbsp;*</sup>";
+          }
+     	    echo "<td><textarea name='{$nowfield['name']}' rows='5' cols='80' value='{$nowfield['values']}'>{$nowfield['values']}</textarea>";
+       } elseif ($nowfield['datatype']=='link') {
+         echo "<tr><th>$nowfield[label] (http link):";
+         if ($nowfield['required']=='Y') {
+            echo "<sup style='color:red'>&nbsp;*</sup>";
          }
-	 elseif ($nowfield['datatype']=='sequence') {
-	    if (!$nowfield['text']) {
-	       // find the highest sequence and return that plus one
-	       $rmax=$db->Execute("SELECT MAX(${nowfield['name']}) AS ${nowfield['name']} FROM ".$tableinfo->realname);
-	       $newseq=$rmax->fields[0]+1;
-	    }
-	    else
-	       $newseq=$nowfield['text'];
-            echo "<input type='hidden' name='$nowfield[name]' value='$newseq'>\n";
-            echo "<tr><th>$nowfield[label]:"; 
-            if ($nowfield['required']=='Y') {
-               echo "<sup style='color:red'>&nbsp;*</sup>";
-	    }
-	    echo "</th>\n";
-            if ($nowfield['modifiable']=='N') {
-               echo "<td>$newseq";
-	    }
-	    else
-     	       echo "<td><input type='text' name='$nowfield[name]' value='$newseq' size='10'>";
-	 }
-         elseif ($nowfield['datatype']=='textlong') {
-            echo "<tr><th>$nowfield[label]:";
-            if ($nowfield['required']=='Y') 
-               echo "<sup style='color:red'>&nbsp;*</sup>";
-     	    echo "<td><textarea name='$nowfield[name]' rows='5' cols='80' value='$nowfield[values]'>$nowfield[values]</textarea>";
+         echo "<td><input type='text' name='$nowfield[name]' value='$nowfield[values]' size='60'>";
+      } elseif ($nowfield['datatype']=='pulldown') {
+         // get previous value	
+         $r=$db->Execute("SELECT typeshort,id FROM {$nowfield['ass_t']} ORDER BY sortkey,typeshort");
+         if ($nowfield['datatype']=='pulldown')
+            $text=$r->GetMenu2("$nowfield[name]",$nowfield['values'],true,false);
+         else
+            $text=$r->GetMenu2("$nowfield[name]",$nowfield['values'],true,true);
+         echo "<tr><th>$nowfield[label]:";
+         if ($nowfield['required']=='Y')
+            echo"<sup style='color:red'>&nbsp;*</sup>";
+         echo "</th>\n<td>";
+         if ($USER['permissions'] & $LAYOUT) {
+            $jscript=" onclick='MyWindow=window.open (\"general.php?tablename=".$tableinfo->name."&amp;edit_type=$nowfield[ass_t]&amp;jsnewwindow=true&amp;formname=subform&amp;selectname=$nowfield[name]".SID."\",\"type\",\"scrollbars,resizable,toolbar,status,width=700,height=500\");MyWindow.focus()'";
+            echo "<input type='button' name='edit_button' value='Edit $nowfield[label]' $jscript><br>\n";
          }
-         elseif ($nowfield['datatype']=='link') {
-            echo "<tr><th>$nowfield[label] (http link):";
-            if ($nowfield['required']=='Y')
-               echo "<sup style='color:red'>&nbsp;*</sup>";
-            echo "<td><input type='text' name='$nowfield[name]' value='$nowfield[values]' size='60'>";
-         }
-         elseif ($nowfield['datatype']=='pulldown') {
+         echo "$text<br>";
+      } elseif ($nowfield['datatype']=='table') {
+         // only display primary key here
+         if (!$nowfield['ass_local_key']) { 
             // get previous value	
-            $r=$db->Execute("SELECT typeshort,id FROM {$nowfield['ass_t']} ORDER BY sortkey,typeshort");
-            if ($nowfield['datatype']=='pulldown')
-               $text=$r->GetMenu2("$nowfield[name]",$nowfield['values'],true,false);
-            else
-               $text=$r->GetMenu2("$nowfield[name]",$nowfield['values'],true,true);
+            $r=$db->Execute("SELECT COUNT(id) FROM {$nowfield['ass_table_name']}");
+            if ($r->fields[0] > $max_menu_length) {
+               $text="<input type='hidden' name='max_{$nowfield['name']}' value='true'>\n";
+               $text.="<input type='text' name='{$nowfield['name']}' value='{$nowfield['nested']['values']}'>";
+            } else {
+               $text=GetValuesMenu($db,$nowfield['name'],$nowfield['values'],$nowfield['ass_table_name'],$nowfield['ass_column_name'],false);
+            }
             echo "<tr><th>$nowfield[label]:";
-            if ($nowfield['required']=='Y')
+            if ($nowfield[required]=="Y")
                echo"<sup style='color:red'>&nbsp;*</sup>";
-            echo "</th>\n<td>";
-            if ($USER['permissions'] & $LAYOUT) {
-               $jscript=" onclick='MyWindow=window.open (\"general.php?tablename=".$tableinfo->name."&amp;edit_type=$nowfield[ass_t]&amp;jsnewwindow=true&amp;formname=subform&amp;selectname=$nowfield[name]".SID."\",\"type\",\"scrollbars,resizable,toolbar,status,width=700,height=500\");MyWindow.focus()'";
-               echo "<input type='button' name='edit_button' value='Edit $nowfield[label]' $jscript><br>\n";
-            }
-            echo "$text<br>";
-         }
-         elseif ($nowfield['datatype']=='table') {
-            // only display primary key here
-            if (!$nowfield['ass_local_key']) { 
-               // get previous value	
-               $r=$db->Execute("SELECT COUNT(id) FROM {$nowfield['ass_table_name']}");
-               if ($r->fields[0] > $max_menu_length) {
-                  $text="<input type='hidden' name='max_{$nowfield['name']}' value='true'>\n";
-                  $text.="<input type='text' name='{$nowfield['name']}' value='{$nowfield['nested']['values']}'>";
-               }
-               else {
-                  $text=GetValuesMenu($db,$nowfield['name'],$nowfield['values'],$nowfield['ass_table_name'],$nowfield['ass_column_name'],false);
-               }
-               echo "<tr><th>$nowfield[label]:";
-               if ($nowfield[required]=="Y")
-                  echo"<sup style='color:red'>&nbsp;*</sup>";
-               echo "</th>\n<td>$text<br>";
-            }
-         }
-	 if ($nowfield['datatype']=='textlarge') {
-	    echo "<tr><th>$nowfield[name]:";
-            if ($nowfield['required']=='Y')
-	       echo"<sup style='color:red'>&nbsp;*</sup>";
-	    echo "</th><td colspan=6><textarea name='$nowfield[name]' rows='5' cols='100%'>$nowfield[values]</textarea>";
-	 }
-	 if ($nowfield['datatype']=='file' || $nowfield['datatype']=='image') {
-	    $files=get_files($db,$tableinfo->name,$id,$nowfield['columnid'],0,'big');
-	    echo '<tr>';
-	    echo "<th>$nowfield[label]:</th>\n";
-	    echo "</th>\n";
-	    echo '<td colspan=4> <table border=0>';
-	    for ($i=0;$i<sizeof($files);$i++)  {
-	       echo "<tr><td colspan=2>".$files[$i]['link'];
-	       echo "&nbsp;&nbsp;(<i>".$files[$i]['name']."</i>, ".$files[$i]['type']." file)</td>\n";
-	       echo "<td><input type='submit' name='def_".$files[$i]["id"]."' value='Delete' Onclick=\"if(confirm('Are you sure the file ".$files[$i]["name"]." should be removed?')){return true;}return false;\"></td></tr>\n";
-	    }
-            echo '<tr><th>Upload '.$nowfield['datatype']."</th>\n";
-	    echo "<td>&nbsp;</td><td><input type='file' name='".$nowfield[name]."[]' value='$filename'></td>\n";
-	    echo "</tr></table><br>\n\n";
-	 }
-         elseif ($nowfield['datatype']=='mpulldown') {
-            unset ($valueArray);
-            // get previous value	
-            $r=$db->Execute("SELECT typeshort,id FROM {$nowfield['ass_t']} ORDER BY sortkey,type");
-            $rbv=$db->Execute("SELECT typeid FROM {$nowfield['key_t']} WHERE recordid=$id");
-            while ($rbv && !$rbv->EOF) {
-               $valueArray[]=$rbv->fields[0];
-               $rbv->MoveNext();
-            }
-            $text=$r->GetMenu2($nowfield['name'].'[]',$valueArray,true,true);
-            echo "<tr><th>$nowfield[label]:";
-            if ($nowfield['required']=='Y')
-               echo"<sup style='color:red'>&nbsp;*</sup>";
-            echo "</th>\n<td>";
-            if ($USER['permissions'] & $LAYOUT) {
-               $jscript=" onclick='MyWindow=window.open (\"general.php?tablename=".$tableinfo->name."&edit_type=$nowfield[ass_t]&amp;jsnewwindow=true&amp;formname=subform&amp;selectname=$nowfield[name]".SID."\",\"type\",\"scrollbars,resizable,toolbar,status,width=700,height=500\");MyWindow.focus()'";
-               echo "<input type='button' name='edit_button' value='Edit $nowfield[label]' $jscript><br>\n";
-            }
-            echo "$text<br>";
+            echo "</th>\n<td>$text<br>";
          }
       }
-      if (function_exists('plugin_display_add'))
-         plugin_display_add($db,$tableinfo->id,$nowfield);
-  
-	
-   }	
+      if ($nowfield['datatype']=='textlarge') {
+         echo "<tr><th>$nowfield[name]:";
+         if ($nowfield['required']=='Y')
+	      echo"<sup style='color:red'>&nbsp;*</sup>";
+	      echo "</th><td colspan=6><textarea name='$nowfield[name]' rows='5' cols='100%'>$nowfield[values]</textarea>";
+       }
+       if ($nowfield['datatype']=='file' || $nowfield['datatype']=='image') {
+          $files=get_files($db,$tableinfo->name,$id,$nowfield['columnid'],0,'big');
+          echo '<tr>';
+          echo "<th>$nowfield[label]:</th>\n";
+          echo "</th>\n";
+          echo '<td colspan=4> <table border=0>';
+          for ($i=0;$i<sizeof($files);$i++)  {
+             echo "<tr><td colspan=2>".$files[$i]['link'];
+             echo "&nbsp;&nbsp;(<i>".$files[$i]['name']."</i>, ".$files[$i]['type']." file)</td>\n";
+             echo "<td><input type='submit' name='def_".$files[$i]["id"]."' value='Delete' Onclick=\"if(confirm('Are you sure the file ".$files[$i]["name"]." should be removed?')){return true;}return false;\"></td></tr>\n";
+          }
+          echo '<tr><th>Upload '.$nowfield['datatype']."</th>\n";
+	       echo "<td>&nbsp;</td><td><input type='file' name='".$nowfield[name]."[]' value='$filename'></td>\n";
+	       echo "</tr></table><br>\n\n";
+       }  elseif ($nowfield['datatype']=='mpulldown') {
+           unset ($valueArray);
+           // get previous value	
+           $r=$db->Execute("SELECT typeshort,id FROM {$nowfield['ass_t']} ORDER BY sortkey,type");
+           $rbv=$db->Execute("SELECT typeid FROM {$nowfield['key_t']} WHERE recordid=$id");
+           while ($rbv && !$rbv->EOF) {
+              $valueArray[]=$rbv->fields[0];
+              $rbv->MoveNext();
+           }
+           $text=$r->GetMenu2($nowfield['name'].'[]',$valueArray,true,true);
+           echo "<tr><th>{$nowfield['label']}:";
+           if ($nowfield['required']=='Y')
+              echo"<sup style='color:red'>&nbsp;*</sup>";
+           echo "</th>\n<td>";
+           if ($USER['permissions'] & $LAYOUT) {
+              $jscript=" onclick='MyWindow=window.open (\"general.php?tablename=".$tableinfo->name."&edit_type=$nowfield[ass_t]&amp;jsnewwindow=true&amp;formname=subform&amp;selectname=$nowfield[name]".SID."\",\"type\",\"scrollbars,resizable,toolbar,status,width=700,height=500\");MyWindow.focus()'";
+              echo "<input type='button' name='edit_button' value='Edit $nowfield[label]' $jscript><br>\n";
+           }
+           echo "$text<br>";
+        }
+     }
+     if (function_exists('plugin_display_add'))
+        plugin_display_add($db,$tableinfo->id,$nowfield);
+   } // end of foreach ($Allfields)	
+
    echo "</table>\n</td>\n</tr>\n";
+
    /* Call to a function that runs at the end when adding a new record*/   
    if ((function_exists("plugin_display_add_post")) && (!($id))){
       plugin_display_add_post($db,$tableinfo->id);
    }
          
-   echo "<tr><td colspan=4>";
+   echo '<tr><td colspan=4>';
    show_access($db,$tableinfo->id,$id,$USER,$system_settings);
    echo "</td></tr>\n"; echo "<tr>";
-   if ($id) $value="Modify Record"; 
-   else $value="Add Record";
+   if ($id) {
+      $value="Modify Record"; 
+   } else {
+      $value="Add Record";
+   }
 
    // submit and clear buttons
    echo "<td align='center'>\n";
    if ($_SESSION['javascript_enabled']) {
       echo "<input type='hidden' name='subm' value=''>\n";
-      //echo "<input type='button' name='sub' value='$value' onclick='document.subform.subm.value=\"$value\"; document.subform.submit(); window.opener.document.g_form.search.value=\"Search\"; setTimeout(\"window.opener.document.g_form.submit(); window.opener.focus(); self.close()\",300);'>\n";
       echo "<input type='button' name='sub' value='$value' onclick='document.subform.subm.value=\"$value\"; document.subform.submit(); window.opener.document.g_form.search.value=\"Search\"; window.opener.document.g_form.submit(); window.opener.focus(); '>\n";
       echo "<input type='button' name='Close' onclick='self.close(); window.opener.focus();' value='Cancel'>\n";
    }
@@ -1073,7 +1072,6 @@ function getvalues($db,$tableinfo,$fields,$qfield=false,$field=false)
          }
       }
       $Allfields[]= ${$column};
-      //array_push ($Allfields, ${$column});
       //$Allfields[${$column}['name']]=${$column};
    }
    if (function_exists("plugin_getvalues")) {
@@ -1094,7 +1092,6 @@ function getvalues($db,$tableinfo,$fields,$qfield=false,$field=false)
  */
 function check_g_data ($db,&$field_values,$tableinfo,$modify=false) {
    global $max_menu_length, $system_settings;
-
 
    // make sure all the required fields are there 
    $rs = $db->Execute("SELECT columnname,datatype,label FROM {$tableinfo->desname} where required='Y' and (datatype != 'file')");

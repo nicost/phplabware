@@ -46,7 +46,14 @@ if (may_see_table($db,$USER,$tableinfo->id) && may_write($db,$tableinfo->id,$_po
          update_mpulldown($db,$keytable,$_POST['recordid'],$valueArray);
       } 
    } else {
-          $db->Execute("UPDATE {$tableinfo->realname} SET {$_POST['field']}='{$_POST['newvalue']}' WHERE id={$_POST['recordid']}");
+       // escape nasty stuff before sending it the database 
+       $_POST['newvalue']=addslashes($_POST['newvalue']);
+       if ($db->Execute("UPDATE {$tableinfo->realname} SET {$_POST['field']}='{$_POST['newvalue']}' WHERE id={$_POST['recordid']}")) {
+          // The javascript code likes this answer, otherwise it will reload
+          echo "SUCCESS!";
+       } else {
+          echo "FAILED!";
+       }
    }
 }
 
