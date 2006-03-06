@@ -424,10 +424,10 @@ function display_table_info($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr_c
             echo "<td>{$nowfield['link']}</td>\n";
          elseif ($nowfield['datatype']=='mpulldown')
             echo "<td align='left' cellpadding='5%'>{$nowfield['text']}</td>\n"; 
-         elseif ( ((($nowfield['datatype'] == 'text') && (strlen($nowfield['text']) > 59)) || $nowfield['datatype'] == 'textlong') && $_SESSION['javascript_enabled']) {
+         elseif ( (($nowfield['datatype'] == 'text') || ($nowfield['datatype'] == 'textlong')) && (strlen($nowfield['text'])>59) && $_SESSION['javascript_enabled'] && (substr($nowfield['text'],0,7) !='<a href') ) {
             // provide long text by mouseover -- by MM
             $startofText = substr($nowfield['text'],0,60);
-            echo "<td><a class='Tooltip' href=\"javascript:void(0);\"";
+            echo "<td><a class='Tooltip' href=\"javascript:void(0);\" ";
             // single quotes causes javascript problems even when 'htmled'
             $escapedText = str_replace("'",'"',$escapedText);
             echo "onmouseover=\"this.T_WIDTH=400;return escape";
