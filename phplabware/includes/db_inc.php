@@ -919,13 +919,13 @@ function may_read_SQL_JOIN ($db,$table,$USER) {
  */
 function may_read_SQL ($db,$tableinfo,$USER,$temptable='tempa') {
    global $db_type;
- //  if ($db_type=='mysql') {
+   if ($db_type=='mysql') {
       $list=may_read_SQL_JOIN ($db,$tableinfo->realname,$USER);
       if (!$list)
          $list='-1';
       $result['sql']= " {$tableinfo->realname}.id IN ($list) ";
       $result['numrows']=substr_count($list,',');
-  /* }
+   }
    else {
       //return may_read_SQL_subselect ($db,$table,$tableid,$USER);
       $r=$db->Execute(may_read_SQL_subselect ($db,$tableinfo->realname,$tableinfo->id,$USER,false));
@@ -933,7 +933,7 @@ function may_read_SQL ($db,$tableinfo,$USER,$temptable='tempa') {
       make_temp_table($db,$temptable,$r); 
       $result['sql'] = " ($tableinfo->realname.id = $temptable.uniqueid) ";
    }
-   */
+ 
    return $result;
 }
 
