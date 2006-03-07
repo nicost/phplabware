@@ -17,7 +17,7 @@
 set_magic_quotes_runtime(0); // seems to interfere with system settings
 
 
-function _strip_magic_quotes( &$arr )
+function strip_magic_quotes( &$arr )
 {
    foreach( $arr as $k=>$v ){
       if( is_array($v) ){
@@ -38,7 +38,7 @@ foreach( array('_GET','_POST','_COOKIE') as $source ){
          }
       }
       if( get_magic_quotes_gpc() ){
-          _strip_magic_quotes( ${$source} );
+          strip_magic_quotes( ${$source} );
       }
       reset(${$source});
    }
@@ -62,7 +62,7 @@ $ADODB_FETCH_MODE=ADODB_FETCH_DEFAULT;
 
 // Open connection to the database
 $db = NewADOConnection ($db_type);
-if (!@$db->Connect($db_host, $db_user, $db_pwd, $db_name)) {
+if (!$db->Connect($db_host, $db_user, $db_pwd, $db_name)) {
    echo "<h3 color='red'>Fatal Error</h3>";
    echo "Could not connect to the database server.<br>";
    echo "Please report this problem to your system administrator.";
