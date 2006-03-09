@@ -240,11 +240,7 @@ function display_table_change($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr
                $rows = 1;
                $columns = 10;
             }
-           // if ($rows == 1) {
-     	       echo "<td><input type='text' name='{$nowfield['name']}_$id' value=\"".str_replace('"','&quot;',$nowfield['values'])."\" size=$columns onchange='$js'>$thestar</td>\n";
-           // } else {
-               echo "<td>$thestar<textarea name='{$nowfield['name']}_$id' cols=$columns rows=$rows onchange='$js'>{$nowfield['values']}</textarea></td>\n";
-           // }
+            echo "<td>$thestar<textarea name='{$nowfield['name']}_$id' cols=$columns rows=$rows onchange='$js'>{$nowfield['values']}</textarea></td>\n";
          } elseif ($nowfield['datatype']=='date') {
      	    echo "<td><input type='text' name='{$nowfield['name']}_$id' value='{$nowfield['text']}' size=12 onchange='$js'>$thestar</td>\n";
          } elseif ($nowfield['datatype']=='int' || $nowfield['datatype']=='sequence') {
