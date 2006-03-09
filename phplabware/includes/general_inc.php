@@ -131,7 +131,7 @@ function searchfield ($db,$tableinfo,$nowfield,$_POST,$jscript) {
        $ass_tableinfo=new tableinfo ($db,$nowfield['ass_table_name'],false);
        $rasslk=$db->Execute("SELECT columnname FROM {$ass_tableinfo->desname} WHERE id={$nowfield['ass_column']}");
        $ass_Allfields=getvalues($db,$ass_tableinfo,$rasslk->fields[0]);
-       // scary hacks, their ugliness shows that we need to reorganize some stuff
+       // scary acks, their ugliness shows that we need to reorganize some stuff
        $ass_Allfields[0]['name']=$nowfield['name']; 
        $ass_tableinfo->fields="{$nowfield['name']}";
        searchfield($db,$ass_tableinfo,$ass_Allfields[0],$_POST,$jscript);
@@ -240,11 +240,11 @@ function display_table_change($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr
                $rows = 1;
                $columns = 10;
             }
-            if ($rows == 1) {
+           // if ($rows == 1) {
      	       echo "<td><input type='text' name='{$nowfield['name']}_$id' value=\"".str_replace('"','&quot;',$nowfield['values'])."\" size=$columns onchange='$js'>$thestar</td>\n";
-            } else {
+           // } else {
                echo "<td>$thestar<textarea name='{$nowfield['name']}_$id' cols=$columns rows=$rows onchange='$js'>{$nowfield['values']}</textarea></td>\n";
-            }
+           // }
          } elseif ($nowfield['datatype']=='date') {
      	    echo "<td><input type='text' name='{$nowfield['name']}_$id' value='{$nowfield['text']}' size=12 onchange='$js'>$thestar</td>\n";
          } elseif ($nowfield['datatype']=='int' || $nowfield['datatype']=='sequence') {

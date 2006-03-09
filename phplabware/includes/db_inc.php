@@ -919,6 +919,7 @@ function may_read_SQL_JOIN ($db,$table,$USER) {
  */
 function may_read_SQL ($db,$tableinfo,$USER,$temptable='tempa') {
    global $db_type;
+
    if ($db_type=='mysql') {
       $list=may_read_SQL_JOIN ($db,$tableinfo->realname,$USER);
       if (!$list)
@@ -1303,9 +1304,6 @@ function searchhelp ($db,$tableinfo,$column,&$columnvalues,$query,$wcappend,$and
                      $cvalue="%$cvalue%";
                   $query[2].="$and UPPER({$tableinfo->realname}.$column) LIKE UPPER('$cvalue') ";
                }
-            //if ($wcappend)
-            //   $columnvalue="%$columnvalue%";
-            //$query[2].="$and UPPER({$tableinfo->realname}.$column) LIKE UPPER('$columnvalue') ";
             }
          }
       }
@@ -1322,6 +1320,8 @@ function searchhelp ($db,$tableinfo,$column,&$columnvalues,$query,$wcappend,$and
  */
 function search ($db,$tableinfo,$fields,&$fieldvalues,$whereclause=false,$wcappend=true) 
 {
+   global $db_type;
+
    $columnvalues=$fieldvalues;
 /* It seems we getter better performance by only asking for id
    keep this code here to revert to in case of side-effetcs
@@ -1337,7 +1337,12 @@ function search ($db,$tableinfo,$fields,&$fieldvalues,$whereclause=false,$wcappe
    // SELECT part
    $query[0]="SELECT {$tableinfo->realname}.id ";
    // FROM part
-   $query[1]='FROM '.$tableinfo->realname.' ';
+   if ($db_type=='mysql') {
+      $query[1]='FROM '.$tableinfo->realname.' ';
+   } else { // non sql databases use tempb table to determine whether user may read a record. Newer Postgres database need tempb in the SQL statement
+   echo "HELLO";
+      $query[1]='FROM '.$tableinfo->realname.',tempb ';
+   }
    // WHERE part
    $query[2]='WHERE ';
    // flag telling whether WHERE field already contains a statement
@@ -1573,7 +1578,7 @@ function current_page($curr_page, $sname, $num_p_r, $numrows) {
  *
  */
 function make_search_SQL($db,$tableinfo,$fields,$USER,$search,$searchsort,$whereclause=false) {
-   global $_GET, $_POST, $_SESSION;
+   global $db_type;
 
    // if any of the search columns has been passed as Get variable, copy them to the POST vars array 
    $column=strtok($fields,',');
@@ -1603,7 +1608,12 @@ function make_search_SQL($db,$tableinfo,$fields,$USER,$search,$searchsort,$where
       ${$fieldvarsname}=$_SESSION[$fieldvarsname];
    } else {
       // This must be a 'Show All'
-      ${$queryname} = "SELECT $fields FROM $tableinfo->realname WHERE $whereclause ORDER BY date DESC";
+      // terrible: some postgres version need the temp table in the FROM clause:
+      if ($db_type=='mysql') {
+         ${$queryname} = "SELECT $fields FROM $tableinfo->realname WHERE $whereclause ORDER BY date DESC";
+      } else {
+         ${$queryname} = "SELECT $fields FROM $tableinfo->realname,tempb WHERE $whereclause ORDER BY date DESC";
+      }
       ${$fieldvarsname}=$_POST;
    }
    $_SESSION[$queryname]=${$queryname};   
