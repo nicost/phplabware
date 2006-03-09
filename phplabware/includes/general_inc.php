@@ -248,7 +248,7 @@ function display_table_change($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr
      	    echo "<td>$thestar<input type='text' name='{$nowfield['name']}_$id' value='{$nowfield['values']}' size=6 onchange='$js'></td>\n";
          } elseif ($nowfield['datatype']=='float') {
             $js="if (isAFloat(this.value)) { $js } else {this.value=\"\"; return false;}";
-     	    echo "<td><input type='text' name='{$nowfield['name']}_$id' value='{$nowfield['values']}' size=8 onchange=$js>$thestar</td>\n";
+     	    echo "<td><input type='text' name='{$nowfield['name']}_$id' value='{$nowfield['values']}' size=8 onchange='$js'>$thestar</td>\n";
          } elseif ($nowfield['datatype']=='textlong') {
      	    echo "<td><textarea name='$nowfield[name]_$id' cols=45 rows=3 onchange='$js'>$thestar{$nowfield['values']}</textarea></td>\n"; 
          }
@@ -295,11 +295,11 @@ function display_table_change($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr
             else
                echo "<td>{$nowfield['text']} $thestar</td>\n";
          }
-	 elseif ($nowfield['datatype']=='textlarge') {
-	    echo "<td colspan=6><textarea name='{$nowfield['name']}_$id' rows='5' cols='100%' $js>{$nowfield['values']}</textarea>$thestar</td>\n";
-	 }
-         else
+     elseif ($nowfield['datatype']=='textlarge') {
+	     echo "<td colspan=6><textarea name='{$nowfield['name']}_$id' rows='5' cols='100%' $js>{$nowfield['values']}</textarea>$thestar</td>\n";
+      } else {
             echo "<td>{$nowfield['text']}</td>\n";
+      }
       }
 
       // View, Change and Delete buttons
