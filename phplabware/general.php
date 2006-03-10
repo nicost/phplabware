@@ -31,9 +31,11 @@ if (!$tableinfo->id) {
    exit();
 }
 
+//print_r($_SESSION);
+
 $tableinfo->queryname=$queryname=$tableinfo->short.'_query';
 $tableinfo->pagename=$pagename=$tableinfo->short.'_curr_page';
-
+//print_r($_POST);
 // Acquire active view from settings or get/post vars
 if (isset($USER['settings']['view']["$tableinfo->name"]))
    $viewid=$USER['settings']['view']["$tableinfo->name"];
@@ -149,7 +151,7 @@ foreach($_POST as $key =>$value) {
    }
 } 
 reset ($_POST);
-if ($searchj || $sortup || $sortdown)
+if ($searchj || $sortup || $sortdown || $_POST['next'] || $_POST['previous'])
    $search='Search';
 
 /*****************************BODY*******************************/
@@ -450,11 +452,12 @@ if ($add && $md!='edit') {
       ${$queryname}=make_search_SQL($db,$tableinfo,$fields_table,$USER,$search,$sortstring,$listb['sql']);
       $r=$db->Execute(${$queryname});
 
-      /*
-      if (!isset($r)) {
+      if (!isset($r)  ) {
          echo "${$queryname}.<br>";
-      }
-      */
+	 $db->debug=true;
+         $r=$db->Execute(${$queryname});
+	 $db->debug=false;
+     }
 
    }
 
