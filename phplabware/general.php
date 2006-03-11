@@ -536,7 +536,6 @@ if ($add && $md!='edit') {
    next_previous_buttons($rp,true,$num_p_r,$numrows,${$pagename},$db,$tableinfo);
 
    // get a list with ids we may see, $listb has all the ids we may see
-   //$r=$db->CacheExecute(2,${$queryname});
    if ($db_type=='mysql') {
       $lista=make_SQL_csf ($r,false,'id',$nr_records);
       if (!$lista)
@@ -597,7 +596,6 @@ if ($add && $md!='edit') {
 //$db->LogSQL(false);
 
    printfooter($db,$USER);
-   //print_r($_SESSION);
    // php 4.2.2. stores only the contenct of $HTTP_SESSION_VARS, not of $_SESSION, so work around this bug here:
    if (version_compare(phpversion(), '4.2.2', '<=')) {
       $HTTP_SESSION_VARS=$_SESSION;
