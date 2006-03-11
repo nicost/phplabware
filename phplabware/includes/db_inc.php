@@ -1340,7 +1340,7 @@ function search ($db,$tableinfo,$fields,&$fieldvalues,$whereclause=false,$wcappe
    if ($db_type=='mysql') {
       $query[1]='FROM '.$tableinfo->realname.' ';
    } else { // non sql databases use tempb table to determine whether user may read a record. Newer Postgres database need tempb in the SQL statement
-      $query[1]='FROM '.$tableinfo->realname.',tempb ';
+      $query[1]='FROM tempb, '.$tableinfo->realname.' ';
    }
    // WHERE part
    $query[2]='WHERE ';
@@ -1611,7 +1611,7 @@ function make_search_SQL($db,$tableinfo,$fields,$USER,$search,$searchsort,$where
       if ($db_type=='mysql') {
          ${$queryname} = "SELECT $fields FROM $tableinfo->realname WHERE $whereclause ORDER BY date DESC";
       } else {
-         ${$queryname} = "SELECT $fields FROM $tableinfo->realname,tempb WHERE $whereclause ORDER BY date DESC";
+         ${$queryname} = "SELECT $fields FROM tempb, $tableinfo->realname WHERE $whereclause ORDER BY date DESC";
       }
       ${$fieldvarsname}=$_POST;
    }
