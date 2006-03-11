@@ -1380,7 +1380,8 @@ function search ($db,$tableinfo,$fields,&$fieldvalues,$whereclause=false,$wcappe
       $counter=0;
       foreach ($words as $word) {
          $parts=explode('_',$word);
-         if (substr($parts[1],-3) == 'ass') {
+         // Second part of the if is for the old style naming of assist tables...
+         if ( (substr($parts[1],-3) == 'ass') || (substr($parts[0],0,3)=='ass') ) {
             // found assist table so add LEFT JOIN
             $dotparts=explode('.',$word);
             $query[1] .= 'LEFT JOIN '. $dotparts[0] . " ON {$dotparts[0]}.id={$tableinfo->realname}.$dotparts[1] ";
