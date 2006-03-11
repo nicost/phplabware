@@ -201,7 +201,7 @@ function tableheader ($sortdirarray,$nowfield)
       $sortupicon='icons/sortup.png';
    }
    // for mpulldowns and tables sort buttons do not make sense:
-   if ($nowfield['datatype']!='mpulldown' && $nowfields['datatype']!='table') {
+   if ($nowfield['datatype']!='mpulldown' && $nowfield['datatype']!='table') {
       echo "<input type='image' name='sortup_$columnname' value='$columnlabel' src='$sortupicon' alt='Sort Up'>";
    }
    echo "</td><th align='center'>$columnlabel</th><td align='right'>";
@@ -211,7 +211,7 @@ function tableheader ($sortdirarray,$nowfield)
       $sortdownicon='icons/sortdown.png';
    }
    // for mpulldowns and tables sort buttons do not make sense:
-   if ($nowfield['datatype']!='mpulldown' && $nowfields['datatype']!='table') {
+   if ($nowfield['datatype']!='mpulldown' && $nowfield['datatype']!='table') {
       echo "<input type='image' name='sortdown_$columnname' value='$columnlabel' src='$sortdownicon' alt='Sort Down'>";
    }
    echo "</td></tr></table></th>\n";
