@@ -1340,7 +1340,6 @@ function search ($db,$tableinfo,$fields,&$fieldvalues,$whereclause=false,$wcappe
    if ($db_type=='mysql') {
       $query[1]='FROM '.$tableinfo->realname.' ';
    } else { // non sql databases use tempb table to determine whether user may read a record. Newer Postgres database need tempb in the SQL statement
-   echo "HELLO";
       $query[1]='FROM '.$tableinfo->realname.',tempb ';
    }
    // WHERE part
