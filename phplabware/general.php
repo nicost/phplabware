@@ -433,8 +433,8 @@ if ($add && $md!='edit') {
    // prepare the search statement and remember it
    $fields_table='id,'.$Fieldscomma;
 
-//$db->debug=true;
    ${$queryname}=make_search_SQL($db,$tableinfo,$fields_table,$USER,$search,$sortstring,$listb['sql']);
+//$db->debug=true;
    $r=$db->Execute(${$queryname});
 //$db->debug=false;
 
@@ -597,5 +597,11 @@ if ($add && $md!='edit') {
 //$db->LogSQL(false);
 
    printfooter($db,$USER);
+   //print_r($_SESSION);
+   // php 4.2.2. stores only the contenct of $HTTP_SESSION_VARS, not of $_SESSION, so work around this bug here:
+   if (version_compare(phpversion(), '4.2.2', '<=')) {
+      $HTTP_SESSION_VARS=$_SESSION;
+   }
+   session_write_close();
 }
 ?>
