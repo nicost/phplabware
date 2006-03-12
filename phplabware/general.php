@@ -407,12 +407,23 @@ if ($add && $md!='edit') {
    } 
 
    if ($search=='Show All') {
+      // unset all the search and sort parameters
       $num_p_r=$_POST['num_p_r'];
       unset ($_POST);
       ${$pagename}=1;
       unset ($_SESSION[$queryname]);
       unset ($serialsortdirarray);
       session_unregister($queryname);
+   } elseif ($search!='Search') {
+      // if search is not set, we want to restore the search statement to the last time the user visited this page.  Restore the relevant settings in $_POST from $_SESSION:
+      $fieldvarsname=$tableinfo->short.'_fieldvars';
+      if (is_array($_SESSION[$fieldvarsname])) {
+         foreach ($_SESSION[$fieldvarsname] as $key => $value) {
+            $_POST[$key]=$value;
+         }
+      }
+      $serialsortdirarray=$_POST['serialsortdirarray'];
+      $search='Search';
    }
    $column=strtok($tableinfo->fields,',');
    while ($column) {
