@@ -406,6 +406,9 @@ if ($add && $md!='edit') {
       }
    } 
 
+   // this variable is used to store table related data into _SESSION
+   $fieldvarsname=$tableinfo->short.'_fieldvars';
+
    if ($search=='Show All') {
       // unset all the search and sort parameters
       $num_p_r=$_POST['num_p_r'];
@@ -416,7 +419,6 @@ if ($add && $md!='edit') {
       session_unregister($queryname);
    } elseif ($search!='Search') {
       // if search is not set, we want to restore the search statement to the last time the user visited this page.  Restore the relevant settings in $_POST from $_SESSION:
-      $fieldvarsname=$tableinfo->short.'_fieldvars';
       if (is_array($_SESSION[$fieldvarsname])) {
          foreach ($_SESSION[$fieldvarsname] as $key => $value) {
             $_POST[$key]=$value;
@@ -448,6 +450,10 @@ if ($add && $md!='edit') {
 //$db->debug=true;
    $r=$db->Execute(${$queryname});
 //$db->debug=false;
+
+   // store sortdirarry in _SESSION using the appropriate table designation
+   // need to do this after make_search_SQL
+   $_SESSION[$fieldvarsname]['serialsortdirarray']=serialize($sortdirarray);
 
    // when search fails we'll revert to Show All after showing an error message
    if (!$r) {
