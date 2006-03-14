@@ -1193,6 +1193,9 @@ function set_default($db,$tableinfo,$Fieldscomma,$USER,$system_settings) {
 	 $fields[$nowfield['name']]=$rmax->fields[0]+1;
       } elseif (in_array($nowfield['name'], array('gr','gw','er','ew'))) {
          $fields[$nowfield['name']]=get_access(false,$nowfield['name']);
+      } else {
+	 // here we pick up values we got from the plugin code
+	 $fields[$nowfield['name']]=$nowfield['values'];
       }
 
       // For required fields, we simply enter the field name, or 0 for numerics
@@ -1204,6 +1207,7 @@ function set_default($db,$tableinfo,$Fieldscomma,$USER,$system_settings) {
             $fields[$nowfield['name']]=0;
          } elseif ($nowfield['datatype']=='date') {
             // assign current date
+	    $fields[$nowfield['name']]=time();
          } elseif ($nowfield['datatype']=='link') {
             $fields[$nowfield['name']]=$nowfield['label'];
          } elseif ($nowfield['datatype']=='pulldown') {
