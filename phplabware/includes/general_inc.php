@@ -113,10 +113,6 @@ function searchfield ($db,$tableinfo,$nowfield,$_POST,$jscript) {
        echo  " <td style='width: 10%'><input type='text' name='$nowfield[name]' value='".${$nowfield[name]}."'size=8></td>\n";
     elseif ($nowfield['datatype']== 'pulldown' || $nowfield['datatype']=='mpulldown') {
       echo "<td style='width: 10%'>";
-      if ($USER['permissions'] & $LAYOUT)  {
-          $jscript2=" onclick='MyWindow=window.open (\"general.php?tablename=".$tableinfo->name."&amp;edit_type=$nowfield[ass_t]&amp;jsnewwindow=true&amp;formname=$formname&amp;selectname=$nowfield[name]".SID."\",\"type\",\"scrollbars,resizable,toolbar,status,menubar,width=600,height=400\");MyWindow.focus()'";
-          echo "<input type='button' name='edit_button' value='Edit $nowfield[label]' $jscript2><br>\n";
-      }	 		 			
       $rpull=$db->Execute("SELECT typeshort,id from $nowfield[ass_t] ORDER by sortkey,type");
       if ($rpull)
          if ($nowfield['datatype']=='mpulldown')
@@ -125,7 +121,14 @@ function searchfield ($db,$tableinfo,$nowfield,$_POST,$jscript) {
             $text=$rpull->GetMenu2("$nowfield[name]",${$nowfield[name]},true,false,0,"style='width: 80%' $jscript");   
       else
           $text="&nbsp;";
-      echo "$text</td>\n";
+      echo "$text\n";
+      // Draw a modify icon to let qualified users change the pulldown menus
+      if ( ($USER['permissions'] & $LAYOUT) && $_SESSION['javascript_enabled'])  {
+          $jscript2=" onclick='MyWindow=window.open (\"general.php?tablename=".$tableinfo->name."&amp;edit_type=$nowfield[ass_t]&amp;jsnewwindow=true&amp;formname=$formname&amp;selectname=$nowfield[name]".SID."\",\"type\",\"scrollbars,resizable,toolbar,status,menubar,width=600,height=400\");MyWindow.focus()'";
+           echo "<A href=\"javascript:void(0)\" $jscript2> <img src=\"icons/edit_modify.png\" alt=\"modify {$nowfield['name']}\" title=\"modify {$nowfield['label']}\" border=\"0\"/></A>\n";
+          //echo "<input type='button' name='edit_button' value='Edit $nowfield[label]' $jscript2><br>\n";
+      }	 		 			
+      echo "</td>\n";
    }
    elseif ($nowfield['datatype']== 'table') {
        $ass_tableinfo=new tableinfo ($db,$nowfield['ass_table_name'],false);
@@ -240,7 +243,12 @@ function display_table_change($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr
                $rows = 1;
                $columns = 10;
             }
-            echo "<td>$thestar<textarea name='{$nowfield['name']}_$id' cols=$columns rows=$rows onchange='$js'>{$nowfield['values']}</textarea></td>\n";
+            // since textareas with row==1 do not display nicely:
+            if ($rows == 1) {    
+               echo "<td><input type='text' name='{$nowfield['name']}_$id' value=\"".str_replace('"','&quot;',$nowfield['values'])."\" size=$columns onchange='$js'>$thestar</td>\n";    
+             } else {   
+               echo "<td>$thestar<textarea name='{$nowfield['name']}_$id' cols=$columns rows=$rows onchange='$js'>{$nowfield['values']}</textarea></td>\n";                   
+             }
          } elseif ($nowfield['datatype']=='date') {
      	    echo "<td><input type='text' name='{$nowfield['name']}_$id' value='{$nowfield['text']}' size=12 onchange='$js'>$thestar</td>\n";
          } elseif ($nowfield['datatype']=='int' || $nowfield['datatype']=='sequence') {
