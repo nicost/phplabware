@@ -501,7 +501,8 @@ if ($add && $md!='edit') {
    echo "<script language='JavaScript'>
    function searchOnEnter(e) {
       var pK = e? e.which: window.event.keyCode;
-      if (pK == 13) {   
+      var node = (e.target) ? e.target : ((e.srcElement) ? e.srcElement : null);
+      if (pK == 13  && !(node.type==\"textarea\") ) {   
          document.g_form.searchj.value=\"Search\"; 
          document.g_form.submit();
       }
