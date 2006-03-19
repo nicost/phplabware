@@ -527,14 +527,14 @@ if ($add && $md!='edit') {
  
    $may_write=may_write($db,$tableinfo->id,false,$USER);
    if ($md=='edit') {
-      $tabletext='Edit Table ';
+      $tabletext='Now Editing Table: ';
       if ($may_write)
          $modetext.="view&".SID."'>(to view mode)</a>\n";
       else
          $modetext="";
    }
    else {
-      $tabletext='View Table ';
+      $tabletext='Now Viewing Table: ';
       $modetext.="edit'>(to edit mode)</a>\n";
    }
    // write the first line shown in table view 
