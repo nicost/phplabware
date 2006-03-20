@@ -429,9 +429,9 @@ if ($_POST['assign']=='Import Data') {
             unset($recordid);
             // if there is a column being used as a Match Field, we do an SQL
             // UPDATE, otherwise first create a default entry and modify that
-      
+
             // First figure out if such a record already exists
-            if ($pkey) {
+            if (isset($pkey)) {
                $r=$db->Execute("SELECT id FROM $table WHERE $to_fields[$pkey]='$fields[$pkey]'");
                // only the first record that matched will be modified
                $existingid=$r->fields[0];
@@ -458,7 +458,7 @@ if ($_POST['assign']=='Import Data') {
             }
 
             // if no Match Field was set, we'll add all records as new ones
-            if (!$pkey) {
+            if (!$pkey && ($pkeypolicy != 'onlyupdate')) {
                $makeNewId=true;
             }
                
@@ -548,7 +548,7 @@ if ($_POST['assign']=='Import Data') {
 if ($_POST['dataupload']=='Continue' && may_write($db,$tableid,false,$USERAS)) {
    if ($error_string)
       echo $error_string;
-   $filename=$_POST['datafile']['name'];
+   $filename=$_FILES['datafile']['name'];
    $delimiter=get_delimiter($delimiter,$delimiter_type);
    $quote=get_quote($quote,$quote_type);
    if ($delimiter && $tableid && $ownerid && ($filename || $tmpfile || $localfile) ) {
@@ -558,7 +558,7 @@ if ($_POST['dataupload']=='Continue' && may_write($db,$tableid,false,$USERAS)) {
          exit();
       }
       $tmpdir=$system_settings['tmpdir'];
-      if ($tmpfile || $localfile || move_uploaded_file($_POST['datafile']['tmp_name'],"$tmpdir/$filename")) {
+      if ($tmpfile || $localfile || move_uploaded_file($_FILES['datafile']['tmp_name'],"$tmpdir/$filename")) {
          if ($tmpfile) {
             $filename=$tmpfile;
          }
