@@ -966,11 +966,20 @@ function make_temp_table ($db,$temptable,$r) {
 
 /**
  *  determines whether or not the user may read this record
+ * When recordid is not set, report an error and return false, otherwise retrun true when the record with this id can be read, false otherwise
+ * When the record does not exist return false
  *
  */
 function may_read ($db,$tableinfo,$id,$USER) {
    $list=may_read_SQL($db,$tableinfo,$USER);
-   $query="SELECT id FROM $tableinfo->realname WHERE ".$list['sql'];
+   $query="SELECT id FROM tempa,$tableinfo->realname WHERE ".$list['sql'];
+   if ($id) {
+      $query .= ' AND id=' . $id;
+   } else {
+      echo "<h3>Internal error in db_inc.php, function may_read.  Please report to your System administrator</h3><br>\n";
+      // when if is not set there is an error, return false to be safe
+      return false;
+   }
    $r=$db->Execute($query);
    if (!$r)
       return false;

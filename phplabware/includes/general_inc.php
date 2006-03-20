@@ -659,12 +659,15 @@ function make_link($id,$DBNAME) {
 function show_reports($db,$tableinfo,$recordid=false) {
    global $USER;
    $r=$db->Execute("SELECT id,label FROM reports WHERE tableid=".$tableinfo->id);
-   if ($r && !$r->EOF) {
+   //if ($r && !$r->EOF) {
+   if ($r) {
       if ($recordid) {
          $menu="<tr><th>Report:</th>\n";
          $menu.="<td><select name='reportlinks' onchange='linkmenu(this)'>\n";
          $menu.="<option value=''>---Reports---</option>\n";
          $menu.="<option value='-1'>xml</option>\n";
+         $menu.="<option value='-2'>tab</option>\n";
+         $menu.="<option value='-3'>csv</option>\n";
          while (!$r->EOF) {
             $url="target "."report.php?tablename=".$tableinfo->name."&reportid=".$r->fields["id"]."&recordid=$recordid";
             $menu.="<option value='$url'>".$r->fields["label"]."</option>\n";
@@ -677,8 +680,10 @@ function show_reports($db,$tableinfo,$recordid=false) {
          $menu="<td>Report: \n";
          $menu.="<select name='reportlinks' onchange='linkmenu(this)'>\n";
          $menu.="<option value=''>---Reports---</option>\n";
-         $url="target "."report.php?tablename=".$tableinfo->name."&reportid=-1&tableview=true";
-         $menu.="<option value='$url'>xml</option>\n";
+         $url="target "."report.php?tablename=".$tableinfo->name."&tableview=true&reportid";
+         $menu.="<option value='$url=-1'>xml</option>\n";
+         $menu.="<option value='$url=-2'>text</option>\n";
+         $menu.="<option value='$url=-3'>csv</option>\n";
          while (!$r->EOF) {
             $url="target "."report.php?tablename=".$tableinfo->name."&reportid=".$r->fields["id"]."&tableview=true";
             $menu.="<option value='$url'>".$r->fields["label"]."</option>\n";
@@ -693,6 +698,8 @@ function show_reports($db,$tableinfo,$recordid=false) {
          if ($USER['settings']['reportoutput']==2)
              $checked2='checked';
          $menu.="<input type='radio' name='reportoutput' $checked2 value='2' onChange='document.g_form.submit();'>file\n";
+
+         $menu.= "<a href='editreports.php?tablename={$tableinfo->name}'>Edit reports</a>\n";
 
          $menu.="</td>\n";
       }

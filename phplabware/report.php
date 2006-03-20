@@ -44,7 +44,7 @@ if (!($reportid && ($recordid || $tableview)) ) {
    exit();
 }
 
-if (!may_read($db,$tableinfo,$recordid,$USER)) {
+if (!may_see_table($db,$USER,$tableinfo->id)) {
    printheader($httptitle);
    navbar($USER['permissions']);
    echo "<h3 align='center'>This information is not intended to be seen by you.</h3>";
@@ -112,17 +112,27 @@ if ($_GET['tableview']) {
       //$db->debug=false;
       if ($reportid>0)
          echo $header;
-      else //xml
+      elseif ($reportid==-1) { // xml
          echo "<phplabware_base>\n";
+      } elseif ($reportid==-2) { // tab headers
+         $Allfields=getvalues($db,$tableinfo,$fields_table);
+         echo make_tab ($db,$Allfields,$tableinfo,$USER['settings']['reportoutput']);
+      } elseif ($reportid==-3) { // comma headers
+         $Allfields=getvalues($db,$tableinfo,$fields_table);
+         echo make_comma ($db,$Allfields,$tableinfo,$USER['settings']['reportoutput']);
+      }
       $counter=1;
       while ($r && !$r->EOF) {
          $Allfields=getvalues($db,$tableinfo,$fields_table,'id',$r->fields['id']);
          if ($reportid>0) {
             echo make_report($db,$template,$Allfields,$tableinfo,$USER['settings']['reportoutput'],$counter);
-         }
-         else
+         } elseif ($reportid==-1) {
             echo make_xml ($db,$Allfields,$tableinfo);
-         //echo $report;
+         } elseif ($reportid==-2) {
+            echo make_tab ($db,$Allfields,$tableinfo,$USER['settings']['reportoutput']);
+         } elseif ($reportid==-3) {
+            echo make_comma ($db,$Allfields,$tableinfo,$USER['settings']['reportoutput']);
+         }
          $r->MoveNext();
          $counter++;
       }
@@ -134,9 +144,9 @@ if ($_GET['tableview']) {
            }
          }
          echo $footer;
-      }
-      else
+      } elseif ($reportid==-1) {
          echo '</'."phplabware_base>\n>";
+      }
    }
 }
 else { // just a single record

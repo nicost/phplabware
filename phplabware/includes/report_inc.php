@@ -15,6 +15,11 @@
   \**************************************************************************/
 
 /**
+ * Need to restrict the following 3 function to outputting only the fields that rae seen in the current view
+ */
+
+  
+/**
  *  Formats record(s) into xml
  *
  */
@@ -27,6 +32,52 @@ function make_xml ($db,$data,$tableinfo) {
    }
    $xml.="</{$tableinfo->label} record>\n";
    return $xml;
+}
+
+
+/**
+ *  Formats record(s) into tab-delimited output
+ * $output: 1=screen, 2=file
+ *
+ */
+function make_tab ($db,$data,$tableinfo,$output) {
+   if ($data[0]) {
+      foreach ($data as $column) {
+         $out.="{$column['text']}\t";
+      }
+   } else { // no id so assume this is a header
+      echo 'id';
+      foreach ($data as $column) {
+         $out.="{$column['label']}\t";
+      }
+   }
+   if ($output==1) {
+      $out.='<br>';
+   }
+   $out.="\n";
+   return $out;
+}
+
+/**
+ *  Formats record(s) into comma-delimited output
+ *
+ */
+function make_comma ($db,$data,$tableinfo) {
+   if ($data[0]) {
+      foreach ($data as $column) {
+         $out.="{$column['text']},";
+      }
+   } else { // no id so assume this is a header
+      echo 'id';
+      foreach ($data as $column) {
+         $out.="{$column['label']},";
+      }
+   }
+   if ($output==1) {
+      $out.='<br>';
+   }
+   $out.="\n";
+   return $out;
 }
 
 
