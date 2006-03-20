@@ -365,7 +365,8 @@ if ($_POST['assign']=='Import Data') {
       }
    }
 
-   // construct Array holding field numbers set as primery key
+   // construct Array holding field numbers set as primary key
+   // This is to allow pirmary keys consisting of multiple fields
    foreach ($_POST AS $key=>$value) {
       $stuff= explode ('_',$key);
       if ($stuff[0]=='pkey' && is_numeric($stuff[1])) {
@@ -441,13 +442,13 @@ if ($_POST['assign']=='Import Data') {
 
             // First figure out if such a record already exists
 	    $first = true;
+	    $primaryKeyLine = '';
 	    foreach($pkey AS $j) {
 	       if (!$first) 
 		  $primaryKeyLine .= ' AND ';
 	       $primaryKeyLine.= "$to_fields[$j]='$fields[$j]' ";
 	       $first=false;
 	    } 
-	    //echo $primaryKeyLine ;
 	    // Go through 
 
             if (isset($primaryKeyLine)) {
@@ -506,9 +507,7 @@ if ($_POST['assign']=='Import Data') {
                if ($worthit) {
                   // when doing an update we leave access and owner untouched
                   $query.=" lastmoddate='$lastmoddate', lastmodby='$lastmodby' WHERE id=$recordid";
-//$db->debug=true;
                   if ($r=$db->Execute($query)) {
-//$db->debug=false;
                       // keep count of new and modified records
                       if ($makeNewId) {
                          $inserted++;
