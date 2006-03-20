@@ -365,6 +365,15 @@ if ($_POST['assign']=='Import Data') {
       }
    }
 
+   // construct Array holding field numbers set as primery key
+   foreach ($_POST AS $key=>$value) {
+      $stuff= explode ('_',$key);
+      if ($stuff[0]=='pkey' && is_numeric($stuff[1])) {
+	 $pkey[]=$stuff[1];
+      }
+   }
+
+   
    // find out to which phplabware column each imported column belongs
    // Array $to_fields contains the target column ids,
    // Array $to_types contains the target column types
@@ -431,8 +440,18 @@ if ($_POST['assign']=='Import Data') {
             // UPDATE, otherwise first create a default entry and modify that
 
             // First figure out if such a record already exists
-            if (isset($pkey)) {
-               $r=$db->Execute("SELECT id FROM $table WHERE $to_fields[$pkey]='$fields[$pkey]'");
+	    $first = true;
+	    foreach($pkey AS $j) {
+	       if (!$first) 
+		  $primaryKeyLine .= ' AND ';
+	       $primaryKeyLine.= "$to_fields[$j]='$fields[$j]' ";
+	       $first=false;
+	    } 
+	    //echo $primaryKeyLine ;
+	    // Go through 
+
+            if (isset($primaryKeyLine)) {
+               $r=$db->Execute("SELECT id FROM $table WHERE $primaryKeyLine");
                // only the first record that matched will be modified
                $existingid=$r->fields[0];
             } 
@@ -458,7 +477,7 @@ if ($_POST['assign']=='Import Data') {
             }
 
             // if no Match Field was set, we'll add all records as new ones
-            if (!$pkey && ($pkeypolicy != 'onlyupdate')) {
+            if (!$primaryKeyLine && ($pkeypolicy != 'onlyupdate')) {
                $makeNewId=true;
             }
                
@@ -608,10 +627,10 @@ if ($_POST['dataupload']=='Continue' && may_write($db,$tableid,false,$USERAS)) {
             $menu=$r->GetMenu("fields_$i",$fields[$i]);
             echo "   <td>$menu</td>\n";
             $r->Move(0);
-            echo "   <td><input type='radio' name='pkey' value='$i'></td>\n";
+            echo "   <td><input type='checkbox' name='pkey_$i' value='{$_POST['pkey_$i']}'></td>\n";
             echo "</tr>\n<tr>\n";
          }
-         echo "<td colspan=3></td><td><input type='radio' name='pkey' value='' checked> (none)</td>\n";
+         //echo "<td colspan=3></td><td><input type='checkbox' name='pkey_none' value='' checked> (none)</td>\n";
          echo "</tr>\n";
          $colspan=$nrfields+2;
          echo "</table>\n";
