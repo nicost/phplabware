@@ -147,6 +147,7 @@ echo "<table width=75% align='center' border='0' cellpadding='2' cellspacing='0'
 echo "<tr><td> </td><td colspan=2 align='right' >Column names available:</td></tr>\n";
 echo "<tr><td> </td><th>Column Name</th><th>Column Label</th></tr>\n";
 $r=$db->Execute("SELECT columnname,label FROM {$tabledesc}");
+// show the help text in the left most column
 $rowspan=$r->RecordCount() + 1;
 echo "<tr><td rowspan=$rowspan valign='top'>";
 include 'documents/help_reports.php';
