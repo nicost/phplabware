@@ -59,11 +59,32 @@ while((list($key, $val) = each($_POST))) {
 }
 
 navbar($USER['permissions']);
+// when no tablename is given, list all tables this user can write to 
+if (!$tablename) {
+   echo "<br><br>\n";
+   echo "<form name='views' method='post' action='$PHP_SELF'>\n";
+   echo "<table width='100%' border='0'>\n";
+   echo "<tr>\n";
+   echo "<td align='center'><h3>Edit report templates for table: </h3>";
+
+   // make dropdown with accessible tablenames, select the current tablename
+   if ($USER['permissions'] & $SUPER) {
+      $r=$db->Execute ("SELECT label,tablename FROM tableoftables ORDER by sortkey ");
+   } else {
+      $r=$db->Execute("SELECT tableoftables.label,tableoftables.tablename FROM tableoftables LEFT JOIN groupxtable_display ON tableoftables.id=groupxtable_display.tableid WHERE groupxtable_display.groupid IN ({$USER['group_list']}) ORDER BY tableoftables.sortkey");
+   }                                                                            
+   echo $r->GetMenu2('tablename',$tablename,true,false,0,'OnChange="document.views.submit()"');
+   echo "</td></tr></table></form>\n";
+   printfooter();
+   exit;
+}
+
 echo $tplmessage;
 
 $r=$db->Execute("SELECT id,table_desc_name,label FROM tableoftables WHERE tablename='$tablename'");
-$tableid=$r->fields["id"];
-$tablelabel=$r->fields["label"];
+$tableid=$r->fields['id'];
+$tablelabel=$r->fields['label'];
+$tabledesc=$r->fields[1];
 echo "<h3 align='center'>$string</h3>";
 echo "<h3 align='center'>Edit report templates for table <i>$tablelabel</i></h3><br>";
 
@@ -119,6 +140,33 @@ while ($rp && !$rp->EOF) {
    $rownr++;
 }
 echo "</table>\n";
+
+echo "<br>\n";
+// list all available fields and field labels :
+echo "<table width=75% align='center' border='0' cellpadding='2' cellspacing='0'>\n";
+echo "<tr><td> </td><td colspan=2 align='right' >Column names available:</td></tr>\n";
+echo "<tr><td> </td><th>Column Name</th><th>Column Label</th></tr>\n";
+$r=$db->Execute("SELECT columnname,label FROM {$tabledesc}");
+$rowspan=$r->RecordCount() + 1;
+echo "<tr><td rowspan=$rowspan valign='top'>";
+include 'documents/help_reports.php';
+echo "</td>\n";
+$first=true;
+while ($r && !$r->EOF) {
+   if ($first) {
+      echo "<td>{$r->fields[0]}</td><td>{$r->fields[1]}</td></tr>\n";
+      $first=false;
+   } else {
+      echo "<tr><td>{$r->fields[0]}</td><td>{$r->fields[1]}</td></tr>\n";
+   }
+
+   $r->MoveNext();
+}
+echo "</table\n";
+
+
+
+
 printfooter();
 exit;
 
