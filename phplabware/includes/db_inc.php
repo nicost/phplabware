@@ -39,6 +39,7 @@ class tableinfo {
       $this->short=$r->fields['shortname'];
       $this->realname=$r->fields['real_tablename'];
       $this->name=$r->fields['tablename'];
+      $this->htmlname=str_replace(' ','%20',htmlentities($r->fields['tablename']));
       $this->label=$r->fields['label'];
       $this->desname=$r->fields['table_desc_name'];
       $this->fields=comma_array_SQL($db,$this->desname,columnname);
