@@ -669,7 +669,7 @@ function show_reports($db,$tableinfo,$recordid=false) {
          $menu.="<option value='-2'>tab</option>\n";
          $menu.="<option value='-3'>csv</option>\n";
          while (!$r->EOF) {
-            $url="target "."report.php?tablename=".$tableinfo->name."&reportid=".$r->fields["id"]."&recordid=$recordid";
+            $url="target "."report.php?tablename=".$tableinfo->htmlname."&amp;reportid=".$r->fields["id"]."&amp;recordid=$recordid";
             $menu.="<option value='$url'>".$r->fields["label"]."</option>\n";
             $r->MoveNext();
          }
@@ -680,12 +680,12 @@ function show_reports($db,$tableinfo,$recordid=false) {
          $menu="<td>Report: \n";
          $menu.="<select name='reportlinks' onchange='linkmenu(this)'>\n";
          $menu.="<option value=''>---Reports---</option>\n";
-         $url="target "."report.php?tablename=".$tableinfo->name."&tableview=true&reportid";
+         $url="target "."report.php?tablename=".$tableinfo->htmlname."&amp;tableview=true&amp;reportid";
          $menu.="<option value='$url=-1'>xml</option>\n";
          $menu.="<option value='$url=-2'>text</option>\n";
          $menu.="<option value='$url=-3'>csv</option>\n";
          while (!$r->EOF) {
-            $url="target "."report.php?tablename=".$tableinfo->name."&reportid=".$r->fields["id"]."&tableview=true";
+            $url="target "."report.php?tablename=".$tableinfo->htmlname."&amp;reportid=".$r->fields["id"]."&amp;tableview=true";
             $menu.="<option value='$url'>".$r->fields["label"]."</option>\n";
             $r->MoveNext();
          }
@@ -699,7 +699,7 @@ function show_reports($db,$tableinfo,$recordid=false) {
              $checked2='checked';
          $menu.="<input type='radio' name='reportoutput' $checked2 value='2' onChange='document.g_form.submit();'>file\n";
 
-         $menu.= "<a href='editreports.php?tablename={$tableinfo->name}'>Edit reports</a>\n";
+         $menu.= "<a href='editreports.php?tablename={$tableinfo->htmlname}'>Edit reports</a>\n";
 
          $menu.="</td>\n";
       }
