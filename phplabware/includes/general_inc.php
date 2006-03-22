@@ -182,7 +182,7 @@ function viewmenu($db, $tableinfo,$viewid,$useronly=1,$jscript='OnChange="docume
       $viewname.= 'View: '.$r->GetMenu2('viewid',$viewid,true,false,0,$jscript);
    }
    if ($viewid)
-      $viewidtext="&viewid=$viewid";
+      $viewidtext="&amp;viewid=$viewid";
    $viewname.="<a href='views.php?tablename={$tableinfo->name}$viewidtext'>Edit views</a>";
 
    return $viewname;
