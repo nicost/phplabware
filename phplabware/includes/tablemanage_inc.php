@@ -704,10 +704,13 @@ function show_active_link_page ($db,$table_name,$addcol_name,$addcol_label,$link
    echo "<input type='hidden' name='table_name' value='$table_name'></input>\n";
    echo "<input type='hidden' name='addcol_name' value='$addcol_name'></input>\n";
    echo "<input type='hidden' name='addcol_label' value='$addcol_label'></input>\n";
+   echo "<br>\n";
    echo "<table align='center' cellpadding='2' cellspacing='0'>\n";
-   echo "<tr><td>Enter the link (including http://) here. \"Cell content\" will be extracted from the database</td></tr>\n";
-   echo "<tr><td><input type='text' name='link_part_a' value='$link_part_a'>\n";
-   echo "cell content<input type='text'name='link_part_b' value='$link_part_b'></td></tr>\n";
+   echo "<tr><td align='center'><h3>Enter the link (including http://) for column <i>$addcol_label</i> here. \"Cell content\" will be extracted from the database</h3></td></tr>\n";
+   $size=max(strlen($link_part_a),25);
+   echo "<tr><td><input type='text' name='link_part_a' value='$link_part_a' size='$size'>\n";
+   $size=max(strlen($link_part_b),25);
+   echo "cell content<input type='text'name='link_part_b' value='$link_part_b' size='$size'></td></tr>\n";
 
    echo "<tr><td align='center'><input type='submit' name='submit' value='Submit'></input></td>\n";
    echo "</tr>\n</table>\n</form>\n";

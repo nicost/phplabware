@@ -119,14 +119,13 @@ while((list($key, $val) = each($_POST))) {
       $datatype=$_POST['column_datatype'][$modarray[1]];
       rm_columnecg($db,$tablename,$id,$colname,$datatype);
       break;
-   }
-   elseif (substr($key, 0, 11) == 'alinkcolumn') { 
+   } elseif (substr($key, 0, 11) == 'alinkcolumn') { 
       $modarray = explode("_", $key);
       $tablename=$_POST['table_name'];
-      $id=$_POST['column_id'][$modarray[1]]; 
-      $colname=$_POST['column_name'][$modarray[1]];
-      $collabel=$_POST['column_label'][$modarray[1]];
-      $datatype=$_POST['column_datatype'][$modarray[1]];
+      $id=$_POST['column_id_'.$modarray[1]]; 
+      $colname=$_POST['column_name_'.$modarray[1]];
+      $collabel=$_POST['column_label_'.$modarray[1]];
+      $datatype=$_POST['column_datatype_'.$modarray[1]];
       $table_desc=get_cell($db,'tableoftables','table_desc_name','tablename',$tablename);
       $link_a=get_cell($db,$table_desc,"link_first","id",$id);
       $link_b=get_cell($db,$table_desc,"link_last","id",$id);
@@ -312,7 +311,7 @@ if ($editfield)	{
            $alinkstring = "<input type='hidden' name='thumbsize"."_$id' value='$thumbsize'>\n";
            $alinkstring.="<input type='submit' name='modcolumn"."_$id' value='Thumbnail size' Onclick='var temp=window.prompt(\"Please enter the maximum thumbnail size (in pixels):\",\"$thumbsize\");if (temp) {document.tableform.thumbsize"."_$id.value=temp} else {return false}; return true;' >\n";
         } else
-	        $alinkstring = "<input type='submit' name='alinkcolumn"."_$rownr' value='Active Link'>\n";
+	        $alinkstring = "<input type='submit' name='alinkcolumn"."_$id' value='Active Link'>\n";
         $delstring = "<input type='submit' name='delcolumn"."_$rownr' value='Remove' ";
         $delstring .= "Onclick=\"if(confirm('Are you absolutely sure that the column $label should be removed? (No undo possible!)')){return true;}return false;\">";  
 
