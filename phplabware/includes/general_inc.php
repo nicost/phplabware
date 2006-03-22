@@ -595,7 +595,7 @@ function display_record($db,$Allfields,$id,$tableinfo,$backbutton=true,$previous
    }
    echo "</tr>\n";
    make_link($id,$tableinfo->name);
-   show_reports($db,$tableinfo,$id);
+   show_reports($db,$tableinfo,$id,$viewid);
    if (function_exists ("plugin_display_show")){
       plugin_display_show ($db,$Allfields,$id);
       return $Allfields;
@@ -656,37 +656,51 @@ function make_link($id,$DBNAME) {
  *
  * When one is chosen, open the formatted record in a new window
  */
-function show_reports($db,$tableinfo,$recordid=false) {
+function show_reports($db,$tableinfo,$recordid=false,$viewid=false) {
    global $USER;
+//echo "$viewid.<br>";
    $r=$db->Execute("SELECT id,label FROM reports WHERE tableid=".$tableinfo->id);
    //if ($r && !$r->EOF) {
    if ($r) {
       if ($recordid) {
          $menu="<tr><th>Report:</th>\n";
          $menu.="<td><select name='reportlinks' onchange='linkmenu(this)'>\n";
+         $url="target "."report.php?tablename=".$tableinfo->htmlname."&amp;recordid=$recordid";
+	 if ($viewid) {
+	    $url.="&amp;viewid=$viewid";
+	 }
+	 $url.='&amp;reportid';
          $menu.="<option value=''>---Reports---</option>\n";
-         $menu.="<option value='-1'>xml</option>\n";
-         $menu.="<option value='-2'>tab</option>\n";
-         $menu.="<option value='-3'>csv</option>\n";
+         $menu.="<option value='$url-1'>xml</option>\n";
+         $menu.="<option value='$url-2'>tab</option>\n";
+         $menu.="<option value='$url-3'>csv</option>\n";
          while (!$r->EOF) {
             $url="target "."report.php?tablename=".$tableinfo->htmlname."&amp;reportid=".$r->fields["id"]."&amp;recordid=$recordid";
-            $menu.="<option value='$url'>".$r->fields["label"]."</option>\n";
+	    if ($viewid)
+	       $url.="&amp;viewid=$viewid";
+            $menu.="<option value='$url'>".$r->fields['label']."</option>\n";
             $r->MoveNext();
          }
          $menu.="</select>\n";
          $menu.="</td></tr>\n";
-      }
-      else { // for tableview reports
+      } else { // for tableview reports
          $menu="<td>Report: \n";
          $menu.="<select name='reportlinks' onchange='linkmenu(this)'>\n";
          $menu.="<option value=''>---Reports---</option>\n";
-         $url="target "."report.php?tablename=".$tableinfo->htmlname."&amp;tableview=true&amp;reportid";
+         $url="target "."report.php?tablename=".$tableinfo->htmlname."&amp;tableview=true";
+	 if ($viewid) {
+	    $url.="&amp;viewid=$viewid";
+	 }
+	 $url.='&amp;reportid';
          $menu.="<option value='$url=-1'>xml</option>\n";
          $menu.="<option value='$url=-2'>text</option>\n";
          $menu.="<option value='$url=-3'>csv</option>\n";
          while (!$r->EOF) {
             $url="target "."report.php?tablename=".$tableinfo->htmlname."&amp;reportid=".$r->fields["id"]."&amp;tableview=true";
-            $menu.="<option value='$url'>".$r->fields["label"]."</option>\n";
+	    if ($viewid) {
+	       $url.="&amp;viewid=$viewid";
+	    }
+            $menu.="<option value='$url'>".$r->fields['label']."</option>\n";
             $r->MoveNext();
          }
          $menu.="</select>\n";

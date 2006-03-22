@@ -63,9 +63,8 @@ function make_tab ($db,$data,$tableinfo,$output,$fieldscomma) {
  *  Formats record(s) into comma-delimited output
  *
  */
-function make_comma ($db,$data,$tableinfo,$fieldscomma) {
+function make_comma ($db,$data,$tableinfo,$output,$fieldscomma) {
    if ($data[0]) {
-      print_r($data);
       foreach ($data as $column) {
          if (false !== strpos($fieldscomma,$column['name']))
             $out.="{$column['text']},";

@@ -551,7 +551,7 @@ if ($add && $md!='edit') {
    echo "<td align='center'>".viewmenu($db,$tableinfo,$viewid,false)."</td>\n";
    echo "<td align='center'><a href='import.php?tableid={$tableinfo->id}'>Import Data</a></td>\n";
    echo "</tr>\n</table>\n";
-   next_previous_buttons($rp,true,$num_p_r,$numrows,${$pagename},$db,$tableinfo);
+   next_previous_buttons($rp,true,$num_p_r,$numrows,${$pagename},$db,$tableinfo,$viewid);
 
    // get a list with ids we may see, $listb has all the ids we may see
    if ($db_type=='mysql') {
