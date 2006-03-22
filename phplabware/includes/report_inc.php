@@ -40,15 +40,16 @@ function make_xml ($db,$data,$tableinfo) {
  * $output: 1=screen, 2=file
  *
  */
-function make_tab ($db,$data,$tableinfo,$output) {
+function make_tab ($db,$data,$tableinfo,$output,$fieldscomma) {
    if ($data[0]) {
       foreach ($data as $column) {
-         $out.="{$column['text']}\t";
+         if (false !== strpos($fieldscomma,$column['name']))
+            $out.="{$column['text']}\t";
       }
    } else { // no id so assume this is a header
-      echo 'id';
       foreach ($data as $column) {
-         $out.="{$column['label']}\t";
+         if (false !== strpos($fieldscomma,$column['name']))
+            $out.="{$column['label']}\t";
       }
    }
    if ($output==1) {
@@ -62,15 +63,17 @@ function make_tab ($db,$data,$tableinfo,$output) {
  *  Formats record(s) into comma-delimited output
  *
  */
-function make_comma ($db,$data,$tableinfo) {
+function make_comma ($db,$data,$tableinfo,$fieldscomma) {
    if ($data[0]) {
+      print_r($data);
       foreach ($data as $column) {
-         $out.="{$column['text']},";
+         if (false !== strpos($fieldscomma,$column['name']))
+            $out.="{$column['text']},";
       }
    } else { // no id so assume this is a header
-      echo 'id';
       foreach ($data as $column) {
-         $out.="{$column['label']},";
+         if (false !== strpos($fieldscomma,$column['name']))
+            $out.="{$column['label']},";
       }
    }
    if ($output==1) {

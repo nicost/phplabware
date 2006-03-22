@@ -35,6 +35,14 @@ if (!$tableinfo->id) {
 $reportid=(int)$_GET['reportid'];
 $recordid=(int)$_GET['recordid'];
 $tableview=$_GET['tableview'];
+// determine which fields are going to be seen:
+$viewid=$_GET['viewid'];
+if ($viewid) {
+   $Fieldscomma=viewlist($db,$tableinfo,$viewid);
+} else {
+   $Fieldscomma=comma_array_SQL($db,$tableinfo->desname,columnname,"WHERE display_table='Y'");
+}
+
  
 if (!($reportid && ($recordid || $tableview)) ) {
    printheader($httptitle);
@@ -116,10 +124,10 @@ if ($_GET['tableview']) {
          echo "<phplabware_base>\n";
       } elseif ($reportid==-2) { // tab headers
          $Allfields=getvalues($db,$tableinfo,$fields_table);
-         echo make_tab ($db,$Allfields,$tableinfo,$USER['settings']['reportoutput']);
+         echo make_tab ($db,$Allfields,$tableinfo,$USER['settings']['reportoutput'],$Fieldscomma);
       } elseif ($reportid==-3) { // comma headers
          $Allfields=getvalues($db,$tableinfo,$fields_table);
-         echo make_comma ($db,$Allfields,$tableinfo,$USER['settings']['reportoutput']);
+         echo make_comma ($db,$Allfields,$tableinfo,$USER['settings']['reportoutput'],$Fieldscomma);
       }
       $counter=1;
       while ($r && !$r->EOF) {
@@ -129,9 +137,9 @@ if ($_GET['tableview']) {
          } elseif ($reportid==-1) {
             echo make_xml ($db,$Allfields,$tableinfo);
          } elseif ($reportid==-2) {
-            echo make_tab ($db,$Allfields,$tableinfo,$USER['settings']['reportoutput']);
+            echo make_tab ($db,$Allfields,$tableinfo,$USER['settings']['reportoutput'],$Fieldscomma);
          } elseif ($reportid==-3) {
-            echo make_comma ($db,$Allfields,$tableinfo,$USER['settings']['reportoutput']);
+            echo make_comma ($db,$Allfields,$tableinfo,$USER['settings']['reportoutput'],$Fieldscomma);
          }
          $r->MoveNext();
          $counter++;
