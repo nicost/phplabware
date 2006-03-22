@@ -498,7 +498,7 @@ if ($add && $md!='edit') {
    }
 
    // output javascript to cpature enter key and use it start Search:
-   echo "<script language='JavaScript'>
+   echo "<script type='text/javascript' language='JavaScript'>
    function searchOnEnter(e) {
       var pK = e? e.which: window.event.keyCode;
       var node = (e.target) ? e.target : ((e.srcElement) ? e.srcElement : null);
