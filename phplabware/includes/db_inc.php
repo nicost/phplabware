@@ -1601,7 +1601,7 @@ function make_search_SQL($db,$tableinfo,$fields,$USER,$search,$searchsort,$where
 
    // apparently searchsort can be passed as an empty string.  that is bad
    if (!$searchsort)
-      $searchsort=$tableinfo->realname.'.title';
+      $searchsort=$tableinfo->realname.'.date DESC';
    $fieldvarsname=$tableinfo->short.'_fieldvars';
    global ${$fieldvarsname};
    $queryname=$tableinfo->short.'_query';
