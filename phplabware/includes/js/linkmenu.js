@@ -4,6 +4,7 @@ function linkmenu (selectmenu) {
 	if (newurl.indexOf("target ")==0) {
 		newurl=newurl.slice(7);
 		var newWindow=open(newurl,"otherWindow","scrollbars=1,resizable=1,statusbarbar=1,toolbar=1,navigator=1,defaultStatus=1,width=800,height=400,top=1");
+		newWindow.focus();
 	}
 	else {
 		if (newurl.length!=0) {
@@ -60,15 +61,15 @@ function buildMultiselects(){
     }
     if(show_toplinks){ /* reset, all, none */
      wrapper.appendChild(newLink("javascript:"+(disabled?"alert('selection disabled')":"multiselect_selectall('"+name+"','checked');"),'all'));
-     wrapper.appendChild(document.createTextNode(', '));
+     wrapper.appendChild(document.createTextNode('  '));
      wrapper.appendChild(newLink("javascript:"+(disabled?"alert('selection disabled')":"multiselect_selectall('"+name+"','');"),'none'));
-     wrapper.appendChild(document.createTextNode(', '));
+     wrapper.appendChild(document.createTextNode('  '));
      wrapper.appendChild(newLink("javascript:"+(disabled?"alert('selection disabled')":"multiselect_selectall('"+name+"','reset');"),'reset'));
     }
     /* setup multiselect */ {
      newmultiselect=document.createElement('div');
      newmultiselect.style.position='absolute';
-     newmultiselect.style.top=show_toplinks?'15px':'0';
+     newmultiselect.style.top=show_toplinks?'11px':'0';
      newmultiselect.style.left='0';
      newmultiselect.style.overflow='auto';
      newmultiselect.style.width=(isIE?width-4:width)+"px";
@@ -82,7 +83,9 @@ function buildMultiselects(){
      //label.style.borderWidth="1px 0";
      label.style.textAlign="left";
      label.style.font="10px arial";
-     label.style.lineHeight="10px";
+     label.style.marginTop="-1px";
+     //label.style.lineHeight="10px";
+     //label.style.verticalAlign="top";
      label.style.paddingLeft="20px";
      checkbox=document.createElement('input');
      checkbox.type="checkbox";
