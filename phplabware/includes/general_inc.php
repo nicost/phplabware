@@ -428,7 +428,7 @@ function display_table_info($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr_c
             echo "<td>{$nowfield['link']}</td>\n";
          elseif ($nowfield['datatype']=='mpulldown')
             echo "<td align='left' cellpadding='5%'>{$nowfield['text']}</td>\n"; 
-         elseif ( (($nowfield['datatype'] == 'text') || ($nowfield['datatype'] == 'textlong')) && (strlen($nowfield['text'])>59) && $_SESSION['javascript_enabled'] && (substr($nowfield['text'],0,7) !='<a href') ) {
+         elseif ( $nowfield['datatype'] == 'textlong' && (strlen($nowfield['text'])>59) && $_SESSION['javascript_enabled'] && (substr($nowfield['text'],0,7) !='<a href') ) {
             // provide long text by mouseover -- by MM
             $startofText = substr($nowfield['text'],0,60);
             echo "<td><a class='Tooltip' href=\"javascript:void(0);\" ";
