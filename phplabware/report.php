@@ -124,6 +124,7 @@ if ($_GET['tableview']) {
          echo "<phplabware_base>\n";
       } elseif ($reportid==-2) { // tab headers
          $Allfields=getvalues($db,$tableinfo,$fields_table);
+	 print_r($Fieldscomma);
          echo make_tab ($db,$Allfields,$tableinfo,$USER['settings']['reportoutput'],$Fieldscomma);
       } elseif ($reportid==-3) { // comma headers
          $Allfields=getvalues($db,$tableinfo,$fields_table);

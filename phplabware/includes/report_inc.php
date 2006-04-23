@@ -41,14 +41,20 @@ function make_xml ($db,$data,$tableinfo) {
  *
  */
 function make_tab ($db,$data,$tableinfo,$output,$fieldscomma) {
+   // by also chekcing for the last comma, we reduce the risk of falsely reporting things
+   $fieldscomma.=',';
+   // some characters will kill nice parsing of our output, so take these guys out:
+   $badchars= array ("\n", "\t", "\m", "\r");
    if ($data[0]) {
       foreach ($data as $column) {
-         if (false !== strpos($fieldscomma,$column['name']))
+         if (false !== strpos($fieldscomma,$column['name'].',')) {
+	    $column['text']=str_replace($badchars,'',$column['text']);
             $out.="{$column['text']}\t";
+	 }
       }
    } else { // no id so assume this is a header
       foreach ($data as $column) {
-         if (false !== strpos($fieldscomma,$column['name']))
+         if (false !== strpos($fieldscomma,$column['name']).',')
             $out.="{$column['label']}\t";
       }
    }
@@ -64,15 +70,22 @@ function make_tab ($db,$data,$tableinfo,$output,$fieldscomma) {
  *
  */
 function make_comma ($db,$data,$tableinfo,$output,$fieldscomma) {
+   // by also chekcing for the last comma, we reduce the risk of falsely reporting things
+   $fieldscomma.=',';
+   // some characters will kill nice parsing of our output, so take these guys out:
+   $badchars= array ("\n", "\t", "\m", "\r");
    if ($data[0]) {
       foreach ($data as $column) {
-         if (false !== strpos($fieldscomma,$column['name']))
+         if (false !== strpos($fieldscomma,$column['name'].',')) {
+	    $column['text']=str_replace($badchars,'',$column['text']);
             $out.="{$column['text']},";
+	 }
       }
    } else { // no id so assume this is a header
       foreach ($data as $column) {
-         if (false !== strpos($fieldscomma,$column['name']))
+         if (false !== strpos($fieldscomma,$column['name'].',')){
             $out.="{$column['label']},";
+	 }
       }
    }
    if ($output==1) {
