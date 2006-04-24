@@ -1553,7 +1553,7 @@ function paging ($num_p_r,&$USER) {
  * The variable name is formed using the short name for the table
  */
 function current_page($curr_page, $sname, $num_p_r, $numrows) {
-   global $_POST, $_SESSION;
+
    // damage control: if settings are absent, $num_p_rt will be 0
    if (!$num_p_r) {
       $num_p_r=10;
@@ -1567,13 +1567,13 @@ function current_page($curr_page, $sname, $num_p_r, $numrows) {
    if (${$varname} > ($numrows/$num_p_r))
       ${$varname}=1;
    // the page number can be set directly or by clicking the next/previous buttons (see function next_previous_buttons)
-   if ($_POST[$varname]) {
-      ${$varname}=$_POST[$varname];
+   if ($_GET[$varname]) {
+      ${$varname}=$_GET[$varname];
    }
-   elseif (isset($_POST['next'])) {
+   elseif (isset($_GET['next'])) {
       ${$varname}+=1;
    }
-   elseif (isset($_POST['previous'])) {
+   elseif (isset($_GET['previous'])) {
       $$varname-=1;
    }
    if ($$varname<1)
