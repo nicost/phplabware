@@ -78,9 +78,13 @@ globalize_vars($get_vars, $_GET);
 foreach($_GET as $key => $value) {
    if (substr($key,0,6)=='sortup'  || substr($key,0,8)=='sortdown') {
       $_GET['search']='Search';
+   } elseif (substr($key,0,4) == 'chg_') {
+      $_GET['mod']=$value;
+   } elseif (substr($key,0,4) == 'mod_') {
+      $_GET['mod']=$value;
    }
 }
-if ($_GET['search'] || $_GET['searchj']){
+if ($_GET['search'] || $_GET['searchj'] || $_GET['mod'] ){
    foreach ($_GET as $key => $value) {
       $_POST[$key]=$value;
    }
