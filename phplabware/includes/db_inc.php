@@ -1592,12 +1592,13 @@ function make_search_SQL($db,$tableinfo,$fields,$USER,$search,$searchsort,$where
 
    // if any of the search columns has been passed as Get variable, copy them to the POST vars array 
    $column=strtok($fields,',');
+   /*
    while ($column) {
       if (isset($_GET[$column]) &&  !isset($_POST[$column])) {
          $_POST[$column]=$_GET[$column];
       }
       $column=strtok(',');
-   }
+   }*/
 
    // apparently searchsort can be passed as an empty string.  that is bad
    if (!$searchsort)

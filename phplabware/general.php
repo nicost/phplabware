@@ -73,6 +73,19 @@ if ($plugin_code)
 // register variables
 $get_vars='tablename,md,showid,edit_type,add,jsnewwindow,modify,search';
 globalize_vars($get_vars, $_GET);
+
+// temporary hack: g_form is now GET. Instead of re-writing all code for this, just copy GET into POST.  This will need to be refactored!
+foreach($_GET as $key => $value) {
+   if (substr($key,0,6)=='sortup'  || substr($key,0,8)=='sortdown') {
+      $_GET['search']='Search';
+   }
+}
+if ($_GET['search'] || $_GET['searchj']){
+   foreach ($_GET as $key => $value) {
+      $_POST[$key]=$value;
+   }
+}
+
 $post_vars = 'add,md,edit_type,showid,submit,search,searchj,serialsortdirarray';
 globalize_vars($post_vars, $_POST);
 // hack
@@ -151,8 +164,9 @@ foreach($_POST as $key =>$value) {
    }
 } 
 reset ($_POST);
-if ($searchj || $sortup || $sortdown || $_POST['next'] || $_POST['previous'])
+if ($searchj || $sortup || $sortdown || $_POST['next'] || $_POST['previous']) {
    $search='Search';
+}
 
 /*****************************BODY*******************************/
 
@@ -516,8 +530,9 @@ if ($add && $md!='edit') {
    // print form;
    $dbstring=$PHP_SELF."?"."tablename=$tableinfo->name&";
    $formname='g_form';
-   echo "<form name='$formname' method='post' id='generalform' enctype='multipart/form-data' action='$PHP_SELF?$actionLink'>\n";
+   echo "<form name='$formname' method='get' id='generalform' enctype='multipart/form-data' action='$PHP_SELF?$actionLink'>\n";
 
+   echo "<input type='hidden' name='tablename' value='$tableinfo->name'>\n";
    echo "<input type='hidden' name='md' value='$md'>\n";
 
    echo "<table border=0 width='75%' align='center'>\n<tr>\n";
