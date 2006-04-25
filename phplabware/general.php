@@ -8,9 +8,8 @@
   * Copyright (c) 2002 by Ethan Garner,Nico Stuurman<nicost@sf.net>          *
   * ------------------------------------------------------------------------ *
   *  This program is free software; you can redistribute it and/or modify it *
-  *  under the terms of the GNU General Public License as published by the   *
-  *  Free Software Foundation; either version 2 of the License, or (at your  *
-  *  option) any later version.                                              *
+  *  under the terms of version 2 of the GNU General Public License          *
+  *  as published by the Free Software Foundation                            *
   \**************************************************************************/
 
 /// main include thingies
@@ -31,11 +30,10 @@ if (!$tableinfo->id) {
    exit();
 }
 
-//print_r($_SESSION);
 
 $tableinfo->queryname=$queryname=$tableinfo->short.'_query';
 $tableinfo->pagename=$pagename=$tableinfo->short.'_curr_page';
-//print_r($_POST);
+
 // Acquire active view from settings or get/post vars
 if (isset($USER['settings']['view']["$tableinfo->name"]))
    $viewid=$USER['settings']['view']["$tableinfo->name"];
@@ -51,8 +49,7 @@ if ($viewid) {
    $Fieldscomma=viewlist($db,$tableinfo,$viewid); 
    // write viewid back to user preferences
    $USER['settings']['view']["$tableinfo->name"]=$viewid;
-}   
-else {
+} else {
    // read all fields in from the description file
    $Fieldscomma=comma_array_SQL($db,$tableinfo->desname,columnname,"WHERE display_table='Y'");
    // release viewid we remembered
@@ -60,8 +57,8 @@ else {
 }
 
 // Activate selected report output or default
-if (isset ($_POST['reportoutput'])) {
-   $USER['settings']['reportoutput']=$_POST['reportoutput'];
+if (isset ($_GET['reportoutput'])) {
+   $USER['settings']['reportoutput']=$_GET['reportoutput'];
 }
    
 
@@ -91,7 +88,7 @@ foreach($_GET as $key => $value) {
             $sortdown=substr($key,9);
       }
       $_GET['search']='Search';
-   // The following is still needed, nmont sure why
+   // The following is still needed, not sure why
    } elseif (substr($key,0,4) == 'chg_') {
       $_GET['mod']=$value;
    } elseif (substr($key,0,4) == 'mod_') {
