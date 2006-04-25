@@ -1530,16 +1530,15 @@ function next_previous_buttons($r,$paging=false,$num_p_r=false,$numrows=false,$p
 /**
  *  Returns the variable $num_p_r holding the # of records per page
  *
- * check user settings and POST_VARS
+ * check user settings and GET_VARS
  * Write the value back to the user defaults
  * When no value is found, default to 10
  */
 function paging ($num_p_r,&$USER) {
-   global $_POST;
    if (!$num_p_r)
       $num_p_r=$USER['settings']['num_p_r'];
-   if (isset($_POST['num_p_r']))
-      $num_p_r=$_POST['num_p_r'];
+   if (isset($_GET['num_p_r']))
+      $num_p_r=$_GET['num_p_r'];
    if (!isset($num_p_r))
      $num_p_r=10;
    $USER['settings']['num_p_r']=$num_p_r;
@@ -1590,16 +1589,6 @@ function current_page($curr_page, $sname, $num_p_r, $numrows) {
 function make_search_SQL($db,$tableinfo,$fields,$USER,$search,$searchsort,$whereclause=false) {
    global $db_type;
 
-   // if any of the search columns has been passed as Get variable, copy them to the POST vars array 
-   $column=strtok($fields,',');
-   /*
-   while ($column) {
-      if (isset($_GET[$column]) &&  !isset($_POST[$column])) {
-         $_POST[$column]=$_GET[$column];
-      }
-      $column=strtok(',');
-   }*/
-
    // apparently searchsort can be passed as an empty string.  that is bad
    if (!$searchsort)
       $searchsort=$tableinfo->realname.'.date DESC';
@@ -1611,8 +1600,8 @@ function make_search_SQL($db,$tableinfo,$fields,$USER,$search,$searchsort,$where
    if (!$whereclause)
       $whereclause=-1;
    if ($search=='Search') {
-      ${$queryname}=search($db,$tableinfo,$fields,$_POST," $whereclause ORDER BY $searchsort");
-      ${$fieldvarsname}=$_POST;
+      ${$queryname}=search($db,$tableinfo,$fields,$_GET," $whereclause ORDER BY $searchsort");
+      ${$fieldvarsname}=$_GET;
    }
    elseif (session_is_registered ($queryname) && isset($_SESSION[$queryname])) {
       ${$queryname}=$_SESSION[$queryname];
@@ -1625,21 +1614,21 @@ function make_search_SQL($db,$tableinfo,$fields,$USER,$search,$searchsort,$where
       } else {
          ${$queryname} = "SELECT $fields FROM tempb, $tableinfo->realname WHERE $whereclause ORDER BY date DESC";
       }
-      ${$fieldvarsname}=$_POST;
+      ${$fieldvarsname}=$_GET;
    }
    $_SESSION[$queryname]=${$queryname};   
    session_register($queryname);
    if (!${$fieldvarsname})
-      ${$fieldvarsname}=$_POST;
+      ${$fieldvarsname}=$_GET;
    $_SESSION[$fieldvarsname]=${$fieldvarsname};   
    session_register($fieldvarsname);
 
    if ($search !='Show All') {
-      // globalize _POST 
+      // globalize _GET 
       $column=strtok($fields,',');
       while ($column) {
          global ${$column};
-         ${$column}=$_POST[$column];
+         ${$column}=$_GET[$column];
          $column=strtok(',');
       }
       // extract variables from session

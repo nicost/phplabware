@@ -71,24 +71,34 @@ if ($plugin_code)
    @include($plugin_code);
 
 // register variables
-$get_vars='tablename,md,showid,edit_type,add,jsnewwindow,modify,search';
+$get_vars='tablename,md,showid,edit_type,add,jsnewwindow,modify,search,searchj,serialsortdirarray';
 globalize_vars($get_vars, $_GET);
 
-// temporary hack: g_form is now GET. Instead of re-writing all code for this, just copy GET into POST.  This will need to be refactored!
+
+// check if sortup or sortdown arrow was been pressed
 foreach($_GET as $key => $value) {
-   if (substr($key,0,6)=='sortup'  || substr($key,0,8)=='sortdown') {
+   if (substr($key,0,6)=='sortup') {
+      if (substr($key,0,6)=='sortup') {
+         // some browsers (like Safari) add '_y' to image links clicked
+         if (substr($key,-2)=='_y')
+            $sortup=substr($key,7,-2);
+         else
+            $sortup=substr($key,7);
+         } elseif (substr($key,0,8)=='sortdown') {
+         if (substr($key,-2)=='_y')
+            $sortdown=substr($key,9,-2);
+         else
+            $sortdown=substr($key,9);
+      }
       $_GET['search']='Search';
+   // The following is still needed, nmont sure why
    } elseif (substr($key,0,4) == 'chg_') {
       $_GET['mod']=$value;
    } elseif (substr($key,0,4) == 'mod_') {
       $_GET['mod']=$value;
    }
 }
-if ($_GET['search'] || $_GET['searchj'] || $_GET['mod'] ){
-   foreach ($_GET as $key => $value) {
-      $_POST[$key]=$value;
-   }
-}
+
 
 $post_vars = 'add,md,edit_type,showid,submit,search,searchj,serialsortdirarray';
 globalize_vars($post_vars, $_POST);
@@ -119,7 +129,6 @@ if ($jsnewwindow && $showid && $tableinfo->name) {
       }
       show_g($db,$tableinfo,$showid,$USER,$system_settings,false,$previousid,$nextid,$viewid);
    }   
-   //show_report_templates_menu($db,$tableinfo,$showid);
    printfooter();
    exit();
 }
@@ -150,6 +159,7 @@ foreach($_POST as $key =>$value) {
       if ($value)
          $_POST[$cname]=find_nested_match($db,$tableinfo,$field,$value);
    }
+   /*
    // check if sortup or sortdown arrow was been pressed
    else {
       if (substr($key,0,6)=='sortup') {
@@ -166,6 +176,7 @@ foreach($_POST as $key =>$value) {
             $sortdown=substr($key,9);
       }
    }
+   */
 } 
 reset ($_POST);
 if ($searchj || $sortup || $sortdown || $_POST['next'] || $_POST['previous']) {
@@ -429,8 +440,8 @@ if ($add && $md!='edit') {
 
    if ($search=='Show All') {
       // unset all the search and sort parameters
-      $num_p_r=$_POST['num_p_r'];
-      unset ($_POST);
+      $num_p_r=$_GET['num_p_r'];
+      unset ($_GET);
       ${$pagename}=1;
       unset ($_SESSION[$queryname]);
       unset ($serialsortdirarray);
@@ -439,15 +450,15 @@ if ($add && $md!='edit') {
       // if search is not set, we want to restore the search statement to the last time the user visited this page.  Restore the relevant settings in $_POST from $_SESSION:
       if (is_array($_SESSION[$fieldvarsname])) {
          foreach ($_SESSION[$fieldvarsname] as $key => $value) {
-            $_POST[$key]=$value;
+            $_GET[$key]=$value;
          }
       }
-      $serialsortdirarray=$_POST['serialsortdirarray'];
+      $serialsortdirarray=$_GET['serialsortdirarray'];
       $search='Search';
    }
    $column=strtok($tableinfo->fields,',');
    while ($column) {
-      ${$column}=$_POST[$column];
+      ${$column}=$_GET[$column];
       $column=strtok(",");
    }
  
@@ -476,8 +487,8 @@ if ($add && $md!='edit') {
    // when search fails we'll revert to Show All after showing an error message
    if (!$r) {
       echo "<h3 align='center'>The server encountered an error executing your search.  Showing all records instead.</h3><br>\n";
-      $num_p_r=$_POST['num_p_r'];
-      unset ($_POST);
+      $num_p_r=$_GET['num_p_r'];
+      unset ($_GET);
       ${$pagename}=1;
       unset (${$queryname});
       unset ($_SESSION[$queryname]);
@@ -541,7 +552,7 @@ if ($add && $md!='edit') {
 
    echo "<table border=0 width='75%' align='center'>\n<tr>\n";
    
-   // variable md contains edit/view mode setting.  Propagated as post var to remember state.  md can only be changed as a get variable
+   // variable md contains edit/view mode setting.  Propagated to remember state.  md can only be changed as a get variable
    $modetext="<a href='$PHP_SELF?tablename=$tableinfo->name&amp;md=";
  
    $may_write=may_write($db,$tableinfo->id,false,$USER);
@@ -598,7 +609,7 @@ if ($add && $md!='edit') {
    echo "<tr align='center'>\n";
 
    foreach($Allfields as $nowfield)  {
-      if ($_POST[$nowfield['name']]) {
+      if ($_GET[$nowfield['name']]) {
          $list=$listb['sql']; 
 	 $count=$listb['numrows'];
       }
@@ -606,7 +617,7 @@ if ($add && $md!='edit') {
          $list=$lista;   
          $count=$listb['numrows'];
       }
-      searchfield($db,$tableinfo,$nowfield,$_POST,$jscript);
+      searchfield($db,$tableinfo,$nowfield,$_GET,$jscript);
    }	 
 
    echo "<td style='width: 5%'><input type=\"submit\" name=\"search\" value=\"Search\">&nbsp;";
