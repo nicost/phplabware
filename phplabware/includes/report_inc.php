@@ -40,21 +40,20 @@ function make_xml ($db,$data,$tableinfo) {
  * $output: 1=screen, 2=file
  *
  */
-function make_sheet ($db,$data,$tableinfo,$output,$fieldscomma,$delimiter) {
-   // by also chekcing for the last comma, we reduce the risk of falsely reporting things
-   $fieldscomma.=',';
+function make_sheet ($db,$data,$tableinfo,$output,$fieldscomma,$delimiter,$header=false) {
+   $fields=explode(',', $fieldscomma);
    // some characters will kill nice parsing of our output, so take these guys out:
    $badchars= array ("\n", "\t", "\m", "\r");
-   if ($data[0]) {
+   if (!$header) {
       foreach ($data as $column) {
-         if (false !== strpos($fieldscomma,$column['name'].',')) {
+         if (in_array($column['name'],$fields)) {
             $column['text']=str_replace($badchars,'',$column['text']);
             $out.="{$column['text']}$delimiter";
          }
       }
-   } else { // no id so assume this is a header
+   } else { // This is a header
       foreach ($data as $column) {
-         if (false !== strpos($fieldscomma,$column['name'].',')) {
+         if (in_array($column['name'],$fields)) {
             $out.="{$column['label']}$delimiter";
          }
       }

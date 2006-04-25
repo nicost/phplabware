@@ -111,7 +111,7 @@ if ($_GET['tableview']) {
 
       // read all fields in from the description file
       $fields_table=comma_array_SQL($db,$tableinfo->desname,columnname,"");
-      $fields_table="id,".$fields_table;
+      //$fields_table="id,".$fields_table;
       // prepare the search statement
       $query=make_search_SQL($db,$tableinfo,$fields_table,$USER,$search,$sortstring,$listb["sql"]);
       //$db->debug=true;
@@ -123,10 +123,10 @@ if ($_GET['tableview']) {
          echo "<phplabware_base>\n";
       } elseif ($reportid==-2) { // tab headers
          $Allfields=getvalues($db,$tableinfo,$fields_table);
-         echo make_sheet ($db,$Allfields,$tableinfo,$USER['settings']['reportoutput'],$Fieldscomma, "\t");
+         echo make_sheet ($db,$Allfields,$tableinfo,$USER['settings']['reportoutput'],$Fieldscomma, "\t", true);
       } elseif ($reportid==-3) { // comma headers
          $Allfields=getvalues($db,$tableinfo,$fields_table);
-         echo make_sheet ($db,$Allfields,$tableinfo,$USER['settings']['reportoutput'],$Fieldscomma,',');
+         echo make_sheet ($db,$Allfields,$tableinfo,$USER['settings']['reportoutput'],$Fieldscomma,',', true);
       }
       $counter=1;
       while ($r && !$r->EOF) {
@@ -136,9 +136,9 @@ if ($_GET['tableview']) {
          } elseif ($reportid==-1) {
             echo make_xml ($db,$Allfields,$tableinfo);
          } elseif ($reportid==-2) {
-            echo make_sheet ($db,$Allfields,$tableinfo,$USER['settings']['reportoutput'],$Fieldscomma, "\t");
+            echo make_sheet ($db,$Allfields,$tableinfo,$USER['settings']['reportoutput'],$Fieldscomma, "\t", false);
          } elseif ($reportid==-3) {
-            echo make_sheet ($db,$Allfields,$tableinfo,$USER['settings']['reportoutput'],$Fieldscomma,',');
+            echo make_sheet ($db,$Allfields,$tableinfo,$USER['settings']['reportoutput'],$Fieldscomma,',', false);
          }
          $r->MoveNext();
          $counter++;
