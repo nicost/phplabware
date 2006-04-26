@@ -1262,12 +1262,13 @@ function searchhelp ($db,$tableinfo,$column,&$columnvalues,$query,$wcappend,$and
             if (is_array($id_list)) {
                foreach ($id_list as $list) {
                   if (!$listfound) {
-                     $query[2].="$and {$tableinfo->realname}.id IN ($list) ";
+                     $query[2].="$and ( {$tableinfo->realname}.id IN ($list) ";
                      $listfound=true;
                   }
                   else
-                     $query[2].="AND {$tableinfo->realname}.id IN ($list) ";
+                     $query[2].="OR {$tableinfo->realname}.id IN ($list) ";
                }
+	       $query[2] .= ')';
                // we should not be able to get here:
                if (!$listfound)
                   $query[2].="$and {$tableinfo->realname}.id IN (-1) ";
@@ -1364,21 +1365,7 @@ function search ($db,$tableinfo,$fields,&$fieldvalues,$whereclause=false,$wcappe
          $query=searchhelp ($db,$tableinfo,$column,$columnvalues,$query,$wcappend,$and);
       $column=strtok (',');
    }
-/*
-   while ($column && !$columnvalues[$column])
-      $column=strtok (',');
-   if ($column && $columnvalues[$column]) {
-      $query[5]=true;
-      $query=searchhelp ($db,$tableinfo,$column,$columnvalues,$query,$wcappend,false);
-   }
-   $column=strtok (',');
-   while ($column) { 
-      if ($column && $columnvalues[$column]) {
-         $query=searchhelp ($db,$tableinfo,$column,$columnvalues,$query,$wcappend,"AND");
-      }
-      $column=strtok (',');
-   }
-*/
+
    /*
    * Ugly hack needed here.  Go through the sort string (in whereclause)
    * and if there is there an assist tabel in there, we need to make a left join
