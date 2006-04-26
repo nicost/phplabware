@@ -88,13 +88,9 @@ foreach($_GET as $key => $value) {
             $sortdown=substr($key,9);
       }
       $_GET['search']='Search';
-   // The following is still needed, not sure why
-   } elseif (substr($key,0,4) == 'chg_') {
-      $_GET['mod']=$value;
-   } elseif (substr($key,0,4) == 'mod_') {
-      $_GET['mod']=$value;
    }
 }
+reset($_GET);
 
 
 $post_vars = 'add,md,edit_type,showid,submit,search,searchj,serialsortdirarray';
@@ -105,6 +101,7 @@ if (isset($_POST['subm'])) {
 }
 
 $httptitle .=$tableinfo->label;
+
 
 // this shows a record entry in a new window, called through javascript
 if ($jsnewwindow && $showid && $tableinfo->name) {
@@ -130,6 +127,7 @@ if ($jsnewwindow && $showid && $tableinfo->name) {
    exit();
 }
 
+
 // open a modify window in a new window, called through javascript
 if ($jsnewwindow && $modify) {
    // simply translate a GET variable into a POST variable
@@ -139,7 +137,11 @@ if ($jsnewwindow && $modify) {
       if (substr($key, 0, 4) == 'mod_' && $val=='Modify') {
          $_POST[$key]=$val;
       }
+      if (substr($key, 0, 4) == 'chg_') {
+         $_POST[$key]=$val;
+      }
    }
+   reset($_GET);
 }
 
 // Mode can be changed through a get var and is perpetuated through post vars
@@ -156,26 +158,9 @@ foreach($_POST as $key =>$value) {
       if ($value)
          $_POST[$cname]=find_nested_match($db,$tableinfo,$field,$value);
    }
-   /*
-   // check if sortup or sortdown arrow was been pressed
-   else {
-      if (substr($key,0,6)=='sortup') {
-         // some browsers (like Safari) add '_y' to image links clicked
-         if (substr($key,-2)=='_y')
-            $sortup=substr($key,7,-2);
-         else
-            $sortup=substr($key,7);
-      }
-      if (substr($key,0,8)=='sortdown') {
-         if (substr($key,-2)=='_y')
-            $sortdown=substr($key,9,-2);
-         else
-            $sortdown=substr($key,9);
-      }
-   }
-   */
 } 
 reset ($_POST);
+
 if ($searchj || $sortup || $sortdown || $_POST['next'] || $_POST['previous']) {
    $search='Search';
 }
@@ -190,6 +175,7 @@ if (!may_see_table($db,$USER,$tableinfo->id)) {
    printfooter();
    exit();
 }
+
 // check if something should be modified, deleted or shown
 while((list($key, $val) = each($_POST))) {	
    // display form with information regarding the record to be changed
