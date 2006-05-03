@@ -39,8 +39,7 @@ if (isset($USER['settings']['view']["$tableinfo->name"]))
    $viewid=$USER['settings']['view']["$tableinfo->name"];
 if (isset($_GET['viewid']))
    $viewid=$_GET['viewid'];
-else
-   if (isset($_POST['viewid']))
+elseif (isset($_POST['viewid']))
       $viewid=$_POST['viewid'];
 
 // Activate selected view or default
@@ -54,6 +53,16 @@ if ($viewid) {
    $Fieldscomma=comma_array_SQL($db,$tableinfo->desname,columnname,"WHERE display_table='Y'");
    // release viewid we remembered
    unset($USER['settings']['view']["$tableinfo->name"]);
+}
+
+// some browsers (Safari!!) do not return GET variables from a form using method='GET'
+// but they return them as POST!!!
+// I added the GET variabel copyPOST to the form to try to work around this browser bug
+// this penalizes server execution time for browsers (Firefox) that play fair
+if ($_GET['copyPOST']) {
+   foreach ($_POST as $key => $value) {
+      $_GET[$key] = $value;
+   }
 }
 
 // Activate selected report output or default
@@ -526,9 +535,9 @@ if ($add && $md!='edit') {
    ";
 
    // print form;
-   $dbstring=$PHP_SELF."?"."tablename=$tableinfo->name&";
+   //$dbstring=$PHP_SELF."?"."tablename=$tableinfo->name&";
    $formname='g_form';
-   echo "<form name='$formname' method='get' id='generalform' enctype='multipart/form-data' action='$PHP_SELF?$actionLink'>\n";
+   echo "<form name='$formname' method='GET' id='generalform' enctype='multipart/form-data' action='$PHP_SELF?$actionLink&copyPOST=true'>\n";
 
    echo "<input type='hidden' name='tablename' value='$tableinfo->name'>\n";
    echo "<input type='hidden' name='md' value='$md'>\n";
