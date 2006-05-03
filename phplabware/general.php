@@ -80,24 +80,22 @@ if ($plugin_code)
 $get_vars='tablename,md,showid,edit_type,add,jsnewwindow,modify,search,searchj,serialsortdirarray';
 globalize_vars($get_vars, $_GET);
 
-
 // check if sortup or sortdown arrow was been pressed
 foreach($_GET as $key => $value) {
    if (substr($key,0,6)=='sortup') {
-      if (substr($key,0,6)=='sortup') {
-         // some browsers (like Safari) add '_y' to image links clicked
-         if (substr($key,-2)=='_y')
-            $sortup=substr($key,7,-2);
-         else
-            $sortup=substr($key,7);
-         } elseif (substr($key,0,8)=='sortdown') {
-         if (substr($key,-2)=='_y')
-            $sortdown=substr($key,9,-2);
-         else
-            $sortdown=substr($key,9);
-      }
-      $_GET['search']='Search';
+      // some browsers (like Safari) add '_y' to image links clicked
+      if (substr($key,-2)=='_y')
+         $sortup=substr($key,7,-2);
+      else
+         $sortup=substr($key,7);
+   } elseif (substr($key,0,8)=='sortdown') {
+      if (substr($key,-2)=='_y')
+         $sortdown=substr($key,9,-2);
+      else
+         $sortdown=substr($key,9);
+         echo "<br>Sortdown: $sortdown.<br>";
    }
+   $_GET['search']='Search';
 }
 reset($_GET);
 
