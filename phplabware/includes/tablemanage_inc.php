@@ -511,7 +511,7 @@ function mod_columnjs($db,$id) {
  *
  */
 function mod_report($db,$offset) {
-   global $_POST,$_GET,$HTTP_POST_FILES,$system_settings;
+   global $_POST,$_GET,$_FILES,$system_settings;
 
    $id=$_POST["report_id"][$offset];
    $label=$_POST["report_label"][$offset];
@@ -520,14 +520,14 @@ function mod_report($db,$offset) {
    if (!$sortkey)
       $sortkey="NULL";
    $templatedir=$system_settings["templatedir"];
-   if (isset($HTTP_POST_FILES["report_template"][$offset][0]) && !$templatedir) {
+   if (isset($_FILES["report_template"][$offset][0]) && !$templatedir) {
       echo "<h3 align='center'>Templatedir is not set.  Please correct this first.</h3>";
       exit;
    }
    // Upload file, if any
-   $fileuploaded=move_uploaded_file($HTTP_POST_FILES["report_template"]["tmp_name"][$offset],"$templatedir/$id.tpl");
+   $fileuploaded=move_uploaded_file($_FILES["report_template"]["tmp_name"][$offset],"$templatedir/$id.tpl");
    if ($fileuploaded) {
-      $filesize=$HTTP_POST_FILES["report_template"]["size"][$offset];
+      $filesize=$_FILES["report_template"]["size"][$offset];
       if (!$filesize)
          $filesize="NULL";
    }
@@ -606,7 +606,7 @@ function export_report($db,$offset) {
  *
  */
 function add_report($db) {
-   global $_POST,$HTTP_POST_FILES,$_GET,$system_settings;
+   global $_POST,$_FILES,$_GET,$system_settings;
 
    $id=$db->GenID("reports"."_gen_id_seq");
    $tablename=$_GET["editreport"];
@@ -623,9 +623,9 @@ function add_report($db) {
    if (!$label) {
       return "<h3 align='center'>Please provide a template name!</h3>\n";
    }
-   $fileuploaded=move_uploaded_file($HTTP_POST_FILES["addrep_template"]["tmp_name"],"$templatedir/$id.tpl");
+   $fileuploaded=move_uploaded_file($_FILES["addrep_template"]["tmp_name"],"$templatedir/$id.tpl");
    if ($fileuploaded) 
-      $filesize=$HTTP_POST_FILES["addrep_template"]["size"];
+      $filesize=$_FILES["addrep_template"]["size"];
    if (!$filesize)
       $filesize="NULL";
    $db->Execute("INSERT INTO reports (id,label,tableid,sortkey,filesize) VALUES ($id,'$label',$tableid,$sortkey,$filesize)");

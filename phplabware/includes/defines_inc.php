@@ -28,7 +28,7 @@ $SUPER=64;
 $URL_LOGIN=1;
 
 // the following is needed in most scripts
-$PHP_SELF=$HTTP_SERVER_VARS['PHP_SELF'];
+$PHP_SELF=$_SERVER['PHP_SELF'];
 
 // minimum password length
 $PWD_MINIMUM=4;
