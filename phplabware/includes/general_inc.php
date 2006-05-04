@@ -708,10 +708,10 @@ function show_reports($db,$tableinfo,$recordid=false,$viewid=false) {
          $menu.="Send to:\n";
          if (!(isset($USER['settings']['reportoutput'])) || $USER['settings']['reportoutput']==1)
              $checked='checked';
-         $menu.="<input type='radio' name='reportoutput' $checked value='1' onChange='document.g_form.submit();'>screen\n";
+         $menu.="<input type='radio' name='reportoutput' $checked value='1' onClick='document.g_form.submit();'>screen\n";
          if ($USER['settings']['reportoutput']==2)
              $checked2='checked';
-         $menu.="<input type='radio' name='reportoutput' $checked2 value='2' onChange='document.g_form.submit();'>file\n";
+         $menu.="<input type='radio' name='reportoutput' $checked2 value='2' onClick='document.g_form.submit();'>file\n";
 
          $menu.= "<a href='editreports.php?tablename={$tableinfo->htmlname}'>Edit reports</a>\n";
 
