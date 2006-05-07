@@ -21,6 +21,9 @@ if (!file_exists('./includes/config_inc.php')) {
 }
 include ('./includes/config_inc.php');
 include ('./includes/defines_inc.php');
+if (!file_exists('./adodb/adodb.inc.php')) {
+   die ("Adodb can not be found.  Please download version $adodb_version_required or greater from <a href='http://adodb.sourceforge.net'>adodb.sourceforge.net</a>.");
+}
 include ('./adodb/adodb.inc.php');
 $adodb_version=(float)substr($ADODB_vers,1);
 $adodb_version_required=3.50;
@@ -45,6 +48,18 @@ if ($set_local) {
 
 // we want associative arrays from the database
 $ADODB_FETCH_MODE=ADODB_FETCH_DEFAULT;
+
+// test whether php has compiled in support for this database:
+switch ($db_type) {
+case 'postgres':
+case 'postgres7':
+case 'postgres8':
+   if (!function_exists('pg_connect')) {
+      die ('Your version of php does not have support for postgres build in.  You will need this to use Postgres as your database server.  Recompile php with postgres support or download a version that support Postgres or use another database server');
+   }
+   break;
+}
+
 
 // test whether the database exists
 $db=NewADOConnection($db_type);
