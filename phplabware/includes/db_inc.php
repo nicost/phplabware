@@ -601,11 +601,19 @@ function get_files ($db,$table,$id,$columnid,$format=1,$thumbtype='small') {
 	    $text="file_$i";
 	 else
 	    $text=$filesname;
-         //$text.="<br>\n";
          $icon="icons/$filestype.jpg";
-         if (@is_readable($icon))
+         if (@is_readable($icon)) {
             $text="<img src='$icon' alt='$filestype File'>";
-         $files[$i]['link']="<a href='showfile.php?id=$filesid&amp;$sid'>$text</a>\n";
+            // display the filename in tooltip only when there is an icon and javascript is enabled
+            if ($_SESSION['javascript_enabled']) {
+               $tip_width=strlen($filesname);
+               $files[$i]['link']="<a href='showfile.php?id=$filesid&amp;$sid' onmouseover=\"this.T_WIDTH=$tip_width;return escape('$filesname')\">$text</a>\n";
+            } else {
+               $files[$i]['link']="<a href='showfile.php?id=$filesid&amp;$sid'>$text</a>\n";
+            }
+         } else {
+            $files[$i]['link']="<a href='showfile.php?id=$filesid&amp;$sid'>$text</a>\n";
+         }
          $r->MoveNext();
          $i++;
       }
