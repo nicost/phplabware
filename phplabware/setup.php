@@ -12,7 +12,7 @@
   *  option) any later version.                                              *
   \**************************************************************************/                                                                             
 
-$version_code=0.5;
+$version_code=0.6;
 $localdir=exec('pwd');
 include ('./includes/functions_inc.php');
 if (!file_exists('./includes/config_inc.php')) {
@@ -54,7 +54,7 @@ switch ($db_type) {
 case 'postgres':
 case 'postgres7':
 case 'postgres8':
-   if (!function_exists('pg_connect')) {
+   if (!function_exists('pg_CONNECT')) {
       die ('Your version of php does not have support for postgres build in.  You will need this to use Postgres as your database server.  Recompile php with postgres support or download a version that support Postgres or use another database server');
    }
    break;
