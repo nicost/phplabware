@@ -208,7 +208,7 @@ function display_table_change($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr
    while (!($r->EOF) && $r && $current_record < $last_record)  {
       // Get required ID and title
       $id=$r->fields['id'];
-      $title=$r->fields['title'];		
+      $title=get_cell($db, $tableinfo->realname,'title','id',$r->fields['id']);		
       $Allfields=getvalues($db,$tableinfo,$Fieldscomma,id,$id);
       $may_write=may_write($db,$tableinfo->id,$id,$USER);
 
@@ -409,7 +409,7 @@ function display_table_info($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr_c
    while (!($r->EOF) && $r && ($current_record < $last_record) )  {
       // Get required ID and title
       $id=$r->fields['id'];
-      $title=$r->fields['title'];		
+      $title=get_cell($db, $tableinfo->realname,'title','id',$r->fields['id']);		
       $Allfields=getvalues($db,$tableinfo,$Fieldscomma,id,$id);
       // print start of row of selected group
       if ($current_record % 2) echo "<tr class='row_odd' align='center'>\n";
