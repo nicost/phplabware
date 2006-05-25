@@ -444,7 +444,9 @@ if ($add && $md!='edit') {
       // if search is not set, we want to restore the search statement to the last time the user visited this page.  Restore the relevant settings in $_POST from $_SESSION:
       if (is_array($_SESSION[$fieldvarsname])) {
          foreach ($_SESSION[$fieldvarsname] as $key => $value) {
-            $_GET[$key]=$value;
+            if (($key != 'next') && ($key != 'previous')) {
+               $_GET[$key]=$value;
+            }
          }
       }
       $serialsortdirarray=$_GET['serialsortdirarray'];
