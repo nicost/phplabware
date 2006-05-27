@@ -982,7 +982,7 @@ function make_temp_table ($db,$temptable,$r) {
 function may_read ($db,$tableinfo,$id,$USER) {
    $list=may_read_SQL($db,$tableinfo,$USER);
    // we use the temptable only for non-mysql databases:
-  if ($db_type=='mysql') {
+  if ($db->databaseType=='mysql') {
       $query="SELECT id FROM $tableinfo->realname WHERE ".$list['sql'];
    } else {
       $query="SELECT id FROM tempa,$tableinfo->realname WHERE ".$list['sql'];
