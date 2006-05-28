@@ -253,37 +253,37 @@ if ($editfield)	{
          echo "<td><input type='text' name='column_label_$id' value='$label' size='10' onchange='tellServer(\"$dbstring\", $id, this.name, this.value)'></td>\n";
          echo "<td><input type='text' name='column_sort_$id' value='$sort' size='5' onchange='tellServer(\"$dbstring\",$id, this.name, this.value)'></td>\n";
          if ($display_table=='Y') {
-            echo "<td><input type='radio' name='column_dtable_$id' value='Y' CHECKED onchange='tellServer(\"$dbstring\",$id, this.name, this.value)'>yes";
-            echo "<input type='radio' name='column_dtable_$id' value='N' onchange='tellServer(\"$dbstring\",$id, this.name, this.value)'>no</td>\n";
+            echo "<td><input type='radio' name='column_dtable_$id' value='Y' CHECKED onclick='tellServer(\"$dbstring\",$id, this.name, this.value)'>yes";
+            echo "<input type='radio' name='column_dtable_$id' value='N' onclick='tellServer(\"$dbstring\",$id, this.name, this.value)'>no</td>\n";
 	      } else {
-            echo "<td><input type='radio' name='column_dtable_$id' value='Y' onchange='tellServer(\"$dbstring\",$id, this.name, this.value)'>yes";
-            echo" <input type='radio' name='column_dtable_$id' value='N' CHECKED onchange='tellServer(\"$dbstring\",$id, this.name, this.value)'>no</td>";
+            echo "<td><input type='radio' name='column_dtable_$id' value='Y' onclick='tellServer(\"$dbstring\",$id, this.name, this.value)'>yes";
+            echo" <input type='radio' name='column_dtable_$id' value='N' CHECKED onclick='tellServer(\"$dbstring\",$id, this.name, this.value)'>no</td>";
          }
          if ($display_record=='Y') {
-            echo "<td><input type='radio' name='column_drecord_$id' value='Y' onchange='tellServer(\"$dbstring\",$id, this.name, this.value)' CHECKED>yes";
-            echo" <input type='radio' name='column_drecord_$id' value='N' onchange='tellServer(\"$dbstring\",$id, this.name, this.value)'> no </td>\n";
+            echo "<td><input type='radio' name='column_drecord_$id' value='Y' onclick='tellServer(\"$dbstring\",$id, this.name, this.value)' CHECKED>yes";
+            echo" <input type='radio' name='column_drecord_$id' value='N' onclick='tellServer(\"$dbstring\",$id, this.name, this.value)'> no </td>\n";
          } else {
-            echo "<td><input type='radio' name='column_drecord_$id' value='Y' onchange='tellServer(\"$dbstring\",$id, this.name, this.value)'>yes";
-            echo" <input type='radio' name='column_drecord_$id' checked value='N' onchange='tellServer(\"$dbstring\",$id, this.name, this.value)'> no </td>\n";
+            echo "<td><input type='radio' name='column_drecord_$id' value='Y' onclick='tellServer(\"$dbstring\",$id, this.name, this.value)'>yes";
+            echo" <input type='radio' name='column_drecord_$id' checked value='N' onclick='tellServer(\"$dbstring\",$id, this.name, this.value)'> no </td>\n";
          }
 	  	
          if($display_required=='Y') {
-            echo "<td><input type='radio' name='column_required_$id' value='Y' onchange='tellServer(\"$dbstring\",$id, this.name, this.value)' CHECKED>yes";
-            echo" <input type='radio' name='column_required_$id' value='N' onchange='tellServer(\"$dbstring\",$id, this.name, this.value)'> no </td>\n";
+            echo "<td><input type='radio' name='column_required_$id' value='Y' onclick='tellServer(\"$dbstring\",$id, this.name, this.value)' CHECKED>yes";
+            echo" <input type='radio' name='column_required_$id' value='N' onclick='tellServer(\"$dbstring\",$id, this.name, this.value)'> no </td>\n";
         } else {
-            echo "<td><input type='radio' name='column_required_$id' value='Y' onchange='tellServer(\"$dbstring\",$id, this.name, this.value)'>yes";
-            echo" <input type='radio' name='column_required_$id' checked value='N' onchange='tellServer(\"$dbstring\",$id, this.name, this.value)'> no </td>\n";
+            echo "<td><input type='radio' name='column_required_$id' value='Y' onclick='tellServer(\"$dbstring\",$id, this.name, this.value)'>yes";
+            echo" <input type='radio' name='column_required_$id' checked value='N' onclick='tellServer(\"$dbstring\",$id, this.name, this.value)'> no </td>\n";
         }
 	  	 		
         if (in_array($columnname,$nomodifiable))
            echo "<td>no</td>\n";
         elseif($modifiable=='Y') {
-           echo "<td><input type='radio' name='column_modifiable_$id' value='Y' onchange='tellServer(\"$dbstring\",$id, this.name, this.value)' CHECKED>yes";
-           echo" <input type='radio' name='column_modifiable_$id' value='N' onchange='tellServer(\"$dbstring\",$id, this.name, this.value)'> no </td>\n";
+           echo "<td><input type='radio' name='column_modifiable_$id' value='Y' onclick='tellServer(\"$dbstring\",$id, this.name, this.value)' CHECKED>yes";
+           echo" <input type='radio' name='column_modifiable_$id' value='N' onclick='tellServer(\"$dbstring\",$id, this.name, this.value)'> no </td>\n";
         }
         else {
-           echo "<td><input type='radio' name='column_modifiable_$id' value='Y' onchange='tellServer(\"$dbstring\",$id, this.name, this.value)'>yes";
-           echo" <input type='radio' name='column_modifiable_$id' checked value='N' onchange='tellServer(\"$dbstring\",$id, this.name, this.value)'> no </td>\n";
+           echo "<td><input type='radio' name='column_modifiable_$id' value='Y' onclick='tellServer(\"$dbstring\",$id, this.name, this.value)'>yes";
+           echo" <input type='radio' name='column_modifiable_$id' checked value='N' onclick='tellServer(\"$dbstring\",$id, this.name, this.value)'> no </td>\n";
         }
 	  	 		
         echo "<input type='hidden' name='column_datatype_$id' value='$label'>\n";
