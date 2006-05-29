@@ -93,7 +93,6 @@ foreach($_GET as $key => $value) {
          $sortdown=substr($key,9,-2);
       else
          $sortdown=substr($key,9);
-         echo "<br>Sortdown: $sortdown.<br>";
    }
    // also check if the del button was pressed:
    if (substr($key,0,4)=='del_') {
