@@ -62,6 +62,7 @@ if ($use_sessions) {
    if (function_exists ('session_cache_limiter'))
       session_cache_limiter('private');
    session_start();
+   //print_r($_SESSION);
 
    // If we have PHP_AUTH_USER in the session, this user is authenticated 
    $PHP_AUTH_USER = $_SESSION['PHP_AUTH_USER'];
@@ -74,17 +75,17 @@ if ($use_sessions) {
       } elseif (isset($system_settings['direct_login'])) {
          $PHP_AUTH_USER=$_GET['user'];
          if ($PHP_AUTH_USER) {
-				// we'll only continue if this user is allowed to do URL based logins 
-				$permissions2=get_cell($db,'users','permissions2','login',$PHP_AUTH_USER); 
-				if (! ($permissions2 & $URL_LOGIN) ) {
+             // we'll only continue if this user is allowed to do URL based logins 
+             $permissions2=get_cell($db,'users','permissions2','login',$PHP_AUTH_USER); 
+             if (! ($permissions2 & $URL_LOGIN) ) {
 		//echo "$permissions2 $URL_LOGIN";
-				// delay to discourage brute force cracks
-				usleep(500000);
-				$PHP_AUTH_USER = false;
-				loginscreen("<h4>Your credentials were not accepted, Please try again</h4>");
-				exit();
-				}
-         $PHP_AUTH_PW=$_GET['pwd'];
+                // delay to discourage brute force cracks
+                usleep(500000);
+                $PHP_AUTH_USER = false;
+                loginscreen("<h4>Your credentials were not accepted, Please try again</h4>");
+                exit();
+            }
+            $PHP_AUTH_PW=$_GET['pwd'];
          }
       }
 
@@ -117,17 +118,17 @@ if ($use_sessions) {
  
          // if authenticated, this session is OK:
          if ($auth) {
+            session_register('javascript_enabled');
             if ($_SESSION['javascript_enabled'] || ($_POST['javascript_enabled'] || $_GET['javascript_enabled']))
                $_SESSION['javascript_enabled']=true;
             else
                $_SESSION['javascript_enabled']=false;
-            session_register('javascript_enabled');
             if (!$authmethod)
                $authmethod='sql';
-            $_SESSION['authmethod']=$authmethod;
             session_register ('authmethod');
-            $_SESSION['PHP_AUTH_USER']=$PHP_AUTH_USER;
+            $_SESSION['authmethod']=$authmethod;
             session_register ('PHP_AUTH_USER');
+            $_SESSION['PHP_AUTH_USER']=$PHP_AUTH_USER;
             // when the login was secure but user does not wanna stay secure
             if (getenv('HTTPS') && !$_POST['ssl']) {
                // send meta tag redirecting to http page and exit
