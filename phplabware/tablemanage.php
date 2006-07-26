@@ -35,8 +35,6 @@ while((list($key, $val) = each($_POST))) {
    }
 }
 reset($_POST);
-//print_r($_SESSION);
-//print_r($_POST);
 
 // when editing columns of a table include this javascript file:
 if (isset($editfield)) {
@@ -114,9 +112,9 @@ while((list($key, $val) = each($_POST))) {
    elseif (substr($key, 0, 9) == 'delcolumn') { 
       $modarray = explode("_", $key);
       $tablename=$_POST['table_name'];
-      $id=$_POST['column_id'][$modarray[1]]; 
-      $colname=$_POST['column_name'][$modarray[1]];
-      $datatype=$_POST['column_datatype'][$modarray[1]];
+      $id=$_POST['column_id_'.$modarray[1]]; 
+      $colname=$_POST['column_name_'.$modarray[1]];
+      $datatype=$_POST['column_datatype_'.$modarray[1]];
       rm_columnecg($db,$tablename,$id,$colname,$datatype);
       break;
    } elseif (substr($key, 0, 11) == 'alinkcolumn') { 
@@ -212,7 +210,7 @@ if ($editfield)	{
    echo "<td>&nbsp;</td>\n";
    echo "<td align='center'><input type='submit' name='addcolumn' value='Add'></td></tr>\n\n";
    
-   $query = "SELECT id,sortkey,columnname,label,display_table,display_record,required,datatype,thumb_x_size,associated_table,associated_column,associated_local_key,link_first,modifiable FROM $currdesc order by sortkey,label";
+   $query = "SELECT id,sortkey,columnname,label,display_table,display_record,required,datatype,thumb_x_size,associated_table,associated_column,associated_local_key,link_first,link_last,modifiable FROM $currdesc order by sortkey,label";
    $r=$db->Execute($query);
    $rownr=0;
    // print all entries
@@ -227,6 +225,7 @@ if ($editfield)	{
       $thumbsize=$r->fields['thumb_x_size'];
       $modifiable = $r->fields['modifiable'];
       $link_first = $r->fields['link_first'];
+      $link_last = $r->fields['link_last'];
       $sort = $r->fields['sortkey'];
       unset ($ass_table);
       unset($ass_column);
@@ -303,16 +302,16 @@ if ($editfield)	{
         else
            echo "<td>&nbsp;</td>\n";
         if ($link_first)
-           echo "<td>Y</td>\n";
+           echo "<td>$link_first &nbsp;<i>content</i>&nbsp; $link_last</td>\n";
         else
-           echo "<td>N</td>\n";
+           echo "<td>&nbsp;</td>\n";
         $modstring = "<input type='submit' name='modcolumn"."_$id' value='Modify'>\n";
         if ($datatype=="image") {
            $alinkstring = "<input type='hidden' name='thumbsize"."_$id' value='$thumbsize'>\n";
            $alinkstring.="<input type='submit' name='modcolumn"."_$id' value='Thumbnail size' Onclick='var temp=window.prompt(\"Please enter the maximum thumbnail size (in pixels):\",\"$thumbsize\");if (temp) {document.tableform.thumbsize"."_$id.value=temp} else {return false}; return true;' >\n";
         } else
 	        $alinkstring = "<input type='submit' name='alinkcolumn"."_$id' value='Active Link'>\n";
-        $delstring = "<input type='submit' name='delcolumn"."_$rownr' value='Remove' ";
+        $delstring = "<input type='submit' name='delcolumn"."_$id' value='Remove' ";
         $delstring .= "Onclick=\"if(confirm('Are you absolutely sure that the column $label should be removed? (No undo possible!)')){return true;}return false;\">";  
 
    	  echo "<td align='center'>";
