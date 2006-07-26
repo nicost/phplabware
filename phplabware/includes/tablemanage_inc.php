@@ -758,8 +758,8 @@ function show_table_column_page ($db,$table_name,$addcol_name,$addcol_label) {
    echo "<h3 align='center'>Choose Table and column to be associated with column <i>$addcol_label</i> in table <i>$table_name</i>.</h3>\n";
    echo "<table align='center' cellpadding='2' cellspacing='0'>\n";
    echo "<tr><th>Table</th>\n<th>Column</th><th>&nbsp;</th></tr>\n";
-   $r->MoveFirst();
-   echo "<tr><td>".$r->GetMenu2("table_select","",true,false,0,$jscript)."</td>\n";
+   $rm=$db->Execute("SELECT tablename,id FROM tableoftables WHERE permission='Users' AND tablename <> 'settings' AND tablename <> '$table_name'  AND table_desc_name IS NOT NULL ORDER BY sortkey");
+   echo "<tr><td>".$rm->GetMenu2("table_select","",true,false,0,$jscript)."</td>\n";
    echo "<td><select name='table_column_select'></select></td>\n";
    echo "</tr>\n";
    $_GET['tablename']=$table_name;
