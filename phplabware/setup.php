@@ -13,6 +13,7 @@
   \**************************************************************************/                                                                             
 
 $version_code=0.6;
+$adodb_version_required=3.50;
 $localdir=exec('pwd');
 include ('./includes/functions_inc.php');
 if (!file_exists('./includes/config_inc.php')) {
@@ -26,7 +27,6 @@ if (!file_exists('./adodb/adodb.inc.php')) {
 }
 include ('./adodb/adodb.inc.php');
 $adodb_version=(float)substr($ADODB_vers,1);
-$adodb_version_required=3.50;
 if ($adodb_version<$adodb_version_required) {
    echo "The adodb version you are using ($adodb_version) is too old.  Please download version $adodb_version_required or greater from <a href='http://adodb.sourceforge.net'>adodb.sourceforge.net</a>.";
    exit();
