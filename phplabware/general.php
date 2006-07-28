@@ -376,7 +376,6 @@ if ($add && $md!='edit') {
       $modfields=comma_array_SQL_where($db,$tableinfo->desname,"columnname","modifiable","Y");
       // The pdf plugin wants to modify fields that have been set to modifiable=='N'
       if (! (check_g_data($db,$_POST,$tableinfo,true) && 
-             // modify($db,$tableinfo->realname,$tableinfo->fields,$_POST,$_POST['id'],$USER,$tableinfo->id)) ) {
              modify($db,$tableinfo->realname,$modfields,$_POST,$_POST['id'],$USER,$tableinfo->id)) ) {
          add_g_form ($db,$tableinfo,$_POST,$_POST['id'],$USER,$PHP_SELF,$system_settings);
          printfooter ();
@@ -540,12 +539,12 @@ if ($add && $md!='edit') {
    // print form;
    //$dbstring=$PHP_SELF."?"."tablename=$tableinfo->name&";
    $formname='g_form';
-   echo "<form name='$formname' method='GET' id='generalform' enctype='multipart/form-data' action='$PHP_SELF?$actionLink&copyPOST=true'>\n";
+   echo "<form name='$formname' method='GET' id='generalform' enctype='multipart/form-data' action='$PHP_SELF?$actionLink&amp;copyPOST=true'>\n";
 
    echo "<input type='hidden' name='tablename' value='$tableinfo->name'>\n";
    echo "<input type='hidden' name='md' value='$md'>\n";
 
-   echo "<table border=0 width='75%' align='center'>\n<tr>\n";
+   echo "<table border='0' width='75%' align='center'>\n<tr>\n";
    
    // variable md contains edit/view mode setting.  Propagated to remember state.  md can only be changed as a get variable
    $modetext="<a href='$PHP_SELF?tablename=$tableinfo->name&amp;md=";
@@ -554,7 +553,7 @@ if ($add && $md!='edit') {
    if ($md=='edit') {
       $tabletext='Now Editing Table: ';
       if ($may_write)
-         $modetext.="view&".SID."'>(to view mode)</a>\n";
+         $modetext.="view&amp;".SID."'>(to view mode)</a>\n";
       else
          $modetext="";
    }
