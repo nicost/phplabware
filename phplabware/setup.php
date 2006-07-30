@@ -12,7 +12,7 @@
   *  option) any later version.                                              *
   \**************************************************************************/                                                                             
 
-$version_code=0.6;
+$version_code=0.61;
 $adodb_version_required=3.50;
 $localdir=exec('pwd');
 include ('./includes/functions_inc.php');
