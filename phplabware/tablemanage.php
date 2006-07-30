@@ -485,7 +485,7 @@ while (!($r->EOF) && $r) {
    if ($Custom=="") {
       echo "<td align='center'>$modstring $delstring</td>\n";
       echo "<td><a href='$PHP_SELF?editfield=$name&'>Edit Fields</td></a>";
-      echo "<td><a href='$PHP_SELF?editreport=$name&'>Edit Reports</td></a>";
+      echo "<td><a href='editreports.php?tablename=$name'>Edit Reports</td></a>";
    }
    else
       echo "<td align='center'>$modstring</td><td></td>";
