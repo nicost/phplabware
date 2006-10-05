@@ -37,7 +37,11 @@ if (!($permissions & $SUPER)) {
  * Make sure  this user is allowed to work with the desired table
  */
 if (isset($tableid)) {
-   $query = "SELECT label,id FROM tableoftables LEFT JOIN groupxtable_display on tableoftables.id=groupxtable_display.tableid where display='Y' AND permission='Users' AND groupid={$USER['group_array'][0]} and tableoftables.id=$tableid ";
+   $query = "SELECT label,id FROM tableoftables LEFT JOIN groupxtable_display on tableoftables.id=groupxtable_display.tableid where display='Y' AND permission='Users' AND tableoftables.id=$tableid AND (groupid={$USER['group_array'][0]} ";
+   for ($i=1;$i<sizeof($USER['group_array']);$i++) { 
+      $query.="OR groupid='".$USER['group_array'][$i]."' ";
+   }
+   $query.=')';
    $r=$db->Execute($query);
    if (!$r->fields[0]) {
       navbar($USER['permissions']);
@@ -443,12 +447,14 @@ if ($_POST['assign']=='Import Data') {
             // First figure out if such a record already exists
 	    $first = true;
 	    $primaryKeyLine = '';
-	    foreach($pkey AS $j) {
-	       if (!$first) 
-		  $primaryKeyLine .= ' AND ';
-	       $primaryKeyLine.= "$to_fields[$j]='$fields[$j]' ";
-	       $first=false;
-	    } 
+	    if ($pkey) {
+	       foreach($pkey AS $j) {
+		  if (!$first) 
+		     $primaryKeyLine .= ' AND ';
+		  $primaryKeyLine.= "$to_fields[$j]='$fields[$j]' ";
+		  $first=false;
+	       } 
+	    }
 	    // Go through 
 
             if (isset($primaryKeyLine)) {
