@@ -705,7 +705,11 @@ echo "<td align='center'> <table><tr>
    <td><input type='radio' name='quote_type' value='none' checked> none</td></tr>
    <tr><td>&nbsp;</td></tr>
    </table></td>\n";
-$r=$db->Execute("SELECT label,id FROM tableoftables LEFT JOIN groupxtable_display on tableoftables.id=groupxtable_display.tableid where display='Y' AND permission='Users' AND groupid={$USER['group_array'][0]} ORDER BY sortkey");
+$query= "SELECT label,id FROM tableoftables LEFT JOIN groupxtable_display on tableoftables.id=groupxtable_display.tableid where display='Y' AND permission='Users' AND (groupid={$USER['group_array'][0]} ";
+for ($i=1;$i<sizeof($USER['group_array']);$i++) { 
+   $query.="OR groupid='".$USER['group_array'][$i]."' ";
+}
+$query.= ') ORDER BY sortkey)';
 $menu=$r->GetMenu2('tableid',$tableid);
 echo "<td>$menu</td>\n";
 
