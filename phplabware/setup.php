@@ -12,7 +12,7 @@
   *  option) any later version.                                              *
   \**************************************************************************/                                                                             
 
-$version_code=0.61;
+$version_code=0.62;
 $adodb_version_required=3.50;
 $localdir=exec('pwd');
 include ('./includes/functions_inc.php');
@@ -233,13 +233,17 @@ if ($version) {
       if ($version<0.3002) {
          // add table construct
          // if the table exists already, we do not want to create it again
-         if (!get_cell($db,"tableoftables","id","tablename",'constructs'))  {
+         if (!get_cell($db,'tableoftables','id','tablename','constructs'))  {
             include ("./dd/0_3002_inc.php");
          }
       }
       if ($version<0.41) {
          // Add column permissions2 to table users
          $db->Execute('ALTER TABLE users ADD COLUMN permissions2 int;');
+      }
+      if ($version<0.62) {
+         // Add table usersettings, to enable tying user settings to the IP address they are coming from (useful for 'open' guest accounts)
+            include ("./dd/0_6200_inc.php");
       }
 
       $query="UPDATE settings SET version='$version_code' WHERE id=1";
