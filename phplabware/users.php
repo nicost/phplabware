@@ -20,7 +20,7 @@ $userfields ='id,login,firstname,lastname,pwd,groupid,permissions,permissions2,e
 require('./include.php');
 
 // register variables
-$post_vars = 'email,id,firstname,lastname,login,me,modify,perms,perms2,pwd,pwdcheck,user_group,user_add_groups,';
+$post_vars = 'email,id,firstname,lastname,login,me,modify,perms,perms2,perms3,pwd,pwdcheck,user_group,user_add_groups,';
 $post_vars .= 'create,user_add,';
 
 if (!$type)
@@ -129,7 +129,7 @@ function delete_user ($db, $id) {
  * can be called to create (type=create) or modify (type=modify) other users or oneselves (type=me) 
  */
 function modify ($db, $type) {
-   global $_POST, $USER, $perms, $perms2,  $post_vars;
+   global $_POST, $USER, $perms, $perms2, $perms3, $post_vars;
 
    // quote all bad characters:
    foreach ($_POST as $key=>$value) {
@@ -158,6 +158,11 @@ function modify ($db, $type) {
          $permissions2=$permissions2 | $perms2[$i];
    if (!$permissions2)
       $permissions2=0;
+   if($perms3)
+      for ($i=0; $i<sizeof($perms3); $i++)
+         $permissions3=$permissions3 | $perms3[$i];
+   if (!$permissions3)
+      $permissions3=0;
 
    // include here, to avoid being overwritten by post_vars 
    include ('./includes/defines_inc.php');
@@ -279,6 +284,9 @@ function show_user_form ($type) {
       for ($i=0; $i<sizeof($perms2); $i++)
          $permissions2=$permissions2 | $perms2[$i];
 
+   if($perms3)
+      for ($i=0; $i<sizeof($perms3); $i++)
+         $permissions3=$permissions3 | $perms3[$i];
    if (!$groupid) $groupid = $USER['groupid'];
 
    // check whether this is not illegitimate
@@ -425,6 +433,15 @@ function show_user_form ($type) {
          }
          echo "<tr><td>Allow URL-based login:</td>\n";
          echo "<td><input type='checkbox' name='perms2[]' value='$URL_LOGIN' $checked></td></tr>\n";
+      }
+      if ($USER['permissions'] & $SUPER) {
+         if ($permissions2 & $IP_SETTINGS) {
+            $checked = ' checked';
+         } else {
+            $checked = '';
+         }
+         echo "<tr><td>Tie database history to IP used</td>\n";
+         echo "<td><input type='checkbox' name='perms2[]' value='$IP_SETTINGS' $checked></td></tr>\n";
       }
    }
     

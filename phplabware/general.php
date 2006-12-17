@@ -47,12 +47,13 @@ if ($viewid) {
    // get list from preferences in table tableviews
    $Fieldscomma=viewlist($db,$tableinfo,$viewid); 
    // write viewid back to user preferences
-   $USER['settings']['view']["$tableinfo->name"]=$viewid;
+   $USER['settings']['view'][$tableinfo->name]=$viewid;
 } else {
    // read all fields in from the description file
    $Fieldscomma=comma_array_SQL($db,$tableinfo->desname,columnname,"WHERE display_table='Y'");
    // release viewid we remembered
-   unset($USER['settings']['view']["$tableinfo->name"]);
+   if (isset($USER['settings']['view'][$tableinfo->name]))
+      unset($USER['settings']['view'][$tableinfo->name]);
 }
 
 // some browsers (Safari!!) do not return GET variables from a form using method='GET'
