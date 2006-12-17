@@ -613,8 +613,22 @@ function printfooter($db=false,$USER=false) {
 </HTML>
 
 <?php
-   if ($db && $USER["settings"])
-      $db->Execute("UPDATE users SET settings='".serialize($USER["settings"])."'
-       WHERE id=".$USER["id"]);
+   include ('./includes/defines_inc.php');
+   if ($db && $USER['settings']) {
+      if ($USER['permissions2'] & $IP_SETTINGS) {
+         $ip=$_SERVER['REMOTE_ADDR'];
+         $ip=explode('.',$ip);
+         $r=$db->Execute("SELECT id FROM usersettings WHERE userid={$USER['id']} AND ip0={$ip[0]} AND ip1={$ip[1]} AND ip2={$ip[2]} AND ip3={$ip[3]}");
+         if (!$r->fields[0]) {
+            $id=$db->GenID('usersettings_gen_id_seq');
+            $db->Execute("INSERT INTO usersettings (id,userid,ip0,ip1,ip2,ip3,settings) VALUES ($id,{$USER['id']},{$ip[0]},{$ip[1]},{$ip[2]},{$ip[3]}, '" . serialize($USER['settings']) . "') ");
+         } else {
+            $db->Execute("UPDATE usersettings SET settings = '".serialize($USER['settings']) ."'  WHERE id={$r->fields[0]}");
+         }
+      } else {
+         $db->Execute("UPDATE users SET settings='".serialize($USER["settings"])."'
+          WHERE id=".$USER["id"]);
+      }
+   }
 }
 ?>

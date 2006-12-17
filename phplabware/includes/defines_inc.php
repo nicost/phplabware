@@ -26,6 +26,7 @@ $SUPER=64;
 // defines permission2
 // These values are not related, i.e., they are not compared in $USER['permissions2'], but rather used as a simple method to store binary settings
 $URL_LOGIN=1;
+$IP_SETTINGS=2;
 
 // the following is needed in most scripts
 $PHP_SELF=$_SERVER['PHP_SELF'];
