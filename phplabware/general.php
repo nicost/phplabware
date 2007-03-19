@@ -548,9 +548,11 @@ if ($add && $md!='edit') {
    echo "<table border='0' width='75%' align='center'>\n<tr>\n";
    
    // variable md contains edit/view mode setting.  Propagated to remember state.  md can only be changed as a get variable
-   $modetext="<a href='$PHP_SELF?tablename=$tableinfo->name&amp;md=";
- 
    $may_write=may_write($db,$tableinfo->id,false,$USER);
+
+   if ($may_write)
+      $modetext="<a href='$PHP_SELF?tablename=$tableinfo->name&amp;md=";
+ 
    if ($md=='edit') {
       $tabletext='Now Editing Table: ';
       if ($may_write)
@@ -560,7 +562,8 @@ if ($add && $md!='edit') {
    }
    else {
       $tabletext='Now Viewing Table: ';
-      $modetext.="edit'>(to edit mode)</a>\n";
+      if ($may_write)
+         $modetext.="edit'>(to edit mode)</a>\n";
    }
    // write the first line shown in table view 
    if ($may_write) {

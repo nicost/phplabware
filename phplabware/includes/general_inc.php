@@ -183,7 +183,10 @@ function viewmenu($db, $tableinfo,$viewid,$useronly=1,$jscript='OnChange="docume
    }
    if ($viewid)
       $viewidtext="&amp;viewid=$viewid";
-   $viewname.="<a href='views.php?tablename={$tableinfo->name}$viewidtext'>Edit views</a>";
+   include ('./includes/defines_inc.php');
+   if ($USER['permissions'] >= $WRITE) {
+      $viewname.="<a href='views.php?tablename={$tableinfo->name}$viewidtext'>Edit views</a>";
+   }
 
    return $viewname;
 }
