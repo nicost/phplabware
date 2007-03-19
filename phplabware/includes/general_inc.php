@@ -660,10 +660,9 @@ function make_link($id,$DBNAME) {
  * When one is chosen, open the formatted record in a new window
  */
 function show_reports($db,$tableinfo,$recordid=false,$viewid=false) {
-   global $USER;
-//echo "$viewid.<br>";
+   global $USER, $WRITE;
+
    $r=$db->Execute("SELECT id,label FROM reports WHERE tableid=".$tableinfo->id);
-   //if ($r && !$r->EOF) {
    if ($r) {
       if ($recordid) {
          $menu="<tr><th>Report:</th>\n";
@@ -716,7 +715,9 @@ function show_reports($db,$tableinfo,$recordid=false,$viewid=false) {
              $checked2='checked';
          $menu.="<input type='radio' name='reportoutput' $checked2 value='2' onClick='document.g_form.submit();'>file\n";
 
-         $menu.= "<a href='editreports.php?tablename={$tableinfo->htmlname}'>Edit reports</a>\n";
+         if ($USER['permissions'] >= $WRITE) {
+            $menu.= "<a href='editreports.php?tablename={$tableinfo->htmlname}'>Edit reports</a>\n";
+         }
 
          $menu.="</td>\n";
       }
