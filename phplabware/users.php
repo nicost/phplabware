@@ -304,13 +304,15 @@ function show_user_form ($type) {
    echo "<input type='hidden' name='id' value='$id'>\n";
    echo "<table align='center'>\n";
 
-   echo "<tr><td>First name:</td>\n";
-   echo "<td><input type='text' name='firstname' maxlength=50 size=25 value=\"$firstname\"></td></tr>\n";
-   echo "<tr><td>Last name:</td>\n";
-   echo "<td><input type='text' name='lastname' maxlength=50 size=25 value=\"$lastname\"><sup style='color:red'>&nbsp(required)</sup></td></tr>\n";
-   echo "<tr><td>Email Address:</td><td><input type='text' name='email' maxlength=150 size=25 value=\"$email\"></td></tr>\n";
+   if ($USER['permissions'] >= $WRITE) {
+      echo "<tr><td>First name:</td>\n";
+      echo "<td><input type='text' name='firstname' maxlength=50 size=25 value=\"$firstname\"></td></tr>\n";
+      echo "<tr><td>Last name:</td>\n";
+      echo "<td><input type='text' name='lastname' maxlength=50 size=25 value=\"$lastname\"><sup style='color:red'>&nbsp(required)</sup></td></tr>\n";
+      echo "<tr><td>Email Address:</td><td><input type='text' name='email' maxlength=150 size=25 value=\"$email\"></td></tr>\n";
+   }
 
-   if ($type == 'create')
+      if ($type == 'create')
       echo "<tr><td>Login Name (max. 20 characters):</td><td><input type='text' name='login' maxlength=20 size=20 value=\"$login\"><sup style='color:red'>&nbsp(required)</sup></td></tr>\n";
    else {
       echo "<tr><td>Login Name: </td><td>$login\n";
