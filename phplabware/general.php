@@ -577,7 +577,8 @@ if ($add && $md!='edit') {
    }
    echo "<td align='center'>$tabletext <B>$tableinfo->label</B> $modetext</td>";
    echo "<td align='center'>".viewmenu($db,$tableinfo,$viewid,false)."</td>\n";
-   echo "<td align='center'><a href='import.php?tableid={$tableinfo->id}'>Import Data</a></td>\n";
+   if ($may_write)
+      echo "<td align='center'><a href='import.php?tableid={$tableinfo->id}'>Import Data</a></td>\n";
    echo "</tr>\n</table>\n";
    next_previous_buttons($rp,true,$num_p_r,$numrows,${$pagename},$db,$tableinfo,$viewid);
 
