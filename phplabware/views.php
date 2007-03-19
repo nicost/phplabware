@@ -23,6 +23,12 @@ require('./includes/report_inc.php');
 printheader($httptitle);
 navbar($USER['permissions']);
 
+if ($USER['permissions'] < $WRITE) {
+   echo "<h4 align='center'>You do not have sufficient priveleges to create or edit views</h4>\n";
+   printfooter();
+   exit;
+}
+
 if (isset ($_POST['tablename']))
    $_GET['tablename']=$_POST['tablename'];
 $tableinfo=new tableinfo($db);
