@@ -709,7 +709,8 @@ $query= "SELECT label,id FROM tableoftables LEFT JOIN groupxtable_display on tab
 for ($i=1;$i<sizeof($USER['group_array']);$i++) { 
    $query.="OR groupid='".$USER['group_array'][$i]."' ";
 }
-$query.= ') ORDER BY sortkey)';
+$query.= ') ORDER BY sortkey';
+$r=$db->Execute($query);
 $menu=$r->GetMenu2('tableid',$tableid);
 echo "<td>$menu</td>\n";
 
