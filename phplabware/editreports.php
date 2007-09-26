@@ -21,11 +21,14 @@ require('./includes/general_inc.php');
 require('./includes/tablemanage_inc.php');
 include_once ('./includes/defines_inc.php');
 
-$editreport=$_GET['editreport'];
-$editreport=true;
+//$editreport=$_GET['editreport'];
+//$editreport=true;
+$get_vars='tablename,editreport,table_id';
 $post_vars='table_id,tablename';
 globalize_vars($post_vars, $_POST);
-globalize_vars($post_vars, $_GET);
+globalize_vars($get_vars, $_GET);
+if (!$editreport)
+   $editreport=$tablename;
 
 // this needs to be done before headers are sent in printheader
 while((list($key, $val) = each($_POST))) {
