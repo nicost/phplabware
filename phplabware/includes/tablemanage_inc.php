@@ -553,13 +553,12 @@ function rm_report($db,$offset) {
 
 /**
  * *
- *  Deletes an entry for a report
+ *  return a single entry for a report
  *
  */
 function test_report($db,$offset,$tablename) {
    global $_POST,$_GET,$system_settings;
-   $_GET["tablename"]=$tablename;
-
+   $_GET['tablename']=$tablename;
    $tableinfo=new tableinfo($db);
    $real_tablename=get_cell($db,"tableoftables","real_tablename","tablename",$tablename);
    $reportid=$_POST["report_id"][$offset];

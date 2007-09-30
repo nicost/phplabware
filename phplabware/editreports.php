@@ -106,11 +106,11 @@ echo "<th>Action</th>\n";
 echo "</tr>\n";
 
 // New addition
-echo "<input type='hidden' name='table_name' value='$editreport'>\n";
+echo "<input type='hidden' name='tablename' value='$editreport'>\n";
 echo "<tr align='center' >\n";
 echo "<td><input type='text' name='addrep_label' value='' size='10'></td>\n";
 echo "<td><input type='text' name='addrep_sortkey' value='' size='5'></td>\n";
-echo "<td><input type='file' name='addrep_template'</td>\n";
+echo "<td><input type='file' name='addrep_template'></td>\n";
 echo "<td>&nbsp;</td>\n";
 echo "<td align='center'><input type='submit' name='addreport' value='Add'></td></tr>\n\n";
 
