@@ -29,6 +29,8 @@ globalize_vars($post_vars, $_POST);
 globalize_vars($get_vars, $_GET);
 if (!$editreport)
    $editreport=$tablename;
+if (!$tablename)
+   $tablename=$editreport;
 
 // this needs to be done before headers are sent in printheader
 while((list($key, $val) = each($_POST))) {

@@ -53,7 +53,7 @@ function plugin_getvalues($db,&$allfields,$id)
    if (!$id)
       return false;
    for ($i=0; $i<sizeof($allfields); $i++) {
-      if ($allfields[$i]["name"]=="ipnumber") {
+      if ($allfields[$i]["name"]=="mipnumber") {
          $ipnumber=$allfields[$i]["values"];
          $ipoffset=$i;
       }
@@ -64,7 +64,7 @@ function plugin_getvalues($db,&$allfields,$id)
    $resultcode=true;
    $ipnumber=$allfields[$ipoffset]["values"];
    if ($ipnumber) 
-       $result=exec("ping -c 1 -w 1 $ipnumber",$dummy,$resultcode);
+       $result=exec("ping -c 1 -i 0.2 -w 1 $ipnumber",$dummy,$resultcode);
    
    if (!$resultcode)
       $allfields[$onlineoffset]["text"]="<b>Online</b>";

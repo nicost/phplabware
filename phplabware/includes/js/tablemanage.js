@@ -33,6 +33,7 @@ function fillSelectFromArray(selectCtrl, itemArray) {
    }
 }
 
+// part of code enabling dynamic editing of dropdown menus
 function displayResponse() {
    // Server has responded when we get readyState=4
    if (http.readyState == 4) {
