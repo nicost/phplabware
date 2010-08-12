@@ -920,7 +920,8 @@ function display_add($db,$tableinfo,$Allfields,$id,$namein,$system_settings) {
       echo "<input type='hidden' name='subm' value=''>\n";
       // echo "<input type='button' name='sub' value='$value' onclick='document.subform.subm.value=\"$value\"; document.subform.submit(); window.opener.document.g_form.search.value=\"Search\"; window.opener.document.g_form.submit(); window.opener.focus(); self.close();'>\n";
       echo "<input type='button' name='sub' value='$value' onclick='document.subform.subm.value=\"$value\"; document.subform.submit();'>\n";
-      echo "<input type='button' name='Close' onclick='self.close(); window.opener.focus();' value='Cancel'>\n";
+      //echo "<input type='button' name='Close' onclick='self.close(); window.opener.focus();' value='Cancel'>\n";
+      echo "<input type='button' name='Close' onclick='document.subform.submit();' value='Cancel'>\n";
    }
    else {
       echo "<input type='submit' name='submit' value='$value'>\n";
