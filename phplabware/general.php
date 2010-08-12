@@ -12,6 +12,7 @@
   *  as published by the Free Software Foundation                            *
   \**************************************************************************/
 
+
 /// main include thingies
 require('./include.php');
 require('./includes/db_inc.php');
@@ -29,7 +30,6 @@ if (!$tableinfo->id) {
    printfooter();
    exit();
 }
-
 
 $tableinfo->queryname=$queryname=$tableinfo->short.'_query';
 $tableinfo->pagename=$pagename=$tableinfo->short.'_curr_page';
@@ -58,7 +58,7 @@ if ($viewid) {
 
 // some browsers (Safari!!) do not return GET variables from a form using method='GET'
 // but they return them as POST!!!
-// I added the GET variabel copyPOST to the form to try to work around this browser bug
+// I added the GET variable copyPOST to the form to try to work around this browser bug
 // this penalizes server execution time for browsers (Firefox) that play fair
 if ($_GET['copyPOST']) {
    foreach ($_POST as $key => $value) {
@@ -315,6 +315,8 @@ if ($showid && !$jsnewwindow) {
    exit();
 }
 
+
+
 // when the 'Add' button has been chosen: 
 if ($add && $md!='edit') {
    add_g_form($db,$tableinfo,$field_values,0,$USER,$PHP_SELF,$system_settings);
@@ -570,7 +572,8 @@ if ($add && $md!='edit') {
       if ($md=='edit') {
          echo "<td align='center'><a href='$PHP_SELF?add=Add&amp;tablename=$tableinfo->name&amp;md=edit&amp;".SID."'>Add Record</a></td>\n"; 
       } else {
-         echo "<td align='center'><a href='$PHP_SELF?add=Add&amp;tablename=$tableinfo->name&amp;".SID."' target='_blank'>Add Record</a></td>\n"; 
+         //echo "<td align='center'><a href='$PHP_SELF?add=Add&amp;tablename=$tableinfo->name&amp;".SID."' target='_blank'>Add Record</a></td>\n"; 
+         echo "<td align='center'><a href='$PHP_SELF?add=Add&amp;tablename=$tableinfo->name&amp;".SID."'>Add Record</a></td>\n"; 
       }
    } else {
        echo "<td>&nbsp;</td>\n";
