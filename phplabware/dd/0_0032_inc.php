@@ -34,7 +34,7 @@ while (!$r->EOF) {
       $rd=$db->Execute("SELECT id,label FROM $table_desc_name");
       while (!$rd->EOF) {
          $db->Execute("UPDATE $table_desc_name SET columnname='".$rd->fields["label"]."' WHERE id='".$rd->fields["id"]."'");
-         $rd->MoveNExt();
+         $rd->MoveNext();
       }
    }
    $r->MoveNext();
