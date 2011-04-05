@@ -953,7 +953,7 @@ function getvalues($db,$tableinfo,$fields,$qfield=false,$field=false)
       }
    }
 
-   $columns=split(',',$fields);
+   $columns=preg_split('/,/',$fields);
    $Allfields=array();
    foreach ($columns as $column) {
       if($column!='id') {

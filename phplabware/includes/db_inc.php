@@ -1387,7 +1387,7 @@ function search ($db,$tableinfo,$fields,&$fieldvalues,$whereclause=false,$wcappe
    */
    if ($whereclause) {
       // figure out if there assist tables in the ORDER By part
-      $words=split(' ',$whereclause);
+      $words=preg_split('/ /',$whereclause);
       $counter=0;
       foreach ($words as $word) {
          $parts=explode('_',$word);
