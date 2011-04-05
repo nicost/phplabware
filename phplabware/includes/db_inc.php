@@ -1578,7 +1578,7 @@ function current_page($curr_page, $sname, $num_p_r, $numrows) {
    if ($$varname<1)
       $$varname=1;
    $_SESSION[$varname]=${$varname}; 
-   session_register($varname);
+   //session_register($varname);
    return ${$varname};
 }
 
@@ -1617,11 +1617,11 @@ function make_search_SQL($db,$tableinfo,$fields,$USER,$search,$searchsort,$where
       ${$fieldvarsname}=$_GET;
    }
    $_SESSION[$queryname]=${$queryname};   
-   session_register($queryname);
+   //session_register($queryname);
    if (!${$fieldvarsname})
       ${$fieldvarsname}=$_GET;
    $_SESSION[$fieldvarsname]=${$fieldvarsname};   
-   session_register($fieldvarsname);
+   //session_register($fieldvarsname);
 
    if ($search !='Show All') {
       // globalize _GET 

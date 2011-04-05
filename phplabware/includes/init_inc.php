@@ -14,7 +14,8 @@
   \**************************************************************************/ 
 
 // set php parameters here
-set_magic_quotes_runtime(0); // seems to interfere with system settings
+ini_set('magic_quotes_runtime', 0);
+// set_magic_quotes_runtime(0); // seems to interfere with system settings
 
 
 function strip_magic_quotes( &$arr )
