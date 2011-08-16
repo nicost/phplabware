@@ -116,7 +116,7 @@ function searchfield ($db,$tableinfo,$nowfield,$_POST,$jscript) {
       $rpull=$db->Execute("SELECT typeshort,id from $nowfield[ass_t] ORDER by sortkey,type");
       if ($rpull)
          if ($nowfield['datatype']=='mpulldown')
-            $text=$rpull->GetMenu2("$nowfield[name]",${$nowfield[name]},false,true,0,"style='width: 80%' align='left'");   
+            $text=$rpull->GetMenu2("$nowfield[name]",${$nowfield[name]},false,true,10,"style='width: 100%' align='left'");   
          else 
             $text=$rpull->GetMenu2("$nowfield[name]",${$nowfield[name]},true,false,0,"style='width: 80%' $jscript");   
       else
