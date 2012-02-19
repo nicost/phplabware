@@ -364,7 +364,7 @@ function show_user_form ($type) {
          $r->MoveNext();
       }
       $r = $db->Execute("SELECT name,id FROM groups");
-      echo $r->GetMenu2("user_add_groups[]",$add_groups,true,true,3);
+      echo $r->GetMenu2("user_add_groups[]",$add_groups,true,true,10);
       echo "</td>\n</tr>";
    } else {
       // hidden value.  Needs to be inside table to be w3c compliant
