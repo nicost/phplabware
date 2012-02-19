@@ -26,8 +26,13 @@ if (!$USER['permissions'] & $SUPER) {
 }
 
 $filename=$_GET['filename'];
-if (!isset($filename))
-   $filename=$_FILES['filename']['tmp_name'];
+if (!isset($filename)) {
+   if (strlen($_FILES['filename']['tmp_name']) > 0) {
+      $filename=$system_settings["tmpdir"]."/".'restore' . $_FILES['filename']['name'];
+      if (! move_uploaded_file($_FILES['filename']['tmp_name'],$filename))
+         echo "Failed to move file";
+   }
+}
 
 if (!$filename) {
    echo "<table align='center'>\n";
@@ -43,7 +48,14 @@ if (!$filename) {
 }
 
 if (@is_readable($filename)) {
-   include ($filename);
+   echo "Parsing file $filename<br>";
+   //p = file(filename);
+   //print_r(p);
+  // echo "Saw anything???)";
+   
+   // Not sure why, but this does not work!
+   include($filename);
+
    if (isset($newtablename))
       echo "<br><h3 align='center'>Created the table: <a href='general.php?tablename=$newtablename'><b>$newtablelabel</b></a></h3>.<br>\n";
    else
