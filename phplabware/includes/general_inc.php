@@ -765,6 +765,9 @@ function display_add($db,$tableinfo,$Allfields,$id,$namein,$system_settings) {
          }
          if ($nowfield['modifiable']!='Y' && $nowfield['datatype']!='sequence') {
             echo "<input type='hidden' name='$nowfield[name]' value='$nowfield[values]'>\n";
+            if (function_exists('plugin_modify_seq')) {
+               $nowfield['text'] = plugin_modify_seq($db,$tableinfo->id,$nowfield);
+            }
             if ($nowfield['text'] && $nowfield['text']!='' && $nowfield['text']!=' ') {
                echo "<tr><th>{$nowfield['label']}:</th>"; 
                echo "<td>{$nowfield['text']}";
@@ -794,6 +797,9 @@ function display_add($db,$tableinfo,$Allfields,$id,$namein,$system_settings) {
              // find the highest sequence and return that plus one
              $rmax=$db->Execute("SELECT MAX(${nowfield['name']}) AS ${nowfield['name']} FROM ".$tableinfo->realname);
              $newseq=$rmax->fields[0]+1;
+             if (function_exists('plugin_modify_seq')) {
+                  $newseq = plugin_modify_seq($db,$tableinfo->id,$nowfield);
+             }
           }
           else
              $newseq=$nowfield['text'];
@@ -1225,12 +1231,15 @@ function set_default($db,$tableinfo,$Fieldscomma,$USER,$system_settings) {
       // For sequences, provide the next available number
       if ($nowfield['datatype']=='sequence') {
          $rmax=$db->Execute("SELECT MAX(${nowfield['name']}) AS ${nowfield['name']} FROM ".$tableinfo->realname);
-	 $fields[$nowfield['name']]=$rmax->fields[0]+1;
+         $fields[$nowfield['name']]=$rmax->fields[0]+1;
+         if (function_exists('plugin_modify_seq')) {
+            $fields[$nowfield['name']] = plugin_modify_seq($db,$tableinfo->id,$nowfield);
+         }
       } elseif (in_array($nowfield['name'], array('gr','gw','er','ew'))) {
          $fields[$nowfield['name']]=get_access(false,$nowfield['name']);
       } else {
-	 // here we pick up values we got from the plugin code
-	 $fields[$nowfield['name']]=$nowfield['values'];
+         // here we pick up values we got from the plugin code
+         $fields[$nowfield['name']]=$nowfield['values'];
       }
 
       // For required fields, we simply enter the field name, or 0 for numerics
