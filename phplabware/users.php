@@ -607,22 +607,22 @@ else {
       // for each row, print result in table cells
 
       // display admin dot if status of user is admin
-      for ($i=0;$i<4;$i++)
+      for ($i=0;$i<5;$i++)
          $stat[$i] = "&nbsp;";
       if ($r->fields["permissions"] & $TABLECREATOR) {
          $stat[0] = "<li>&nbsp;";
       }
       if ($r->fields["permissions"] & $ADMIN) {
-         $stat[0] = "<li>&nbsp;";
+         $stat[1] = "<li>&nbsp;";
       }
       if ($r->fields["permissions"] & $WRITE) {
-         $stat[1] = "<li>&nbsp;";
-      }   
-      if ($r->fields["permissions"] & $READ) {
          $stat[2] = "<li>&nbsp;";
       }   
+      if ($r->fields["permissions"] & $READ) {
+         $stat[3] = "<li>&nbsp;";
+      }   
       if ($r->fields["permissions"] & $ACTIVE) {
-         $stat[3] = "<li>&nbsp";
+         $stat[4] = "<li>&nbsp";
       }
  
       // print table output per row
@@ -640,15 +640,15 @@ else {
 	    $ra->MoveNext();
          }
       echo "</td>\n";
-      for ($i=0;$i<4;$i++)
+      for ($i=0;$i<5;$i++)
          echo "<td align=\"center\">$stat[$i]</td>\n";
 
       if ($r->fields["createddate"])
          $createddate=date($dateformat,$r->fields["createddate"]);
       else
          $createddate="&nbsp;";
-	 
       echo "<td>$createddate</td>\n";
+
       if ($r->fields["moddate"])
          $moddate=date($dateformat,$r->fields["moddate"]);
       else
