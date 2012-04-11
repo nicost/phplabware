@@ -364,6 +364,8 @@ function navbar($permissions) {
          $systemmenu.="   <option value='users.php$SID'>users</option>\n";
       if ($permissions & $SUPER) {
          $systemmenu.="   <option value='groups.php$SID'>groups</option>\n";
+      }
+      if ($permissions & $SUPER || ($permissions & $TABLECREATOR) ) {
          $systemmenu.="   <option value=''>-------</option>\n";
          $systemmenu.="   <option value='tablemanage.php$SID'>table design</option>\n";
          $systemmenu.="   <option value='restoretable.php$SID'>import table</option>\n";
@@ -371,7 +373,11 @@ function navbar($permissions) {
          $systemmenu.="   <option value='import.php$SID'>import data</option>\n";
          $systemmenu.="   <option value='dumpcontent.php$SID'>export data</option>\n";
          $systemmenu.="   <option value=''>-------</option>\n";
+      }
+      if ($permissions & $SUPER) {
          $systemmenu.="   <option value='linkbar.php$SID'>linkbar</option>\n";
+      }
+      if ($permissions & $SUPER) {
          $systemmenu.="   <option value='setup.php$SID'>setup</option>\n";
       }
       if ($permissions) {

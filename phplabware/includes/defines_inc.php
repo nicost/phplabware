@@ -22,6 +22,8 @@ $EDIT=8;
 $LAYOUT=16;
 $ADMIN=32;
 $SUPER=64;
+// for backward compatibility, this needs to be higher
+$TABLECREATOR=128;
 
 // defines permission2
 // These values are not related, i.e., they are not compared in $USER['permissions2'], but rather used as a simple method to store binary settings

@@ -1012,7 +1012,7 @@ function may_write ($db,$tableid,$id,$USER) {
    include ('./includes/defines_inc.php');
    
    $table=get_cell($db,'tableoftables','real_tablename','id',$tableid);
-   if ($USER['permissions'] & $SUPER)
+   if ( ($USER['permissions'] & $SUPER) || ($USER['permissions'] & $TABLECREATOR) )
       return true;
    if ( ($USER['permissions'] & $WRITE) && (!$id))
       return true;
@@ -1648,7 +1648,7 @@ function make_search_SQL($db,$tableinfo,$fields,$USER,$search,$searchsort,$where
 function may_see_table($db,$USER,$tableid) {
    include ('./includes/defines_inc.php');
    // Sysadmin may see it all
-   if ($USER['permissions'] & $SUPER)
+   if ( ($USER['permissions'] & $SUPER) || ($USER['permissions'] && $TABLECREATOR) )
       return true;
    $group_list=$USER['group_list'];
    $r=$db->Execute ("SELECT tableid FROM groupxtable_display WHERE groupid IN ($group_list) AND tableid='$tableid'");

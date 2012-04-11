@@ -394,6 +394,12 @@ function show_user_form ($type) {
    if ( ($type=='modify' || $type=='create') && 
         ($USER['permissions'] & $ADMIN) ) {
       if ($USER['permissions'] & $SUPER) {
+         echo "<tr><td>Create tables:</td>\n";
+         if ($permissions & $TABLECREATOR)
+            $checked = 'checked';
+         else
+            $checked = '';
+         echo "<td><input type='checkbox' name='perms[]' value='$TABLECREATOR' $checked></td></tr>\n";
          echo "<tr><td>Group-Admin:</td>\n";
          if ($permissions & $ADMIN)
             $checked = 'checked';
@@ -583,6 +589,7 @@ else {
    echo "<th>Real Name</th>\n";
    echo "<th>Primary<br>Group</th>\n";
    echo "<th>Additional<br>Groups</th>\n";
+   echo "<th>Table Creator</th>\n";
    echo "<th>Admin</th>\n";
    echo "<th>Write</th>\n";
    echo "<th>Read</th>\n";
@@ -602,6 +609,9 @@ else {
       // display admin dot if status of user is admin
       for ($i=0;$i<4;$i++)
          $stat[$i] = "&nbsp;";
+      if ($r->fields["permissions"] & $TABLECREATOR) {
+         $stat[0] = "<li>&nbsp;";
+      }
       if ($r->fields["permissions"] & $ADMIN) {
          $stat[0] = "<li>&nbsp;";
       }

@@ -50,7 +50,7 @@ if (!isset($_POST['jsrequest'])) {
    printheader($httptitle,false,$jsfiles);
 } 
 
-if (!($permissions & $SUPER)) {
+if (!( ($permissions & $SUPER) || ($permissions & $TABLECREATOR) )) {
 	navbar($USER['permissions']);
 	echo "<h3 align='center'><b>Sorry, this page is not for you</B></h3>";
 	printfooter($db,$USER);
@@ -326,7 +326,7 @@ if ($editfield)	{
                 $candel=0;
             }
          }
-         if ($candel==1)
+         if ($candel==1 && ($permissions & $SUPER) )
             echo "$delstring</td>\n";
          echo "</tr>\n";
       }
@@ -397,7 +397,8 @@ elseif ($editreport)	{
       $teststring = "<input type='submit' name='testreport"."_$rownr' value='Test'>\n";
       $delstring = "<input type='submit' name='delreport"."_$rownr' value='Remove' ";
       $delstring .= "Onclick=\"if(confirm('Are you absolutely sure that the report ".$rp->fields["label"] ." should be removed? (No undo possible!)')){return true;}return false;\">";  
-      echo "<td>$modstring &nbsp;\n$delstring &nbsp;\n$exportstring &nbsp;\n$teststring</td>\n";
+      echo "<td>$modstring &nbsp;\n";
+      echo "$delstring &nbsp;\n$exportstring &nbsp;\n$teststring</td>\n";
       echo "</tr>\n";
       $rp->MoveNext();
       $rownr++;
@@ -482,6 +483,8 @@ while (!($r->EOF) && $r) {
    $modstring = "<input type='submit' name='modtable"."_$rownr' value='Modify'>";
    $delstring = "<input type='submit' name='deltable"."_$rownr' value='Remove' ";
    $delstring .= "Onclick=\"if(confirm('Are you absolutely sure the table $name should be removed? (No Undo possible!)')){return true;}return false;\">";  
+   if (! ($permissions & $SUPER))
+      $delstring = "";
    if ($Custom=="") {
       echo "<td align='center'>$modstring $delstring</td>\n";
       echo "<td><a href='$PHP_SELF?editfield=$name&'>Edit Fields</td></a>";
