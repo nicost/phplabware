@@ -66,8 +66,9 @@ else {  // and this is a file
    header('Connection: close');
    header("Content-Type: $mime");
    header("Content-Length: $filesize");
+   header("Content-Description: File Transfer");
    //header("Content-Disposition-type: attachment");
-   //header("Content-Disposition: attachment; filename=$filename");
+   header("Content-Disposition: inline; filename=\"$filename\"");
    readfile("$filedir/$id"."_".$filename);   
 }
 ?>
