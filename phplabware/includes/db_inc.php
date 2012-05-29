@@ -407,6 +407,8 @@ function process_image($db,$fileid,$bigsize)
 {
    global $USER, $system_settings;
    
+   if (!$bigsize)
+      $bigsize = 300;
    if (!$fileid)
       return false;
    $imagefile=file_path ($db,$fileid);
@@ -419,12 +421,58 @@ function process_image($db,$fileid,$bigsize)
    $convert=$system_settings['convert'];
 
    // make big thumbnail and get image info
-   $command = "$convert -verbose -sample ".$bigsize."x".$bigsize." $action \"$imagefile\" jpg:$bigthumb";
-   exec($command, $result_str_arr, $status);
+   if (extension_loaded('gd') || extension_loaded('gd2')) {
+      //Get Image size info
+      list($width_orig, $height_orig, $image_type) = getimagesize($imagefile);
+   
+      switch ($image_type)
+      {
+        case 1: $im = imagecreatefromgif($imagefile); break;
+        case 2: $im = imagecreatefromjpeg($imagefile);  break;
+        case 3: $im = imagecreatefrompng($imagefile); break;
+        default:  ;  break;
+      } 
+      /*** calculate the aspect ratio ***/
+      $aspect_ratio = (float) $height_orig / $width_orig;
+
+      /*** calulate the thumbnail width based on the height ***/
+      $thumb_height = round($bigsize * $aspect_ratio);
+
+      $newImg = imagecreatetruecolor($bigsize, $thumb_height);
+      imagecopyresampled($newImg, $im, 0, 0, 0, 0, $bigsize, $thumb_height, $width_orig, $height_orig);
+      imagejpeg($newImg, $bigthumb);
+
+   } else {
+      $command = "$convert -verbose -sample ".$bigsize."x".$bigsize." $action \"$imagefile\" jpg:$bigthumb";
+      exec($command, $result_str_arr, $status);
+   }
 
    // make small thumbnail
-   $command = "$convert -sample ".$smallsize."x".$smallsize." $action \"$imagefile\" jpg:$smallthumb";
-   `$command`;
+   if (extension_loaded('gd') || extension_loaded('gd2')) {
+      //Get Image size info
+      list($width_orig, $height_orig, $image_type) = getimagesize($imagefile);
+   
+      switch ($image_type)
+      {
+        case 1: $im = imagecreatefromgif($imagefile); break;
+        case 2: $im = imagecreatefromjpeg($imagefile);  break;
+        case 3: $im = imagecreatefrompng($imagefile); break;
+        default:  ;  break;
+      } 
+      /*** calculate the aspect ratio ***/
+      $aspect_ratio = (float) $height_orig / $width_orig;
+
+      /*** calulate the thumbnail width based on the height ***/
+      $thumb_height = round($smallsize * $aspect_ratio);
+
+      $newImg = imagecreatetruecolor($smallsize, $thumb_height);
+      imagecopyresampled($newImg, $im, 0, 0, 0, 0, $smallsize, $thumb_height, $width_orig, $height_orig);
+      imagejpeg($newImg, $smallthumb);
+
+   } else {
+      $command = "$convert -sample ".$smallsize."x".$smallsize." $action \"$imagefile\" jpg:$smallthumb";
+      `$command`;
+   }
 
    // get size, mime, and type from image file.  
    // Try exif function, if that fails use convert 
