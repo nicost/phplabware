@@ -51,7 +51,7 @@ if ($type=='small' || $type=='big') {   // this is an image
    if (@is_readable($thumb)) {
       header('Accept-Ranges: bytes');
       header('Connection: close');
-      header('Content-Type: image/jpg');
+      header('Content-Type: image/jpeg');
       readfile($thumb);   
    }
    else
@@ -66,8 +66,8 @@ else {  // and this is a file
    header('Connection: close');
    header("Content-Type: $mime");
    header("Content-Length: $filesize");
-   header("Content-Disposition-type: attachment");
-   header("Content-Disposition: attachment; filename=$filename");
+   //header("Content-Disposition-type: attachment");
+   //header("Content-Disposition: attachment; filename=$filename");
    readfile("$filedir/$id"."_".$filename);   
 }
 ?>
