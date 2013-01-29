@@ -440,7 +440,6 @@ if ($add && $md!='edit') {
       ${$pagename}=1;
       unset ($_SESSION[$queryname]);
       unset ($serialsortdirarray);
-      session_unregister($queryname);
    } elseif ($search!='Search') {
       // if search is not set, we want to restore the search statement to the last time the user visited this page.  Restore the relevant settings in $_POST from $_SESSION:
       if (is_array($_SESSION[$fieldvarsname])) {
@@ -491,7 +490,7 @@ if ($add && $md!='edit') {
       unset ($_SESSION[$queryname]);
       unset ($serialsortdirarray);
       unset ($sortstring);
-      session_unregister($queryname);
+      //session_unregister($queryname);
       ${$queryname}=make_search_SQL($db,$tableinfo,$fields_table,$USER,$search,$sortstring,$listb['sql']);
       $r=$db->Execute(${$queryname});
 
