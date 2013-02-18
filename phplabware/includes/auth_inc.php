@@ -131,16 +131,13 @@ if ($use_sessions) {
  
          // if authenticated, this session is OK:
          if ($auth) {
-            session_register('javascript_enabled');
             if ($_SESSION['javascript_enabled'] || ($_POST['javascript_enabled'] || $_GET['javascript_enabled']))
                $_SESSION['javascript_enabled']=true;
             else
                $_SESSION['javascript_enabled']=false;
             if (!$authmethod)
                $authmethod='sql';
-            session_register ('authmethod');
             $_SESSION['authmethod']=$authmethod;
-            session_register ('PHP_AUTH_USER');
             $_SESSION['PHP_AUTH_USER']=$PHP_AUTH_USER;
             // when the login was secure but user does not wanna stay secure
             if (getenv('HTTPS') && !$_POST['ssl']) {
