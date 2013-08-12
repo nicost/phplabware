@@ -60,7 +60,7 @@ if ($viewid) {
 // but they return them as POST!!!
 // I added the GET variable copyPOST to the form to try to work around this browser bug
 // this penalizes server execution time for browsers (Firefox) that play fair
-if ($_GET['copyPOST']) {
+if (array_key_exists('copyPOST', $_GET) && $_GET['copyPOST']) {
    foreach ($_POST as $key => $value) {
       $_GET[$key] = $value;
    }
@@ -80,6 +80,7 @@ if ($plugin_code)
 // register variables
 $get_vars='tablename,md,showid,edit_type,add,jsnewwindow,modify,search,searchj,serialsortdirarray';
 globalize_vars($get_vars, $_GET);
+
 
 // check if sortup or sortdown arrow was been pressed
 foreach($_GET as $key => $value) {
@@ -156,7 +157,7 @@ if ($jsnewwindow && $modify) {
 }
 
 // Mode can be changed through a get var and is perpetuated through post vars
-if ($_GET['md'])
+if (array_key_exists('md', $_GET) && $_GET['md'])
    $md=$_GET['md'];
 
 foreach($_POST as $key =>$value) {
@@ -172,7 +173,7 @@ foreach($_POST as $key =>$value) {
 } 
 reset ($_POST);
 
-if ($searchj || $sortup || $sortdown || $_POST['next'] || $_POST['previous']) {
+if ($searchj || isset($sortup) || isset($sortdown) || array_key_exists('next', $_POST) || array_key_exists('previous', $_POST)) {
    $search='Search';
 }
 
@@ -330,7 +331,7 @@ if ($add && $md!='edit') {
       
    } 
     // first handle addition of a new record
-   if ($submit == 'Add Record') {
+   if (isset($submit) && $submit == 'Add Record') {
       if (!(check_g_data($db, $_POST, $tableinfo) && 
             $id=add($db,$tableinfo->realname,$tableinfo->fields,$_POST,$USER,$tableinfo->id) ) ) {
          add_g_form($db,$tableinfo,$_POST,0,$USER,$PHP_SELF,$system_settings);
@@ -375,7 +376,7 @@ if ($add && $md!='edit') {
       }
    }
    // then look whether it should be modified
-   elseif ($submit=='Modify Record') {
+   elseif (isset($submit) && $submit=='Modify Record') {
       $modfields=comma_array_SQL_where($db,$tableinfo->desname,"columnname","modifiable","Y");
       // The pdf plugin wants to modify fields that have been set to modifiable=='N'
       if (! (check_g_data($db,$_POST,$tableinfo,true) && 
@@ -416,7 +417,7 @@ if ($add && $md!='edit') {
          unset ($_POST);
       }
    } 
-   elseif ($submit=='Cancel')
+   elseif (isset($submit) && $submit=='Cancel')
       // to not interfere with search form 
       unset ($_POST);
    // or deleted
@@ -454,7 +455,8 @@ if ($add && $md!='edit') {
    }
    $column=strtok($tableinfo->fields,',');
    while ($column) {
-      ${$column}=$_GET[$column];
+       if (array_key_exists($column, $_GET))
+          ${$column}=$_GET[$column];
       $column=strtok(",");
    }
  

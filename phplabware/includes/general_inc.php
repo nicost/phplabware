@@ -80,7 +80,8 @@ function searchfield ($db,$tableinfo,$nowfield,$_POST,$jscript) {
    $LAYOUT=16;
    $column=strtok($tableinfo->fields,",");
    while ($column) {
-      ${$column}=$_POST[$column];
+      if (array_key_exists($column, $_POST))
+         ${$column}=$_POST[$column];
       $column=strtok(",");
    }
    if ($nowfield['datatype']== 'link')
@@ -413,7 +414,7 @@ function display_table_info($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr_c
       // Get required ID and title
       $id=$r->fields['id'];
       $title=get_cell($db, $tableinfo->realname,'title','id',$r->fields['id']);		
-      $Allfields=getvalues($db,$tableinfo,$Fieldscomma,id,$id);
+      $Allfields=getvalues($db,$tableinfo,$Fieldscomma,'id',$id);
       // print start of row of selected group
       if ($current_record % 2) echo "<tr class='row_odd' align='center'>\n";
          else echo "<tr class='row_even' align='center'>\n";
@@ -427,7 +428,7 @@ function display_table_info($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr_c
             $nowfield['fileids']=$nowfield['nested']['fileids'];
          }
          // display the contents 
-         if ($nowfield['link'])
+         if (array_key_exists('link', $nowfield) && $nowfield['link'])
             echo "<td>{$nowfield['link']}</td>\n";
          elseif ($nowfield['datatype']=='mpulldown')
             echo "<td align='left' cellpadding='5%'>{$nowfield['text']}</td>\n"; 

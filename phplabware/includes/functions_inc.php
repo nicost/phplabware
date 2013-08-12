@@ -23,7 +23,7 @@ class cl_client {
    var $OS;
 
    function cl_client () {
-      $HTTP_USER_AGENT = getenv (HTTP_USER_AGENT);
+      $HTTP_USER_AGENT = getenv ('HTTP_USER_AGENT');
       $temp = strtolower ($HTTP_USER_AGENT);
       if (strstr($temp, "opera"))
          $this->browser = "Opera";
@@ -233,7 +233,8 @@ function globalize_vars ($var_string, $type) {
          $var_name = strtok (",");
          global ${$var_name};
          if (!${$var_name})
-            ${$var_name} = $type[$var_name];
+            if (is_string ($var_name) && array_key_exists($var_name, $type))
+               ${$var_name} = $type[$var_name];
       }
    }
 }
@@ -287,6 +288,7 @@ function get_person_link ($db,$id) {
 function navbar($permissions) {
    include ('./includes/defines_inc.php');
    global $db, $USER, $PHP_SELF, $_SESSION; 
+   $mode="";
    if ($_SESSION['javascript_enabled'] && $USER['settings']['menustyle']) 
       $mode='menu';
    if ($mode=='menu') { 
@@ -353,6 +355,7 @@ function navbar($permissions) {
       // construct system menu
       $systemmenu="<select name='systemmenu' onchange='linkmenu(this)'>\n";
       $systemmenu.="<option value=''>--System--</option>\n";
+      $SID="";
       if (SID)
          $SID="?".SID;
       if ($permissions) {
@@ -496,6 +499,7 @@ function add_js ($script) {
  */
 function printheader($title,$head=false, $jsfiles=false) {
    global $client,$db,$version,$active,$USER,$_SESSION;
+   $mode = "";
 
    // let Netscape 4 users use their back button
    // all others should not cache
@@ -512,7 +516,9 @@ function printheader($title,$head=false, $jsfiles=false) {
 <HEAD>
 <?php 
 echo $head;
-if ($_SESSION['javascript_enabled'] && $USER['settings']['menustyle']) {
+if (array_key_exists('javascript_enabled', $_SESSION) && 
+      $_SESSION['javascript_enabled'] && 
+      $USER['settings']['menustyle']) {
    echo "\n<script type='text/javascript' language='Javascript'>\n<!--\n";
 
    // include single or multiple javascript files
@@ -536,6 +542,8 @@ if ($mode<>'menu') {
       if ($r->fields[0]=='1') {
          $linkr=$db->Execute("select label,linkurl,target from linkbar where display ='Y' ORDER by sortkey");
          if ($linkr) {
+	    $count=0;
+            $linkbar="";
             while (!$linkr->EOF) {
                if ($count && (($count%$links_per_row)==0) )
                  $linkbar.="</tr><tr bgcolor='333388' align='center'>";
