@@ -543,7 +543,8 @@ if ($add && $md!='edit') {
    // print form;
    //$dbstring=$PHP_SELF."?"."tablename=$tableinfo->name&";
    $formname='g_form';
-   echo "<form name='$formname' method='GET' id='generalform' enctype='multipart/form-data' action='$PHP_SELF?$actionLink&amp;copyPOST=true'>\n";
+   // NS 2015-02-24: change method from GET to POST, not sure if there are side-effects
+   echo "<form name='$formname' method='POST' id='generalform' enctype='multipart/form-data' action='$PHP_SELF?$actionLink&amp;copyPOST=true'>\n";
 
    echo "<input type='hidden' name='tablename' value='$tableinfo->name'>\n";
    echo "<input type='hidden' name='md' value='$md'>\n";
