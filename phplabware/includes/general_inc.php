@@ -348,8 +348,9 @@ function display_table_change($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr
          if (! $_SESSION['javascript_enabled']) {
             $delstring = "<input type=\"submit\" name=\"del_" . $id . "\" value=\"Remove\">\n";
          } else {
-	         $jstitle=str_replace("'"," ",$title);
-            $delstring = "Onclick=\"if(confirm('Are you sure that you want to remove record $jstitle?'))";
+            $jstitle=str_replace("'"," ",$title);
+            $jstitleShort = substr($jstitle, 0, 30);
+            $delstring = "Onclick=\"if(confirm('Are you sure that you want to remove record $jstitleShort?'))";
             $delstring .= "{document.g_form.del_$id.value='Remove';document.g_form.submit();return true;}return false;\""; 
             $delstring = "<input type='hidden' name='del_$id'>\n<A href=\"javascript:void(0)\" $delstring> <img src=\"icons/delete.png\" alt=\"delete\" title=\"delete\" border=\"0\"/></A>";
          }
@@ -479,8 +480,9 @@ function display_table_info($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr_c
          if (! $_SESSION['javascript_enabled']) {
             $delstring = "<input type=\"submit\" name=\"del_" . $id . "\" value=\"Remove\">\n";
          } else {
-	         $jstitle=str_replace("'"," ",$title);
-            $delstring = "Onclick=\"if(confirm('Are you sure that you want to remove record $jstitle?'))";
+	        $jstitle=str_replace("'"," ",$title);
+            $jstitleShort = substr($jstitle, 0, 30);
+            $delstring = "Onclick=\"if(confirm('Are you sure that you want to remove record $jstitleShort?'))";
             $delstring .= "{document.g_form.del_$id.value='Remove';document.g_form.submit();return true;}return false;\""; 
             $delstring = "<input type='hidden' name='del_$id'>\n<A href=\"javascript:void(0)\" $delstring> <img src=\"icons/delete.png\" alt=\"delete\" title=\"delete\" border=\"0\"/></A>";
          }
