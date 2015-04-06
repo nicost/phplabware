@@ -796,7 +796,7 @@ function display_add($db,$tableinfo,$Allfields,$id,$namein,$system_settings) {
      	       echo "<td><input type='text' name='{$nowfield['name']}' value='{$nowfield['values']}' size='$size'>";
             }
 	    } elseif ($nowfield['datatype']=='sequence') {
-          if (!$nowfield['text']) {
+          if (! is_numeric($nowfield['text']) ) {
              // find the highest sequence and return that plus one
              $rmax=$db->Execute("SELECT MAX(${nowfield['name']}) AS ${nowfield['name']} FROM ".$tableinfo->realname);
              $newseq=$rmax->fields[0]+1;
@@ -804,12 +804,13 @@ function display_add($db,$tableinfo,$Allfields,$id,$namein,$system_settings) {
                   $newseq = plugin_modify_seq($db,$tableinfo->id,$nowfield);
              }
           }
-          else
+          else {
              $newseq=$nowfield['text'];
-               echo "<input type='hidden' name='$nowfield[name]' value='$newseq'>\n";
-               echo "<tr><th>$nowfield[label]:"; 
-               if ($nowfield['required']=='Y') {
-                  echo "<sup style='color:red'>&nbsp;*</sup>";
+          }
+          echo "<input type='hidden' name='$nowfield[name]' value='$newseq'>\n";
+          echo "<tr><th>$nowfield[label]:"; 
+          if ($nowfield['required']=='Y') {
+             echo "<sup style='color:red'>&nbsp;*</sup>";
           }
           echo "</th>\n";
           if ($nowfield['modifiable']=='N') {
@@ -817,6 +818,7 @@ function display_add($db,$tableinfo,$Allfields,$id,$namein,$system_settings) {
           } else {
              echo "<td><input type='text' name='$nowfield[name]' value='$newseq' size='10'>";
           }
+          echo "</td></tr>\n";
        } elseif ($nowfield['datatype']=='textlong') {
           echo "<tr><th>{$nowfield['label']}:";
           if ($nowfield['required']=='Y')  {
