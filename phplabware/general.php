@@ -37,9 +37,9 @@ $tableinfo->pagename=$pagename=$tableinfo->short.'_curr_page';
 // Acquire active view from settings or get/post vars
 if (isset($USER['settings']['view']["$tableinfo->name"]))
    $viewid=$USER['settings']['view']["$tableinfo->name"];
-if (isset($_GET['viewid']))
+if (isset($_GET['viewid']) && is_numeric($_GET['viewid']))
    $viewid=$_GET['viewid'];
-elseif (isset($_POST['viewid']))
+elseif (isset($_POST['viewid']) && is_numeric($_POST['viewid']))
       $viewid=$_POST['viewid'];
 
 // Activate selected view or default
@@ -67,7 +67,7 @@ if (array_key_exists('copyPOST', $_GET) && $_GET['copyPOST']) {
 }
 
 // Activate selected report output or default
-if (isset ($_GET['reportoutput'])) {
+if ( isset ($_GET['reportoutput']) && is_numeric($_GET['reportoutput']) ) {
    $USER['settings']['reportoutput']=$_GET['reportoutput'];
 }
    

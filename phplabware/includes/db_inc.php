@@ -33,8 +33,10 @@ class tableinfo {
          $r=$db->Execute("SELECT id,shortname,tablename,real_tablename,table_desc_name,label FROM tableoftables WHERE id='$id'");
       elseif ($realname)
          $r=$db->Execute("SELECT id,shortname,tablename,real_tablename,table_desc_name,label FROM tableoftables WHERE real_tablename='$realname'");
-      else
-         $r=$db->Execute("SELECT id,shortname,tablename,real_tablename,table_desc_name,label FROM tableoftables WHERE tablename='$_GET[tablename]'");
+      else {
+         $stmt = 'SELECT id, shortname, tablename, real_tablename, table_desc_name, label FROM tableoftables WHERE tablename=?';
+         $r=$db->Execute($stmt, array($_GET['tablename']) );
+      }
       $this->id=$r->fields['id'];
       $this->short=$r->fields['shortname'];
       $this->realname=$r->fields['real_tablename'];
@@ -1586,7 +1588,7 @@ function next_previous_buttons($r,$paging=false,$num_p_r=false,$numrows=false,$p
 function paging ($num_p_r,&$USER) {
    if (!$num_p_r)
       $num_p_r=$USER['settings']['num_p_r'];
-   if (isset($_GET['num_p_r']))
+   if (isset($_GET['num_p_r']) && is_numeric($_GET['num_p_r']) )
       $num_p_r=$_GET['num_p_r'];
    if (!isset($num_p_r))
      $num_p_r=10;

@@ -36,7 +36,8 @@ $reportid=(int)$_GET['reportid'];
 $recordid=(int)$_GET['recordid'];
 $tableview=$_GET['tableview'];
 // determine which fields are going to be seen:
-$viewid=$_GET['viewid'];
+if ( is_numeric($_GET['viewid']) )
+   $viewid=$_GET['viewid'];
 if ($viewid) {
    $Fieldscomma=viewlist($db,$tableinfo,$viewid);
 } else {

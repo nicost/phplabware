@@ -36,6 +36,8 @@ if ($_GET['viewid'])
    $viewid=$_GET['viewid'];
 else
    $viewid=$_POST['viewid'];
+if (! is_numeric($viewid))
+   $viewid=0;
 //make sure that the viewid is in sync with the selected table
 $r=$db->Execute("SELECT viewnameid FROM tableviews WHERE tableid={$tableinfo->id} AND userid={$USER['id']} AND viewnameid={$viewid}");
 if (!($r && $r->fields[0]))

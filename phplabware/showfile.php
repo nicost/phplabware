@@ -20,6 +20,8 @@ require('./include.php');
 require('./includes/db_inc.php');
 
 $id=$_GET['id'];
+if (! is_numeric($_GET['id'])
+   $id = 0;
 $type=$_GET['type'];
 
 if (!$id) {
