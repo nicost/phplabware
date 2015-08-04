@@ -106,7 +106,7 @@ if ($USER['settings']['reportoutput']==2) {
 if ($_GET['tableview']) {
    // figure out the current query:
    $queryname=$tableinfo->short.'_query';
-   if (isset($_SESSION[$queryname])) {
+   if (session_is_registered($queryname) && isset($_SESSION[$queryname])) {
       // get a list with all records we may see, create temp table tempb
       $listb=may_read_SQL($db,$tableinfo,$USER,'tempb');
 

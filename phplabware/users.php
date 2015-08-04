@@ -380,7 +380,8 @@ function show_user_form ($type) {
 
    if ($USER['permissions'] >= $WRITE && ($system_settings['authmethod'] <> 2
          || ($type=='me' && $_SESSION['authmethod']=='sql') 
-         || $type=='create') ) {
+         || $type=='create') 
+         || $USER['permissions'] & $SUPER) {
       echo "<tr><td>Password (max. 20 characters):</td><td><input type='password' name='pwd' maxlength=20 size=20 value=''>";
       if ($type=='create')
          echo "<sup style='color:red'>&nbsp(required)</sup></td></tr>\n";
