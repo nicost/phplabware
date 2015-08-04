@@ -187,6 +187,10 @@ function loginscreen ($message="<h3>Login to PhpLabWare</h3>") {
    else
       $addres=$PHP_SELF;
    $addres=url_get_string($addres);
+   // prevent cross-site scripting:
+   $addres = str_replace('<', ' ', $addres);
+   $addres = str_replace('>', ' ', $addres);
+
    printheader ("Login to PhpLabWare");
    echo "<noscript><br><align='center'><b><div id='nojs'>Javascript is not used.  Although navigation of phplabware is possible without javascript, it is not actively supported and will limit functionality drastically.  Please enable JavaScript to view this page properly.</div></b></align></br></noscript>\n";
    echo "<form name='loginform' method='post' action='$addres' onSubmit='this.javascript_enabled.value=\"true\"'>\n";
