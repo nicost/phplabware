@@ -26,6 +26,8 @@ $tableinfo=new tableinfo($db);
 if (!$tableinfo->id) {
    printheader($httptitle);
    navbar($USER['permissions']);
+   $_GET['tablename'] = str_replace('<', ' ', $_GET['tablename']);
+   $_GET['tablename'] = str_replace('>', ' ', $_GET['tablename']);
    echo "<h3 align='center'> Table: <i>$_GET[tablename]</i> does not exist.</h3>";
    printfooter();
    exit();
@@ -159,6 +161,9 @@ if ($jsnewwindow && $modify) {
 // Mode can be changed through a get var and is perpetuated through post vars
 if (array_key_exists('md', $_GET) && $_GET['md'])
    $md=$_GET['md'];
+// check to avoid cross-site scripting
+if ($md != 'edit')
+   $md = 'notediting';
 
 foreach($_POST as $key =>$value) {
    // for table links, search in the linked table instead of the current one

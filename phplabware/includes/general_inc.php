@@ -84,6 +84,20 @@ function searchfield ($db,$tableinfo,$nowfield,$_POST,$jscript) {
          ${$column}=$_POST[$column];
       $column=strtok(",");
    }
+
+   // cleanup nowfield variable to avoid cross-site scripting
+   $tmp = ${$nowfield['name']};
+   ${$nowfield['name']} = str_replace('<', ' ', ${$nowfield['name']});
+   ${$nowfield['name']} = str_replace('>', ' ', ${$nowfield['name']});
+   if ($nowfield['datatype']=='int' || $nowfield['datatype']=='float' || $nowfield['datatype']=='sequence') {
+      if (is_numeric(${$nowfield['name']})) {
+         if (strpos($tmp, '>') !== false)
+            ${$nowfield['name']} = '>' . substr(${$nowfield['name']}, 1);
+         if (strpos($tmp, '<') !== false) 
+            ${$nowfield['name']} = '<' . substr(${$nowfield['name']}, 1);
+      }
+   }
+
    if ($nowfield['datatype']== 'link')
       echo "<td style='width: 10%'>&nbsp;</td>\n";
    // datatype of column ownerid is text (historical oversight...)

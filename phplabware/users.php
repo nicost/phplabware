@@ -27,6 +27,13 @@ if (!$type)
    $type=$_GET['type'];
 globalize_vars ($post_vars, $_POST);
 
+// prevent cross-site scripting
+foreach ($_POST as $key => $value) {
+   $value = str_replace('<', ' ', $value);
+   $value = str_replace('>', ' ', $value);
+   $_POST[$key] = $value;
+}
+
 /**
  *  check the form input data for validity
  *
