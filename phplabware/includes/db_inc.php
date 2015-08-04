@@ -1652,7 +1652,7 @@ function make_search_SQL($db,$tableinfo,$fields,$USER,$search,$searchsort,$where
       ${$queryname}=search($db,$tableinfo,$fields,$_GET," $whereclause ORDER BY $searchsort");
       ${$fieldvarsname}=$_GET;
    }
-   elseif (session_is_registered($queryname) isset($_SESSION[$queryname])) {
+   elseif (session_is_registered($queryname) && isset($_SESSION[$queryname])) {
       ${$queryname}=$_SESSION[$queryname];
       ${$fieldvarsname}=$_SESSION[$fieldvarsname];
    } else {
