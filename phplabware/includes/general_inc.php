@@ -80,7 +80,7 @@ function searchfield ($db,$tableinfo,$nowfield,$_POST,$jscript) {
    $LAYOUT=16;
    $column=strtok($tableinfo->fields,",");
    while ($column) {
-      if (array_key_exists($column, $_POST))
+      if (is_array($_POST) && array_key_exists($column, $_POST))
          ${$column}=$_POST[$column];
       $column=strtok(",");
    }
