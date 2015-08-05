@@ -59,8 +59,6 @@ function getUserInfo ($db, $username,$userid)
    return $USER;
 }
 
-
-
 $client = new cl_client;
 
 // protect from outside variables, this is not needed on a well-configure server
@@ -105,8 +103,8 @@ if ($use_sessions) {
       if ($PHP_AUTH_USER && $PHP_AUTH_PW) {
          // check submitted login and passwd in SQL database
          $pwd=md5($PHP_AUTH_PW);
-         $db_query = "SELECT login FROM users WHERE login='$PHP_AUTH_USER' AND pwd='$pwd'";
-         $db_result = $db->Execute($db_query);
+         $db_query = "SELECT login FROM users WHERE login=? AND pwd=?";
+         $db_result = $db->Execute($db_query, array($PHP_AUTH_USER, $pwd) );
          if ($db_result)
             $auth=$db_result->fields['login'];
          // check that there is no one else like this
@@ -152,8 +150,7 @@ if ($use_sessions) {
                echo "</head>\n</html>";
                exit();
             } 
-         }
-         else {
+         } else {
             $PHP_AUTH_USER = false;
             // delay to discourage brute force cracks
             usleep(500000);
