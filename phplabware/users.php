@@ -13,7 +13,6 @@
   *  Free Software Foundation; either version 2 of the License, or (at your  *
   *  option) any later version.                                              *
   \**************************************************************************/                                                                                     
-
 $userfields ='id,login,firstname,lastname,pwd,groupid,permissions,permissions2,email,indir,outdir';
 
 // main include calls
@@ -25,14 +24,12 @@ $post_vars .= 'create,user_add,';
 
 if (!$type)
    $type=$_GET['type'];
-globalize_vars ($post_vars, $_POST);
-
 // prevent cross-site scripting
 foreach ($_POST as $key => $value) {
-   $value = str_replace('<', ' ', $value);
-   $value = str_replace('>', ' ', $value);
-   $_POST[$key] = $value;
+   $_POST[$key] = htmlspecialchars($value, ENT_QUOTES, ini_get("default_charset") );
 }
+globalize_vars ($post_vars, $_POST);
+
 
 /**
  *  check the form input data for validity
@@ -319,7 +316,7 @@ function show_user_form ($type) {
       echo "<tr><td>Email Address:</td><td><input type='text' name='email' maxlength=150 size=25 value=\"$email\"></td></tr>\n";
    }
 
-      if ($type == 'create')
+   if ($type == 'create')
       echo "<tr><td>Login Name (max. 20 characters):</td><td><input type='text' name='login' maxlength=20 size=20 value=\"$login\"><sup style='color:red'>&nbsp(required)</sup></td></tr>\n";
    else {
       echo "<tr><td>Login Name: </td><td>$login\n";
