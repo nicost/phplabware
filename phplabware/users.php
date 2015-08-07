@@ -26,7 +26,8 @@ if (!$type)
    $type=$_GET['type'];
 // prevent cross-site scripting
 foreach ($_POST as $key => $value) {
-   $_POST[$key] = htmlspecialchars($value, ENT_QUOTES, ini_get("default_charset") );
+   if (!is_array($value))
+       $_POST[$key] = htmlspecialchars($value, ENT_QUOTES, ini_get("default_charset") );
 }
 globalize_vars ($post_vars, $_POST);
 
