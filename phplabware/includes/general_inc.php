@@ -87,8 +87,10 @@ function searchfield ($db,$tableinfo,$nowfield,$_POST,$jscript) {
 
    // cleanup nowfield variable to avoid cross-site scripting
    $tmp = ${$nowfield['name']};
+   ${$nowfield['name']} = strip_xss_stuff( ${$nowfield['name']} );
    ${$nowfield['name']} = str_replace('<', ' ', ${$nowfield['name']});
    ${$nowfield['name']} = str_replace('>', ' ', ${$nowfield['name']});
+   ${$nowfield['name']} = htmlspecialchars(${$nowfield['name']}, ENT_QUOTES);
    if ($nowfield['datatype']=='int' || $nowfield['datatype']=='float' || $nowfield['datatype']=='sequence') {
       if (is_numeric(${$nowfield['name']})) {
          if (strpos($tmp, '>') !== false)
