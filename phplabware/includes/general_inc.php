@@ -368,9 +368,9 @@ function display_table_change($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr
          } else {
             $jstitle=str_replace("'"," ",$title);
             $jstitleShort = substr($jstitle, 0, 30);
-            $delstring = "Onclick=\"if(confirm('Are you sure that you want to remove record $jstitleShort?'))";
+            $delstring = "onclick=\"if(confirm('Are you sure that you want to remove record $jstitleShort?'))";
             $delstring .= "{document.g_form.del_$id.value='Remove';document.g_form.submit();return true;}return false;\""; 
-            $delstring = "<input type='hidden' name='del_$id'>\n<A href=\"javascript:void(0)\" $delstring> <img src=\"icons/delete.png\" alt=\"delete\" title=\"delete\" border=\"0\"/></A>";
+            $delstring = "<input type='hidden' name='del_$id'>\n<a href=\"javascript:void(0)\" $delstring> <img src=\"icons/delete.png\" alt=\"delete\" title=\"delete\" border=\"0\"/></A>";
          }
          echo "$delstring\n";
       }
@@ -428,6 +428,20 @@ function display_table_info($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr_c
    // to be sure that only the current files can be seen, unset the entry first
    unset($USER['settings']['fileids']);
    
+   // Insert some javascript functions to be used for viewing, modifying and 
+   // deleting entries
+  if ($_SESSION['javascript_enabled']) {
+      echo "\n<script>\n";
+      echo "function deleteEntry(shortTitle, element) {
+        if( confirm(
+            \"Remove record \" +  shortTitle + \"?\")) 
+        {
+            element.value='Remove';
+            document.g_form.submit();
+        }
+      }"; 
+      echo "\n</script>\n";
+  }
    // print all entries
    while (!($r->EOF) && $r && ($current_record < $last_record) )  {
       // Get required ID and title
@@ -500,9 +514,9 @@ function display_table_info($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr_c
          } else {
 	        $jstitle=str_replace("'"," ",$title);
             $jstitleShort = substr($jstitle, 0, 30);
-            $delstring = "Onclick=\"if(confirm('Are you sure that you want to remove record $jstitleShort?'))";
-            $delstring .= "{document.g_form.del_$id.value='Remove';document.g_form.submit();return true;}return false;\""; 
-            $delstring = "<input type='hidden' name='del_$id'>\n<A href=\"javascript:void(0)\" $delstring> <img src=\"icons/delete.png\" alt=\"delete\" title=\"delete\" border=\"0\"/></A>";
+            $delstring = "<input type='hidden' name='del_$id'>\n";
+            $delstring .= "<a href='javascript:deleteEntry(\"$jstitleShort\", document.g_form.del_$id)'>\n";
+            $delstring .= "   <img src=\"icons/delete.png\" alt=\"delete\" title=\"delete\" border=\"0\"/>\n</a>\n";
          }
          echo "$delstring\n";
       }
