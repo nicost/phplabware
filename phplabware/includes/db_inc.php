@@ -186,7 +186,9 @@ function sortstring($db,$tableinfo,&$sortdirarray,$sortup,$sortdown) {
          $sortstring .= "$table_column $value";
       }
    }
-   return $sortstring;
+   if (!empty($sortdtring))
+      return $sortstring;
+   return null;
 }
 
 /**
@@ -954,6 +956,7 @@ function may_read_SQL_JOIN ($db,$table,$USER) {
       $query .=")";
       $r=$db->CacheExecute(2,$query);
       if ($r) {
+         $ids="";
          $ids=make_SQL_ids($r,$ids);
       }
       // group
@@ -1256,7 +1259,7 @@ function searchhelp ($db,$tableinfo,$column,&$columnvalues,$query,$wcappend,$and
       }
    }
    //consider other columns only when there is a search value.  These will only contribute to the WHERE part, not to the FROM part
-   if ($columnvalues[$column]) {
+   if (!empty($columnvalues[$column])) {
       $query[5]=true;
       if ($column=='ownerid') {
          $query[2].= "$and {$tableinfo->realname}.ownerid={$columnvalues[$column]} ";
@@ -1426,7 +1429,7 @@ function search ($db,$tableinfo,$fields,&$fieldvalues,$whereclause=false,$wcappe
       if ($query[5])
          $query=searchhelp ($db,$tableinfo,$column,$columnvalues,$query,$wcappend,"AND");
       else
-         $query=searchhelp ($db,$tableinfo,$column,$columnvalues,$query,$wcappend,$and);
+         $query=searchhelp ($db,$tableinfo,$column,$columnvalues,$query,$wcappend,"");
       $column=strtok (',');
    }
 
@@ -1439,10 +1442,17 @@ function search ($db,$tableinfo,$fields,&$fieldvalues,$whereclause=false,$wcappe
       // figure out if there assist tables in the ORDER By part
       $words=preg_split('/ /',$whereclause);
       $counter=0;
+      $newwhereclause="";
       foreach ($words as $word) {
          $parts=explode('_',$word);
          // Second part of the if is for the old style naming of assist tables...
-         if ( (substr($parts[1],-3) == 'ass') || (substr($parts[0],0,3)=='ass') ) {
+         $test1=false;
+         $test2=false;
+         if (!empty($parts[1]))
+            $test1=(substr($parts[1],-3) == 'ass');
+         if (!empty($parts[0]))
+            $test2=(substr($parts[0],3) == 'ass');
+         if ( $test1 || $test2 ) {
             // found assist table so add LEFT JOIN
             $dotparts=explode('.',$word);
             $query[1] .= 'LEFT JOIN '. $dotparts[0] . " ON {$dotparts[0]}.id={$tableinfo->realname}.$dotparts[1] ";
@@ -1652,7 +1662,8 @@ function make_search_SQL($db,$tableinfo,$fields,$USER,$search,$searchsort,$where
       ${$queryname}=search($db,$tableinfo,$fields,$_GET," $whereclause ORDER BY $searchsort");
       ${$fieldvarsname}=$_GET;
    }
-   elseif (session_is_registered($queryname) && isset($_SESSION[$queryname])) {
+   //elseif (session_is_registered($queryname) && isset($_SESSION[$queryname])) {
+   elseif (isset($_SESSION[$queryname])) {
       ${$queryname}=$_SESSION[$queryname];
       ${$fieldvarsname}=$_SESSION[$fieldvarsname];
    } else {
@@ -1675,11 +1686,13 @@ function make_search_SQL($db,$tableinfo,$fields,$USER,$search,$searchsort,$where
       $column=strtok($fields,',');
       while ($column) {
          global ${$column};
-         ${$column}=$_GET[$column];
+         if (!empty($_GET[$column]))
+            ${$column}=$_GET[$column];
          $column=strtok(',');
       }
       // extract variables from session
-      globalize_vars ($fields, ${$fieldvarsname});
+      if (is_array(${$fieldvarsname}))
+         globalize_vars ($fields, ${$fieldvarsname});
    }
    // do one last error control: replace double commas with singles
    ${$queryname}=preg_replace("/,,/",",",${$queryname});

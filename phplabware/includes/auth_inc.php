@@ -76,16 +76,20 @@ if ($use_sessions) {
    //print_r($_SESSION);
 
    // If we have PHP_AUTH_USER in the session, this user is authenticated 
-   $PHP_AUTH_USER = $_SESSION['PHP_AUTH_USER'];
+   if (!empty($_SESSION['PHP_AUTH_USER'])) {
+      $PHP_AUTH_USER = $_SESSION['PHP_AUTH_USER'];
+   }
 
    if (!isset($PHP_AUTH_USER)) {
       // logins can happen through a post or get mechanism (the latter restricted for security reason, post logins run through a secure server when available)  
-      if ($_POST['logon']=='true') {
+      if (!empty($_POST['logon']) && $_POST['logon']=='true') {
          $PHP_AUTH_USER=$_POST['user'];
          $PHP_AUTH_PW=$_POST['pwd'];
-      } elseif (isset($system_settings['direct_login'])) {
-         $PHP_AUTH_USER=$_GET['user'];
-         if ($PHP_AUTH_USER) {
+      } elseif ( isset($system_settings['direct_login']) ) {
+         if (!empty($_GET['user'])) {
+            $PHP_AUTH_USER=$_GET['user'];
+         }
+         if ( !empty($PHP_AUTH_USER) ) {
              // we'll only continue if this user is allowed to do URL based logins 
              $permissions2=get_cell($db,'users','permissions2','login',$PHP_AUTH_USER); 
              if (! ($permissions2 & $URL_LOGIN) ) {
@@ -100,7 +104,7 @@ if ($use_sessions) {
          }
       }
 
-      if ($PHP_AUTH_USER && $PHP_AUTH_PW) {
+      if (!empty($PHP_AUTH_USER) && !empty($PHP_AUTH_PW)) {
          // check submitted login and passwd in SQL database
          $pwd=md5($PHP_AUTH_PW);
          $db_query = "SELECT login FROM users WHERE login=? AND pwd=?";
@@ -129,11 +133,13 @@ if ($use_sessions) {
  
          // if authenticated, this session is OK:
          if ($auth) {
-            if ($_SESSION['javascript_enabled'] || ($_POST['javascript_enabled'] || $_GET['javascript_enabled']))
+            if ( (!empty($_SESSION['javascript_enabled']) && $_SESSION['javascript_enabled'] ) || 
+            (!empty($_POST['javascript_enabled']) && $_POST['javascript_enabled']) || 
+           (!empty($_GET['javascript_enabled']) && $_GET['javascript_enabled'] ) )
                $_SESSION['javascript_enabled']=true;
             else
                $_SESSION['javascript_enabled']=false;
-            if (!$authmethod)
+            if (empty($authmethod))
                $authmethod='sql';
             $_SESSION['authmethod']=$authmethod;
             $_SESSION['PHP_AUTH_USER']=$PHP_AUTH_USER;

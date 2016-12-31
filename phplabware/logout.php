@@ -12,7 +12,7 @@ if (isset($system_settings['homeURL'])) {
    $head="<META HTTP-EQUIV='Refresh' CONTENT='1;URL=".
           $system_settings['homeURL']."'>\n";
 }
-if ($_SESSION['PHP_AUTH_USER']) {
+if (!empty($_SESSION['PHP_AUTH_USER'])) {
    printheader('Loging out',$head);
    navbar(false);
    session_destroy();

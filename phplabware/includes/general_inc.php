@@ -74,7 +74,7 @@ function date_entry($id,$real_tablename) {
  * The ugly stuff with _POST could be done better
  * it would also be nicer if a string was returned instead of writing directly
  */
-function searchfield ($db,$tableinfo,$nowfield,$_POST,$jscript) {
+function searchfield ($db,$tableinfo,$nowfield,$jscript) {
    global $USER;
 
    $LAYOUT=16;
@@ -124,20 +124,20 @@ function searchfield ($db,$tableinfo,$nowfield,$_POST,$jscript) {
          echo "<td style='width:10%'>&nbsp;</td>\n";
     }
     elseif ($nowfield['datatype']=='int' || $nowfield['datatype']=='float' || $nowfield['datatype']=='sequence' || $nowfield['datatype']=='date') {
-  	    echo  " <td style='width: 10%'><input type='text' name='$nowfield[name]' value='".${$nowfield[name]}."'size=5 align='middle'></td>\n";
+  	    echo  " <td style='width: 10%'><input type='text' name='".$nowfield['name']."' value='".${$nowfield['name']}."'size=5 align='middle'></td>\n";
     }
     elseif ($nowfield['datatype']== 'text' || $nowfield['datatype']=='file')
-       echo  " <td style='width: 25%'><input type='text' name='$nowfield[name]' value='".${$nowfield[name]}."'size=7></td>\n";
+       echo  " <td style='width: 25%'><input type='text' name='".$nowfield['name']." value='".${$nowfield['name']}."'size=7></td>\n";
     elseif ($nowfield['datatype']== 'textlong')
-       echo  " <td style='width: 10%'><input type='text' name='$nowfield[name]' value='".${$nowfield[name]}."'size=8></td>\n";
+       echo  " <td style='width: 10%'><input type='text' name='".$nowfield['name']."' value='".${$nowfield['name']}."'size=8></td>\n";
     elseif ($nowfield['datatype']== 'pulldown' || $nowfield['datatype']=='mpulldown') {
       echo "<td style='width: 10%'>";
       $rpull=$db->Execute("SELECT typeshort,id from $nowfield[ass_t] ORDER by sortkey,type");
       if ($rpull)
          if ($nowfield['datatype']=='mpulldown')
-            $text=$rpull->GetMenu2("$nowfield[name]",${$nowfield[name]},false,true,10,"style='width: 100%' align='left'");   
+            $text=$rpull->GetMenu2("$nowfield[name]",${$nowfield['name']},false,true,10,"style='width: 100%' align='left'");   
          else 
-            $text=$rpull->GetMenu2("$nowfield[name]",${$nowfield[name]},true,false,0,"style='width: 80%' $jscript");   
+            $text=$rpull->GetMenu2($nowfield['name'],${$nowfield['name']},true,false,0,"style='width: 80%' $jscript");   
       else
           $text="&nbsp;";
       echo "$text\n";
@@ -470,7 +470,7 @@ function display_table_info($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr_c
             $startofText = substr($nowfield['text'],0,60);
             echo "<td><a class='Tooltip' href=\"javascript:void(0);\" ";
             // single quotes causes javascript problems even when 'htmled'
-            $escapedText = str_replace("'",'"',$escapedText);
+            $escapedText = str_replace("'",'"',$nowfield['text']);
             echo "onmouseover=\"this.T_WIDTH=400;return escape";
             $escapedText = htmlspecialchars($nowfield['text'], ENT_QUOTES);
             // returns spoil the party
@@ -1116,6 +1116,8 @@ function getvalues($db,$tableinfo,$fields,$qfield=false,$field=false)
                   ${$column}['nested_tbname']=$tbname;
                   ${$column}['nested_columnid']=${$column}['columnid'];
                   for ($i=0;$i<sizeof($fzsk);$i++) {
+                     if (empty(${$column}['text']))
+                        ${$column}['text'] = "";
                      ${$column}['text'].=$fzsk[$i]['link'];
                      ${$column}['fileids'][]=$fzsk[$i]['id'];
                   }

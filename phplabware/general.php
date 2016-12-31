@@ -18,6 +18,10 @@ require('./include.php');
 require('./includes/db_inc.php');
 require('./includes/general_inc.php');
 
+
+// variable initialization
+$num_p_r=10;
+
 // turn on adodb logging:
 //$db->LogSQL();
 
@@ -45,14 +49,14 @@ elseif (isset($_POST['viewid']) && is_numeric($_POST['viewid']))
       $viewid=$_POST['viewid'];
 
 // Activate selected view or default
-if ($viewid) {
+if (!empty($viewid) && $viewid) {
    // get list from preferences in table tableviews
    $Fieldscomma=viewlist($db,$tableinfo,$viewid); 
    // write viewid back to user preferences
    $USER['settings']['view'][$tableinfo->name]=$viewid;
 } else {
    // read all fields in from the description file
-   $Fieldscomma=comma_array_SQL($db,$tableinfo->desname,columnname,"WHERE display_table='Y'");
+   $Fieldscomma=comma_array_SQL($db,$tableinfo->desname,'columnname',"WHERE display_table='Y'");
    // release viewid we remembered
    if (isset($USER['settings']['view'][$tableinfo->name]))
       unset($USER['settings']['view'][$tableinfo->name]);
@@ -442,7 +446,7 @@ if ($add && $md!='edit') {
    if ($search=='Show All') {
       // unset all the search and sort parameters
       $num_p_r=$_GET['num_p_r'];
-      unset ($_GET);
+      $_GET=array();
       ${$pagename}=1;
       unset ($_SESSION[$queryname]);
       unset ($serialsortdirarray);
@@ -460,13 +464,18 @@ if ($add && $md!='edit') {
    }
    $column=strtok($tableinfo->fields,',');
    while ($column) {
-       if (array_key_exists($column, $_GET))
+       if (!empty($_GET) && array_key_exists($column, $_GET))
           ${$column}=$_GET[$column];
       $column=strtok(",");
    }
  
    // sort stuff
-   $sortdirarray=unserialize(stripslashes($serialsortdirarray));
+   if (!empty($serialsortdirarray))
+      $sortdirarray=unserialize(stripslashes($serialsortdirarray));
+   if (empty($sortup))
+      $sortup=false;
+   if (empty($sortdown))
+      $sortdown=false;
    $sortstring=sortstring($db,$tableinfo,$sortdirarray,$sortup,$sortdown);
 
    // set the number of records per page
@@ -618,7 +627,7 @@ if ($add && $md!='edit') {
    echo "<tr align='center'>\n";
 
    foreach($Allfields as $nowfield)  {
-      if ($_GET[$nowfield['name']]) {
+      if (!empty($_GET) && $_GET[$nowfield['name']]) {
          $list=$listb['sql']; 
 	 $count=$listb['numrows'];
       }

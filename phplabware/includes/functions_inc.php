@@ -244,10 +244,10 @@ function loginscreen ($message="<h3>Login to PhpLabWare</h3>") {
  */
 function globalize_vars ($var_string, $type) {
 
-   if ($var_string && $type) {
+   if ($var_string && $type && is_array($type)) {
       $var_name = strtok ($var_string, ',');
       global ${$var_name};
-      if (!${$var_name})
+      if ( (empty(${$var_name}) || !${$var_name}) && !empty($type[$var_name]))
          ${$var_name} = $type[$var_name];
       while ($var_name) {
          $var_name = strtok (",");
@@ -309,7 +309,8 @@ function navbar($permissions) {
    include ('./includes/defines_inc.php');
    global $db, $USER, $PHP_SELF, $_SESSION; 
    $mode="";
-   if ($_SESSION['javascript_enabled'] && $USER['settings']['menustyle']) 
+   if (!empty($_SESSION['javascript_enabled']) && 
+         !empty($USER['settings']['menustyle'])) 
       $mode='menu';
    if ($mode=='menu') { 
       // construct link menu
@@ -523,11 +524,11 @@ function printheader($title,$head=false, $jsfiles=false) {
 
    // let Netscape 4 users use their back button
    // all others should not cache
-   if ($client->browser != 'Netscape 4') {
+   //if (!empty($client) || $client->browser != 'Netscape 4') {
       header('Cache-Control: private, no-cache, must-revalidate');
       header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
       header('Pragma: no-cache');
-   }
+   //}
    header ('Content-Type: text/html; charset=ISO-8859-1');
 
 ?>
