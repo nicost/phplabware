@@ -1493,6 +1493,8 @@ function search ($db,$tableinfo,$fields,&$fieldvalues,$whereclause=false,$wcappe
  *
  */
 function first_last_page (&$r,&$current_page,$r_p_p,$numrows) {
+   if (!isset($r)) 
+      $r=new stdClass();
    // protect against pushing the reload button while at the last page
    if ( (($current_page-1) * $r_p_p) >= $numrows)
       $current_page -=1;
@@ -1626,7 +1628,7 @@ function current_page($curr_page, $sname, $num_p_r, $numrows) {
    if (${$varname} > ($numrows/$num_p_r))
       ${$varname}=1;
    // the page number can be set directly or by clicking the next/previous buttons (see function next_previous_buttons)
-   if ($_GET[$varname]) {
+   if (!empty($_GET[$varname])) {
       ${$varname}=$_GET[$varname];
    }
    if (isset($_GET['next'])) {

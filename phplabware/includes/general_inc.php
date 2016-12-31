@@ -86,6 +86,7 @@ function searchfield ($db,$tableinfo,$nowfield,$jscript) {
    }
 
    // cleanup nowfield variable to avoid cross-site scripting
+   if (!empty(${$nowfield['name']})) {
    $tmp = ${$nowfield['name']};
    if ( !is_array(${$nowfield['name']}) ) {
       ${$nowfield['name']} = strip_xss_stuff( ${$nowfield['name']} );
@@ -100,6 +101,7 @@ function searchfield ($db,$tableinfo,$nowfield,$jscript) {
          if (strpos($tmp, '<') !== false) 
             ${$nowfield['name']} = '<' . substr(${$nowfield['name']}, 1);
       }
+   }
    }
 
    if ($nowfield['datatype']== 'link')
@@ -189,9 +191,13 @@ function viewlist($db,$tableinfo,$viewid) {
  */
 function viewmenu($db, $tableinfo,$viewid,$useronly=1,$jscript='OnChange="document.g_form.submit()"') {
    global $USER, $db_type;
+   $viewname="";
+   $viewidtext="";
    
    if ($useronly)
       $userreq="tableviews.userid={$USER['id']} AND";
+   else
+      $userreq="";
    // first find views accessible to user
    if ($db_type=='mysql') 
       $r=$db->Execute("SELECT DISTINCT viewname,viewnames.viewnameid FROM viewnames LEFT JOIN tableviews ON viewnames.viewnameid=tableviews.viewnameid WHERE $userreq tableviews.tableid={$tableinfo->id} AND tableviews.viewmode=1");
@@ -696,6 +702,8 @@ function make_link($id,$DBNAME) {
  */
 function show_reports($db,$tableinfo,$recordid=false,$viewid=false) {
    global $USER, $WRITE;
+   $checked='';
+   $checked2='';
 
    $r=$db->Execute("SELECT id,label FROM reports WHERE tableid=".$tableinfo->id);
    if ($r) {

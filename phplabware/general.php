@@ -55,6 +55,7 @@ if (!empty($viewid) && $viewid) {
    // write viewid back to user preferences
    $USER['settings']['view'][$tableinfo->name]=$viewid;
 } else {
+   $viewid=NULL;
    // read all fields in from the description file
    $Fieldscomma=comma_array_SQL($db,$tableinfo->desname,'columnname',"WHERE display_table='Y'");
    // release viewid we remembered
