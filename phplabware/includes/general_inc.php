@@ -128,8 +128,11 @@ function searchfield ($db,$tableinfo,$nowfield,$jscript) {
     elseif ($nowfield['datatype']=='int' || $nowfield['datatype']=='float' || $nowfield['datatype']=='sequence' || $nowfield['datatype']=='date') {
   	    echo  " <td style='width: 10%'><input type='text' name='".$nowfield['name']."' value='".${$nowfield['name']}."'size=5 align='middle'></td>\n";
     }
-    elseif ($nowfield['datatype']== 'text' || $nowfield['datatype']=='file')
+    elseif ($nowfield['datatype']== 'text' || $nowfield['datatype']=='file') {
+       if (empty(${$nowfield['name']}))
+         ${$nowfield['name']}="";
        echo  " <td style='width: 25%'><input type='text' name='".$nowfield['name']." value='".${$nowfield['name']}."'size=7></td>\n";
+    }
     elseif ($nowfield['datatype']== 'textlong')
        echo  " <td style='width: 10%'><input type='text' name='".$nowfield['name']."' value='".${$nowfield['name']}."'size=8></td>\n";
     elseif ($nowfield['datatype']== 'pulldown' || $nowfield['datatype']=='mpulldown') {
@@ -1008,7 +1011,7 @@ function getvalues($db,$tableinfo,$fields,$qfield=false,$field=false)
    $Allfields=array();
    foreach ($columns as $column) {
       if($column!='id') {
-         if ($r)
+         if (!empty($r))
             // Take slashes out that were put in to be able to enter stuff into the database
             ${$column}['values']= stripslashes($r->fields[$column]);
          $rb=$db->CacheExecute(2,"SELECT id,label,datatype,display_table,display_record,associated_table,key_table,associated_column,associated_local_key,required,link_first,link_last,modifiable FROM $tableinfo->desname WHERE columnname='$column'");
@@ -1029,7 +1032,7 @@ function getvalues($db,$tableinfo,$fields,$qfield=false,$field=false)
             ${$column}['ass_table_name']=get_cell($db,'tableoftables','real_tablename','id',$rb->fields['associated_table']);
             ${$column}['ass_column_name']=get_cell($db,${$column}['ass_table_desc_name'],'columnname','id',$rb->fields['associated_column']);
 	 }
-         if ($id) {
+         if (!empty($id)) {
             ${$column}['recordid']=$id;
 
             // datatype table (the toughest of all)

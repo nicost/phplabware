@@ -1107,7 +1107,7 @@ function make_SQL_csf ($r,$ids,$field="id",&$column_count) {
    if (!$r || $r->EOF)
       return false;
    $r->MoveFirst();
-   while (!$id && !$r->EOF) {
+   while (empty($id) && !$r->EOF) {
       $id=$r->fields[$field];
       $ids .="$id";
       $r->MoveNext();
@@ -1622,7 +1622,7 @@ function current_page($curr_page, $sname, $num_p_r, $numrows) {
    $varname=$sname.'_curr_page';
    ${$varname}=$curr_page;
 
-   if (!isset($$varname))
+   if ( !isset($$varname) && !empty($_SESSION[$varname]) )
       ${$varname}=$_SESSION[$varname];
    // if the current page is out of bound, we'll reset it to 1
    if (${$varname} > ($numrows/$num_p_r))

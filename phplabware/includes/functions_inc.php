@@ -244,7 +244,7 @@ function loginscreen ($message="<h3>Login to PhpLabWare</h3>") {
  */
 function globalize_vars ($var_string, $type) {
 
-   if ($var_string && $type && is_array($type)) {
+   if (!empty($var_string) && !empty($type) && is_array($type)) {
       $var_name = strtok ($var_string, ',');
       global ${$var_name};
       if ( (empty(${$var_name}) || !${$var_name}) && !empty($type[$var_name]))
@@ -252,9 +252,12 @@ function globalize_vars ($var_string, $type) {
       while ($var_name) {
          $var_name = strtok (",");
          global ${$var_name};
-         if (!${$var_name})
-            if (is_string ($var_name) && array_key_exists($var_name, $type))
+         if (!${$var_name}) {
+            if (is_string ($var_name) && is_array($type) && 
+                  array_key_exists($var_name, $type) ) {
                ${$var_name} = $type[$var_name];
+            }
+         }
       }
    }
 }

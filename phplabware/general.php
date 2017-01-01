@@ -453,14 +453,15 @@ if ($add && $md!='edit') {
       unset ($serialsortdirarray);
    } elseif ($search!='Search') {
       // if search is not set, we want to restore the search statement to the last time the user visited this page.  Restore the relevant settings in $_POST from $_SESSION:
-      if (is_array($_SESSION[$fieldvarsname])) {
+      if (!empty($_SESSION[$fieldvarsname]) && is_array($_SESSION[$fieldvarsname])) {
          foreach ($_SESSION[$fieldvarsname] as $key => $value) {
             if (($key != 'next') && ($key != 'previous')) {
                $_GET[$key]=$value;
             }
          }
       }
-      $serialsortdirarray=$_GET['serialsortdirarray'];
+      if (!empty($_GET['serialsortdirarray']))
+         $serialsortdirarray=$_GET['serialsortdirarray'];
       $search='Search';
    }
    $column=strtok($tableinfo->fields,',');
@@ -524,6 +525,8 @@ if ($add && $md!='edit') {
    $numrows=$r->RecordCount();
 
    // set the current page to what the user ordered
+   if (empty(${$pagename}))
+      ${$pagename}=0;
    ${$pagename}=current_page(${$pagename},$tableinfo->short,$num_p_r,$numrows);
 
    // work around bug in adodb/mysql
@@ -628,7 +631,7 @@ if ($add && $md!='edit') {
    echo "<tr align='center'>\n";
 
    foreach($Allfields as $nowfield)  {
-      if (!empty($_GET) && $_GET[$nowfield['name']]) {
+      if (!empty($_GET) && !empty($_GET[$nowfield['name']])) {
          $list=$listb['sql']; 
 	 $count=$listb['numrows'];
       }
