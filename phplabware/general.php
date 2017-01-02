@@ -39,6 +39,8 @@ if (!$tableinfo->id) {
 
 $tableinfo->queryname=$queryname=$tableinfo->short.'_query';
 $tableinfo->pagename=$pagename=$tableinfo->short.'_curr_page';
+if (!empty($_SESSION[$pagename]))
+   ${$pagename}=$_SESSION[$pagename];
 
 // Acquire active view from settings or get/post vars
 if (isset($USER['settings']['view']["$tableinfo->name"]))
@@ -526,7 +528,7 @@ if ($add && $md!='edit') {
 
    // set the current page to what the user ordered
    if (empty(${$pagename}))
-      ${$pagename}=0;
+      ${$pagename}=1;
    ${$pagename}=current_page(${$pagename},$tableinfo->short,$num_p_r,$numrows);
 
    // work around bug in adodb/mysql

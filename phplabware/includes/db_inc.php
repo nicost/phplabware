@@ -1624,10 +1624,13 @@ function current_page($curr_page, $sname, $num_p_r, $numrows) {
 
    if ( !isset($$varname) && !empty($_SESSION[$varname]) )
       ${$varname}=$_SESSION[$varname];
+
    // if the current page is out of bound, we'll reset it to 1
-   if (${$varname} > ($numrows/$num_p_r))
+   if (${$varname} > ceil($numrows/$num_p_r))
       ${$varname}=1;
-   // the page number can be set directly or by clicking the next/previous buttons (see function next_previous_buttons)
+
+   // the page number can be set directly or by clicking the next/previous 
+   // buttons (see function next_previous_buttons)
    if (!empty($_GET[$varname])) {
       ${$varname}=$_GET[$varname];
    }
@@ -1635,11 +1638,12 @@ function current_page($curr_page, $sname, $num_p_r, $numrows) {
       ${$varname}+=1;
    }
    elseif (isset($_GET['previous'])) {
-      $$varname-=1;
+      ${$varname}-=1;
    }
    if ($$varname<1)
-      $$varname=1;
+      ${$varname}=1;
    $_SESSION[$varname]=${$varname}; 
+
    return ${$varname};
 }
 
