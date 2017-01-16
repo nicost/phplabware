@@ -635,7 +635,7 @@ if ($add && $md!='edit') {
    foreach($Allfields as $nowfield)  {
       if (!empty($_GET) && !empty($_GET[$nowfield['name']])) {
          $list=$listb['sql']; 
-	 $count=$listb['numrows'];
+         $count=$listb['numrows'];
       }
       else {
          $list=$lista;   

@@ -76,13 +76,15 @@ function date_entry($id,$real_tablename) {
  */
 function searchfield ($db,$tableinfo,$nowfield,$jscript) {
    global $USER;
-
    $LAYOUT=16;
-   $column=strtok($tableinfo->fields,",");
-   while ($column) {
-      if (is_array($_POST) && array_key_exists($column, $_POST))
-         ${$column}=$_POST[$column];
-      $column=strtok(",");
+   if (!array_key_exists('search', $_POST) ||
+         $_POST['search'] != "Show All") {
+      $column=strtok($tableinfo->fields,",");
+      while ($column) {
+         if (is_array($_POST) && array_key_exists($column, $_POST))
+            ${$column}=$_POST[$column];
+         $column=strtok(",");
+      }
    }
 
    // cleanup nowfield variable to avoid cross-site scripting
