@@ -126,15 +126,15 @@ function searchfield ($db,$tableinfo,$nowfield,$jscript) {
          echo "<td style='width:10%'>&nbsp;</td>\n";
     }
     elseif ($nowfield['datatype']=='int' || $nowfield['datatype']=='float' || $nowfield['datatype']=='sequence' || $nowfield['datatype']=='date') {
-  	    echo  " <td style='width: 10%'><input type='text' name='".$nowfield['name']."' value='".${$nowfield['name']}."'size=5 align='middle'></td>\n";
+  	    echo  " <td style='width: 10%'><input type='text' name='".$nowfield['name']."' value='".${$nowfield['name']}."' size=5 align='middle'></td>\n";
     }
     elseif ($nowfield['datatype']== 'text' || $nowfield['datatype']=='file') {
        if (empty(${$nowfield['name']}))
          ${$nowfield['name']}="";
-       echo  " <td style='width: 25%'><input type='text' name='".$nowfield['name']." value='".${$nowfield['name']}."'size=7></td>\n";
+       echo  " <td style='width: 25%'><input type='text' name='".$nowfield['name']."' value='".${$nowfield['name']}."' size=7></td>\n";
     }
     elseif ($nowfield['datatype']== 'textlong')
-       echo  " <td style='width: 10%'><input type='text' name='".$nowfield['name']."' value='".${$nowfield['name']}."'size=8></td>\n";
+       echo  " <td style='width: 10%'><input type='text' name='".$nowfield['name']."' value='".${$nowfield['name']}."' size=8></td>\n";
     elseif ($nowfield['datatype']== 'pulldown' || $nowfield['datatype']=='mpulldown') {
       echo "<td style='width: 10%'>";
       $rpull=$db->Execute("SELECT typeshort,id from $nowfield[ass_t] ORDER by sortkey,type");

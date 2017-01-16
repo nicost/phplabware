@@ -186,7 +186,7 @@ function sortstring($db,$tableinfo,&$sortdirarray,$sortup,$sortdown) {
          $sortstring .= "$table_column $value";
       }
    }
-   if (!empty($sortdtring))
+   if (!empty($sortstring))
       return $sortstring;
    return null;
 }
@@ -1364,6 +1364,9 @@ function searchhelp ($db,$tableinfo,$column,&$columnvalues,$query,$wcappend,$and
             // support logical AND and OR
             $token_array=explode(' ',$columnvalue);
             // this is ugly stuff, there must be a neater way of parsing
+            $count = 0;
+            $nextand = '';
+            $cvalue = '';
             foreach($token_array as $token) {
                $count++;
                if ($nextand)
@@ -1547,7 +1550,7 @@ function next_previous_buttons($r,$paging=false,$num_p_r=false,$numrows=false,$p
       else
          echo "<td align='center'>No records found. </td>\n";
       echo "<td align='center'>\n";
-     echo "<input type='text' name='num_p_r'value='$num_p_r' size=3>&nbsp;";
+     echo "<input type='text' name='num_p_r' value='$num_p_r' size=3>&nbsp;";
       echo "Records per page</td>\n";
    }
    echo "<td align='right'>";
