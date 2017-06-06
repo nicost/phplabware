@@ -967,8 +967,10 @@ function may_read_SQL_JOIN ($db,$table,$USER) {
       $query="SELECT id FROM $table ";
       $r=$db->CacheExecute(2,$query);
    }
-   if ($ids)
-      $ids.=",";
+   if (!empty($ids))
+      $ids.=","; 
+   else 
+      $ids = "";
    if ($r)
       return make_SQL_ids($r,$ids);
 }

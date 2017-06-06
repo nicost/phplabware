@@ -77,7 +77,7 @@ function date_entry($id,$real_tablename) {
 function searchfield ($db,$tableinfo,$nowfield,$jscript) {
    global $USER;
    $LAYOUT=16;
-   if (!array_key_exists('search', $_POST) ||
+   if (empty($_POST) || !array_key_exists('search', $_POST) ||
          $_POST['search'] != "Show All") {
       $column=strtok($tableinfo->fields,",");
       while ($column) {
@@ -1332,13 +1332,13 @@ function add_g_form ($db,$tableinfo,$field_values,$id,$USER,$PHP_SELF,$system_se
    if (!may_write($db,$tableinfo->id,$id,$USER)) 
       return false; 
    if ($id) {
-	$Allfields=getvalues($db,$tableinfo,$tableinfo->fields,id,$id);
-	$namein=get_cell($db,$tableinfo->desname,"title","id",$id);		
-	display_add($db,$tableinfo,$Allfields,$id,$namein,$system_settings);
+      $Allfields=getvalues($db,$tableinfo,$tableinfo->fields,'id',$id);
+      $namein=get_cell($db,$tableinfo->desname,"title","id",$id);		
+      display_add($db,$tableinfo,$Allfields,$id,$namein,$system_settings);
    }    
    else {
-	$Allfields=getvalues($db,$tableinfo,$tableinfo->fields);
-	display_add($db,$tableinfo,$Allfields,$id,"",$system_settings);
+   	$Allfields=getvalues($db,$tableinfo,$tableinfo->fields);
+      display_add($db,$tableinfo,$Allfields,$id,"",$system_settings);
    }
 }
 
