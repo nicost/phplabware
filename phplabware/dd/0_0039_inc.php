@@ -91,7 +91,7 @@ if ($r) {
 
    // copy data from 'old' pdbs table to the new one
    unset($counter);
-   set_magic_quotes_runtime(1);
+   // set_magic_quotes_runtime(1);
    $tablesfk=get_cell($db,"tableoftables","id","real_tablename","pdbs");
    $rcb=$db->Execute("SELECT * FROM pdbs");
    while (!$rcb->EOF && $rcb) {

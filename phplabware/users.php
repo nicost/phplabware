@@ -22,7 +22,7 @@ require('./include.php');
 $post_vars = 'email,id,firstname,lastname,login,me,modify,perms,perms2,perms3,pwd,pwdcheck,user_group,user_add_groups,';
 $post_vars .= 'create,user_add,';
 
-if (!$type)
+if (empty($type) )
    $type=$_GET['type'];
 // prevent cross-site scripting
 foreach ($_POST as $key => $value) {
@@ -285,11 +285,11 @@ function show_user_form ($type) {
       for ($i=0; $i<sizeof($perms); $i++)
          $permissions=$permissions | $perms[$i];
 
-   if($perms2)
+   if(!empty($perms2) && $perms2)
       for ($i=0; $i<sizeof($perms2); $i++)
          $permissions2=$permissions2 | $perms2[$i];
 
-   if($perms3)
+   if(!empty($perms3) && $perms3)
       for ($i=0; $i<sizeof($perms3); $i++)
          $permissions3=$permissions3 | $perms3[$i];
    if (!$groupid) $groupid = $USER['groupid'];
@@ -325,10 +325,14 @@ function show_user_form ($type) {
    }
    if ($type=='me') {
       echo "<tr><td>Menu display: </td>";
-      if ($USER['settings']['menustyle'])
+      if ($USER['settings']['menustyle']) {
          $dchecked='checked';
-      else
+         $schecked='';
+      }
+      else {
          $schecked='checked';
+         $dchecked='';
+      }
       echo "<td><input type='radio' name='menustyle' $schecked value='0'>scattered &nbsp;&nbsp;<input type='radio' name='menustyle' $dchecked value='1'>drop-down</td></tr>";
       echo "<tr><td>Style: </td>";
       // if there is no pref, set it to default
@@ -348,7 +352,7 @@ function show_user_form ($type) {
              if ($file==$USER['settings']['style']) {
                 $selected='selected';
              } else {
-                 unset($selected);
+                 $selected='';
              }
              echo "<option $selected value=\"$file\">$entry</option>\n";
          }
@@ -358,6 +362,7 @@ function show_user_form ($type) {
    }
    
    if ($USER['permissions'] & $SUPER) {
+      $add_groups = [];
       echo "<tr>\n<td>Primary group:</td>\n<td>";
       $r = $db->Execute('SELECT name,id FROM groups');
       echo $r->GetMenu2('user_group',$groupid,false);
@@ -474,6 +479,9 @@ function show_user_form ($type) {
 
 allowonly($ACTIVE,$USER['permissions']);
 
+if (empty($title)) {
+  $title = '';
+}
 
 if ($type=='me') {
    $title .= 'Personal Settings';

@@ -108,7 +108,7 @@ if ($r) {
 
    // copy data from 'old' protocol table to the new one
    unset($counter);
-   set_magic_quotes_runtime(1);
+   //set_magic_quotes_runtime(1);
    $tablesfk=get_cell($db,"tableoftables","id","real_tablename","protocols");
    $rcb=$db->Execute("SELECT * FROM protocols");
    while (!$rcb->EOF && $rcb) {

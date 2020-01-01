@@ -35,7 +35,7 @@ if ($adodb_version<$adodb_version_required) {
 $post_vars="access,action,authmethod,baseURL,homeURL,checkpwd,convert,dateformat,filedir,thumbnaildir,templatedir,gs,pwd,protocols_file,pdfs_file,pdfget,secure_server_new,direct_login_new,smallthumbsize,submit,tmpdir,tmpdirpsql,word2html";
 globalize_vars($post_vars, $_POST);
 
-if ($set_local) {
+if (!empty($set_local) && $set_local) {
    // only allow connections from localhost
    $host=getenv('HTTP_HOST');
    if (! ($host=='localhost' ||$host=='127.0.0.1') ) {
@@ -73,10 +73,16 @@ if (!@$db->Connect($db_host, $db_user, $db_pwd, $db_name)) {
    printfooter();
    exit ();
 }
+// $db->debug = true;
 
 // if table settings does not exist, we'll need to create the initial tables
 $version=get_cell($db, "settings", "version", "id", 1);
 
+echo "Version: $version";
+
+if (empty($pwd)) {
+  $pwd = false;
+}
 if (! ($version || $pwd) ) {
    // This must be the first time, ask for a sysadmin password
    printheader("Ready to install the database");
@@ -256,7 +262,7 @@ if ($version) {
           echo "<h3 align='center'>Failed to update the database to version $version_code.</h3>\n";
    }
 
-   if ($action) {
+   if (!empty($action) && $action) {
       if ($access)
          if (strlen($access)==9 && strlen(count_chars($access,3))<4)
             $system_settings["access"]=$access;
@@ -419,42 +425,46 @@ if ($version) {
    echo "<tr><td>Directory <i>files</i>. The webdaemon should ";
    echo "have read and write priveleges, but the directory should not be directly ";
    echo "accessible through the web.";
-   if (!$system_settings["filedir"]) {
-      $dir=getenv("SCRIPT_FILENAME");
-      $dir=substr($dir,0,strrpos($dir,"/")+1)."files";
-      $system_settings["filedir"]=$dir;
+
+   if (!array_key_exists('filedir', $system_settings) ||
+            !$system_settings['filedir']) {
+      $dir=getenv('SCRIPT_FILENAME');
+      $dir=substr($dir,0,strrpos($dir,"/")+1).'files';
+      $system_settings['filedir']=$dir;
    }
-   $filedir=$system_settings["filedir"];
+   $filedir=$system_settings['filedir'];
    echo "<td><input type='text' $dirsizestring name='filedir' value='$filedir'></td></tr>\n";
 
    echo "<tr><td>Directory <i>thumbnails</i>. The webdaemon should ";
    echo "have read and write priveleges, but the directory should not be directly ";
    echo "accessible through the web. ";
-   if (!$system_settings["thumbnaildir"]) {
-      $dir=getenv("SCRIPT_FILENAME");
-      $dir=substr($dir,0,strrpos($dir,"/")+1)."thumbnails";
-      $system_settings["thumbnaildir"]=$dir;
+   if (!array_key_exists('thumbnaildir', $system_settings) || 
+            !$system_settings['thumbnaildir']) {
+      $dir=getenv('SCRIPT_FILENAME');
+      $dir=substr($dir,0,strrpos($dir,"/")+1).'thumbnails';
+      $system_settings['thumbnaildir']=$dir;
    }
-   $thumbnaildir=$system_settings["thumbnaildir"];
+   $thumbnaildir=$system_settings['thumbnaildir'];
    echo "<td><input type='text' $dirsizestring name='thumbnaildir' value='$thumbnaildir'></td></tr>\n";
 
    echo "<tr><td>Directory <i>templates</i>. The webdaemon should ";
    echo "have read and write priveleges, but the directory should not be directly ";
    echo "accessible through the web. ";
-   if (!$system_settings["templates"]) {
-      $dir=getenv("SCRIPT_FILENAME");
-      $dir=substr($dir,0,strrpos($dir,"/")+1)."templates";
-      $system_settings["templatedir"]=$dir;
+   if (!array_key_exists('templates', $system_settings) || 
+          !$system_settings['templates']) {
+      $dir=getenv('SCRIPT_FILENAME');
+      $dir=substr($dir,0,strrpos($dir,"/")+1).'templates';
+      $system_settings['templatedir']=$dir;
    }
    $templatedir=$system_settings["templatedir"];
    echo "<td><input type='text' $dirsizestring name='templatedir' value='$templatedir'></td></tr>\n";
 
    echo "<tr><td>Directory for <i>temporary</i> files. For security reasons, only the webdaemon should be able to read (and write) files here.  Usually, this is <b>not</b> the case for directory <i>/tmp</i>. </td>";
-   if (!$system_settings["tmpdir"]) 
-      $system_settings["tmpdir"]="/tmp";
+   if (!array_key_exists('tmpdir', $system_settings) || !$system_settings['tmpdir']) 
+      $system_settings['tmpdir']="/tmp";
    echo "<td><input type='text' name='tmpdir' value='".$system_settings["tmpdir"]."'></td></tr>\n";
    
-   if ($db_type=="postgres7") {
+   if ($db_type=='postgres7') {
       echo "<tr><td>Directory for exchange of files between the webdaemon and the postgres daemon.  Both should be able to read and write here. </td>";
       if (!$system_settings["tmpdirpsql"]) 
          $system_settings["tmpdirpsql"]="/tmp";
@@ -474,37 +484,43 @@ if ($version) {
    echo "<tr><td colspan='2' align='center'><i>Files with new additions</i>\n";
    echo "<br>Certain modules can write a file with information about the last added record.  You could show this information on a webpage.  If you don't use this, leave blank.</th></tr>\n";
    echo "<tr><td>New addition file for protocols.</td>\n ";
-   echo "<td><input type='text' $dirsizestring name='protocols_file' value='".$system_settings["protocols_file"]."'></td></tr>\n";
+   if (!array_key_exists('protocols_file', $system_settings)) {
+      $system_settings['protocols_file']='';
+   }
+   echo "<td><input type='text' $dirsizestring name='protocols_file' value='".$system_settings['protocols_file']."'></td></tr>\n";
    echo "<tr><td>New addition file for pdfs.</td>\n ";
-   echo "<td><input type='text' $dirsizestring name='pdfs_file' value='".$system_settings["pdfs_file"]."'></td></tr>\n";
+   if (!array_key_exists('pdfs_file', $system_settings)) {
+      $system_settings['pdfs_file']='';
+   }
+   echo "<td><input type='text' $dirsizestring name='pdfs_file' value='".$system_settings['pdfs_file']."'></td></tr>\n";
    
    echo "<tr><td colspan='2' align='center'><i>Helper Applications</i></th></tr>\n";
    echo "<tr><td>wvHtml (used to convert MSWord files into HTML):</td>\n";
-   if (!$system_settings["word2html"]) { 
+   if (!array_key_exists('word2html', $system_settings) || !$system_settings['word2html']) { 
       $temp=`which wvHtml`;
       $tok=strtok($temp," ");
       if (!strtok(" "))
-         $system_settings["word2html"]=$tok;
+         $system_settings['word2html']=$tok;
    }
-   echo "<td><input type='text' $dirsizestring name='word2html' value='".$system_settings["word2html"]."'></td></tr>\n";
+   echo "<td><input type='text' $dirsizestring name='word2html' value='".$system_settings['word2html']."'></td></tr>\n";
 
    echo "<tr><td>Ghostscript (gs, needed to index pdf files):</td>\n";
-   if (!$system_settings["gs"]) { 
+   if (!array_key_exists('gs', $system_settings) || !$system_settings['gs']) { 
       $temp=`which gs`;
       $tok=strtok($temp," ");
       if (!strtok(" "))
-         $system_settings["gs"]=$tok;
+         $system_settings['gs']=$tok;
    }
-   echo "<td><input type='text' $dirsizestring name='gs' value='".$system_settings["gs"]."'></td></tr>\n";
+   echo "<td><input type='text' $dirsizestring name='gs' value='".$system_settings['gs']."'></td></tr>\n";
 
    echo "<tr><td>Imagemagick's convert (convert, needed for images):</td>\n";
-   if (!$system_settings["convert"]) { 
+   if (!array_key_exists('convert', $system_settings) || !$system_settings['convert']) { 
       $temp=`which convert`;
       $tok=strtok($temp," ");
       if (!strtok(" "))
-         $system_settings["convert"]=$tok;
+         $system_settings['convert']=$tok;
    }
-   echo "<td><input type='text' $dirsizestring name='convert' value='".$system_settings["convert"]."'></td></tr>\n";
+   echo "<td><input type='text' $dirsizestring name='convert' value='".$system_settings['convert']."'></td></tr>\n";
 
 
    echo "<tr><td colspan='2' align='center'><i>Localization</i></th></tr>\n";

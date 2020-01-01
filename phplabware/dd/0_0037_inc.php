@@ -126,7 +126,7 @@ if ($r) {
 
 
    // copy data from 'old' pdfs table to the new one
-   set_magic_quotes_runtime(1);
+   // set_magic_quotes_runtime(1);
    $tablesfk=get_cell($db,"tableoftables","id","real_tablename","pdfs");
    $rcb=$db->Execute("SELECT * FROM pdfs");
    while (!$rcb->EOF && $rcb) {

@@ -540,7 +540,7 @@ function printheader($title,$head=false, $jsfiles=false) {
 <HEAD>
 <?php 
 echo $head;
-if (array_key_exists('javascript_enabled', $_SESSION) && 
+if (!empty($_SESSION) && array_key_exists('javascript_enabled', $_SESSION) && 
       $_SESSION['javascript_enabled'] && 
       $USER['settings']['menustyle']) {
    echo "\n<script type='text/javascript' language='Javascript'>\n<!--\n";
@@ -563,7 +563,7 @@ if (array_key_exists('javascript_enabled', $_SESSION) &&
 if ($mode<>'menu') {
       $links_per_row=5;
       $r=$db->Execute("select display from tableoftables where tablename ='linkbar'");
-      if ($r->fields[0]=='1') {
+      if ($r && $r->fields[0]=='1') {
          $linkr=$db->Execute("select label,linkurl,target from linkbar where display ='Y' ORDER by sortkey");
          if ($linkr) {
 	    $count=0;
