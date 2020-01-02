@@ -283,10 +283,10 @@ function add ($db,$table,$fields,$fieldvalues,$USER,$tableid) {
 	 $column=strtok(",");
       }
       // add trusted users entered on the form
-      if (is_array($fieldvalues['trust_read']))
+      if (array_key_exists('trust_read', $fieldvalues) && is_array($fieldvalues['trust_read']))
          foreach ($fieldvalues['trust_read'] as $userid)
             $db->Execute("INSERT INTO trust VALUES ('$tableid','$id','$userid','r')");
-      if (is_array($fieldvalues['trust_write']))
+      if (array_key_exists('trust_write', $fieldvalues) && is_array($fieldvalues['trust_write']))
          foreach ($fieldvalues['trust_write'] as $userid)
             $db->Execute("INSERT INTO trust VALUES ('$tableid','$id','$userid','w')");
       $query="INSERT INTO $table ($columns) VALUES ($values)";
@@ -556,7 +556,11 @@ function upload_files ($db,$tableid,$id,$columnid,$columnname,$USER,$system_sett
       echo "You do not have permission to write to table $table.<br>";
       return false;
    }
-   if (isset($_FILES[$columnname]['name'][0]) && !$filedir=$system_settings['filedir']) {
+   $filedir=false;
+   if (array_key_exists('filedir', $system_settings)) {
+      $filedir = $system_settings['filedir'];
+   }
+   if (isset($_FILES[$columnname]['name'][0]) && !$filedir) {
       echo "<h3><i>Filedir</i> was not set.  The file was not uploaded. Please contact your system administrator</h3>";
       return false;
    }
@@ -739,6 +743,7 @@ function delete_file ($db,$fileid,$USER) {
  */
 function user_array ($db) {
    $r=$db->Execute("SELECT id,firstname,lastname FROM users ORDER BY lastname");
+   $i=0;
    while (!$r->EOF){
       $ua[$i]["id"]=$r->fields['id'];
       if ($r->fields['firstname'])
@@ -759,6 +764,7 @@ function user_array ($db) {
  */
 function show_access ($db,$tableid,$id,$USER,$global_settings) {
    global $client;
+   $gr=0; $gw=0; $er=0; $ew=0;
    $table=get_cell($db,'tableoftables','real_tablename','id',$tableid);
    if ($id) {
       $ra=$db->Execute("SELECT gr,gw,er,ew,ownerid FROM $table WHERE id='$id'");
@@ -850,7 +856,11 @@ function get_access ($fieldvalues,$column) {
    global $system_settings;
    $gr=0; $gw=0; $er=0; $ew=0;
 
-   ${$column}=$fieldvalues[$column];
+   if (array_key_exists($column, $fieldvalues)) {
+      ${$column}=$fieldvalues[$column];
+   } else {
+      ${$column}='';
+   }
 
    if (!$fieldvalues) {
       $access=$system_settings['access'];
@@ -864,15 +874,16 @@ function get_access ($fieldvalues,$column) {
       if ($access{7}=='w')
          $ew=1;
       return ${$column};
+   } else if (!empty($fieldvalues) && is_array($fieldvalues)) {
+      if (array_key_exists('grr', $fieldvalues) && $fieldvalues['grr']) 
+         $gr=1;
+      if (array_key_exists('evr', $fieldvalues) && $fieldvalues['evr']) 
+         $er=1;
+      if (array_key_exists('grw', $fieldvalues) && $fieldvalues['grw']) 
+         $gw=1;
+      if (array_key_exists('evw', $fieldvalues) && $fieldvalues['evw']) 
+         $ew=1;
    }
-   if ($fieldvalues['grr']) 
-      $gr=1;
-   if ($fieldvalues['evr']) 
-      $er=1;
-   if ($fieldvalues['grw']) 
-      $gw=1;
-   if ($fieldvalues['evw']) 
-      $ew=1;
 
    return ${$column};
 }

@@ -81,7 +81,7 @@ function searchfield ($db,$tableinfo,$nowfield,$jscript) {
          $_POST['search'] != "Show All") {
       $column=strtok($tableinfo->fields,",");
       while ($column) {
-         if (is_array($_POST) && array_key_exists($column, $_POST))
+         if (!empty($_POST) && is_array($_POST) && array_key_exists($column, $_POST))
             ${$column}=$_POST[$column];
          $column=strtok(",");
       }
@@ -835,7 +835,8 @@ function display_add($db,$tableinfo,$Allfields,$id,$namein,$system_settings) {
             if (function_exists('plugin_modify_seq')) {
                $nowfield['text'] = plugin_modify_seq($db,$tableinfo->id,$nowfield);
             }
-            if ($nowfield['text'] && $nowfield['text']!='' && $nowfield['text']!=' ') {
+            if (array_key_exists('text', $nowfield) && $nowfield['text'] && 
+                            $nowfield['text']!='' && $nowfield['text']!=' ') {
                echo "<tr><th>{$nowfield['label']}:</th>"; 
                echo "<td>{$nowfield['text']}";
             }
@@ -862,7 +863,7 @@ function display_add($db,$tableinfo,$Allfields,$id,$namein,$system_settings) {
             }
             else {
                $size=10;
-     	       echo "<td><input type='text' name='{$nowfield['name']}' value='{$nowfield['values']}' size='$size'>";
+     	       echo "<td><input type='text' name='{$nowfield['name']}' value='{$nvalues}' size='$size'>";
             }
 	    } elseif ($nowfield['datatype']=='sequence') {
           if (! is_numeric($nowfield['text']) ) {
