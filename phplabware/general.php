@@ -208,7 +208,7 @@ while((list($key, $val) = each($_POST))) {
       navbar($USER['permissions']);
       $modarray = explode('_', $key);
       $r=$db->Execute("SELECT $tableinfo->fields FROM ".$tableinfo->realname." WHERE id=$modarray[1]"); 
-      add_g_form($db,$tableinfo,$r->fields,$modarray[1],$USER,$PHP_SELF,$system_settings);
+      add_g_form($db,$tableinfo,$modarray[1],$USER,$PHP_SELF,$system_settings);
       printfooter();
       exit();
    }
@@ -248,7 +248,7 @@ while((list($key, $val) = each($_POST))) {
          echo "<h3 align='center'>Deleted file <i>$filename</i>.</h3>\n";
       else
          echo "<h3 align='center'>Failed to delete file <i>$filename</i>.</h3>\n";
-      add_g_form ($db,$tableinfo,$_POST,$id,$USER,$PHP_SELF,$system_settings);
+      add_g_form ($db,$tableinfo,$id,$USER,$PHP_SELF,$system_settings);
       printfooter();
       exit();
    }
@@ -332,7 +332,7 @@ if ($showid && !$jsnewwindow) {
 
 // when the 'Add' button has been chosen: 
 if ($add && $md!='edit') {
-   add_g_form($db,$tableinfo,$field_values,0,$USER,$PHP_SELF,$system_settings);
+   add_g_form($db,$tableinfo,0,$USER,$PHP_SELF,$system_settings);
 } else {
    // in edit mode, create a new record filled with default values
    if ($md=='edit' && $add) {
@@ -346,7 +346,7 @@ if ($add && $md!='edit') {
    if (isset($submit) && $submit == 'Add Record') {
       if (!(check_g_data($db, $_POST, $tableinfo) && 
             $id=add($db,$tableinfo->realname,$tableinfo->fields,$_POST,$USER,$tableinfo->id) ) ) {
-         add_g_form($db,$tableinfo,$_POST,0,$USER,$PHP_SELF,$system_settings);
+         add_g_form($db,$tableinfo,0,$USER,$PHP_SELF,$system_settings);
          printfooter ();
          exit;
       }
@@ -393,7 +393,7 @@ if ($add && $md!='edit') {
       // The pdf plugin wants to modify fields that have been set to modifiable=='N'
       if (! (check_g_data($db,$_POST,$tableinfo,true) && 
              modify($db,$tableinfo->realname,$modfields,$_POST,$_POST['id'],$USER,$tableinfo->id)) ) {
-         add_g_form ($db,$tableinfo,$_POST,$_POST['id'],$USER,$PHP_SELF,$system_settings);
+         add_g_form ($db,$tableinfo,$_POST['id'],$USER,$PHP_SELF,$system_settings);
          printfooter ();
          exit;
       }

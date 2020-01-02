@@ -89,21 +89,23 @@ function searchfield ($db,$tableinfo,$nowfield,$jscript) {
 
    // cleanup nowfield variable to avoid cross-site scripting
    if (!empty(${$nowfield['name']})) {
-   $tmp = ${$nowfield['name']};
-   if ( !is_array(${$nowfield['name']}) ) {
-      ${$nowfield['name']} = strip_xss_stuff( ${$nowfield['name']} );
-      ${$nowfield['name']} = str_replace('<', ' ', ${$nowfield['name']});
-      ${$nowfield['name']} = str_replace('>', ' ', ${$nowfield['name']});
-      ${$nowfield['name']} = htmlspecialchars(${$nowfield['name']}, ENT_QUOTES);
-   }
-   if ($nowfield['datatype']=='int' || $nowfield['datatype']=='float' || $nowfield['datatype']=='sequence') {
-      if (is_numeric(${$nowfield['name']})) {
-         if (strpos($tmp, '>') !== false)
-            ${$nowfield['name']} = '>' . substr(${$nowfield['name']}, 1);
-         if (strpos($tmp, '<') !== false) 
-            ${$nowfield['name']} = '<' . substr(${$nowfield['name']}, 1);
+      $tmp = ${$nowfield['name']};
+      if ( !is_array(${$nowfield['name']}) ) {
+         ${$nowfield['name']} = strip_xss_stuff( ${$nowfield['name']} );
+         ${$nowfield['name']} = str_replace('<', ' ', ${$nowfield['name']});
+         ${$nowfield['name']} = str_replace('>', ' ', ${$nowfield['name']});
+         ${$nowfield['name']} = htmlspecialchars(${$nowfield['name']}, ENT_QUOTES);
       }
-   }
+      if ($nowfield['datatype']=='int' || $nowfield['datatype']=='float' || $nowfield['datatype']=='sequence') {
+         if (is_numeric(${$nowfield['name']})) {
+            if (strpos($tmp, '>') !== false)
+               ${$nowfield['name']} = '>' . substr(${$nowfield['name']}, 1);
+            if (strpos($tmp, '<') !== false) 
+               ${$nowfield['name']} = '<' . substr(${$nowfield['name']}, 1);
+         }
+      }
+   } else {
+       ${$nowfield['name']}='';
    }
 
    if ($nowfield['datatype']== 'link')
@@ -140,15 +142,24 @@ function searchfield ($db,$tableinfo,$nowfield,$jscript) {
     elseif ($nowfield['datatype']== 'pulldown' || $nowfield['datatype']=='mpulldown') {
       echo "<td style='width: 10%'>";
       $rpull=$db->Execute("SELECT typeshort,id from $nowfield[ass_t] ORDER by sortkey,type");
-      if ($rpull)
+      if ($rpull) {
+         $defaultval=${$nowfield['name']};
          if ($nowfield['datatype']=='mpulldown')
-            $text=$rpull->GetMenu2("$nowfield[name]",${$nowfield['name']},false,true,10,"style='width: 100%' align='left'");   
-         else 
-            $text=$rpull->GetMenu2($nowfield['name'],${$nowfield['name']},true,false,0,"style='width: 80%' $jscript");   
-      else
+            $text=$rpull->GetMenu2("$nowfield[name]",$defaultval,false,true,10,"style='width: 100%' align='left'");   
+         else {
+            if (is_array($jscript)) {
+              $jscript='';
+            }
+            $text=$rpull->GetMenu2($nowfield['name'],$defaultval,true,false,0,"style='width: 80%' $jscript");   
+         }
+      } else {
           $text="&nbsp;";
+      }
       echo "$text\n";
       // Draw a modify icon to let qualified users change the pulldown menus
+      if (empty($formname)) { 
+         $formname='';
+      }
       if ( ($USER['permissions'] & $LAYOUT) && $_SESSION['javascript_enabled'])  {
           $jscript2=" onclick='MyWindow=window.open (\"general.php?tablename=".$tableinfo->name."&amp;edit_type=$nowfield[ass_t]&amp;jsnewwindow=true&amp;formname=$formname&amp;selectname=$nowfield[name]".SID."\",\"type\",\"scrollbars,resizable,toolbar,status,menubar,width=600,height=400\");MyWindow.focus()'";
            echo "<A href=\"javascript:void(0)\" $jscript2> <img src=\"icons/edit_modify.png\" alt=\"modify {$nowfield['name']}\" title=\"modify {$nowfield['label']}\" border=\"0\"/></A>\n";
@@ -759,8 +770,10 @@ function show_reports($db,$tableinfo,$recordid=false,$viewid=false) {
          if (!(isset($USER['settings']['reportoutput'])) || $USER['settings']['reportoutput']==1)
              $checked='checked';
          $menu.="<input type='radio' name='reportoutput' $checked value='1' onClick='document.g_form.submit();'>screen\n";
-         if ($USER['settings']['reportoutput']==2)
+         if (array_key_exists('reportoutput', $USER['settings']) && 
+                                    $USER['settings']['reportoutput']==2) {
              $checked2='checked';
+         }
          $menu.="<input type='radio' name='reportoutput' $checked2 value='2' onClick='document.g_form.submit();'>file\n";
 
          if ($USER['permissions'] >= $WRITE) {
@@ -1328,7 +1341,7 @@ function set_default($db,$tableinfo,$Fieldscomma,$USER,$system_settings) {
  * $field_values is hash with column names as keys
  * $id=0 for a new entry, otherwise it is the id
  */
-function add_g_form ($db,$tableinfo,$field_values,$id,$USER,$PHP_SELF,$system_settings) {
+function add_g_form ($db,$tableinfo,$id,$USER,$PHP_SELF,$system_settings) {
    if (!may_write($db,$tableinfo->id,$id,$USER)) 
       return false; 
    if ($id) {

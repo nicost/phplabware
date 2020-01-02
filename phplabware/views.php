@@ -32,9 +32,10 @@ if ($USER['permissions'] < $WRITE) {
 if (isset ($_POST['tablename']))
    $_GET['tablename']=$_POST['tablename'];
 $tableinfo=new tableinfo($db);
-if ($_GET['viewid'])
+$viewid=0;
+if (array_key_exists('viewerid', $_GET) && $_GET['viewid'])
    $viewid=$_GET['viewid'];
-else
+else if (array_key_exists('viewerid', $_POST))
    $viewid=$_POST['viewid'];
 if (! is_numeric($viewid))
    $viewid=0;
@@ -46,7 +47,7 @@ if (!($r && $r->fields[0]))
 // Analyze user input and take appropriate action
 
 // Delete
-if ($_POST['delete']=='Remove' && $viewid) {
+if (array_key_exists('delete', $_POST) && $_POST['delete']=='Remove' && $viewid) {
    // do a check for userid to be sure nobody deletes someone elses views
    if ($db->Execute ("DELETE FROM tableviews WHERE viewnameid=$viewid AND userid={$USER['id']}")) {
       $db->Execute ("DELETE FROM viewnames WHERE viewnameid=$viewid");
@@ -54,7 +55,7 @@ if ($_POST['delete']=='Remove' && $viewid) {
    }
 }
 // Create new views
-if ($_POST['Create']=='Create' && $_POST['newview']) {
+if (array_key_exists('Create', $_POST) && $_POST['Create']=='Create' && $_POST['newview']) {
    // insert into table viewnames
    $id=$db->GenId('viewnames_id_seq');
    $viewid=$id;
@@ -72,7 +73,7 @@ if ($_POST['Create']=='Create' && $_POST['newview']) {
    }
 }
 // Modify an exising view based on user input
-if ($_POST['modify']=='Modify' && $viewid && $tableinfo) {
+if (array_key_exists('modify', $_POST) && $_POST['modify']=='Modify' && $viewid && $tableinfo) {
    // First delete all existing entries
    $db->Execute("DELETE FROM tableviews WHERE userid={$USER['id']} AND viewnameid=$viewid AND tableid={$tableinfo->id}");
    // then add them back only if the radiobox was set to 'Y'
@@ -115,6 +116,7 @@ echo "</td>\n";
 echo "<td align='center'>Views: ";
 //make dropdown with viewnames, possibly dynamically changed by the selected tablename
 // when tablename was not set we not to alter our query:
+ $tablerequirement='';
 if ($tableinfo->id)
    $tablerequirement="AND tableviews.tableid={$tableinfo->id}";
 if ($db_type=='mysql')

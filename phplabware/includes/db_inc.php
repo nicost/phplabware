@@ -125,7 +125,7 @@ function comma_array_SQL($db,$tablein,$column,$where=false)
          $rs->MoveNext();
       }
    }
-   if ($tempa)
+   if (!empty($tempa) && $tempa)
       return join(",",$tempa);
 }
 
@@ -1010,22 +1010,23 @@ function make_temp_table ($db,$temptable,$r) {
    $rc=$db->Execute("CREATE TEMPORARY TABLE $temptable (
                      uniqueid int UNIQUE NOT NULL)");
    if ($rc) {
+      $string='';
       $r->MoveFirst();
       while (!$r->EOF) {
          $string .= $r->fields["id"]."\n";
          $r->MoveNext();
       }
+      // INSERT is too slow.  COPY instead from a file.  postgres only!
+      $tmpfile=tempnam($system_settings['tmppsql'],'tmptable');
+      $fp=fopen($tmpfile,'w');
+      fwrite($fp,$string);
+      fflush($fp);
+      chmod ($tmpfile,0644);
+      $rd=$db->Execute ("COPY $temptable FROM '$tmpfile'"); 
+      $rc=$db->Execute("ALTER TABLE $temptable ADD PRIMARY KEY (uniqueid)");
+      fclose ($fp);
+      unlink($tmpfile);
    }
-   // INSERT is too slow.  COPY instead from a file.  postgres only!
-   $tmpfile=tempnam($system_settings['tmppsql'],'tmptable');
-   $fp=fopen($tmpfile,'w');
-   fwrite($fp,$string);
-   fflush($fp);
-   chmod ($tmpfile,0644);
-   $rd=$db->Execute ("COPY $temptable FROM '$tmpfile'"); 
-   $rc=$db->Execute("ALTER TABLE $temptable ADD PRIMARY KEY (uniqueid)");
-   fclose ($fp);
-   unlink($tmpfile);
 }
 
 /**
