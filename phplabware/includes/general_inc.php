@@ -798,8 +798,9 @@ function display_add($db,$tableinfo,$Allfields,$id,$namein,$system_settings) {
    echo "<form method='post' id='protocolform' enctype='multipart/form-data' name='subform' action='$dbstring";
 	?><?=SID?>'><?php
 
-   if (!$magic)
+   if (empty($magic) || !$magic) {
       $magic=time();
+   }
    echo "<input type='hidden' name='magic' value='$magic'>\n";
    echo "<input type='hidden' name='md' value='$md'>\n";
    echo "<table border=0 align='center'>\n";   
@@ -824,8 +825,13 @@ function display_add($db,$tableinfo,$Allfields,$id,$namein,$system_settings) {
             $nowfield['values']=$_POST[$nowfield['name']];
             $nowfield['text']=$_POST[$nowfield['name']];
          }
+         if (empty($nowfield['values'])) {
+            $nvalues='';
+         } else {
+            $nvalues=$nowfield['values'];
+         }
          if ($nowfield['modifiable']!='Y' && $nowfield['datatype']!='sequence') {
-            echo "<input type='hidden' name='$nowfield[name]' value='$nowfield[values]'>\n";
+            echo "<input type='hidden' name='$nowfield[name]' value='$nvalues'>\n";
             if (function_exists('plugin_modify_seq')) {
                $nowfield['text'] = plugin_modify_seq($db,$tableinfo->id,$nowfield);
             }
@@ -842,7 +848,12 @@ function display_add($db,$tableinfo,$Allfields,$id,$namein,$system_settings) {
             if ($nowfield['datatype']=='text') {
                //$size=60;
                // mike likes this to be a textlong field, let's try
-     	       echo "<td><textarea name='{$nowfield['name']}' rows='2'cols=80>{$nowfield['values']}</textarea>";
+             if (empty($nowfield['values'])) {
+                $nvalues='';
+             } else {
+                $nvalues=$nowfield['values'];
+             }
+     	       echo "<td><textarea name='{$nowfield['name']}' rows='2'cols=80>{$nvalues}</textarea>";
             }
             // for dates we have to dsiplay the test and not the value
             elseif ($nowfield['datatype']=='date') {
@@ -882,7 +893,7 @@ function display_add($db,$tableinfo,$Allfields,$id,$namein,$system_settings) {
           if ($nowfield['required']=='Y')  {
              echo "<sup style='color:red'>&nbsp;*</sup>";
           }
-     	    echo "<td><textarea name='{$nowfield['name']}' rows='5' cols='80' value='{$nowfield['values']}'>{$nowfield['values']}</textarea>";
+     	    echo "<td><textarea name='{$nowfield['name']}' rows='5' cols='80' value='{$nvalues}'>{$nvalues}</textarea>";
        } elseif ($nowfield['datatype']=='link') {
          echo "<tr><th>$nowfield[label] (http link):";
          if ($nowfield['required']=='Y') {
@@ -893,7 +904,7 @@ function display_add($db,$tableinfo,$Allfields,$id,$namein,$system_settings) {
          // get previous value	
          $r=$db->Execute("SELECT typeshort,id FROM {$nowfield['ass_t']} ORDER BY sortkey,typeshort");
          if ($nowfield['datatype']=='pulldown')
-            $text=$r->GetMenu2("$nowfield[name]",$nowfield['values'],true,false);
+            $text=$r->GetMenu2("$nowfield[name]",$nvalues,true,false);
          else
             $text=$r->GetMenu2("$nowfield[name]",$nowfield['values'],true,true);
          echo "<tr><th>$nowfield[label]:";
@@ -934,13 +945,16 @@ function display_add($db,$tableinfo,$Allfields,$id,$namein,$system_settings) {
           echo "<th>$nowfield[label]:</th>\n";
           echo "</th>\n";
           echo '<td colspan=4> <table border=0>';
-          for ($i=0;$i<sizeof($files);$i++)  {
-             echo "<tr><td colspan=2>".$files[$i]['link'];
-             echo "&nbsp;&nbsp;(<i>".$files[$i]['name']."</i>, ".$files[$i]['type']." file)</td>\n";
-             echo "<td><input type='submit' name='def_".$files[$i]["id"]."' value='Delete' Onclick=\"if(confirm('Are you sure the file ".$files[$i]["name"]." should be removed?')){return true;}return false;\"></td></tr>\n";
+          if (is_array($files)) {
+             for ($i=0;$i<sizeof($files);$i++)  {
+                echo "<tr><td colspan=2>".$files[$i]['link'];
+                echo "&nbsp;&nbsp;(<i>".$files[$i]['name']."</i>, ".$files[$i]['type']." file)</td>\n";
+                echo "<td><input type='submit' name='def_".$files[$i]["id"]."' value='Delete' Onclick=\"if(confirm('Are you sure the file ".$files[$i]["name"]." should be removed?')){return true;}return false;\"></td></tr>\n";
+             }
           }
           echo '<tr><th>Upload '.$nowfield['datatype']."</th>\n";
-	       echo "<td>&nbsp;</td><td><input type='file' name='".$nowfield[name]."[]' value='$filename'></td>\n";
+          if (empty($filename)) { $filename=''; }
+	       echo "<td>&nbsp;</td><td><input type='file' name='".$nowfield['name']."[]' value='$filename'></td>\n";
 	       echo "</tr></table><br>\n\n";
        }  elseif ($nowfield['datatype']=='mpulldown') {
            unset ($valueArray);
@@ -1173,7 +1187,11 @@ function getvalues($db,$tableinfo,$fields,$qfield=false,$field=false)
                ${$column}['text']='&nbsp;';
          }
       }
-      $Allfields[]= ${$column};
+      if (!empty(${$column})) {
+         $Allfields[]= ${$column};
+      } else {
+         $Allfields[]=null;
+      }
       //$Allfields[${$column}['name']]=${$column};
    }
    if (function_exists("plugin_getvalues")) {
