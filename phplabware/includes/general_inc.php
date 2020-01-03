@@ -465,7 +465,11 @@ function display_table_info($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr_c
       echo "function modifyEntry(element) {
         element.value='Modify';
         document.g_form.submit();
-      }";
+      }\n";
+      echo "function viewEntry(element) {
+        element.value='View';
+        document.g_form.submit();
+      }\n";
       echo "\n</script>\n";
   }
    // print all entries
@@ -520,8 +524,11 @@ function display_table_info($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr_c
       echo "<td align='center'>&nbsp;\n";  
       // View action
       if ($_SESSION['javascript_enabled']) {
-         $jscript=" onclick='MyWindow=window.open (\"general.php?tablename=".$tableinfo->name."&amp;showid=$id&amp;jsnewwindow=true&amp;viewid=$viewid\",\"view\",\"status,menubar,toolbar,scrollbars,resizable,titlebar,width=700,height=500\");MyWindow.focus()'";
-         echo "<A href=\"javascript:void(0)\" $jscript> <img src=\"icons/detail.png\" alt=\"detail\" title=\"detail\" border=\"0\"/></A>\n";
+          $jscript=" onclick='MyWindow=window.open (\"general.php?tablename=".$tableinfo->name."&amp;showid=$id&amp;jsnewwindow=true&amp;viewid=$viewid\",\"view\",\"status,menubar,toolbar,scrollbars,resizable,titlebar,width=700,height=500\");MyWindow.focus()'";
+          echo "<A href=\"javascript:void(0)\" $jscript> <img src=\"icons/detail.png\" alt=\"detail\" title=\"detail\" border=\"0\"/></A>\n";
+         //echo "<input type='hidden' name='view_$id'>\n";
+         //echo "<a href='javascript:viewEntry(document.g_form.view_$id)'>\n";
+         //echo "<img src=\"icons/detail.png\" alt=\"detail\" title=\"detail\" border=\"0\"/></a>\n";
       } else {
          echo "<input type=\"submit\" name=\"view_" . $id . "\" value=\"View\">\n";
       }
@@ -529,13 +536,9 @@ function display_table_info($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr_c
          // Modify action
          // this works, but how do you go back from the modify window to this one???
          if ($_SESSION['javascript_enabled']) {
-            // $jscript="onclick='MyWindow=window.open (\"general.php?tablename=".$tableinfo->name."&amp;jsnewwindow=true&amp;modify=true&amp;mod_".$id."=Modify\",\"modify\",\"scrollbars,resizable,status,menubar,toolbar,width=700,height=500\");MyWindow.focus()'";
-            $jscript="onclick='MyWindow=window.open (\"general.php?tablename=".$tableinfo->name."&amp;jsnewwindow=true&amp;modify=true&amp;mod_".$id."=Modify\",\"modify\",\"scrollbars,resizable,status,menubar,toolbar,width=700,height=500\");MyWindow.focus()'";
-            //echo "<A href=\"javascript:void(0)\" $jscript> <img src=\"icons/edit_modify.png\" alt=\"modify\" title=\"modify\" border=\"0\"/></A>\n";
             echo "<input type='hidden' name='mod_$id'>\n";
             echo "<a href='javascript:modifyEntry(document.g_form.mod_$id)'>\n";
             echo "<img src=\"icons/edit_modify.png\" alt=\"modify\" title=\"modify\" border=\"0\"/></a>\n";
-
 
          } else {
             echo "<input type=\"submit\" name=\"mod_" . $id . "\" value=\"Modify\">\n";
