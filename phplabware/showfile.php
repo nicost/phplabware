@@ -22,7 +22,10 @@ require('./includes/db_inc.php');
 $id=$_GET['id'];
 if (! is_numeric($_GET['id']))
    $id = 0;
-$type=$_GET['type'];
+$type='';
+if (array_key_exists('type', $_GET)) {
+   $type = $_GET['type'];
+}
 
 if (!$id) {
    echo "<html><h3>404. File not found.</h3></html>";
