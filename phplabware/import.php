@@ -116,6 +116,7 @@ function import_file ($db,$tableid,$id,$columnid,$columnname,$tmpfileid,$system_
 {
    if (!$tmpfileid)
       return false;
+print_r($tmpfileid);
    $table=get_cell($db,'tableoftables','tablename','id',$tableid);
    $real_tablename=get_cell($db,'tableoftables','real_tablename','id',$tableid);
 

@@ -282,7 +282,7 @@ function fetch_pdf($pmid,$journal)
           * grep the base of the url and handle all know cases accordingly.
           * This is where we'll have to write grabbers for each journal
           */
-         get_host_getstring($link,&$host,&$getstring); 
+         get_host_getstring($link,$host,$getstring); 
 //echo "host: $host, getstring: $getstring.<br>";
          /**
           * Some links immediately link through to other (journal) sites
@@ -321,7 +321,7 @@ Location: ') {
               */
              $website=read_web_page($host,$getstring,$header,$body,true,5); 
              $linktopdf=get_location($header);
-             get_host_getstring($linktopdf,&$pdfhost,&$pdfgetstring); 
+             get_host_getstring($linktopdf,$pdfhost,$pdfgetstring); 
              if (do_pdf_download($pdfhost,$pdfgetstring,'file')) {
                  return true;
              }
@@ -398,7 +398,7 @@ Location: ') {
                 */
                 $linktopdf=get_location($header);
 //echo "LINKTOPDF: $linktopdf.<br>\n";
-                get_host_getstring($linktopdf,&$pdfhost,&$pdfgetstring); 
+                get_host_getstring($linktopdf,$pdfhost,$pdfgetstring); 
                 /**
                  * It seems that we can now find the link to the pdf by taking
                  * the part after DynaPage.taf?file= up to the first _

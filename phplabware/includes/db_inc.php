@@ -329,17 +329,18 @@ function modify ($db,$table,$fields,$fieldvalues,$id,$USER,$tableid) {
    // delete all entries in trust related to this record first
    $db->Execute("DELETE FROM trust WHERE tableid='$tableid' and recordid='$id'");
    // then add back trusted users entered on the form
-   if (is_array($fieldvalues['trust_read']))
+   if (array_key_exists('trust_read', $fieldvalues) && is_array($fieldvalues['trust_read']))
       foreach ($fieldvalues['trust_read'] as $userid)
          $db->Execute("INSERT INTO trust VALUES ('$tableid','$id','$userid','r')");
-   if (is_array($fieldvalues['trust_write']))
+   if (array_key_exists('trust_write', $fieldvalues) && is_array($fieldvalues['trust_write']))
       foreach ($fieldvalues['trust_write'] as $userid)
          $db->Execute("INSERT INTO trust VALUES ('$tableid','$id','$userid','w')");
 
    $query="UPDATE $table SET ";
    $column=strtok($fields,',');
    while ($column) {
-      if (! ($column=='id' || $column=='date' || $column=='ownerid' || is_array($fieldvalues[$column]) ) ) {
+      if (! ($column=='id' || $column=='date' || $column=='ownerid' || 
+            (array_key_exists($column, $fieldvalues) && is_array($fieldvalues[$column])) ) ) {
          $test=true;
          if (in_array($column, array('gr','gw','er','ew')))
             $fieldvalues[$column]=get_access($fieldvalues,$column);
@@ -544,6 +545,7 @@ function process_image($db,$fileid,$bigsize)
 function upload_files ($db,$tableid,$id,$columnid,$columnname,$USER,$system_settings)
 {
    global $_FILES,$_POST,$system_settings;
+   $fileid=false;
 
    $table=get_cell($db,'tableoftables','tablename','id',$tableid);
    $real_tablename=get_cell($db,'tableoftables','real_tablename','id',$tableid);
@@ -560,7 +562,7 @@ function upload_files ($db,$tableid,$id,$columnid,$columnname,$USER,$system_sett
    if (array_key_exists('filedir', $system_settings)) {
       $filedir = $system_settings['filedir'];
    }
-   if (isset($_FILES[$columnname]['name'][0]) && !$filedir) {
+   if (!empty($_FILES[$columnname]['name'][0]) && !$filedir) {
       echo "<h3><i>Filedir</i> was not set.  The file was not uploaded. Please contact your system administrator</h3>";
       return false;
    }
@@ -580,18 +582,19 @@ function upload_files ($db,$tableid,$id,$columnid,$columnname,$USER,$system_sett
       $mime=strtok ($mime,";");
       $filestype=substr(strrchr($mime,'/'),1);
       $size=$_FILES["$columnname"]['size'][$i];
-      $title=$_POST['filetitle'][$i];
-      if (!$title)
+      if (!array_key_exists('filetitle', $_POST)) {
          $title='NULL'; 
-      else
+      } else {
+         $title=$_POST['filetitle'][$i];
          $title="'$title'";
-      $type=$_POST['filetype'][$i];
+         $type=$_POST['filetype'][$i];
+      }
       // this works asof php 4.02
-if (file_exists($_FILES[$columnname]['tmp_name'][$i])) {
-}
+      if (file_exists($_FILES[$columnname]['tmp_name'][$i])) {
+      }
       if (move_uploaded_file($_FILES["$columnname"]['tmp_name'][$i],"$filedir/$fileid"."_"."$originalname")) {
          $query="INSERT INTO files (id,filename,mime,size,title,tablesfk,ftableid,ftablecolumnid,type) VALUES ($fileid,'$originalname','$mime','$size',$title,'$tableid',$id,'$columnid','$filestype')";
-	 $db->Execute($query);
+         $db->Execute($query);
       } else {
          /** 
           * files that are uploaded by other phplabware code are OK
@@ -682,7 +685,7 @@ function get_files ($db,$table,$id,$columnid,$format=1,$thumbtype='small') {
  *  Returns path to the file
  *
  */
-function file_path ($db,$fileid) {
+function file_path ($db, $fileid) {
    global $system_settings;
    $filename=get_cell($db,'files','filename','id',$fileid);
    return $system_settings['filedir']."/$fileid"."_$filename";
@@ -1028,7 +1031,7 @@ function make_temp_table ($db,$temptable,$r) {
          $r->MoveNext();
       }
       // INSERT is too slow.  COPY instead from a file.  postgres only!
-      $tmpfile=tempnam($system_settings['tmppsql'],'tmptable');
+      $tmpfile=tempnam($system_settings['tmpdirpsql'],'tmptable');
       $fp=fopen($tmpfile,'w');
       fwrite($fp,$string);
       fflush($fp);

@@ -118,10 +118,10 @@ function searchfield ($db,$tableinfo,$nowfield,$jscript) {
          $ownerids[]=$rowners->fields[0];
          $rowners->MoveNext();
       }
-      if ($ownerids) {
+      if (!empty($ownerids) && $ownerids) {
           $ownerlist=implode(',',$ownerids);
       }
-      if ($ownerlist) {   
+      if (!empty($ownerlist) && $ownerlist) {   
          $rowners2=$db->Execute("SELECT lastname,id FROM users WHERE id IN ($ownerlist)");
           $text=$rowners2->GetMenu2("$nowfield[name]",${$nowfield[name]},true,false,0,"style='width: 80%' $jscript");
          echo "<td style='width:10%'>$text</td>\n";
@@ -601,14 +601,16 @@ function display_record($db,$Allfields,$id,$tableinfo,$backbutton=true,$previous
       // decide whether this field will be shown
       unset ($thisfield);
       // if we have a viewid, check the list
-      if ($viewlist){
+      if (!empty($viewlist) && $viewlist){
          $thisfield=in_array($nowfield['columnid'],$viewlist);
       }
       else {
          //Only show the entry when display_record is set
-         $thisfield= ($nowfield['display_record']==='Y');
+         if (is_array($nowfield)) {
+            $thisfield= ($nowfield['display_record']==='Y');
+         }
       }
-      if ($thisfield && is_array($nowfield)) {
+      if (!empty($thisfield) && $thisfield && is_array($nowfield)) {
          // explode nested table links to the current world:
          if (isset($nowfield['nested'])) {
             $nowfield['text']=$nowfield['nested']['text'];
@@ -625,13 +627,16 @@ function display_record($db,$Allfields,$id,$tableinfo,$backbutton=true,$previous
          }
          elseif ($nowfield['datatype']=='file' || $nowfield['datatype']=='image') {
             // if this came through a associated table:
-            if ($nowfield['nested']['nested_tbname'] && $nowfield['nested']['nested_columnid'])
+            if (array_key_exists('nested', $nowfield) && 
+                    $nowfield['nested']['nested_tbname'] && 
+                    $nowfield['nested']['nested_columnid']) {
                $files=get_files($db,$nowfield['nested']['nested_tbname'],$nowfield['nested']['nested_id'],$nowfield['nested']['nested_columnid'],0,'big');
             // the normal/direct way
-            else
+            } else {
                $files=get_files($db,$tableinfo->name,$id,$nowfield['columnid'],0,'big');
+            }
             if ($files) { 
-               echo "<th>$nowfield[label]:</th>\n<td colspan=5>";
+               echo "<th>{$nowfield['label']}:</th>\n<td colspan=5>";
                for ($i=0;$i<sizeof($files);$i++)  {
                   echo $files[$i]['link']."&nbsp;&nbsp;(<i>".$files[$i]['name']."</i>, ".$files[$i]['type'];
                   echo " file, ".$files[$i]['size'].")<br>\n";
@@ -645,7 +650,7 @@ function display_record($db,$Allfields,$id,$tableinfo,$backbutton=true,$previous
          // most datatypes are handled in getvalues
          else {
             echo "<th>$nowfield[label]</th>\n";
-	    if ($nowfield['link'])
+	          if (array_key_exists('link', $nowfield) && $nowfield['link'])
                echo "<td colspan=2>{$nowfield['link']}</td>\n";
             else       
                echo "<td colspan=2>{$nowfield['text']}</td>\n";
@@ -669,16 +674,21 @@ function display_record($db,$Allfields,$id,$tableinfo,$backbutton=true,$previous
 
    // for organizational purpose, define buttons here:
    // next and previous buttons
-   if ($previousid)
+   $previousbutton='';
+   if ($previousid) {
       $previousbutton="<input type=\"button\" name=\"view_".$previousid."\" value=\"Previous\" onClick='MyWindow=window.open(\"general.php?tablename={$tableinfo->name}&amp;showid=$previousid&amp;jsnewwindow=true&amp;viewid=$viewid\",\"view\",\"scrollbars,resizable,toolbar,width=600,height=400\")'>\n";
-   if ($nextid)
+   }
+   $nextbutton='';
+   if ($nextid) {
       $nextbutton="<input type=\"button\" name=\"view_".$nextid."\" value=\"Next\" onClick='MyWindow=window.open(\"general.php?tablename={$tableinfo->name}&amp;showid=$nextid&amp;jsnewwindow=true&amp;viewid=$viewid\",\"view\",\"scrollbars,resizable,toolbar,width=600,height=400\")'>\n";
+   }
    // closebutton
    $closebutton="<input type=\"button\" onclick='self.close();window.opener.focus();' name='Close' value='Close'>\n";
    if ($backbutton) {
       $backbutton="<input type='submit' name='submit' value='Back'>\n";
    }
    // modify button 
+   $modifybutton='';
    if (may_write($db,$tableinfo->id,$id,$USER)) {
       $modifybutton= "<input type=\"submit\" name=\"mod_" . $id . "\" value=\"Modify\">\n";
    }
@@ -814,6 +824,9 @@ function display_add($db,$tableinfo,$Allfields,$id,$namein,$system_settings) {
    echo "<tr><td>\n<table border=0 align='center'>\n";
    
    foreach ($Allfields as $nowfield) {
+      if (!is_array($nowfield)) {
+         continue 1;
+      }
       // give plugin a chance to modify data
       if (function_exists('plugin_display_add_pre'))
          plugin_display_add_pre($db,$tableinfo->id,$nowfield);
@@ -1195,7 +1208,7 @@ function getvalues($db,$tableinfo,$fields,$qfield=false,$field=false)
       }
       //$Allfields[${$column}['name']]=${$column};
    }
-   if (function_exists("plugin_getvalues")) {
+   if (function_exists("plugin_getvalues") && !empty($id)) {
       plugin_getvalues($db,$Allfields,$id,$tableinfo->id);
    }
    return $Allfields;
@@ -1258,7 +1271,7 @@ function check_g_data ($db,&$field_values,$tableinfo,$modify=false) {
          // cut off words at 80 characters and insert a line break
          elseif ($rs->fields[1]=='textlong') {
              $longtxts = explode(' ',$field_values[$fieldA]);
-             unset($field_values[$fieldA]);
+             $field_values[$fieldA]='';
              foreach ($longtxts  as $longtxt) {
                 $field_values[$fieldA].=wordwrap($longtxt, 80, ' ',1) . ' ';
              }
@@ -1381,7 +1394,7 @@ function add_g_form ($db,$tableinfo,$id,$USER,$PHP_SELF,$system_settings) {
 function show_g($db,$tableinfo,$id,$USER,$system_settings,$backbutton=true,$previousid=false,$nextid=false,$viewid=false)  {
    if (!may_read($db,$tableinfo,$id,$USER))
        return false;
-   $Allfields=getvalues($db,$tableinfo,$tableinfo->fields,id,$id);
+   $Allfields=getvalues($db,$tableinfo,$tableinfo->fields,'id',$id);
    display_record($db,$Allfields,$id,$tableinfo,$backbutton,$previousid,$nextid,$viewid);
 }
 	
@@ -1396,38 +1409,40 @@ function process_file($db,$fileid,$system_settings) {
    global $_FILES,$_POST;
    $mimetype=get_cell($db,'files','mime','id',$fileid);
    if (!strstr($mimetype,'html')) {
-      $word2html=$system_settings['word2html'];
-      $wv_version=$system_settings['wvHtml_version'];
-      $filepath=file_path($db,$fileid);
-      if (!$filepath)
-         return false;
-      if ($wv_version<0.7) {
-         $temp=$system_settings["tmpdir"]."/".uniqid("file");
-         $command= "$word2html $filepath $temp";
-         $result=exec($command);
-      }
-      // version of wvHtml >= 0.7 have to be called differently:
-      //if (@is_readable($temp) || @filesize($temp) < 1) {
-      else {
-         $converted_file=uniqid("file");
-         $command="$word2html --targetdir=".$system_settings["tmpdir"]." \"$filepath\" $converted_file";
-         $result=exec($command);
-	 $temp=$system_settings["tmpdir"]."/".$converted_file;
-      } 
+      if (array_key_exists('word2html', $system_settings)) {
+         $word2html=$system_settings['word2html'];
+         $wv_version=$system_settings['wvHtml_version'];
+         $filepath=file_path($db,$fileid);
+         if (!$filepath)
+            return false;
+         if ($wv_version<0.7) {
+            $temp=$system_settings['tmpdir']."/".uniqid('file');
+            $command= "$word2html $filepath $temp";
+            $result=exec($command);
+         }
+         // version of wvHtml >= 0.7 have to be called differently:
+         //if (@is_readable($temp) || @filesize($temp) < 1) {
+         else {
+            $converted_file=uniqid('file');
+            $command="$word2html --targetdir=".$system_settings['tmpdir']." \"$filepath\" $converted_file";
+            $result=exec($command);
+            $temp=$system_settings['tmpdir']."/".$converted_file;
+         } 
+         }
       if (@is_readable($temp) && filesize($temp)) {
          // we now know this was an MSword file, so lets make sure the mime type is OK
          $db->query("UPDATE files SET mime='application/msword',type='msword' WHERE id=$fileid");
          unset ($_FILES);
          $r=$db->query ("SELECT filename,mime,title,tablesfk,ftableid,ftablecolumnid FROM files WHERE id=$fileid");
          if ($r && !$r->EOF) {
-            $filename=$r->fields("filename");
+            $filename=$r->fields('filename');
             // change .doc to .html in a lousy way
-            $filename=str_replace(".doc",".htm",$filename); 
-            $mime="text/html";
+            $filename=str_replace('.doc','.htm',$filename); 
+            $mime='text/html';
             $type=substr(strrchr($mime,"/"),1);
             $size=filesize($temp);
             $id=$db->GenID("files_id_seq");
-            $query="INSERT INTO files (id,filename,mime,size,title,tablesfk,ftableid,ftablecolumnid,type) VALUES ($id,'$filename','$mime','$size','".$r->fields("title")."','".$r->fields("tablesfk")."','".$r->fields("ftableid")."','".$r->fields("ftablecolumnid")."','$type')";
+            $query="INSERT INTO files (id,filename,mime,size,title,tablesfk,ftableid,ftablecolumnid,type) VALUES ($id,'$filename','$mime','$size','".$r->fields('title')."','".$r->fields('tablesfk')."','".$r->fields('ftableid')."','".$r->fields('ftablecolumnid')."','$type')";
            if ($db->execute($query)) {
                 $newloc=file_path($db,$id);
                `mv $temp '$newloc'`;

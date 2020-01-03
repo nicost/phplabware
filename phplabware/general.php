@@ -134,11 +134,13 @@ if ($jsnewwindow && $showid && $tableinfo->name) {
       // find the next and previous ids, so that we can show prev/next buttons
       $listb=may_read_SQL($db,$tableinfo,$USER,'tempb');
       $r=$db->Execute($_SESSION[$tableinfo->queryname]);
-      while ($r && $r->fields['id']!=$showid && !$r->eof) {
+      $previousid=false;
+      $nextid=false;
+      while ($r && $r->fields['id']!=$showid && !$r->EOF) {
          $previousid=$r->fields['id'];
          $r->MoveNext();
       }
-      if ($r->fields['id']==$showid && !$r->eof) {
+      if ($r->fields['id']==$showid && !$r->EOF) {
          $r->MoveNext();
          $nextid=$r->fields['id'];
       }
@@ -303,7 +305,7 @@ while((list($key, $val) = each($_POST))) {
 if ($edit_type && ($USER['permissions'] & $LAYOUT)) {
    printheader($httptitle, "", './includes/js/tablemanage.js');
    include('./includes/type_inc.php');
-   $assoc_name=get_cell($db,$tableinfo->desname,label,associated_table,$edit_type);
+   $assoc_name=get_cell($db,$tableinfo->desname,'label','associated_table',$edit_type);
    show_type($db,$edit_type,$assoc_name,$tableinfo->name);
    printfooter();
    exit();

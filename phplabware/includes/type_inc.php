@@ -58,7 +58,7 @@ function show_type ($db,$table,$name, $tablename=false) {
    // propagate the form and select name as GET variables to be able to manipulate the select list with javascript
    $dbstring.='formname='.$_GET['formname'].'&';
    $dbstring.='selectname='.$_GET['selectname'].'&';
-   if($_POST['type_name']) {
+   if(array_key_exists('type_name', $_POST)) {
       $name=$_POST['type_name'];
    }
    echo "<form method='post' id='typeform' enctype='multipart/form-data' ";
@@ -107,6 +107,7 @@ function show_type ($db,$table,$name, $tablename=false) {
       echo "<td><input type='text' id='type_typeshort_$id' name='type_typeshort_$id' value='$typeshort' onchange='tellServer(\"$dbstring".SID."\", $id, \"typeshort\");'></td>\n";
       echo "<td><input type='text' id='type_sortkey_$id' name='type_sortkey_$id' value='$sortkey' onchange='tellServer(\"$dbstring".SID."\", $id, \"sortkey\");'></td>\n";
       // When Javascript is on we do not need Modify buttons here:
+      $modstring='';
       if (!$_SESSION['javascript_enabled']) {
          $modstring = "<input type='submit' name='mdtype"."_$id' value='Modify'>";
       }
