@@ -461,7 +461,11 @@ function display_table_info($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr_c
             element.value='Remove';
             document.g_form.submit();
         }
-      }"; 
+      }\n"; 
+      echo "function modifyEntry(element) {
+        element.value='Modify';
+        document.g_form.submit();
+      }";
       echo "\n</script>\n";
   }
    // print all entries
@@ -525,8 +529,14 @@ function display_table_info($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr_c
          // Modify action
          // this works, but how do you go back from the modify window to this one???
          if ($_SESSION['javascript_enabled']) {
+            // $jscript="onclick='MyWindow=window.open (\"general.php?tablename=".$tableinfo->name."&amp;jsnewwindow=true&amp;modify=true&amp;mod_".$id."=Modify\",\"modify\",\"scrollbars,resizable,status,menubar,toolbar,width=700,height=500\");MyWindow.focus()'";
             $jscript="onclick='MyWindow=window.open (\"general.php?tablename=".$tableinfo->name."&amp;jsnewwindow=true&amp;modify=true&amp;mod_".$id."=Modify\",\"modify\",\"scrollbars,resizable,status,menubar,toolbar,width=700,height=500\");MyWindow.focus()'";
-            echo "<A href=\"javascript:void(0)\" $jscript> <img src=\"icons/edit_modify.png\" alt=\"modify\" title=\"modify\" border=\"0\"/></A>\n";
+            //echo "<A href=\"javascript:void(0)\" $jscript> <img src=\"icons/edit_modify.png\" alt=\"modify\" title=\"modify\" border=\"0\"/></A>\n";
+            echo "<input type='hidden' name='mod_$id'>\n";
+            echo "<a href='javascript:modifyEntry(document.g_form.mod_$id)'>\n";
+            echo "<img src=\"icons/edit_modify.png\" alt=\"modify\" title=\"modify\" border=\"0\"/></a>\n";
+
+
          } else {
             echo "<input type=\"submit\" name=\"mod_" . $id . "\" value=\"Modify\">\n";
          }
@@ -534,7 +544,7 @@ function display_table_info($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr_c
          if (! $_SESSION['javascript_enabled']) {
             $delstring = "<input type=\"submit\" name=\"del_" . $id . "\" value=\"Remove\">\n";
          } else {
-	        $jstitle=str_replace("'"," ",$title);
+	          $jstitle=str_replace("'"," ",$title);
             $jstitleShort = substr($jstitle, 0, 30);
             $delstring = "<input type='hidden' name='del_$id'>\n";
             $delstring .= "<a href='javascript:deleteEntry(\"$jstitleShort\", document.g_form.del_$id)'>\n";
