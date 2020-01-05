@@ -34,7 +34,8 @@ if ($_POST['datatype']=='date') {
 }
 
 //$db->debug=true;
-if (may_see_table($db,$USER,$tableinfo->id) && may_write($db,$tableinfo->id,$_post['recordid'],$USER)) {
+if (may_see_table($db,$USER,$tableinfo->id) && 
+            may_write($db,$tableinfo->id,$_POST['recordid'],$USER)) {
    if ($_POST['datatype']=='mpulldown') {
       // $newvalue is a comma separated list with ids of the selected items
       // remove the last (extra) comma)

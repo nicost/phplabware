@@ -40,14 +40,17 @@ function make_xml ($db,$data,$tableinfo) {
  * $output: 1=screen, 2=file
  *
  */
-function make_sheet ($db,$data,$tableinfo,$output,$fieldscomma,$delimiter,$header=false) {
+function make_sheet ($db,$data,$tableinfo,$fieldscomma,$delimiter,$header=false) {
+   $out='';
+   $length = strlen($delimiter);
    $fields=explode(',', $fieldscomma);
    // some characters will kill nice parsing of our output, so take these guys out:
    $badchars= array ("\n", "\t", "\m", "\r");
    if (!$header) {
       foreach ($data as $column) {
-         if (in_array($column['name'],$fields)) {
+         if (is_array($column) && in_array($column['name'],$fields)) {
             $column['text']=str_replace($badchars,'',$column['text']);
+            $column['text']=str_replace('&nbsp;', '', $column['text']);
             $out.="{$column['text']}$delimiter";
          }
       }
@@ -58,9 +61,8 @@ function make_sheet ($db,$data,$tableinfo,$output,$fieldscomma,$delimiter,$heade
          }
       }
    }
-   if ($output==1) {
-      $out.='<br>';
-   }
+   // strip last delimiter
+   $out = substr_replace($out, '', -$length);
    $out.="\n";
    return $out;
 }

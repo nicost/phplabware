@@ -138,6 +138,7 @@ function add_table ($db,$tablename,$tablelabel,$sortkey,$plugincode) {
    
    //check to ensure that duplicate table or database does not exist
    $r=$db->Execute("SELECT tablename FROM tableoftables");
+   $isbad=false;
    while ($r && !$r->EOF) {
       if ($tablename==$r->fields["tablename"])
          $isbad=true;

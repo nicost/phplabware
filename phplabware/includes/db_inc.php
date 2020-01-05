@@ -179,14 +179,17 @@ function sortstring($db,$tableinfo,&$sortdirarray,$sortup,$sortdown) {
 
    if ($sortdirarray) {
       foreach($sortdirarray as $key => $value) {
-         if ($sortstring)
+         if (!empty($sortstring)) {
             $sortstring .= ", ";
+         } else {
+            $sortstring = '';
+         }
          // if the column '$key' is of type table, we'llhave to dig deeper to find the table.column description of the underlying data
          $table_column=origin_column ($db,$tableinfo,$key);
          $sortstring .= "$table_column $value";
       }
    }
-   if (!empty($sortstring))
+   if (!empty($sortstring)) 
       return $sortstring;
    return null;
 }
@@ -200,7 +203,9 @@ function tableheader ($sortdirarray,$nowfield)
    $columnname=$nowfield['name'];
    $columnlabel=$nowfield['label'];
    echo "<th><table align='center' width='100%'><tr><td align='left'>";
-   if ($sortdirarray[$columnname]=='asc') {
+   if (is_array($sortdirarray) && 
+            array_key_exists($columnname, $sortdirarray) && 
+            $sortdirarray[$columnname]=='asc') {
      $sortupicon='icons/sortup_active.png';
    } else {
       $sortupicon='icons/sortup.png';
@@ -210,7 +215,9 @@ function tableheader ($sortdirarray,$nowfield)
       echo "<input type='image' name='sortup_$columnname' value='$columnlabel' src='$sortupicon' alt='Sort Up'>";
    }
    echo "</td><th align='center'>$columnlabel</th><td align='right'>";
-   if ($sortdirarray[$columnname]=='desc') {
+   if (is_array($sortdirarray) &&
+               array_key_exists($columnname, $sortdirarray) && 
+               $sortdirarray[$columnname]=='desc') {
       $sortdownicon='icons/sortdown_active.png';
    } else {
       $sortdownicon='icons/sortdown.png';

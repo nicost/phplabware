@@ -32,20 +32,36 @@ if (!$tableinfo->id) {
    exit();
 }
 
-$reportid=(int)$_GET['reportid'];
-$recordid=(int)$_GET['recordid'];
-$tableview=$_GET['tableview'];
+if (array_key_exists('reportid', $_GET)) { 
+   $reportid=(int)$_GET['reportid'];
+} else { 
+   $reportid = false; 
+}
+if (array_key_exists('recordid', $_GET)) { 
+   $recordid=(int)$_GET['recordid'];
+} else { 
+   $recordid = false; 
+}
+if (array_key_exists('tableview', $_GET)) { 
+   $tableview=$_GET['tableview'];
+} else { 
+   $tableview = false; 
+}
+
+
 // determine which fields are going to be seen:
-if ( is_numeric($_GET['viewid']) )
+if (array_key_exists('viewid', $_GET) &&  is_numeric($_GET['viewid']) ) {
    $viewid=$_GET['viewid'];
+} else {
+  $viewid=false;
+}
 if ($viewid) {
    $Fieldscomma=viewlist($db,$tableinfo,$viewid);
 } else {
-   $Fieldscomma=comma_array_SQL($db,$tableinfo->desname,columnname,"WHERE display_table='Y'");
+   $Fieldscomma=comma_array_SQL($db,$tableinfo->desname,'columnname',"WHERE display_table='Y'");
 }
 
- 
-if (!($reportid && ($recordid || $tableview)) ) {
+if (!($reportid)) { // && ($recordid || $tableview)) ) {
    printheader($httptitle);
    navbar($USER['permissions']);
    echo "<h3 align='center'>Not enough information to generate the report.</h3>";
@@ -91,30 +107,33 @@ if ($reportid>0) {
    }
 }
 
+header('Accept-Ranges: bytes');
+header('Connection: close');
+header("Content-Type: text/plain");
+header("Cache-Control: no-cache, no-store, must-revalidate");
+header("Pragma: no-cache");
+header("Expires: 0");
 // if we want to output to a file, send the appropriate headers now
 if ($USER['settings']['reportoutput']==2) {
-   header('Accept-Ranges: bytes');
-   header('Connection: close');
-   header("Content-Type: text/html");
    // we don't yet know how long this is going to be
    //header("Content-Length: $filesize");
    header("Content-Disposition-type: attachment");
    header("Content-Disposition: attachment; filename=$reportname");
-}
+} 
 
 // displays multiple records in a report (last search statement)
-if ($_GET['tableview']) {
+if ($tableview) {
    // figure out the current query:
    $queryname=$tableinfo->short.'_query';
-   if (session_is_registered($queryname) && isset($_SESSION[$queryname])) {
+   if (array_key_exists($queryname, $_SESSION) && isset($_SESSION[$queryname])) {
       // get a list with all records we may see, create temp table tempb
       $listb=may_read_SQL($db,$tableinfo,$USER,'tempb');
 
       // read all fields in from the description file
-      $fields_table=comma_array_SQL($db,$tableinfo->desname,columnname,"");
+      $fields_table=comma_array_SQL($db,$tableinfo->desname,'columnname','');
       //$fields_table="id,".$fields_table;
       // prepare the search statement
-      $query=make_search_SQL($db,$tableinfo,$fields_table,$USER,$search,$sortstring,$listb["sql"]);
+      $query=make_search_SQL($db,$tableinfo,$fields_table,$USER,$search,$sortstring,$listb['sql']);
       //$db->debug=true;
       $r=$db->Execute($query);
       //$db->debug=false;
@@ -124,10 +143,10 @@ if ($_GET['tableview']) {
          echo "<phplabware_base>\n";
       } elseif ($reportid==-2) { // tab headers
          $Allfields=getvalues($db,$tableinfo,$fields_table);
-         echo make_sheet ($db,$Allfields,$tableinfo,$USER['settings']['reportoutput'],$Fieldscomma, "\t", true);
+         echo make_sheet ($db,$Allfields,$tableinfo,$Fieldscomma, "\t", true);
       } elseif ($reportid==-3) { // comma headers
          $Allfields=getvalues($db,$tableinfo,$fields_table);
-         echo make_sheet ($db,$Allfields,$tableinfo,$USER['settings']['reportoutput'],$Fieldscomma,',', true);
+         echo make_sheet ($db,$Allfields,$tableinfo,$Fieldscomma,',', true);
       }
       $counter=1;
       while ($r && !$r->EOF) {
@@ -137,9 +156,9 @@ if ($_GET['tableview']) {
          } elseif ($reportid==-1) {
             echo make_xml ($db,$Allfields,$tableinfo);
          } elseif ($reportid==-2) {
-            echo make_sheet ($db,$Allfields,$tableinfo,$USER['settings']['reportoutput'],$Fieldscomma, "\t", false);
+            echo make_sheet ($db,$Allfields,$tableinfo,$Fieldscomma, "\t", false);
          } elseif ($reportid==-3) {
-            echo make_sheet ($db,$Allfields,$tableinfo,$USER['settings']['reportoutput'],$Fieldscomma,',', false);
+            echo make_sheet ($db,$Allfields,$tableinfo,$Fieldscomma,',', false);
          }
          $r->MoveNext();
          $counter++;

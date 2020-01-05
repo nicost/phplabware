@@ -42,9 +42,10 @@ $tableinfo->pagename=$pagename=$tableinfo->short.'_curr_page';
 if (!empty($_SESSION[$pagename]))
    ${$pagename}=$_SESSION[$pagename];
 
+
 // Acquire active view from settings or get/post vars
-if (isset($USER['settings']['view']["$tableinfo->name"]))
-   $viewid=$USER['settings']['view']["$tableinfo->name"];
+//if (isset($USER['settings']['view']["$tableinfo->name"]))
+//   $viewid=$USER['settings']['view']["$tableinfo->name"];
 if (isset($_GET['viewid']) && is_numeric($_GET['viewid']))
    $viewid=$_GET['viewid'];
 elseif (isset($_POST['viewid']) && is_numeric($_POST['viewid']))
@@ -64,6 +65,7 @@ if (!empty($viewid) && $viewid) {
    if (isset($USER['settings']['view'][$tableinfo->name]))
       unset($USER['settings']['view'][$tableinfo->name]);
 }
+
 
 // some browsers (Safari!!) do not return GET variables from a form using method='GET'
 // but they return them as POST!!!

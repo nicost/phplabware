@@ -33,16 +33,17 @@ if (isset ($_POST['tablename']))
    $_GET['tablename']=$_POST['tablename'];
 $tableinfo=new tableinfo($db);
 $viewid=0;
-if (array_key_exists('viewerid', $_GET) && $_GET['viewid'])
+if (array_key_exists('viewid', $_GET) && $_GET['viewid'])
    $viewid=$_GET['viewid'];
-else if (array_key_exists('viewerid', $_POST))
+else if (array_key_exists('viewid', $_POST))
    $viewid=$_POST['viewid'];
-if (! is_numeric($viewid))
+if (empty($viewid) || !is_numeric($viewid))
    $viewid=0;
+
 //make sure that the viewid is in sync with the selected table
 $r=$db->Execute("SELECT viewnameid FROM tableviews WHERE tableid={$tableinfo->id} AND userid={$USER['id']} AND viewnameid={$viewid}");
 if (!($r && $r->fields[0]))
-   unset($viewid);
+   $viewid='';
 
 // Analyze user input and take appropriate action
 
@@ -51,7 +52,7 @@ if (array_key_exists('delete', $_POST) && $_POST['delete']=='Remove' && $viewid)
    // do a check for userid to be sure nobody deletes someone elses views
    if ($db->Execute ("DELETE FROM tableviews WHERE viewnameid=$viewid AND userid={$USER['id']}")) {
       $db->Execute ("DELETE FROM viewnames WHERE viewnameid=$viewid");
-      unset ($viewid);
+      $viewid='';
    }
 }
 // Create new views

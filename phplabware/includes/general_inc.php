@@ -193,6 +193,9 @@ function viewlist($db,$tableinfo,$viewid) {
       $list[$rb->fields[1]]=$rb->fields[0];
       $r->MoveNext();
    }
+   if (empty($list)) {
+      return '';
+   }
    //$r=$db->Execute("SELECT columnid FROM tableviews WHERE viewnameid=$viewid");
    ksort($list);
    reset($list);
@@ -253,7 +256,7 @@ function display_table_change($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr
       // Get required ID and title
       $id=$r->fields['id'];
       $title=get_cell($db, $tableinfo->realname,'title','id',$r->fields['id']);		
-      $Allfields=getvalues($db,$tableinfo,$Fieldscomma,id,$id);
+      $Allfields=getvalues($db,$tableinfo,$Fieldscomma,'id',$id);
       $may_write=may_write($db,$tableinfo->id,$id,$USER);
 
       // print start of row of selected record
@@ -368,6 +371,9 @@ function display_table_change($db,$tableinfo,$Fieldscomma,$pr_query,$num_p_r,$pr
 
       // Action column - icons and javascript to enable these by Michael Muller
       // View action
+      if (empty($viewid)) {
+         $viewid=-1;
+      }
       if ($_SESSION['javascript_enabled']) {
          $jscript=" onclick='MyWindow=window.open (\"general.php?tablename=".$tableinfo->name."&amp;showid=$id&amp;jsnewwindow=true&amp;viewid=$viewid\",\"view\",\"status,menubar,toolbar,scrollbars,resizable,titlebar,width=700,height=500\");MyWindow.focus()'";
          echo "<A href=\"javascript:void(0)\" $jscript> <img src=\"icons/detail.png\" alt=\"detail\" title=\"detail\" border=\"0\"/></A>\n";
@@ -615,7 +621,9 @@ function display_record($db,$Allfields,$id,$tableinfo,$backbutton=true,$previous
       unset ($thisfield);
       // if we have a viewid, check the list
       if (!empty($viewlist) && $viewlist){
-         $thisfield=in_array($nowfield['columnid'],$viewlist);
+         if (is_array($nowfield)) {
+            $thisfield=in_array($nowfield['columnid'],$viewlist);
+         }
       }
       else {
          //Only show the entry when display_record is set
@@ -750,18 +758,19 @@ function show_reports($db,$tableinfo,$recordid=false,$viewid=false) {
          $menu="<tr><th>Report:</th>\n";
          $menu.="<td><select name='reportlinks' onchange='linkmenu(this)'>\n";
          $url="target "."report.php?tablename=".$tableinfo->htmlname."&amp;recordid=$recordid";
-	 if ($viewid) {
-	    $url.="&amp;viewid=$viewid";
-	 }
-	 $url.='&amp;reportid';
+         if ($viewid) {
+            $url.="&amp;viewid=$viewid";
+         }
+         $url.='&amp;reportid=';
          $menu.="<option value=''>---Reports---</option>\n";
          $menu.="<option value='$url-1'>xml</option>\n";
-         $menu.="<option value='$url-2'>tab</option>\n";
+         $menu.="<option value='$url-2'>txt</option>\n";
          $menu.="<option value='$url-3'>csv</option>\n";
          while (!$r->EOF) {
             $url="target "."report.php?tablename=".$tableinfo->htmlname."&amp;reportid=".$r->fields["id"]."&amp;recordid=$recordid";
-	    if ($viewid)
-	       $url.="&amp;viewid=$viewid";
+            if ($viewid) {
+               $url.="&amp;viewid=$viewid";
+            }
             $menu.="<option value='$url'>".$r->fields['label']."</option>\n";
             $r->MoveNext();
          }
@@ -772,18 +781,18 @@ function show_reports($db,$tableinfo,$recordid=false,$viewid=false) {
          $menu.="<select name='reportlinks' onchange='linkmenu(this)'>\n";
          $menu.="<option value=''>---Reports---</option>\n";
          $url="target "."report.php?tablename=".$tableinfo->htmlname."&amp;tableview=true";
-	 if ($viewid) {
-	    $url.="&amp;viewid=$viewid";
-	 }
-	 $url.='&amp;reportid';
-         $menu.="<option value='$url=-1'>xml</option>\n";
-         $menu.="<option value='$url=-2'>text</option>\n";
-         $menu.="<option value='$url=-3'>csv</option>\n";
+         if ($viewid) {
+            $url.="&amp;viewid=$viewid";
+         }
+         $url.='&amp;reportid=';
+         $menu.="<option value='$url-1'>xml</option>\n";
+         $menu.="<option value='$url-2'>text</option>\n";
+         $menu.="<option value='$url-3'>csv</option>\n";
          while (!$r->EOF) {
             $url="target "."report.php?tablename=".$tableinfo->htmlname."&amp;reportid=".$r->fields["id"]."&amp;tableview=true";
-	    if ($viewid) {
-	       $url.="&amp;viewid=$viewid";
-	    }
+            if ($viewid) {
+               $url.="&amp;viewid=$viewid";
+            }
             $menu.="<option value='$url'>".$r->fields['label']."</option>\n";
             $r->MoveNext();
          }

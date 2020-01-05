@@ -14,6 +14,8 @@
   *  option) any later version.                                              *
   \**************************************************************************/
 
+$Custom='';
+$string='';
 
 require('./include.php');
 require('./includes/db_inc.php');
@@ -21,8 +23,12 @@ require('./includes/general_inc.php');
 require('./includes/tablemanage_inc.php');
 include ('./includes/defines_inc.php');
 
-$editfield=$_GET['editfield'];
-$editreport=$_GET['editreport'];
+if (array_key_exists('editfield', $_GET)) {
+   $editfield=$_GET['editfield'];
+}
+if (array_key_exists('editreport', $_GET)) {
+   $editreport=$_GET['editreport'];
+}
 $post_vars="newtable_name,newtable_label,newtable_sortkey,newtable_plugincode,addtable,table_id,table_name,table_display,addcol_name,addcol_label,addcol_sort,addcol_dtable,addcol_drecord,addcol_required,addcol_modifiable,addcol_datatype";
 globalize_vars($post_vars, $_POST);
 
@@ -37,12 +43,13 @@ while((list($key, $val) = each($_POST))) {
 reset($_POST);
 
 // when editing columns of a table include this javascript file:
+$jsfiles = null;
 if (isset($editfield)) {
    $jsfiles[]='./includes/js/editfields.js';
 }
 
 $permissions=$USER['permissions'];
-if ($addcol_datatype=='table') 
+if (!empty($addcol_datatype) && $addcol_datatype=='table') 
    $jsfiles[]='./includes/js/tablemanage.js';
 
 // Except for ajax requests, we'll send the general headers now
@@ -154,7 +161,7 @@ while((list($key, $val) = each($_POST))) {
    }
 }
 
-if ($editfield)	{
+if (!empty($editfield) && $editfield)	{
    $noshow=array('id','access','magic','lastmoddate','lastmodby','gr','gw','er','ew');
    $nodel=array('title','date','ownerid','lastmodby','lastmoddate');
    $nomodifiable=array('ownerid','date','lastmodby','lastmoddate');
@@ -203,7 +210,7 @@ if ($editfield)	{
    echo "<option value='mpulldown'>mpulldown</option>\n";
    echo "<option value='link'>weblink</option>\n";
    echo "<option value='file'>file</option>\n";
-   if ($system_settings["convert"])
+   if (array_key_exists('convert', $system_settings) && $system_settings['convert'])
       echo "<option value='image'>image</option>\n";
    echo "</select></td>\n";
    echo "<td>&nbsp;</td>\n";
@@ -227,8 +234,8 @@ if ($editfield)	{
       $link_first = $r->fields['link_first'];
       $link_last = $r->fields['link_last'];
       $sort = $r->fields['sortkey'];
-      unset ($ass_table);
-      unset($ass_column);
+      $ass_table=false;
+      $ass_column=false;
       if ($r->fields['associated_table']) {
          $ass_table=get_cell($db,'tableoftables','tablename','id',$r->fields['associated_table']);
          $ass_desc_table=get_cell($db,"tableoftables","table_desc_name","id",$r->fields["associated_table"]);
@@ -341,7 +348,7 @@ if ($editfield)	{
 
 /**
  */
-elseif ($editreport)	{
+elseif (!empty($editreport) && $editreport)	{
    navbar($USER["permissions"]);
    echo $tplmessage;
 
@@ -408,7 +415,7 @@ elseif ($editreport)	{
    exit;
 }
 
-navbar($USER["permissions"]);
+navbar($USER['permissions']);
 echo "<h3 align='center'>$string</h3>";
 echo "<h3 align='center'>Edit Tables</h3>\n";
 echo "<form method='post' id='tablemanage' enctype='multipart/form-data' ";
@@ -436,7 +443,7 @@ echo "<td><input type='text' name='newtable_plugincode' value=''></td>\n";
 echo "<td align='center'><input type='submit' name='addtable' value='New'></td>\n";
 echo "<td></td>\n<td></td>\n</tr>\n";
  
-$query = "SELECT id,tablename,label,display,sortkey,plugin_code FROM tableoftables where display='Y' or display='N' ORDER BY sortkey";
+$query = "SELECT id,tablename,label,display,sortkey,plugin_code FROM tableoftables where display='Y' or display='N' ORDER BY sortkey, label";
 $r=$db->Execute($query);
 
 // query for group select boxes
@@ -446,12 +453,12 @@ $rownr=0;
 // print all entries
 while (!($r->EOF) && $r) {
    // get results of each row
-   $id = $r->fields["id"];
-   $name = $r->fields["tablename"];
-   $label = $r->fields["label"];
-   $Display = $r->fields["display"];
-   $sortkey = $r->fields["sortkey"];
-   $plugincode=$r->fields["plugin_code"];
+   $id = $r->fields['id'];
+   $name = $r->fields['tablename'];
+   $label = $r->fields['label'];
+   $Display = $r->fields['display'];
+   $sortkey = $r->fields['sortkey'];
+   $plugincode=$r->fields['plugin_code'];
    
    // print start of row of selected group
    if ($rownr % 2) 
@@ -469,7 +476,7 @@ while (!($r->EOF) && $r) {
       echo "<td><input type='radio' value='Y' name='table_display[$rownr]'>yes<input type='radio' checked value='N' name='table_display[$rownr]'>no</td>\n";
    $rgs=$db->Execute("SELECT groupid FROM groupxtable_display WHERE tableid='$id'");
    while ($rgs && !$rgs->EOF) {
-      $groups_table[]=$rgs->fields["groupid"];
+      $groups_table[]=$rgs->fields['groupid'];
       $rgs->MoveNext();
    }
    echo "<td>".$rg->GetMenu2("tablexgroups[$id][]",$groups_table,true,true,3)."</td>\n";
