@@ -26,10 +26,13 @@ if (!$USER['permissions'] & $SUPER) {
    exit();
 }
 
-
-$tablename=$_GET['tablename'];
-$tableid=get_cell($db,'tableoftables','id','tablename',$tablename);
-if (!$tableid) {
+if (array_key_exists('tablename', $_GET)) {
+   $tablename=$_GET['tablename'];
+}
+if (!empty($tablename)) {
+   $tableid=get_cell($db,'tableoftables','id','tablename',$tablename);
+}
+if (empty($tableid)) {
    echo "<h3>This script will create a php file with code that will re-create the table you selected in phplabware.  Only the table structure, not its content will be re-created</h3>";
    $r=$db->Execute('SELECT id,tablename FROM tableoftables ORDER By tablename');
    if ($r) {
@@ -40,7 +43,7 @@ if (!$tableid) {
          $r->MoveNext();
       }
    }
-   printfooter($d, $USER);
+   printfooter($db, $USER);
    exit();
 }
 
@@ -209,13 +212,12 @@ fwrite ($fp,"         $fieldname $fieldtype $extra");
 $s->MoveNext();
 */
 while (!$s->EOF) {
-   unset ($extra);
    $fieldname=$s->fields[2];
    $fieldtype=$s->fields[6];
    if (substr ($fieldtype,0,3)=='int')
       $fieldtype='int';
    if ($fieldname!='id')
-      fwrite ($fp,",\n         $fieldname $fieldtype $extra");
+      fwrite ($fp,",\n         $fieldname $fieldtype");
    $s->MoveNext();
 }
 fwrite ($fp,' ) ");

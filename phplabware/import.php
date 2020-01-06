@@ -57,7 +57,7 @@ if (isset($tableid)) {
  * The user who will own the imported records
  * This way we default to the one doing the import
  */
-if ($ownerid) {
+if (!empty($ownerid)) {
    $USERAS=getUserInfo($db,false,$ownerid);
 }
 if (!isset($USERAS)) {
@@ -321,7 +321,7 @@ function addmpulldown($db,$tableinfo,$id,$to_field,$field)
  * Start of the main code
  * do the final parsing (part 3)
  */
-if ($_POST['assign']=='Import Data') {
+if (array_key_exists('assign', $_POST) && $_POST['assign']=='Import Data') {
    // set longer time-out
    ini_set('max_execution_time','0');
    // get description table name
@@ -570,7 +570,9 @@ if ($_POST['assign']=='Import Data') {
 
 
 // interpret uploaded file and get information for final parsing (part 2)
-if ($_POST['dataupload']=='Continue' && may_write($db,$tableid,false,$USERAS)) {
+if (array_key_exists('dataupload', $_POST) && 
+         $_POST['dataupload']=='Continue' && 
+         may_write($db,$tableid,false,$USERAS)) {
    if ($error_string)
       echo $error_string;
    $filename=$_FILES['datafile']['name'];
@@ -667,13 +669,15 @@ if ($_POST['dataupload']=='Continue' && may_write($db,$tableid,false,$USERAS)) {
       $string="Please enter all fields";  
 }
 
-if ($USERAS && !may_write($db,$tableid,false,$USERAS)) {
+if (!empty($tableif) && $USERAS && !may_write($db,$tableid,false,$USERAS)) {
    $string.="Error: The selected user may not write to the selected database. ";
 }
 
 
 // Page with file to be uploaded, delimiter, table, and owner (Part 1)
-echo "<h3 align='center'>$string</h3>";
+if (!empty($string))  {
+   echo "<h3 align='center'>$string</h3>";
+}
 echo "<h3 align='center'>Import Data(1): Select File, delimiter, and Table to import data into</h3>\n";
 echo "<form method='post' id='importdata' enctype='multipart/form-data' ";
 $dbstring=$PHP_SELF;echo "action='$dbstring?".SID."'>\n"; 

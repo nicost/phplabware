@@ -866,7 +866,7 @@ function get_access ($fieldvalues,$column) {
    global $system_settings;
    $gr=0; $gw=0; $er=0; $ew=0;
 
-   if (array_key_exists($column, $fieldvalues)) {
+   if (is_array($fieldvalues) && array_key_exists($column, $fieldvalues)) {
       ${$column}=$fieldvalues[$column];
    } else {
       ${$column}='';

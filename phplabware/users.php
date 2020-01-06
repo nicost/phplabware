@@ -22,8 +22,9 @@ require('./include.php');
 $post_vars = 'email,id,firstname,lastname,login,me,modify,perms,perms2,perms3,pwd,pwdcheck,user_group,user_add_groups,';
 $post_vars .= 'create,user_add,';
 
-if (empty($type) )
+if (empty($type) && array_key_exists('type', $_GET)) {
    $type=$_GET['type'];
+}
 // prevent cross-site scripting
 foreach ($_POST as $key => $value) {
    if (!is_array($value))
@@ -67,6 +68,7 @@ function check_input () {
  */
 function tablestring ($db) {
    $r=$db->Execute("SELECT id,real_tablename FROM tableoftables WHERE tablename <> 'settings' AND permission <> 'System' ORDER BY id");
+   $string='';
    while (!$r->EOF) {
       $string.=$r->fields['real_tablename'];
       $string.=",";
@@ -136,6 +138,8 @@ function delete_user ($db, $id) {
 function modify ($db, $type) {
    global $_POST, $USER, $perms, $perms2, $perms3, $post_vars;
 
+   $result='';
+
    // quote all bad characters:
    foreach ($_POST as $key=>$value) {
       if (!is_array($_POST[$key])) {
@@ -147,27 +151,33 @@ function modify ($db, $type) {
    $login=$_POST['login'];
    $pwd=$_POST['pwd'];
    $user_group=$_POST['user_group'];
-   $user_add_groups=$_POST['user_add_groups'];
+   if (array_key_exists('user_add_groups', $_POST))
+      $user_add_groups=$_POST['user_add_groups'];
+   else
+      $user_add_groups=array();
    $firstname=$_POST['firstname'];
    $lastname=$_POST['lastname'];
    $email=$_POST['email'];
-   $USER['settings']['style']=$_POST['user_style'];
+   if (array_key_exists('user_style', $_POST)) 
+      $USER['settings']['style']=$_POST['user_style'];
+   else
+      $USER['settings']['style']=0;
 
+   if (empty($permissions))
+      $permissions=0;
    if($perms)
       for ($i=0; $i<sizeof($perms); $i++)
          $permissions=$permissions | $perms[$i];
-   if (!$permissions)
-      $permissions=0;
+   if (empty($permissions2))
+      $permissions2=0;
    if($perms2)
       for ($i=0; $i<sizeof($perms2); $i++)
          $permissions2=$permissions2 | $perms2[$i];
-   if (!$permissions2)
-      $permissions2=0;
+   if (empty($permissions3))
+      $permissions3=0;
    if($perms3)
       for ($i=0; $i<sizeof($perms3); $i++)
          $permissions3=$permissions3 | $perms3[$i];
-   if (!$permissions3)
-      $permissions3=0;
 
    // include here, to avoid being overwritten by post_vars 
    include ('./includes/defines_inc.php');
@@ -206,7 +216,7 @@ function modify ($db, $type) {
          echo "Modified settings of user <i>".stripslashes($firstname) . ' ' . stripslashes($lastname)."</i>.<br>\n";
 	 $db->Execute ("DELETE FROM usersxgroups WHERE usersid=$id");
 	 if ($user_add_groups)
-	    foreach ($user_add_groups AS $add_groupid)
+	    foreach ($user_add_groups as $add_groupid)
 	       $db->Execute("INSERT INTO usersxgroups VALUES ('$id','$add_groupid')");
       } else
          echo "Could not modify settings of user: <i>".stripslashes($firstname) . ' ' . stripslashes($lastname) . "</i>.<br>\n";
@@ -221,7 +231,7 @@ function modify ($db, $type) {
          if ($db->Execute($query)) {
             echo "User <i>$firstname $lastname</i> added.<br>\n";
 	    if ($user_add_groups)
-	       foreach ($user_add_groups AS $add_groupid)
+	       foreach ($user_add_groups as $add_groupid)
 	          $db->Execute("INSERT INTO usersxgroups VALUES ('$id','$add_groupid')");
          } 
          else
@@ -367,14 +377,14 @@ function show_user_form ($type) {
       $r = $db->Execute('SELECT name,id FROM groups');
       echo $r->GetMenu2('user_group',$groupid,false);
       echo "</td>\n</tr>";
-      echo "<tr>\n<td>Additional groups:</td>\n<td>";
+      echo "<tr>\n<td valign=\"top\">Additional groups:</td>\n<td>";
       $r=$db->Execute("SELECT groupsid FROM usersxgroups WHERE usersid=$id");
       while ($r && !$r->EOF) {
          $add_groups[]=$r->fields['groupsid'];
          $r->MoveNext();
       }
       $r = $db->Execute("SELECT name,id FROM groups");
-      echo $r->GetMenu2("user_add_groups[]",$add_groups,true,true,10);
+      echo $r->GetMenu2("user_add_groups[]",$add_groups,false,true, $r->recordCount() );
       echo "</td>\n</tr>";
    } else {
       // hidden value.  Needs to be inside table to be w3c compliant
@@ -445,7 +455,7 @@ function show_user_form ($type) {
       echo "<tr><td>Login Allowed:</td>\n";
       echo "<td><input type='checkbox' name='perms[]' value='$ACTIVE' $checked></td></tr>\n";
       if ($USER['permissions'] & $SUPER) {
-         if ($permissions2 & $URL_LOGIN) {
+         if (!empty($permissions2) && ($permissions2 & $URL_LOGIN) ) {
             $checked = ' checked';
          } else {
             $checked = '';
@@ -454,7 +464,7 @@ function show_user_form ($type) {
          echo "<td><input type='checkbox' name='perms2[]' value='$URL_LOGIN' $checked></td></tr>\n";
       }
       if ($USER['permissions'] & $SUPER) {
-         if ($permissions2 & $IP_SETTINGS) {
+         if (!empty($permissions2) && ($permissions2 & $IP_SETTINGS)) {
             $checked = ' checked';
          } else {
             $checked = '';
@@ -483,7 +493,7 @@ if (empty($title)) {
   $title = '';
 }
 
-if ($type=='me') {
+if (!empty($type) && $type=='me') {
    $title .= 'Personal Settings';
    printheader($title);
    navbar($USER['permissions']);
@@ -499,7 +509,7 @@ if ($type=='me') {
    printfooter($db,$USER);
    exit();
 }
-if ($me=='Change Settings') {
+if (!empty($me) && $me=='Change Settings') {
    $title.='Change Settings';
    $result=modify ($db, 'me');
    printheader($title);
@@ -538,21 +548,21 @@ if ($_POST) {
    }
 } 
 
-if ($user_add =="Add User") {
+if (!empty($user_add) && $user_add =="Add User") {
    show_user_form ("create");
 }
-elseif ( ($create == "Create User") && get_cell($db,"users","login","login",
+elseif ( (!empty($create) && $create == "Create User") && get_cell($db,"users","login","login",
                                                 $login) ) { 
    echo "<h5>A user with that login name already exists. Please try another one.</h5>\n";
    $login = "";
    show_user_form ("create");
 }
 
-elseif ( ($create == "Create User") && !(check_input() )) { 
+elseif ( (!empty($create) && $create == "Create User") && !(check_input() )) { 
    show_user_form ("create");
 }   
 
-elseif ( ($modify == "Modify User") && !(check_input() )) { 
+elseif ( (!empty($modify) && $modify == "Modify User") && !(check_input() )) { 
    show_user_form ("modify");
 }   
 
@@ -570,13 +580,13 @@ elseif ($mod==true) {
 
 else {
    echo "<table align='center' border='1'><caption><h5>";
-   if ($modify == "Modify User") {
+   if (!empty($modify) && $modify == "Modify User") {
       modify ($db, "modify");
    }
-   if ($create == "Create User") {
+   if (!empty($create) && $create == "Create User") {
       modify ($db, "create");
    }
-   if ($del==true) {
+   if (!empty($del) && $del==true) {
       if (!delete_user($db,$delarray[1])) {
          echo "</table>\n";
          printfooter();

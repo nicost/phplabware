@@ -35,9 +35,13 @@ if (!$USER['permissions'] & $SUPER) {
 // fields - let's you export only a subset of columns
 // valuesOnly - switch wether or not values should be 'expanded'
 
-$tablename=$_GET['tablename'];
-$tableid=get_cell($db,'tableoftables','id','tablename',$tablename);
-if (!$tableid) {
+if (array_key_exists('tablename', $_GET)) {
+   $tablename=$_GET['tablename'];
+}
+if (!empty($tablename)) {
+   $tableid=get_cell($db,'tableoftables','id','tablename',$tablename);
+}
+if (empty($tableid) || !$tableid) {
    echo "<h3>This script will dump the contents of a table in a tab-delimited file. The contents of that file can be imported into phplabware or any other database program.</h3>";
    $r=$db->execute("SELECT id,tablename FROM tableoftables");
    if ($r) {
@@ -48,13 +52,13 @@ if (!$tableid) {
          $r->MoveNext();
       }
    }
-   printfooter($d, $USER);
+   printfooter($db, $USER);
    exit();
 }
 
 $tableinfo=new tableinfo($db);
 
-if (! ($_GET['fields'] || $_POST['selectfields'])) {
+if (! (array_key_exists('fields', $_GET) || array_key_exists('selectfields', $_POST))) {
    $rfields=$db->Execute("SELECT columnname FROM {$tableinfo->desname}");
    $tr=$rfields->recordCount();
    $menu=$rfields->GetMenu('selectfields'," ",false,true,$tr);
@@ -63,10 +67,11 @@ if (! ($_GET['fields'] || $_POST['selectfields'])) {
    echo "<h3>Select the fields you want to export: </h3><br>$menu<br>";
    echo "<input type='submit' name='submit' value='submit'>\n";
    echo "</form>\n</td></tr></table>\n";
-   printfooter($d,$USER);
+   printfooter($db,$USER);
    exit();
 }
-if ($_POST['selectfields']) {
+if (array_key_exists('selectfields', $_POST)) {
+   $fields='';
    foreach($_POST['selectfields'] as $field)
       $fields.=$field.",";
    // strip the last comma
@@ -121,7 +126,8 @@ else
 $fields=preg_replace('/,id/','',$fields);
 
 $headers=getvalues($db,$tableinfo,$fields);
-if ($_GET['valuesOnly'])
+$valuesOnly = false;
+if (array_key_exists('valuesOnly', $_GET) && $_GET['valuesOnly'])
    $valuesOnly=true;
 
 foreach ($headers as $header) {
@@ -133,6 +139,9 @@ foreach ($headers as $header) {
 fwrite ($fp,"\n");
 
 $r=$db->Execute("SELECT $fields FROM ".$tableinfo->realname);
+$counter = 0;
+$filecounter = 0;
+$filenr=0;
 while ($r->fields['id'] && !$r->EOF) {
    $rowvalues=getvalues($db,$tableinfo,$fields,'id',$r->fields['id']);
    foreach ($rowvalues as $row) {
@@ -140,22 +149,24 @@ while ($r->fields['id'] && !$r->EOF) {
          // files will be exported to the directory files
          if ($row['datatype']=='file') {
             $files=get_files($db,$tableinfo->name,$row['recordid'],$row['columnid'],0);
-            fwrite ($fp,$pre_seperator);
-            for ($i=0;$i<sizeof($files);$i++) {
-               $filecounter++;
-               // write a temp table with all the file info,and provide an comma separated list of ids to that table here
-               fwrite ($ff,++$filenr."\t".$files[$i]['name']."\t".$files[$i]['mime']."\t".$files[$i]['size']."\t".$files[$i]['type']."\n");
-               fwrite ($fp,$filenr.',');
-               $path=file_path($db,$files[$i]['id']);
-              // $cpstr="cp $path {$filedir}{$filenr}_{$files[$i]['name']}";
-              //`$cpstr`;
-              copy ($path,"{$filedir}{$filenr}_{$files[$i]['name']}");
+            if (is_array($files)) {
+               fwrite ($fp,$pre_seperator);
+               for ($i=0;$i<sizeof($files);$i++) {
+                  $filecounter++;
+                  // write a temp table with all the file info,and provide an comma separated list of ids to that table here
+                  fwrite ($ff,++$filenr."\t".$files[$i]['name']."\t".$files[$i]['mime']."\t".$files[$i]['size']."\t".$files[$i]['type']."\n");
+                  fwrite ($fp,$filenr.',');
+                  $path=file_path($db,$files[$i]['id']);
+                 // $cpstr="cp $path {$filedir}{$filenr}_{$files[$i]['name']}";
+                 //`$cpstr`;
+                 copy ($path,"{$filedir}{$filenr}_{$files[$i]['name']}");
+               }
+               fwrite ($fp,$post_seperator);
             }
-            fwrite ($fp,$post_seperator);
          }
          else {
             
-         if ($valuesOnly) {
+         if (!empty($valuesonly) && $valuesOnly) {
             fwrite ($fp,$pre_seperator.$row['values'].$post_seperator);
          }
          else {

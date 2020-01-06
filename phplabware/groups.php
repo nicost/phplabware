@@ -154,11 +154,11 @@ printheader("Groups of PhpLabware");
 navbar($USER["permissions"]);
 
 // when the 'Add a new Group' button has been chosen: 
-if ($add)
+if (!empty($add) && $add)
    group_form ("","");
 
 // when modify has been pressed:
-elseif ($mod == "true")
+elseif (!empty($mod) && $mod == "true")
    group_form ($groupid, $groupname);
 
 else {
@@ -166,7 +166,7 @@ else {
    echo "<table border=\"1\" align=center >\n";
    echo "<caption>\n";
    // first handle addition of a new group
-   if ($submit == "Add Group") {
+   if (!empty($submit) && $submit == "Add Group") {
       if ($test = add_new_group ($db, $groupname) ) {
          echo "</caption>\n</table>\n";
          echo "<table align='center'><caption>$test</caption></table>";
@@ -176,7 +176,7 @@ else {
       }
    }
    // then look whether groupname should be modified
-   elseif ($submit =="Modify Group") {
+   elseif (!empty($submit) && $submit =="Modify Group") {
       if ($test = modify_group ($db,$groupid, $groupname)) {
          echo "</caption>\n</table>\n";
          echo "<table align='center'><caption>$test</caption></table>";
@@ -221,9 +221,8 @@ else {
    while (!($r->EOF)) {
  
       // get results of each row
-      $groupid = $r->fields["id"];
-      $groupname = $r->fields["name"];
-      $adminid = $r->fields["adminid"];
+      $groupid = $r->fields['id'];
+      $groupname = $r->fields['name'];
 
       // print start of row of selected group
       echo "<tr>\n";
@@ -237,10 +236,10 @@ else {
       if (!$r2->EOF) { 
          echo "<td>";
          while (!$r2->EOF) {
-            $username = $r2->fields["firstname"]." ".$r2->fields["lastname"];
-            if ($username==" ")
-               $username=$r2->fields["login"];
-            echo "<b>".$username."</b><br>";
+            $username = $r2->fields['firstname'].' '.$r2->fields['lastname'];
+            if ($username==' ')
+               $username=$r2->fields['login'];
+            echo '<b>'.$username.'</b><br>';
             $r2->MoveNext();
          }
          echo "</td>\n";
@@ -256,9 +255,9 @@ else {
       if (!$r2->EOF) { 
          echo "<td>";
          while (!$r2->EOF) {
-            $username = $r2->fields["firstname"]." ".$r2->fields["lastname"];
+            $username = $r2->fields['firstname'].' '.$r2->fields['lastname'];
             if ($username==" ")
-               $username=$r2->fields["login"];
+               $username=$r2->fields['login'];
             echo "<b>".$username."</b><br>";
             $r2->MoveNext();
          }

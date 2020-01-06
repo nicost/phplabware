@@ -25,16 +25,20 @@ if (!$USER['permissions'] & $SUPER) {
    printfooter($db, $USER);
 }
 
-$filename=$_GET['filename'];
+if (array_key_exists('filename', $_GET)) {
+   $filename=$_GET['filename'];
+}
 if (!isset($filename)) {
-   if (strlen($_FILES['filename']['tmp_name']) > 0) {
-      $filename=$system_settings["tmpdir"]."/".'restore' . $_FILES['filename']['name'];
+   if (!empty($_FILES) && 
+            array_key_exists('filename', $_FILES) && 
+            strlen($_FILES['filename']['tmp_name']) > 0) {
+      $filename=$system_settings['tmpdir']."/".'restore' . $_FILES['filename']['name'];
       if (! move_uploaded_file($_FILES['filename']['tmp_name'],$filename))
          echo "Failed to move file";
    }
 }
 
-if (!$filename) {
+if (empty($filename) || !$filename) {
    echo "<table align='center'>\n";
    echo "<form method='post' name='restoretableform' enctype='multipart/form-data' action='$PHP_SELF'>\n";
    echo "<tr><td align='center'>This script restores a table (without content) from a file created by the script dumptable.php.  Upload the file containing php code to create a phplabware table: ";
