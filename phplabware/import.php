@@ -21,6 +21,10 @@ require('./includes/general_inc.php');
 require('./includes/tablemanage_inc.php');
 include ('./includes/defines_inc.php');
 
+$delimiter='';
+$tableid=null;
+$ownerid=null;
+
 $post_vars='delimiter,delimiter_type,quote,quote_type,tableid,nrfields,pkey,pkeypolicy,skipfirstline,tmpfile,ownerid,localfile';
 globalize_vars($post_vars, $_POST);
 $get_vars='tableid';
@@ -68,7 +72,7 @@ if (!isset($USERAS)) {
  * Print header and do further checks on permissions
  */
 $httptitle.=' Import data';
-printheader($httptitle,false,$jsfile);
+printheader($httptitle,false,false);
 $tmpdir=$system_settings['tmpdir'];
 
 if (!($permissions & $USER)) {
@@ -116,7 +120,7 @@ function import_file ($db,$tableid,$id,$columnid,$columnname,$tmpfileid,$system_
 {
    if (!$tmpfileid)
       return false;
-print_r($tmpfileid);
+//print_r($tmpfileid);
    $table=get_cell($db,'tableoftables','tablename','id',$tableid);
    $real_tablename=get_cell($db,'tableoftables','real_tablename','id',$tableid);
 
@@ -129,7 +133,7 @@ print_r($tmpfileid);
       return false;
    }
    $r=$db->Execute("SELECT name,mime,type FROM tmpfiles WHERE id=$tmpfileid");
-   if (!$r->fields[0])
+   if (!$r || !$r->fields[0])
       return false;
    if (!$fileid=$db->GenID("files_id_seq"))
       return false;
@@ -178,7 +182,7 @@ function get_delimiter ($delimiter,$delimiter_type) {
  *
  */
 function get_quote ($quote,$quote_type) {
-   if ($$quote)
+   if (!empty($$quote) && $$quote)
       return $$quote;
    if ($quote_type=='doublequote')
       $quote="\"";
@@ -198,7 +202,10 @@ function check_input ($tableinfo, &$fields, $to_fields, $field_types, $field_dat
    global $db;
 
    for ($i=0;$i<$nrfields;$i++) {
-      if ($fields[$i]) {
+      if (array_key_exists($i, $fields) && 
+               $fields[$i] && 
+               array_key_exists($i, $field_datatypes) &&
+               $field_datatypes[$i]) {
          // strip quotes semi-inteligently  Can not use trim when php <4.1
          if ($fields[$i]{0}==$fields[$i]{strlen($fields[$i])-1} &&
              ($fields[$i]{0}=="\"" || $fields[$i]{0}=="'") )
@@ -375,7 +382,7 @@ if (array_key_exists('assign', $_POST) && $_POST['assign']=='Import Data') {
    foreach ($_POST AS $key=>$value) {
       $stuff= explode ('_',$key);
       if ($stuff[0]=='pkey' && is_numeric($stuff[1])) {
-	 $pkey[]=$stuff[1];
+         $pkey[]=$stuff[1];
       }
    }
 
@@ -399,22 +406,32 @@ if (array_key_exists('assign', $_POST) && $_POST['assign']=='Import Data') {
          }
          elseif ($to_datatypes[$i]=='date'){
             // if date is an int, assume it is UNIX date, otherwise convert 
-            if (!is_int($fields[$i]))
-               $fields[$i]=mymktime($fields[$i]);
+            //if (array_key_exists($i, $fields)) {
+            //   if (!is_int($fields[$i])) {
+            //      $fields[$i]=mymktime($fields[$i]);
+            //   }
+            // }
             // this has type int (wrong!), set to_type to text
             $to_types[$i]='text';
          }
          elseif (substr($to_types[$i],0,3)=='int'){
             $to_types[$i]='int';
-            $fields[$i]=(int)$fields[$i];
+            //if (array_key_exists($i, $fields)) {
+            //   $fields[$i]=(int)$fields[$i];
+            //}
          }
          // and float8...
          elseif(substr($to_types[$i],0,5)=='float') {
             $to_types[$i]='float';
-            $fields[$i]=(float)$fields[$i];
+            //if (array_key_exists($i, $fields)) {
+            //   $fields[$i]=(float)$fields[$i];
+            //}
          }
-         else
-            $fields[$i]=addslashes($fields[$i]);
+         //else {
+         //   if (array_key_exists($i, $fields)) {
+         //      $fields[$i]=addslashes($fields[$i]);
+         //   }
+         //}
       }
    } 
 
@@ -434,6 +451,9 @@ if (array_key_exists('assign', $_POST) && $_POST['assign']=='Import Data') {
          if ($skipfirstline=='yes')
             $line=chop(fgets($fh,1000000));
          // fgets should not need second parameter, but my php version does...
+         $inserted=0;
+         $modified=0;
+         $duplicateid=0;
          while ($line=chop(fgets($fh,1000000))) {
             check_line($line,$quote,$delimiter);
             
@@ -446,22 +466,24 @@ if (array_key_exists('assign', $_POST) && $_POST['assign']=='Import Data') {
             // UPDATE, otherwise first create a default entry and modify that
 
             // First figure out if such a record already exists
-	    $first = true;
-	    $primaryKeyLine = '';
-	    if ($pkey) {
-	       foreach($pkey AS $j) {
-		  if (!$first) 
-		     $primaryKeyLine .= ' AND ';
-		  $primaryKeyLine.= "$to_fields[$j]='$fields[$j]' ";
-		  $first=false;
-	       } 
-	    }
-	    // Go through 
+            $first = true;
+            $primaryKeyLine = '';
+            if ($pkey) {
+               foreach($pkey AS $j) {
+                  if (!$first) 
+                     $primaryKeyLine .= ' AND ';
+                  $primaryKeyLine.= "$to_fields[$j]='$fields[$j]' ";
+                  $first=false;
+               } 
+            }
+            // Go through 
 
             if (isset($primaryKeyLine)) {
                $r=$db->Execute("SELECT id FROM $table WHERE $primaryKeyLine");
                // only the first record that matched will be modified
-               $existingid=$r->fields[0];
+               if ($r)  {
+                  $existingid=$r->fields[0];
+               }
             } 
 
             // now enforce the Update/Overwrite policies
@@ -501,7 +523,12 @@ if (array_key_exists('assign', $_POST) && $_POST['assign']=='Import Data') {
                $query="UPDATE $table SET ";
                // import data from file into SQL statement
                for ($i=0; $i<$nrfields;$i++) {
-                  if ($fields[$i] && $to_fields[$i] && $to_datatypes[$i]!='file' && $to_datatypes[$i]!='mpulldown') { // if date is an int, assume it is UNIX date, otherwise convert 
+
+                  if (array_key_exists($i, $fields) && 
+                        $fields[$i] && 
+                        array_key_exists($i, $to_fields) && 
+                        $to_fields[$i] && 
+                        $to_datatypes[$i]!='file' && $to_datatypes[$i]!='mpulldown') { // if date is an int, assume it is UNIX date, otherwise convert 
                      if ($to_datatypes[$i]=='date') {
                         if (!is_int($fields[$i])) {
                            $fields[$i]=mymktime($fields[$i]);
@@ -522,12 +549,14 @@ if (array_key_exists('assign', $_POST) && $_POST['assign']=='Import Data') {
                          $modified++;
                       }
                       for ($i=0; $i<$nrfields;$i++) {
-                         if ($to_datatypes[$i]=='file') {
-                            $fileids=explode(',',$fields[$i]);
-                            foreach ($fileids as $fileid)
-			       import_file ($db,$tableid,$recordid,$_POST["fields_$i"],$to_fields[$i],$fileid,$system_settings);
-                          } elseif($to_datatypes[$i]=='mpulldown') {
-                             addmpulldown($db,$tableinfo,$recordid,$to_fields[$i],$fields[$i]);
+                         if (array_key_exists($i, $to_datatypes) ) {
+                            if ($to_datatypes[$i]=='file') {
+                               $fileids=explode(',',$fields[$i]);
+                               foreach ($fileids as $fileid)
+                                  import_file ($db,$tableid,$recordid,$_POST["fields_$i"],$to_fields[$i],$fileid,$system_settings);
+                            } elseif($to_datatypes[$i]=='mpulldown') {
+                                addmpulldown($db,$tableinfo,$recordid,$to_fields[$i],$fields[$i]);
+                            }
                          }
                       }
                    }
@@ -538,12 +567,6 @@ if (array_key_exists('assign', $_POST) && $_POST['assign']=='Import Data') {
          }
          
          // communicate results
-         if (!isset($inserted))
-            $inserted=0;
-         if (!isset($modified))
-            $modified=0;
-         if (!isset($duplicateid))
-            $duplicateid=0;
          if ($inserted==1)
             $inserted_text='record was';
          else
@@ -573,7 +596,7 @@ if (array_key_exists('assign', $_POST) && $_POST['assign']=='Import Data') {
 if (array_key_exists('dataupload', $_POST) && 
          $_POST['dataupload']=='Continue' && 
          may_write($db,$tableid,false,$USERAS)) {
-   if ($error_string)
+   if (!empty($error_string) && $error_string)
       echo $error_string;
    $filename=$_FILES['datafile']['name'];
    $delimiter=get_delimiter($delimiter,$delimiter_type);
@@ -630,12 +653,17 @@ if (array_key_exists('dataupload', $_POST) &&
          $desc=get_cell($db,'tableoftables','table_desc_name','id',$tableid);
          $r=$db->Execute("SELECT label,id FROM $desc WHERE (display_record='Y' OR display_table='Y') ORDER BY sortkey");
          for($i=0;$i<$nrfields;$i++) {
-            echo "   <td>$fields[$i]</td>\n";
-            echo "   <td>$fields2[$i]</td>\n";
+            echo "   <td>{$fields[$i]}</td>\n";
+            echo "   <td>{$fields2[$i]}</td>\n";
             $menu=$r->GetMenu("fields_$i",$fields[$i]);
             echo "   <td>$menu</td>\n";
             $r->Move(0);
-            echo "   <td><input type='checkbox' name='pkey_$i' value='{$_POST['pkey_$i']}'></td>\n";
+            $tmpkey="pkey_$i";
+            $tmpval='';
+            if (array_key_exists($tmpkey, $_POST)) {
+                $tmpval=$_POST[$tmpval];
+            }
+            echo "   <td><input type='checkbox' name='{$tmpkey} value='{$tmpval}'></td>\n";
             echo "</tr>\n<tr>\n";
          }
          //echo "<td colspan=3></td><td><input type='checkbox' name='pkey_none' value='' checked> (none)</td>\n";

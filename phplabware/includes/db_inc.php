@@ -243,7 +243,7 @@ function add ($db,$table,$fields,$fieldvalues,$USER,$tableid) {
       return false;
    }
    // test if upload already took place through variable magic
-   if ($fieldvalues['magic'])
+   if (array_key_exists('magic', $fieldvalues) && $fieldvalues['magic'])
       if ($test=get_cell($db,$table,'id','magic',$fieldvalues['magic'])) {
          echo "<h3 align='center'>That record was already uploaded.</h3>\n";
          return -1;
