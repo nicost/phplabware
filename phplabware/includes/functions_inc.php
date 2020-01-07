@@ -320,7 +320,7 @@ function navbar($permissions) {
       if ($permissions) {
          $r=$db->Execute("select display from tableoftables where tablename ='linkbar'");
          if ($r->fields[0]=='1') {
-            $linkr=$db->Execute("select label,linkurl,target from linkbar where display ='Y' ORDER by sortkey");
+            $linkr=$db->Execute("select label,linkurl,target from linkbar where display ='Y' ORDER by sortkey, label");
             if ($linkr) {
                $linkmenu="<select name='themenu' onchange='linkmenu(this)'>\n";
                $linkmenu.="<option value=''>--Links--</option>\n";
@@ -341,7 +341,7 @@ function navbar($permissions) {
       }
 
       // construct Table menu
-      $records=$db->Execute("select tablename,custom,id,label from tableoftables where display='Y' and permission='Users' ORDER by sortkey");
+      $records=$db->Execute("select tablename,custom,id,label from tableoftables where display='Y' and permission='Users' ORDER by sortkey, label");
       $count=0;
       if ($records && $USER) {
          $query="SELECT tableid FROM groupxtable_display WHERE (groupid='".$USER["group_array"][0]."' ";

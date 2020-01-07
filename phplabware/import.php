@@ -210,6 +210,10 @@ function check_input ($tableinfo, &$fields, $to_fields, $field_types, $field_dat
          if ($fields[$i]{0}==$fields[$i]{strlen($fields[$i])-1} &&
              ($fields[$i]{0}=="\"" || $fields[$i]{0}=="'") )
             $fields[$i]=substr($fields[$i],1,-1);
+         if ($fields[$i]=="&nbsp;") {
+            $fields[$i]='';
+         }
+         $fields[$i] = utf8_encode($fields[$i]);
          if ($field_datatypes[$i]=='pulldown') {
             // see if we have this value already, otherwise make a new entry in the type table....
              // &nbsp; is used as a place holder in output of phplabware.  Unset the value if found
@@ -738,11 +742,11 @@ echo "<td align='center'> <table><tr>
    <td><input type='radio' name='quote_type' value='none' checked> none</td></tr>
    <tr><td>&nbsp;</td></tr>
    </table></td>\n";
-$query= "SELECT label,id FROM tableoftables LEFT JOIN groupxtable_display on tableoftables.id=groupxtable_display.tableid where display='Y' AND permission='Users' AND (groupid={$USER['group_array'][0]} ";
+$query= "SELECT label,id FROM tableoftables LEFT JOIN groupxtable_display on tableoftables.id=groupxtable_display.tableid WHERE display='Y' AND permission='Users' AND (groupid={$USER['group_array'][0]}";
 for ($i=1;$i<sizeof($USER['group_array']);$i++) { 
    $query.="OR groupid='".$USER['group_array'][$i]."' ";
 }
-$query.= ') ORDER BY sortkey';
+$query.= ') ORDER BY sortkey, label';
 $r=$db->Execute($query);
 $menu=$r->GetMenu2('tableid',$tableid);
 echo "<td>$menu</td>\n";
