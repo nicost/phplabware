@@ -111,12 +111,13 @@ if ($use_sessions) {
          $pwd=md5($PHP_AUTH_PW);
          $db_query = "SELECT login FROM users WHERE login=? AND pwd=?";
          $db_result = $db->Execute($db_query, array($PHP_AUTH_USER, $pwd) );
-         if ($db_result)
+         if ($db_result){
             $auth=$db_result->fields['login'];
+         }
          // check that there is no one else like this
-         $db_result->Movenext();
-         if (!$db_result->EOF)
+         if ($db_result->Movenext()) {
             $auth=false; 
+         }
 
          // if pam_prg is present, check whether the user is known on the system 
          $pam_prg=$system_settings['checkpwd'];
@@ -125,14 +126,15 @@ if ($use_sessions) {
             if (get_cell($db,'users','login','login',$PHP_AUTH_USER)) {
                $esc_user = escapeshellarg($PHP_AUTH_USER);
                $esc_pass = escapeshellarg($PHP_AUTH_PW);
+               $result = false;
                $test = exec ("echo $esc_pass | $pam_prg $esc_user", $dummy,$result);
-               if ($result) {  // we are authenticated
+               if ($test && $result) {  // we are authenticated
                   $auth = true; 
                   $authmethod='pam';
                }
             }
          }       
- 
+
          // if authenticated, this session is OK:
          if ($auth) {
             if ( (!empty($_SESSION['javascript_enabled']) && $_SESSION['javascript_enabled'] ) || 
