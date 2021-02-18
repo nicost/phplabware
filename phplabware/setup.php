@@ -450,13 +450,12 @@ if ($version) {
    echo "<tr><td>Directory <i>templates</i>. The webdaemon should ";
    echo "have read and write priveleges, but the directory should not be directly ";
    echo "accessible through the web. ";
-   if (!array_key_exists('templates', $system_settings) || 
-          !$system_settings['templates']) {
+   if (!$system_settings['templatedir']) {
       $dir=getenv('SCRIPT_FILENAME');
       $dir=substr($dir,0,strrpos($dir,"/")+1).'templates';
       $system_settings['templatedir']=$dir;
    }
-   $templatedir=$system_settings["templatedir"];
+   $templatedir=$system_settings['templatedir'];
    echo "<td><input type='text' $dirsizestring name='templatedir' value='$templatedir'></td></tr>\n";
 
    echo "<tr><td>Directory for <i>temporary</i> files. For security reasons, only the webdaemon should be able to read (and write) files here.  Usually, this is <b>not</b> the case for directory <i>/tmp</i>. </td>";
