@@ -1042,10 +1042,10 @@ function make_temp_table ($db,$temptable,$r) {
       $fp=fopen($tmpfile,'w');
       fwrite($fp,$string);
       fflush($fp);
+      fclose ($fp);
       chmod ($tmpfile,0644);
       $rd=$db->Execute ("COPY $temptable FROM '$tmpfile'"); 
       $rc=$db->Execute("ALTER TABLE $temptable ADD PRIMARY KEY (uniqueid)");
-      fclose ($fp);
       unlink($tmpfile);
    }
 }
