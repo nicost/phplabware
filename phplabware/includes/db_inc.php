@@ -349,7 +349,7 @@ function modify ($db,$table,$fields,$fieldvalues,$id,$USER,$tableid) {
             $fieldvalues['lastmoddate']=time();
          if (isset($fieldvalues[$column]) && (strlen($fieldvalues[$column])>0))
             // escape all nasty stuff
-            $query.="$column='".addslashes($fieldvalues[$column]) ."',";
+            $query.="$column=".$db->qStr($fieldvalues[$column]) .",";
          else
             $query.="$column=NULL,";
       }
