@@ -208,7 +208,7 @@ while((list($key, $val) = each($_POST))) {
       navbar($USER['permissions']);
       $modarray = explode('_', $key);
       $r=$db->Execute("SELECT $tableinfo->fields FROM ".$tableinfo->realname." WHERE id=$modarray[1]"); 
-      add_g_form($db,$tableinfo,$r->fields,$modarray[1],$USER,$PHP_SELF,$system_settings);
+      add_g_form($db,$tableinfo,$modarray[1],$USER,$PHP_SELF,$system_settings);
       printfooter();
       exit();
    }
